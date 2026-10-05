@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
@@ -26,6 +27,24 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountR
  */
 public class MaxBoxCountLoadValidator implements LoadValidator {
 
+	/** How the boxes are unloaded, see {@link SupportGraph} */
+	protected final Unloading unloading;
+
+	/**
+	 * Validator for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
+	 */
+	public MaxBoxCountLoadValidator() {
+		this(Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param unloading how the boxes are unloaded
+	 */
+	public MaxBoxCountLoadValidator(Unloading unloading) {
+		this.unloading = unloading;
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -39,7 +58,7 @@ public class MaxBoxCountLoadValidator implements LoadValidator {
 		boolean valid = true;
 		Map<Placement, Integer> depths = new IdentityHashMap<>();
 
-		SupportGraph graph = new SupportGraph(list);
+		SupportGraph graph = new SupportGraph(list, unloading);
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
 

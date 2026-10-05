@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
@@ -42,9 +43,20 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	private static final Logger LOGGER = Logger.getLogger(DefaultPackagingResultVisualizerFactory.class.getName());
 
 	protected final boolean calculatePoints;
+	/** How the boxes are unloaded, for validating their load limits */
+	protected final Unloading unloading;
 	
 	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints) {
+		this(calculatePoints, Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param calculatePoints whether to calculate the free points after each placement
+	 * @param unloading how the boxes are unloaded (as configured for the packager), for validating their load limits
+	 */
+	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints, Unloading unloading) {
 		this.calculatePoints = calculatePoints;
+		this.unloading = unloading;
 	}
 	
 	/**
@@ -215,7 +227,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 		for (Container inputContainer : inputContainers) {
 			List<Placement> placements = inputContainer.getStack().getPlacements();
-			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
+			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).withUnloading(unloading).build();
 			if(loadValidator != null) {
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				loadValidator.isValid(placements, reasons);

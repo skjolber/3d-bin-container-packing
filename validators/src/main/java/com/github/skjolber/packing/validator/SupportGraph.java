@@ -9,12 +9,14 @@ import java.util.Map;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.api.Unloading;
 
 /**
- * Which placements rest on which, calculated from the placements' positions: a placement rests on another placed
- * before it (earlier in the list, which is the loading order) when its bottom touches the other's top and their
- * footprints overlap; the overlap is the contact area. A box placed later, for example into a gap under an overhang,
- * does not carry the boxes which are already above it, as with the packagers.
+ * Which placements rest on which, calculated from the placements' positions: a placement rests on another when its
+ * bottom touches the other's top and their footprints overlap; the overlap is the contact area. This includes a box
+ * placed later, for example into a gap under an overhang: it carries part of the boxes resting on it. Whether it
+ * relieves their other supporters, and counts as their support, depends on how the boxes are unloaded
+ * (see {@link Unloading}); the placements are in loading order.
  * <br>
  * <br>
  * Validators use this instead of the links recorded on the placements ({@link Placement#getSupporters()} and so on),
@@ -26,6 +28,7 @@ public class SupportGraph {
 		private final List<PlacementLoad> supporters = new ArrayList<>(2);
 		private final List<PlacementLoad> supportees = new ArrayList<>(2);
 		private long supportedArea;
+		private long lateSupportedArea;
 		private final int index;
 
 		private Node(int index) {
@@ -36,9 +39,19 @@ public class SupportGraph {
 	private final Map<Placement, Node> nodes;
 
 	/**
-	 * @param placements placements in loading order (as in a stack)
+	 * Support graph for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
+	 *
+	 * @param placements placements in loading order
 	 */
 	public SupportGraph(List<Placement> placements) {
+		this(placements, Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param placements placements in loading order
+	 * @param unloading how the boxes are unloaded
+	 */
+	public SupportGraph(List<Placement> placements, Unloading unloading) {
 		nodes = new IdentityHashMap<>(placements.size() * 2);
 		// placements by the height just above their top
 		Map<Integer, List<Placement>> byTop = new HashMap<>();
@@ -47,23 +60,25 @@ public class SupportGraph {
 			nodes.put(placement, new Node(i));
 			byTop.computeIfAbsent(placement.getAbsoluteEndZ() + 1, k -> new ArrayList<>()).add(placement);
 		}
-		for (int i = 0; i < placements.size(); i++) {
-			Placement supportee = placements.get(i);
+		for (Placement supportee : placements) {
 			List<Placement> candidates = byTop.get(supportee.getAbsoluteZ());
 			if(candidates == null) {
 				continue;
 			}
 			Node supporteeNode = nodes.get(supportee);
 			for (Placement supporter : candidates) {
-				if(nodes.get(supporter).index >= i) {
-					// placed after the supportee
-					continue;
-				}
 				long area = getContactArea(supporter, supportee);
 				if(area > 0) {
-					supporteeNode.supporters.add(new PlacementLoad(supporter, area));
-					supporteeNode.supportedArea += area;
-					nodes.get(supporter).supportees.add(new PlacementLoad(supportee, area));
+					Node supporterNode = nodes.get(supporter);
+					// placed after the supportee, which might be unloaded first
+					boolean late = unloading == Unloading.ANY_ORDER && supporterNode.index > supporteeNode.index;
+					supporteeNode.supporters.add(new PlacementLoad(supporter, area, 0.0, late));
+					if(late) {
+						supporteeNode.lateSupportedArea += area;
+					} else {
+						supporteeNode.supportedArea += area;
+					}
+					supporterNode.supportees.add(new PlacementLoad(supportee, area, 0.0, late));
 				}
 			}
 		}
@@ -101,7 +116,28 @@ public class SupportGraph {
 	}
 
 	/**
-	 * @return the area of this placement resting on other placements (not counting the container floor)
+	 * The share of the weight passed down by {@code supportee} (its own and the load on it) which one of its supporters
+	 * carries: by contact area among the supporters which count as support, and among all supporters for the others
+	 * (see {@link PlacementLoad#isLate()}).
+	 *
+	 * @param supportee the placement above
+	 * @param link the link between the supportee and the supporter (from either side)
+	 * @return the share, or 0 if none
+	 */
+	public double getShare(Placement supportee, PlacementLoad link) {
+		Node node = nodes.get(supportee);
+		if(node == null) {
+			return 0.0;
+		}
+		if(link.isLate()) {
+			return (double)link.getArea() / (node.supportedArea + node.lateSupportedArea);
+		}
+		return node.supportedArea == 0 ? 0.0 : (double)link.getArea() / node.supportedArea;
+	}
+
+	/**
+	 * @return the area of this placement resting on placements which count as support (not counting the container floor),
+	 *         see {@link PlacementLoad#isLate()}
 	 */
 	public long getSupportedArea(Placement placement) {
 		Node node = nodes.get(placement);

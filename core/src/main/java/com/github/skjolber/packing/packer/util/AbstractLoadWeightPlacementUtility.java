@@ -2,12 +2,14 @@ package com.github.skjolber.packing.packer.util;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.PlacementList;
@@ -89,8 +91,31 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	private int[] candidateIndexes;
 	private int indexedSize;
 
+	/** How the boxes are unloaded: whether a box placed under boxes which are already there may relieve the boxes below them */
+	protected Unloading unloading = Unloading.ANY_ORDER;
+
 	protected AbstractLoadWeightPlacementUtility(Stack stack) {
 		this.stack = stack;
+	}
+
+	@Override
+	public void setUnloading(Unloading unloading) {
+		this.unloading = unloading;
+	}
+
+	/**
+	 * The share of the weight of {@code supportee} (and the load on it) which a new placement under it would carry,
+	 * with the given contact area, and the relief for its current supporters if {@link Unloading#REVERSE_LOADING_ORDER}.
+	 *
+	 * @return the weight the new placement would carry
+	 */
+	protected double addSupporteeShare(Placement supportee, long area) {
+		double supporteeWeight = supportee.getWeight() + supportee.getLoadWeight();
+		double share = supporteeWeight * area / (area + supportee.getSupportedArea() + supportee.getLateSupportedArea());
+		if(unloading == Unloading.REVERSE_LOADING_ORDER) {
+			calculateRelifWeight(supportee, share);
+		}
+		return share;
 	}
 
 	public void initialize(int count) {
@@ -386,6 +411,25 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		return true;
 	}
 
+	/**
+	 * The number of boxes in the longest chain resting on {@code placement}, including it.
+	 *
+	 * @param depths memo, as a placement can be reached through several paths
+	 */
+	protected static int getStackHeight(Placement placement, Map<Placement, Integer> depths) {
+		Integer known = depths.get(placement);
+		if(known != null) {
+			return known;
+		}
+		int max = 0;
+		List<PlacementLoad> supportees = placement.getSupportees();
+		for (int i = 0; i < supportees.size(); i++) {
+			max = Math.max(max, getStackHeight(supportees.get(i).getPlacement(), depths));
+		}
+		depths.put(placement, max + 1);
+		return max + 1;
+	}
+
 	/** Reset the relief weights from the previous candidate. */
 	protected void resetReliefWeights() {
 		for (int i = 0; i < reliefTouchedSize; i++) {
@@ -536,17 +580,14 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 				return false;
 			}
 
-			long totalArea = placement.getSupportedArea();
-			if (totalArea > 0) {
-				// existing load passed down by this placement, shared by contact area
-				double carried = placement.getWeight() + placement.getLoadWeight();
-				for (PlacementLoad pl : placement.getSupporters()) {
-					long area = pl.getArea();
-					if (!isWithinMaxLoadPressure(pl.getPlacement(), area, (carried + net) * area / totalArea)) {
-						return false;
-					}
-					addFlow(pl.getPlacement(), flow * area / totalArea);
+			// existing load passed down by this placement, shared by contact area
+			double carried = placement.getWeight() + placement.getLoadWeight();
+			for (PlacementLoad pl : placement.getSupporters()) {
+				double share = placement.getShare(pl);
+				if (!isWithinMaxLoadPressure(pl.getPlacement(), pl.getArea(), (carried + net) * share)) {
+					return false;
 				}
+				addFlow(pl.getPlacement(), flow * share);
 			}
 		}
 		return true;
@@ -654,19 +695,63 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	@Override
 	public void addSupportersLoad(Placement placement) {
 		long totalArea = placement.getSupportedArea();
-		if(placement.getAbsoluteZ() == 0 || totalArea == 0) {
+		if(placement.getAbsoluteZ() != 0 && totalArea != 0) {
+			placement.setSupportedArea(0);
+			for(int i = 0; i < placementSupporters.size(); i++) {
+				long area = placementAreas[i];
+				placementSupporters.get(i).addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
+			}
+		}
+		addSupporteesAbove(placement);
+	}
+
+	/**
+	 * Link the placements already resting on a new placement (it was placed under them, for example into a gap
+	 * under an overhang), so that it carries part of their weight, see {@link Placement#addSupporteeAbove(Placement, long, Unloading)}.
+	 * Call after linking the new placement to its supporters.
+	 */
+	protected void addSupporteesAbove(Placement placement) {
+		int z = placement.getAbsoluteEndZ() + 1;
+		int minX = placement.getAbsoluteX();
+		int maxX = placement.getAbsoluteEndX();
+		int minY = placement.getAbsoluteY();
+		int maxY = placement.getAbsoluteEndY();
+
+		List<Placement> placements = stack.getPlacements();
+		if(placements.size() < MIN_INDEXED_STACK_SIZE) {
+			for(int i = 0; i < placements.size(); i++) {
+				Placement candidate = placements.get(i);
+				if(candidate.getAbsoluteZ() == z && candidate.intersects2D(minX, maxX, minY, maxY)) {
+					placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY), unloading);
+				}
+			}
 			return;
 		}
-		placement.setSupportedArea(0);
-		for(int i = 0; i < placementSupporters.size(); i++) {
-			long area = placementAreas[i];
-			placementSupporters.get(i).addLoad(placement, area, (double) placement.getWeight() * area / totalArea);
+
+		synchronizeStackIndex(placements);
+		int index = lowerBound(minZOrder, indexedMinZ, z);
+		int candidateCount = 0;
+		while(index < indexedSize) {
+			int stackIndex = minZOrder[index++];
+			if(indexedMinZ[stackIndex] != z) {
+				break;
+			}
+			if(indexedPlacements[stackIndex].intersects2D(minX, maxX, minY, maxY)) {
+				candidateIndexes[candidateCount++] = stackIndex;
+			}
+		}
+		// in stack order, so that floating-point accumulation is deterministic
+		Arrays.sort(candidateIndexes, 0, candidateCount);
+		for(int i = 0; i < candidateCount; i++) {
+			Placement candidate = indexedPlacements[candidateIndexes[i]];
+			placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY), unloading);
 		}
 	}
 
 	@Override
 	public void accepted(Placement placement) {
 		if(placement.getAbsoluteZ() == 0) {
+			addSupporteesAbove(placement);
 			return;
 		}
 
@@ -691,6 +776,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 				totalArea += area;
 			}
 			addAcceptedSupporterLoads(placement, totalArea);
+			addSupporteesAbove(placement);
 			return;
 		}
 
@@ -712,6 +798,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 
 		addAcceptedSupporterLoads(placement, totalArea);
+		addSupporteesAbove(placement);
 	}
 
 	private void addAcceptedSupporterLoads(Placement placement, long totalArea) {

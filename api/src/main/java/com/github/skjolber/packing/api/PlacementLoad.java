@@ -9,15 +9,33 @@ public class PlacementLoad {
 	private final Placement placement;
 	private final long area;
 	private final double weight;
+	private final boolean late;
 
 	public PlacementLoad(Placement placement, long area) {
 		this(placement, area, 0);
 	}
 
 	public PlacementLoad(Placement placement, long area, double weight) {
+		this(placement, area, weight, false);
+	}
+
+	/**
+	 * @param late whether the supporter was placed after the supportee and does not relieve its other supporters,
+	 *        see {@link Unloading#ANY_ORDER}
+	 */
+	public PlacementLoad(Placement placement, long area, double weight, boolean late) {
 		this.placement = placement;
 		this.area = area;
 		this.weight = weight;
+		this.late = late;
+	}
+
+	/**
+	 * Whether the supporter was placed after the supportee, and carries a share of it without relieving its other
+	 * supporters (see {@link Unloading#ANY_ORDER}). Such a supporter does not count towards the supported area.
+	 */
+	public boolean isLate() {
+		return late;
 	}
 
 	/** The placement that is directly below and supporting the new box. */

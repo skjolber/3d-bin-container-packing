@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder.ContainerItemBuilder;
 import com.github.skjolber.packing.api.PackagerResultBuilder.ObstaclesBuilder;
 import com.github.skjolber.packing.api.PackagerResultBuilder.PointsBuilder;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
@@ -41,6 +42,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 	protected int maxContainerCount = 1;
 
 	protected Order order = Order.NONE;
+	protected Unloading unloading = Unloading.ANY_ORDER;
 
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
@@ -193,6 +195,18 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 	@Override
 	public B withOrder(Order order) {
 		this.order = order;
+		return (B) this;
+	}
+
+	/**
+	 * Set how the boxes are unloaded, see {@link Unloading}. Default {@link Unloading#ANY_ORDER}; use the same
+	 * setting as the packager.
+	 *
+	 * @param unloading how the boxes are unloaded
+	 * @return this builder
+	 */
+	public B withUnloading(Unloading unloading) {
+		this.unloading = unloading;
 		return (B) this;
 	}
 

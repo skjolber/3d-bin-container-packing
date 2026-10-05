@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.test.assertj.PlacementsAssert;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
@@ -98,11 +99,11 @@ public class SupportFromGeometryTest {
 	//    |   2   |   placed second, on box 1, overhanging
 	//  1 +---+---+---+
 	//    | 1 | 3 |       box 3 is placed last, into the gap under the overhang:
-	//  0 +---+---+       it does not carry box 2, which already rests on box 1
+	//  0 +---+---+       it touches box 2, so it carries half of it
 	//    0   1   2  x
 	//
 	@Test
-	void boxPlacedUnderAnOverhangDoesNotCarryTheBoxesAboveIt() {
+	void boxPlacedUnderAnOverhangCarriesTheBoxesAboveIt() {
 		Box one = Box.newBuilder().withId("1").withSize(1, 1, 1).withWeight(1).build();
 		Box two = Box.newBuilder().withId("2").withSize(2, 1, 1).withWeight(5).build();
 		Box three = Box.newBuilder().withId("3").withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1).build();
@@ -111,8 +112,35 @@ public class SupportFromGeometryTest {
 				new Placement(two.getStackValue(0), 0, 0, 0, 1),
 				new Placement(three.getStackValue(0), 0, 1, 0, 0));
 
-		PlacementsAssert.assertThat(placements).isAcceptedBy(new WeightLoadValidator());
-		// in another loading order, box 3 carries half of box 2
+		// box 3 carries 2.5, regardless of the loading order
+		PlacementsAssert.assertThat(placements).isRejectedBy(new WeightLoadValidator(), ExcessiveLoadWeightReason.class);
 		PlacementsAssert.assertThat(List.of(placements.get(0), placements.get(2), placements.get(1))).isRejectedBy(new WeightLoadValidator(), ExcessiveLoadWeightReason.class);
+	}
+
+	//
+	//  z
+	//  2 +-------+
+	//    |   2   |   weight 4, placed second, on box 1, overhanging
+	//  1 +---+---+
+	//    | 1 | 3 |   box 1 carries at most 3; box 3 is placed last, into the gap under the overhang
+	//  0 +---+---+
+	//    0   1   2  x
+	//
+	@Test
+	void boxPlacedUnderAnOverhangRelievesOnlyWhenUnloadedInReverseOrder() {
+		Box one = Box.newBuilder().withId("1").withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(3).build();
+		Box two = Box.newBuilder().withId("2").withSize(2, 1, 1).withWeight(4).build();
+		Box three = Box.newBuilder().withId("3").withSize(1, 1, 1).withWeight(1).build();
+		List<Placement> placements = List.of(
+				new Placement(one.getStackValue(0), 0, 0, 0, 0),
+				new Placement(two.getStackValue(0), 0, 0, 0, 1),
+				new Placement(three.getStackValue(0), 0, 1, 0, 0));
+
+		// box 3 may be unloaded first: box 1 carries all of box 2
+		PlacementsAssert.assertThat(placements).isRejectedBy(new WeightLoadValidator(Unloading.ANY_ORDER), ExcessiveLoadWeightReason.class);
+		PlacementsAssert.assertThat(placements).isRejectedBy(new FullySupportedStabilityValidator(Unloading.ANY_ORDER), InsufficientSupportAreaReason.class);
+		// box 3 stays until box 2 is unloaded: they share box 2, and box 2 is fully supported
+		PlacementsAssert.assertThat(placements).isAcceptedBy(new WeightLoadValidator(Unloading.REVERSE_LOADING_ORDER));
+		PlacementsAssert.assertThat(placements).isAcceptedBy(new FullySupportedStabilityValidator(Unloading.REVERSE_LOADING_ORDER));
 	}
 }

@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
@@ -23,7 +24,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightRea
  *
  * <p>The computation mirrors the proportional weight distribution used during load
  * propagation: when a box above is shared between multiple supporters, its weight
- * contribution to this placement is scaled by {@code overlapArea / supportee.supportedArea}.
+ * contribution to this placement is scaled by its share, see {@link SupportGraph#getShare(Placement, PlacementLoad)}.
  *
  * <p>If pressure is also configured on a stack value, prefer {@link MaxPressureLoadValidator}
  * as pressure takes precedence per the {@link BoxStackValue} contract.
@@ -32,6 +33,24 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightRea
  * @see SupportGraph
  */
 public class WeightLoadValidator implements LoadValidator {
+
+	/** How the boxes are unloaded, see {@link SupportGraph} */
+	protected final Unloading unloading;
+
+	/**
+	 * Validator for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
+	 */
+	public WeightLoadValidator() {
+		this(Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param unloading how the boxes are unloaded
+	 */
+	public WeightLoadValidator(Unloading unloading) {
+		this.unloading = unloading;
+	}
+
 
 	/**
 	 * {@inheritDoc}
@@ -45,7 +64,7 @@ public class WeightLoadValidator implements LoadValidator {
 	@Override
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
-		SupportGraph graph = new SupportGraph(list);
+		SupportGraph graph = new SupportGraph(list, unloading);
 		Map<Placement, Double> weightAbove = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
@@ -72,7 +91,7 @@ public class WeightLoadValidator implements LoadValidator {
 	 * the weight of shared supportees.
 	 * <p>
 	 * When a supportee is shared, its weight contribution to this placement is scaled by
-	 * {@code overlapArea / supportee.supportedArea}.
+	 * its share, see {@link SupportGraph#getShare(Placement, PlacementLoad)}.
 	 *
 	 * @param placement the placement whose supportee weight to accumulate
 	 * @param share fractional multiplier (1.0 for the placement itself)
@@ -100,8 +119,7 @@ public class WeightLoadValidator implements LoadValidator {
 		for(PlacementLoad supporteeLink : graph.getSupportees(placement)) {
 			Placement supportee = supporteeLink.getPlacement();
 			// weight of this supportee box and everything above it, scaled by our share of its total supported area
-			long supporteeArea = graph.getSupportedArea(supportee);
-			double supporteeShare = (supporteeArea > 0) ? (double) supporteeLink.getArea() / supporteeArea : 1.0;
+			double supporteeShare = graph.getShare(supportee, supporteeLink);
 			total += (supportee.getWeight() + weightAbove(graph, supportee, weightAbove)) * supporteeShare;
 		}
 		weightAbove.put(placement, total);

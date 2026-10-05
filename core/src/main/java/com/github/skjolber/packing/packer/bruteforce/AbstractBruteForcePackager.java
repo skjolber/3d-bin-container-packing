@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -62,6 +63,16 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  */
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
+
+	/** How the boxes are unloaded, when boxes have load limits */
+	protected Unloading unloading = Unloading.ANY_ORDER;
+
+	/**
+	 * @param unloading how the boxes are unloaded, see {@link Unloading}
+	 */
+	public void setUnloading(Unloading unloading) {
+		this.unloading = unloading;
+	}
 
 	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
@@ -482,6 +493,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			} else {
 				// back from the next level: remove this level's placement
 				if(utility != null) {
+					placement.removeSupporteesAbove();
 					for(PlacementLoad placementLoad : placement.getSupporters()) {
 						placementLoad.getPlacement().removeLastSupportee();
 					}

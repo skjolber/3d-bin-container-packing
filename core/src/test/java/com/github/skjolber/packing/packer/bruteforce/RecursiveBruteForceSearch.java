@@ -285,6 +285,7 @@ public class RecursiveBruteForceSearch {
 			packStackPlacement(pointCalculator, placements, iterator, stack, maxLoadWeight - stackValue.getBox().getWeight(), placementIndex + 1, interrupt,
 					nextMinStackableAreaIndex, maxPackableCount, utility, pointFilter);
 		}
+		placement.removeSupporteesAbove();
 		for(PlacementLoad placementLoad : placement.getSupporters()) {
 			placementLoad.getPlacement().removeLastSupportee();
 		}

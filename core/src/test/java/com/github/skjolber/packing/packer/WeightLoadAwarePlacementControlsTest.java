@@ -14,6 +14,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
@@ -173,7 +174,7 @@ public class WeightLoadAwarePlacementControlsTest {
 	}
 	
 	@Test
-	public void testSupporteeMaxWeightLimitMustCalculateRelif() {
+	public void testBoxUnderOverhangRelievesSupportersOnlyWhenUnloadedInReverseOrder() {
 		Box bottomBox = Box.newBuilder().withSize(10, 10, 1).withWeight(1).withMaxLoadWeight(102).withId("First").build();
 		
 		Placement wholeButtomPlacement = new Placement(bottomBox.getStackValue(0), 0, 0, 0, 0);
@@ -199,9 +200,13 @@ public class WeightLoadAwarePlacementControlsTest {
 		
 		boxItems.add(new BoxItem(tooLowMaxLoadLimit));
 		
-		// only available point is below a box which is heavy
-		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
-		assertNotNull(placement);
+		// only available point is below the overhanging box, which then rests on the new box and the corner box:
+		// the bottom box carries 102 if the new box relieves the corner box (unloaded in reverse order),
+		// and 122 if not (the corner box may be unloaded first, so it must carry all of the overhanging box)
+		assertNull(weightLoadAwarePlacementControls.getPlacement(0, boxItems.size()));
+
+		weightLoadAwarePlacementControls.setUnloading(Unloading.REVERSE_LOADING_ORDER);
+		assertNotNull(weightLoadAwarePlacementControls.getPlacement(0, boxItems.size()));
 	}
 
 }

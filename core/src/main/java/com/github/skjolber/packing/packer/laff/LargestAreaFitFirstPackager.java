@@ -49,7 +49,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						.higherWeightIsBetter()
 						.lowerAreaIsBetter()
 						.lowerZIsBetter();
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport, unloading);
 			}
 			if(firstPlacementControlsBuilderFactory == null) {
 				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
@@ -61,7 +61,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 						.higherAreaIsBetter()
 						.higherVolumeIsBetter()
 						.higherWeightIsBetter();
-				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstFactory, firstBoxItemComparator, calculateSupport, requireFullSupport);
+				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstFactory, firstBoxItemComparator, calculateSupport, requireFullSupport, unloading);
 			}
 			LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 			if(containerStrategyFactory != null) {

@@ -7,6 +7,7 @@ import java.util.Map;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
@@ -29,6 +30,24 @@ import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCent
  */
 public class CenterOfGravityStabilityValidator implements StabilityValidator {
 
+	/** How the boxes are unloaded, see {@link SupportGraph} */
+	protected final Unloading unloading;
+
+	/**
+	 * Validator for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
+	 */
+	public CenterOfGravityStabilityValidator() {
+		this(Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param unloading how the boxes are unloaded
+	 */
+	public CenterOfGravityStabilityValidator(Unloading unloading) {
+		this.unloading = unloading;
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -41,7 +60,7 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
-		SupportGraph graph = new SupportGraph(list);
+		SupportGraph graph = new SupportGraph(list, unloading);
 		for(Placement placement : list) {
 			if(!isPlacementStable(graph, placement)) {
 				reasons.add(new UnstableStackCenterOfGravityReason(placement));
@@ -60,7 +79,7 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 	 * the configured centres of gravity of this box and all boxes in its supportee sub-tree.
 	 * When a box above is shared between multiple supporters (split load), its
 	 * contribution to this sub-tree is scaled by
-	 * {@code overlapArea / supportee.supportedArea}, matching the same proportion
+	 * its share (see {@link SupportGraph#getShare(Placement, PlacementLoad)}), matching the same proportion
 	 * used during load propagation.
 	 *
 	 * <p>The effective CoM is tested against the axis-aligned bounding box of the
@@ -74,7 +93,8 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 	public static boolean isPlacementStable(SupportGraph graph, Placement placement) {
 		List<PlacementLoad> supporters = graph.getSupporters(placement);
 
-		if(supporters.isEmpty()) {
+		if(graph.getSupportedArea(placement) == 0) {
+			// no supporters which count as support (boxes placed later may be unloaded first)
 			return placement.getAbsoluteZ() == 0;
 		}
 
@@ -90,6 +110,9 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 		int maxSupportY = Integer.MIN_VALUE;
 
 		for(PlacementLoad supporterLink : supporters) {
+			if(supporterLink.isLate()) {
+				continue;
+			}
 			Placement supporter = supporterLink.getPlacement();
 
 			int overlapMinX = Math.max(placement.getAbsoluteX(), supporter.getAbsoluteX());
@@ -149,16 +172,10 @@ public class CenterOfGravityStabilityValidator implements StabilityValidator {
 
 		for(PlacementLoad supporteeLink : graph.getSupportees(placement)) {
 			Placement supportee = supporteeLink.getPlacement();
-			long supporteeArea = graph.getSupportedArea(supportee);
-			if(supporteeArea == 0) {
+			double supporteeShare = graph.getShare(supportee, supporteeLink);
+			if(supporteeShare == 0.0) {
 				continue;
 			}
-
-			long overlapArea = placement.overlapArea2D(supportee);
-			if(overlapArea == 0) {
-				continue;
-			}
-			double supporteeShare = (double) overlapArea / supporteeArea;
 
 			double[] sub = stackCenterOfMass(graph, supportee, masses);
 			totalWeight  += sub[0] * supporteeShare;

@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
@@ -22,6 +23,24 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
  */
 public class FullySupportedStabilityValidator implements StabilityValidator {
 
+	/** How the boxes are unloaded, see {@link SupportGraph} */
+	protected final Unloading unloading;
+
+	/**
+	 * Validator for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
+	 */
+	public FullySupportedStabilityValidator() {
+		this(Unloading.ANY_ORDER);
+	}
+
+	/**
+	 * @param unloading how the boxes are unloaded
+	 */
+	public FullySupportedStabilityValidator(Unloading unloading) {
+		this.unloading = unloading;
+	}
+
+
 	/**
 	 * {@inheritDoc}
 	 *
@@ -34,7 +53,7 @@ public class FullySupportedStabilityValidator implements StabilityValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
-		SupportGraph graph = new SupportGraph(list);
+		SupportGraph graph = new SupportGraph(list, unloading);
 		for(Placement placement : list) {
 			if(placement.getAbsoluteZ() == 0) {
 				// Resting on the container floor — unconditionally supported.

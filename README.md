@@ -364,6 +364,22 @@ Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type o
 and LAFF packagers detect the constraints and enforce them; for brute force, use the load-aware
 variants (`LoadBruteForcePackager`, `LoadFastBruteForcePackager`, `LoadParallelBoxItemBruteForcePackager`).
 
+A box can be placed under boxes which are already there, for example into a gap under an overhang. It carries
+part of their weight, and its own limits are checked. Whether it also relieves the boxes which already support them
+depends on how the container is unloaded:
+
+```java
+PlainPackager packager = PlainPackager
+    .newBuilder()
+    .withUnloading(Unloading.REVERSE_LOADING_ORDER) // default: Unloading.ANY_ORDER
+    .build();
+```
+
+With `ANY_ORDER` (the default), the box may be unloaded first, so the boxes below keep their full load, and it does
+not count as support. With `REVERSE_LOADING_ORDER`, it stays until the boxes above it are unloaded, and all touching
+boxes share the load by contact area. The LAFF and load-aware brute-force builders, and the validators
+(`withUnloading(..)`), have the same setting; validate with the setting used for packing.
+
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
 
@@ -500,7 +516,8 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
         * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
-        * The load and stability validators find which boxes rest on which from the placements' positions and loading order (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked). A box placed later, under an overhang, does not carry the boxes already above it
+        * The load and stability validators find which boxes rest on which from the placements' positions (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked)
+        * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously such a box was assumed to relieve the boxes below when it was placed, but the relief was not recorded, and boxes could be overloaded). The new `withUnloading(Unloading)` setting decides whether it relieves the boxes below: by default (`ANY_ORDER`) it does not, as it may be unloaded first
         * `NonIdenticalLoadBoxReason` names the box with the identical-box-only limit as the constrained placement (previously the box directly below the offending box)
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)

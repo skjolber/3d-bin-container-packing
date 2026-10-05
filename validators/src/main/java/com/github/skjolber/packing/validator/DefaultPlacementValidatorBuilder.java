@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBuilder;
@@ -16,6 +17,13 @@ public class DefaultPlacementValidatorBuilder implements PlacementValidatorBuild
 	private Container container;
 	private List<Placement> placements;
 	private StabilityValidator stabilityValidator;
+	private Unloading unloading = Unloading.ANY_ORDER;
+
+	@Override
+	public PlacementValidatorBuilder withUnloading(Unloading unloading) {
+		this.unloading = unloading;
+		return this;
+	}
 
 	public PlacementValidatorBuilder withStabilityValidator(StabilityValidator stabilityValidator) {
 		this.stabilityValidator = stabilityValidator;
@@ -47,7 +55,7 @@ public class DefaultPlacementValidatorBuilder implements PlacementValidatorBuild
 		}
 		
 		// autodetect load validators based on stack value settings
-		LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(container).withPlacements(placements).build();
+		LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(container).withPlacements(placements).withUnloading(unloading).build();
 		
 		return new DefaultPlacementValidator(container, loadValidator, stabilityValidator);
 	}

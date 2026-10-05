@@ -1,5 +1,8 @@
 package com.github.skjolber.packing.packer.util;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -13,8 +16,33 @@ import com.github.skjolber.packing.api.Stack;
  */
 public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends WeightPressureCountLoadAwarePlacementUtility {
 
+	/** The box of all boxes resting on the current candidate (placed under boxes already there), or null if none. */
+	protected Box carriedBox;
+	/** Whether the boxes resting on the current candidate are not all the same box. */
+	protected boolean carriedMixed;
+
 	public WeightPressureCountIdenticalLoadAwarePlacementUtility(Stack stack) {
 		super(stack);
+	}
+
+	/**
+	 * Add the boxes of {@code placement} and everything resting on it to {@link #carriedBox}.
+	 *
+	 * @return false if they are not all the same box
+	 */
+	private boolean collectCarriedBoxes(Placement placement) {
+		Box box = placement.getBox();
+		if(carriedBox == null) {
+			carriedBox = box;
+		} else if(carriedBox != box) {
+			return false;
+		}
+		for (PlacementLoad load : placement.getSupportees()) {
+			if(!collectCarriedBoxes(load.getPlacement())) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -22,6 +50,10 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 		double weight = 0.0;
 		int z = minZ + sv.getDz();
 		resetReliefWeights();
+		supporteeHeight = 0;
+		Map<Placement, Integer> heights = null;
+		carriedBox = null;
+		carriedMixed = false;
 
 		for (int k = 0; k < pointSupportees.size(); k++) {
 			Placement candidate = pointSupportees.get(k);
@@ -33,8 +65,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 			}
 
 			long area = candidate.overlapArea2D(minX, maxX, minY, maxY);
-			double candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
-			double effectiveWeight = candidateWeight * area / (area + candidate.getSupportedArea());
+			double effectiveWeight = addSupporteeShare(candidate, area);
 
 			if (sv.isMaxLoadPressure()) {
 				if (Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
@@ -52,7 +83,14 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 				}
 			}
 
-			calculateRelifWeight(candidate, effectiveWeight);
+			// placed under boxes which are already there: the boxes below carry them too
+			if(heights == null) {
+				heights = new IdentityHashMap<>();
+			}
+			supporteeHeight = Math.max(supporteeHeight, getStackHeight(candidate, heights));
+			if(!collectCarriedBoxes(candidate)) {
+				carriedMixed = true;
+			}
 			weight += effectiveWeight;
 		}
 
@@ -76,11 +114,13 @@ public class WeightPressureCountIdenticalLoadAwarePlacementUtility extends Weigh
 				continue;
 			}
 			if (candidate.getStackValue().isLoadIdenticalBoxOnly()) {
-				if (candidate.getStackValue().getBox() != box) {
+				Box candidateBox = candidate.getStackValue().getBox();
+				// the boxes resting on the new box rest on the candidate too
+				if (candidateBox != box || carriedMixed || (carriedBox != null && carriedBox != candidateBox)) {
 					return false;
 				}
 			}
-			if (!isWithinMaxLoadBoxCount(candidate, 1)) {
+			if (!isWithinMaxLoadBoxCount(candidate, 1 + supporteeHeight)) {
 				return false;
 			}
 			placementSupporters.add(candidate);

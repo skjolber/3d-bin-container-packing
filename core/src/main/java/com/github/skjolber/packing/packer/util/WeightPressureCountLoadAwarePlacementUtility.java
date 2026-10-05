@@ -1,5 +1,8 @@
 package com.github.skjolber.packing.packer.util;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -12,6 +15,9 @@ import com.github.skjolber.packing.api.Stack;
  */
 public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWeightPlacementUtility {
 
+	/** The height of the boxes resting on the current candidate (placed under boxes already there), 0 if none. */
+	protected int supporteeHeight;
+
 	public WeightPressureCountLoadAwarePlacementUtility(Stack stack) {
 		super(stack);
 	}
@@ -21,6 +27,8 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 		double weight = 0.0;
 		int z = minZ + sv.getDz();
 		resetReliefWeights();
+		supporteeHeight = 0;
+		Map<Placement, Integer> heights = null;
 
 		for (int k = 0; k < pointSupportees.size(); k++) {
 			Placement candidate = pointSupportees.get(k);
@@ -32,8 +40,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 			}
 
 			long area = candidate.overlapArea2D(minX, maxX, minY, maxY);
-			double candidateWeight = candidate.getWeight() + candidate.getLoadWeight();
-			double effectiveWeight = candidateWeight * area / (area + candidate.getSupportedArea());
+			double effectiveWeight = addSupporteeShare(candidate, area);
 
 			if (sv.isMaxLoadPressure()) {
 				if (Box.calculatePressure(area, effectiveWeight) > sv.getMaxLoadPressure()) {
@@ -46,7 +53,11 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 				}
 			}
 
-			calculateRelifWeight(candidate, effectiveWeight);
+			// placed under boxes which are already there: the boxes below carry them too
+			if(heights == null) {
+				heights = new IdentityHashMap<>();
+			}
+			supporteeHeight = Math.max(supporteeHeight, getStackHeight(candidate, heights));
 			weight += effectiveWeight;
 		}
 
@@ -68,7 +79,7 @@ public class WeightPressureCountLoadAwarePlacementUtility extends AbstractLoadWe
 			if (!candidate.intersects2D(minX, maxX, minY, maxY)) {
 				continue;
 			}
-			if (!isWithinMaxLoadBoxCount(candidate, 1)) {
+			if (!isWithinMaxLoadBoxCount(candidate, 1 + supporteeHeight)) {
 				return false;
 			}
 			placementSupporters.add(candidate);

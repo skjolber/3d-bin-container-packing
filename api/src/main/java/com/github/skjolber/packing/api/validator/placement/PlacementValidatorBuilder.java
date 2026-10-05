@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Unloading;
 
 public interface PlacementValidatorBuilder {
 	
@@ -12,6 +13,14 @@ public interface PlacementValidatorBuilder {
 	PlacementValidatorBuilder withPlacements(List<Placement> placements);
 	
 	PlacementValidatorBuilder withStabilityValidator(StabilityValidator stabilityValidator);
+
+	/**
+	 * @param unloading how the boxes are unloaded, see {@link Unloading}
+	 * @return this builder
+	 */
+	default PlacementValidatorBuilder withUnloading(Unloading unloading) {
+		return this;
+	}
 
 	PlacementValidator build();
 	
