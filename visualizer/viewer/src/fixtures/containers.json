@@ -134,6 +134,7 @@
     "timeout" : false,
     "duration" : 12,
     "cost" : 34,
+    "insertionOrder" : false,
     "valid" : false,
     "validationReasons" : [ {
       "type" : "ExcessiveLoadWeightReason",
@@ -151,6 +152,7 @@
     "timeout" : true,
     "duration" : 5,
     "cost" : -1,
+    "insertionOrder" : true,
     "valid" : true,
     "validationReasons" : [ ]
   } ]

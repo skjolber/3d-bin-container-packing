@@ -21,7 +21,6 @@ import com.github.skjolber.packing.comparator.DefaultPackagerResultComparator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
@@ -232,10 +231,8 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			session = newCompositeSession(getImprovementInput(input, baseline), packagerInterrupt);
 			ContainerResult result = packSession(packagerInterrupt, session);
 			if(result != null) {
-				if(input.isInsertionOrder()) {
-					InsertionSequencer.sequence(result.getPackList(), input.getOrder());
-				}
-				PackagerResult improvement = new PackagerResult(result.getPackList(), 0L, false, result.getCost());
+				boolean insertionOrder = sequence(input, result.getPackList());
+				PackagerResult improvement = new PackagerResult(result.getPackList(), 0L, false, result.getCost(), insertionOrder);
 				if(baseline == null || packagerResultComparator.compare(improvement, baseline) > 0) {
 					return withDuration(improvement, start);
 				}
@@ -273,7 +270,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 	}
 
 	private static PackagerResult withDuration(PackagerResult result, long start) {
-		return new PackagerResult(result.getContainers(), System.currentTimeMillis() - start, result.isTimeout(), result.getCost());
+		return new PackagerResult(result.getContainers(), System.currentTimeMillis() - start, result.isTimeout(), result.getCost(), result.isInsertionOrder());
 	}
 
 	@Override

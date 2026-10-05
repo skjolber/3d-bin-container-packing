@@ -137,10 +137,8 @@ public class VirtualBoxPacking {
 			}
 		}
 		// the expanded boxes are in the order of their layouts: sequence them (aggregation is only used without an order)
-		if(insertionOrder) {
-			InsertionSequencer.sequence(containers, Order.NONE);
-		}
-		return new PackagerResult(containers, elapsed(start), packed.isTimeout(), packed.getCost());
+		boolean sequenced = insertionOrder && InsertionSequencer.sequence(containers, Order.NONE);
+		return new PackagerResult(containers, elapsed(start), packed.isTimeout(), packed.getCost(), sequenced);
 	}
 
 	protected static BoxStackValue findOriginal(BoxItem item, BoxStackValue value) {

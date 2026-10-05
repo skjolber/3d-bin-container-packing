@@ -31,7 +31,8 @@ public final class InsertionSequencer {
 	 *
 	 * @param containers packed containers
 	 * @param order the order of the box items; only {@link Order#NONE} (or null) allows reordering
-	 * @return true if every container could be sequenced (or no reordering was allowed)
+	 * @return true if every container is in insertion order: sequenced, or packed with a box item order (when the
+	 *         packagers only place boxes which can be inserted); false if some container cannot be sequenced
 	 */
 	public static boolean sequence(List<Container> containers, Order order) {
 		if(order != null && order != Order.NONE) {

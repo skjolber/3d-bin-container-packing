@@ -26,6 +26,16 @@ public class PackagingResultVisualizer {
 	private Long duration;
 	/** Total container cost, -1 if not calculated */
 	private Long cost;
+	/** Whether the placements are known to be in insertion order (null if visualizing containers only) */
+	private Boolean insertionOrder;
+
+	public Boolean getInsertionOrder() {
+		return insertionOrder;
+	}
+
+	public void setInsertionOrder(Boolean insertionOrder) {
+		this.insertionOrder = insertionOrder;
+	}
 
 	/** Whether the result passed validation */
 	private boolean valid = true;

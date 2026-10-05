@@ -79,6 +79,7 @@ public class InsertionOrderResultsTest {
 							.withInterruptDuration(5_000)
 							.withOrder(order)
 							.build();
+					assertThat(result.isInsertionOrder()).isTrue();
 					for (Container container : result.getContainers()) {
 						containers++;
 						assertThat(container.getAccess()).isEqualTo(access);
@@ -119,6 +120,8 @@ public class InsertionOrderResultsTest {
 						.withMaxContainerCount(4)
 						.withInsertionOrder(false)
 						.build();
+				// not known to be in insertion order
+				assertThat(result.isInsertionOrder()).isEqualTo(!result.isSuccess());
 				for (Container container : result.getContainers()) {
 					if(!validator.validate(container.getStack().getPlacements(), access, new ArrayList<>())) {
 						notInInsertionOrder++;
@@ -132,5 +135,27 @@ public class InsertionOrderResultsTest {
 			}
 		}
 		assertThat(notInInsertionOrder).isGreaterThan(0);
+	}
+
+	@ParameterizedTest
+	@EnumSource(ContainerAccess.class)
+	public void orderedResultsAreInInsertionOrderWithoutSequencing(ContainerAccess access) {
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			List<BoxItem> items = new ArrayList<>();
+			Random random = new Random(1);
+			for (int i = 0; i < 10; i++) {
+				items.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(2 + random.nextInt(8), 2 + random.nextInt(8), 1 + random.nextInt(6)).withRotate3D().withWeight(1).build(), 1));
+			}
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(ContainerItem.newListBuilder().withContainer(Container.newBuilder().withId("c").withSize(20, 15, 12).withMaxLoadWeight(100_000).withAccess(access).build(), 4).build())
+					.withBoxItems(items)
+					.withMaxContainerCount(4)
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
+					.withInsertionOrder(false)
+					.build();
+			assertThat(result.isSuccess()).isTrue();
+			// with a box item order, only insertable boxes are placed
+			assertThat(result.isInsertionOrder()).isTrue();
+		}
 	}
 }

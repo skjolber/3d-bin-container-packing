@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
@@ -116,16 +117,26 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			if(result == null) {
 				return new PackagerResult(Collections.emptyList(), duration, false, -1);
 			}
-			if(input.isInsertionOrder()) {
-				InsertionSequencer.sequence(result.getPackList(), input.getOrder());
-			}
-			return new PackagerResult(result.getPackList(), duration, false, result.getCost());
+			return new PackagerResult(result.getPackList(), duration, false, result.getCost(), sequence(input, result.getPackList()));
 		} catch (PackagerInterruptedException e) {
 			long duration = System.currentTimeMillis() - start;
 			return new PackagerResult(Collections.emptyList(), duration, true, -1);
 		} finally {
 			packagerInterrupt.close();
 		}
+	}
+
+	/**
+	 * Put the containers in insertion order, unless skipped (see {@link InsertionSequencer}).
+	 *
+	 * @return true if the containers are in insertion order
+	 */
+	protected static boolean sequence(PackagerInput input, List<Container> containers) {
+		if(input.isInsertionOrder()) {
+			return InsertionSequencer.sequence(containers, input.getOrder());
+		}
+		// with a box item order, only insertable boxes are placed
+		return input.getOrder() != null && input.getOrder() != Order.NONE;
 	}
 
 	public ContainerResult packSession(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {

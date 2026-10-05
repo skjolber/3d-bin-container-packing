@@ -77,6 +77,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		visualization.setTimeout(result.isTimeout());
 		visualization.setDuration(result.getDuration());
 		visualization.setCost(result.getCost());
+		visualization.setInsertionOrder(result.isInsertionOrder());
 
 		if(validation != null) {
 			ValidatorResult validatorResult = validation.withPackagerResult(result).build();

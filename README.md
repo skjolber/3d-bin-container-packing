@@ -388,6 +388,10 @@ outcome matters, for example to check whether an order fits during checkout, ski
 `withInsertionOrder(false)` on the result builder, and calculate the order later if needed with
 `InsertionSequencer.sequence(result.getContainers(), Order.NONE)`.
 
+`PackagerResult.isInsertionOrder()` tells whether a result is known to be in insertion order: false when it was
+skipped, or when the boxes cannot be loaded in any order (possible through a door, as the packagers place boxes
+without regard to the door when there is no box item order).
+
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
 

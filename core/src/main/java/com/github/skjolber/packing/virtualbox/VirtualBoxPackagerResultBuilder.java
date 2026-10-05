@@ -157,7 +157,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 					}
 				}
 			}
-			return new PackagerResult(best.getContainers(), VirtualBoxPacking.elapsed(start), best.isTimeout() || stop.getAsBoolean(), best.getCost());
+			return new PackagerResult(best.getContainers(), VirtualBoxPacking.elapsed(start), best.isTimeout() || stop.getAsBoolean(), best.getCost(), best.isInsertionOrder());
 		} finally {
 			if(interrupt != null) {
 				interrupt.close();

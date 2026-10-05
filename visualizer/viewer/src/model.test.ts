@@ -39,6 +39,8 @@ test('parses the sample written by the Java visualizer', () => {
   expect(packaging.timeout).toBe(false);
   expect(packaging.duration).toBe(12);
   expect(packaging.cost).toBe(34);
+  // a hand-made result
+  expect(packaging.insertionOrder).toBe(false);
   expect([container.emptyWeight, container.maxLoadWeight, container.loadWeight]).toEqual([0, 100, 9]);
   expect([container.maxLoadVolume, container.loadVolume]).toEqual([4, 4]);
 

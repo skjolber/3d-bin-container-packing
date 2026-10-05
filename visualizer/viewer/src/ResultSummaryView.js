@@ -75,7 +75,7 @@ function ComparisonTable({ packagings, resultIndex, onSelectResult }) {
 function ResultSummaryView({ packaging, packagings, resultIndex, colorMode, onSelectResult }) {
     if (!packaging) return null;
 
-    const { containers, success, timeout, duration, cost, valid, validationReasons } = packaging;
+    const { containers, success, timeout, duration, cost, valid, validationReasons, insertionOrder } = packaging;
     const { loadVolume, maxLoadVolume, boxes } = totals(packaging);
 
     const rowStyle = { display: 'flex', justifyContent: 'space-between', gap: '12px' };
@@ -109,6 +109,9 @@ function ResultSummaryView({ packaging, packagings, resultIndex, colorMode, onSe
             <div style={{ fontWeight: 'bold', color: valid ? '#81c784' : '#ef5350' }}>
                 {valid ? 'Valid' : `Invalid (${validationReasons.length} reason${validationReasons.length === 1 ? '' : 's'})`}
             </div>
+            {success && insertionOrder === false && (
+                <div style={{ color: '#ffb74d' }}>Not known to be in insertion order (skipped, or not possible)</div>
+            )}
             {validationReasons.slice(0, MAX_REASONS).map((reason, i) => (
                 <div key={i} style={{ color: '#ef5350', maxWidth: '360px' }}>{reason.type}: {reason.message}</div>
             ))}

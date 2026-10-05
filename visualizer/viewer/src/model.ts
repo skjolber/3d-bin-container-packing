@@ -184,6 +184,8 @@ export interface Packaging {
     duration? : number;
     /** Total container cost, or -1 if not calculated. */
     cost? : number;
+    /** Whether the placements are known to be in insertion order, or undefined if only containers were visualized. */
+    insertionOrder? : boolean;
     /** Whether the result passed validation; invalid results are still shown. */
     valid : boolean;
     validationReasons : Array<ValidationReason>;
@@ -279,6 +281,7 @@ export function parsePackaging(json : any) : Packaging {
         timeout: json.timeout ?? undefined,
         duration: json.duration ?? undefined,
         cost: json.cost ?? undefined,
+        insertionOrder: json.insertionOrder ?? undefined,
         valid: json.valid ?? true,
         validationReasons
     };
