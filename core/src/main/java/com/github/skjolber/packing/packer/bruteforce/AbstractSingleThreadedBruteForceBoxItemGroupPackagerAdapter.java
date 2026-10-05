@@ -59,8 +59,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 	
 				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
 				
-				// TODO only handles groups in order.
-				
+				// groups are packed in order
 				List<Integer> removedGroups = new ArrayList<>();
 				int wholeGroupBoxCount = 0;
 				for(int i = 0; i < boxItemGroups.size(); i++) {
@@ -102,8 +101,9 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupPackagerAdapte
 				// remove adapter inventory
 				removeInventory(p);
 	
+				List<Integer> iteratorGroupIndexes = acceptGroups(removedGroups);
 				for (BoxItemGroupPermutationRotationIterator it : containerIterators) {
-					it.removeGroups(removedGroups);
+					it.removeGroups(iteratorGroupIndexes);
 				}
 				
 				boxItemGroups = boxItemGroups.subList(removedGroups.size(), this.boxItemGroups.size());
