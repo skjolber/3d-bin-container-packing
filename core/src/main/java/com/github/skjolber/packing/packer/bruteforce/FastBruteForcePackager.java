@@ -96,7 +96,11 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
-			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt));
+			List<BoxItemGroup> excluded = containerIterators[i].getExcludedBoxItemGroups();
+			if(!canLoadNextGroup(excluded)) {
+				return null;
+			}
+			return truncateToGroup(FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt), excluded);
 		}
 		
 	}

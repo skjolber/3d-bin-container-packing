@@ -369,6 +369,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			List<BoxItemGroup> excluded = iterators[i].getExcludedBoxItemGroups();
+			if(!canLoadNextGroup(excluded)) {
+				return null;
+			}
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
@@ -409,7 +413,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
 								
 								// TODO can truncate be moved to thread?
-								BruteForceIntermediatePackagerResult result = truncateToGroup(future.get());
+								BruteForceIntermediatePackagerResult result = truncateToGroup(future.get(), excluded);
 								if(result != null) {
 									if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
 										best = result;
@@ -467,7 +471,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					i,
 					iterators[i],
 					interrupts[i]
-			));
+			), excluded);
 		}
 
 		@Override

@@ -76,7 +76,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 	
 	@Test
 	void testMutablePermutationsWithMultipleBoxes() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -89,7 +89,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 		FilteredBoxItemGroupsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products.size())
+				.withMaxLoadWeight(100)
 				.build();
 		
 		int count = 0;
@@ -110,7 +110,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 
 	@Test
 	void testLoadableItems() {
-		Dimension container = new Dimension(null, 9, 1, 1);
+		Dimension container = new Dimension(null, 30, 1, 1);
 
 		List<BoxItem> products = new ArrayList<>();
 
@@ -123,7 +123,7 @@ class FilteredBoxItemGroupsPermutationRotationIteratorTest extends AbstractBoxIt
 		FilteredBoxItemGroupsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(groups)
-				.withMaxLoadWeight(products.size())
+				.withMaxLoadWeight(100)
 				.build();
 
 		rotator.decrement(0, 1);
