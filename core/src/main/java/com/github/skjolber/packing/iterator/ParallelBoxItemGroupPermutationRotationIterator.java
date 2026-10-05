@@ -348,7 +348,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 					int current = permutations[PADDING + maxIndex];
 		
 					int minIndex = -1;
-					for (int i = PADDING + maxIndex + 1; i < permutations.length; i++) {
+					// within the group
+					for (int i = PADDING + maxIndex + 1; i < limit; i++) {
 						if(current < permutations[i] && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
 							minIndex = i;
 						}
@@ -364,7 +365,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 					permutations[PADDING + maxIndex] = permutations[minIndex];
 					permutations[minIndex] = current;
 		
-					Arrays.sort(permutations, PADDING + maxIndex + 1, permutations.length);
+					Arrays.sort(permutations, PADDING + maxIndex + 1, limit);
 		
 					return maxIndex;
 				}
