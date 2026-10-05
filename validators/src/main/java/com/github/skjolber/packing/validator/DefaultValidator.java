@@ -15,7 +15,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
@@ -65,9 +64,9 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
-					valid = validateBoxItems(items, order, maxContainerCount, containers, packagerResult, interrupt, reasons, unloading);
+					valid = validateBoxItems(items, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
 				} else {
-					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containers, packagerResult, interrupt, reasons, unloading);
+					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
 				}
 				
 				long duration = System.currentTimeMillis() - start;
@@ -86,13 +85,14 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 	private BoxCountValidator boxCountValidator = new BoxCountValidator();
 	private ContainerCountValidator containerCountValidator = new ContainerCountValidator();
 	private StackValidator stackValidator = new StackValidator();
+	private InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
 	
 	@Override
 	public DefaultValidatorResultBuilder newResultBuilder() {
 		return new DefaultValidatorResultBuilder();
 	}
 
-	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons, Unloading unloading) throws ValidatorInterruptedException {
+	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
 		checkInterrupted(interrupt);
 		if(!orderValidator.validate(items, order, result.getContainers())) {
@@ -113,10 +113,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons, unloading);
+		return validate(containers, result, interrupt, reasons);
 	}
 
-	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons, Unloading unloading) throws ValidatorInterruptedException {
+	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 
 		checkInterrupted(interrupt);
 		if(!orderValidator.validate(itemGroups, order, result)) {
@@ -137,10 +137,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons, unloading);
+		return validate(containers, result, interrupt, reasons);
 	}
 
-	protected boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons, Unloading unloading) throws ValidatorInterruptedException {
+	protected boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
 		Map<String, ValidatorContainerItem> containersById = new HashMap<>();
 		for (ValidatorContainerItem validatorContainerItem : containers) {
@@ -150,6 +150,11 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		for (Container container : result.getContainers()) {
 			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceItem = containersById.get(container.getId());
+
+			// the placements must be in a possible insertion order
+			if(!insertionOrderValidator.validate(container.getStack().getPlacements(), container.getAccess(), reasons)) {
+				return false;
+			}
 			
 			if(referenceItem.hasManifestValidatorBuilderFactory()) {
 				List<Box> boxes = new ArrayList<>();
@@ -163,7 +168,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 				}
 			}
 			if(referenceItem.hasPlacementValidatorBuilderFactory()) {
-				PlacementValidator placementValidator = referenceItem.createPlacementValidator(referenceItem.getContainer(), container.getStack().getPlacements(), unloading);
+				PlacementValidator placementValidator = referenceItem.createPlacementValidator(referenceItem.getContainer(), container.getStack().getPlacements());
 				if(!placementValidator.isValid(container.getStack().getPlacements(), reasons)) {
 					return false;
 				}

@@ -159,6 +159,24 @@ export class StackableRenderer {
             parent.add(containerGroup);
             containerGroup.add(containerLoad);
 
+            if(containerStackable.access === "FRONT" || containerStackable.access === "TOP") {
+                // the opening: a translucent orange plane on the door (x = dx) or top face of the load space
+                var front = containerStackable.access === "FRONT";
+                var openingGeometry = front
+                    ? new THREE.PlaneGeometry(containerStackable.loadDy, containerStackable.loadDz)
+                    : new THREE.PlaneGeometry(containerStackable.loadDy, containerStackable.loadDx);
+                var opening = new THREE.Mesh(openingGeometry, new THREE.MeshBasicMaterial({ color: 0xffa726, opacity: 0.25, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+                if(front) {
+                    // three.js z is the container x axis
+                    opening.position.set(0, 0, containerStackable.loadDx / 2);
+                } else {
+                    opening.rotation.x = Math.PI / 2;
+                    opening.position.set(0, containerStackable.loadDz / 2, 0);
+                }
+                opening.userData = { type: "opening" };
+                containerLoad.add(opening);
+            }
+
             if(containerStackable.centerOfGravity) {
                 // centre of gravity of the load: a small white sphere
                 var cog = containerStackable.centerOfGravity;

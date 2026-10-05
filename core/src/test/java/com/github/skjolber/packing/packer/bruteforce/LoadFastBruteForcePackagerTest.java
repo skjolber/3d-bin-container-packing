@@ -11,7 +11,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
@@ -69,10 +68,6 @@ class LoadFastBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest 
 
 		@Override
 		public void populatePointSupporters(Point point) {
-		}
-
-		@Override
-		public void setUnloading(Unloading unloading) {
 		}
 
 		@Override

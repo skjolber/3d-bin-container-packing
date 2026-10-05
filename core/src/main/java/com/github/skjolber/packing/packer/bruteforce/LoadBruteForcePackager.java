@@ -9,7 +9,6 @@ import java.util.Objects;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -34,19 +33,7 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 
 	public static class Builder extends BruteForcePackagerBuilder {
 
-		protected Unloading unloading = Unloading.ANY_ORDER;
 
-		/**
-		 * Set how the boxes are unloaded: this decides whether a box placed under boxes which are already there (for
-		 * example into a gap under an overhang) may relieve the boxes below them. Default {@link Unloading#ANY_ORDER}.
-		 *
-		 * @param unloading how the boxes are unloaded
-		 * @return this builder
-		 */
-		public Builder withUnloading(Unloading unloading) {
-			this.unloading = Objects.requireNonNull(unloading);
-			return this;
-		}
 
 		@Override
 		public Builder withComparator(Comparator<IntermediatePackagerResult> comparator) {
@@ -78,7 +65,6 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			LoadBruteForcePackager packager = new LoadBruteForcePackager(comparator, pointFilter, filterReversePermutations);
-			packager.setUnloading(unloading);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -147,16 +133,9 @@ public class LoadBruteForcePackager extends BruteForcePackager {
 
 	@Override
 	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
-		return createLoadPlacementUtilityImpl(iterator, stack, unloading);
+		return createLoadPlacementUtilityImpl(iterator, stack);
 	}
 
-	protected static LoadPlacementUtility createLoadPlacementUtilityImpl(BoxItemPermutationRotationIterator iterator, Stack stack, Unloading unloading) {
-		LoadPlacementUtility utility = createLoadPlacementUtilityImpl(iterator, stack);
-		if(utility != null) {
-			utility.setUnloading(unloading);
-		}
-		return utility;
-	}
 
 	protected static LoadPlacementUtility createLoadPlacementUtilityImpl(BoxItemPermutationRotationIterator iterator, Stack stack) {
 		boolean maxLoadWeight = false;

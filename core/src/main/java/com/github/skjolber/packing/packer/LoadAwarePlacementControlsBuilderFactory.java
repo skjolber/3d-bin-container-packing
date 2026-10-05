@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer;
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
@@ -25,7 +24,6 @@ public class LoadAwarePlacementControlsBuilderFactory implements PlacementContro
 	protected final Comparator<BoxItem> boxItemComparator;
 	protected final boolean requireFullSupport;
 	protected final boolean calculateSupport;
-	protected final Unloading unloading;
 
 	/**
 	 * Creates a factory with a dynamic comparator that adapts to active constraints.
@@ -45,23 +43,6 @@ public class LoadAwarePlacementControlsBuilderFactory implements PlacementContro
 			Comparator<BoxItem> boxItemComparator,
 			boolean calculateSupport,
 			boolean requireFullSupport) {
-		this(comparatorBuilderFactory, boxItemComparator, calculateSupport, requireFullSupport, Unloading.ANY_ORDER);
-	}
-
-	/**
-	 * @param comparatorBuilderFactory factory that creates comparators from active flags; must not be {@code null}
-	 * @param boxItemComparator        comparator for ordering box items
-	 * @param calculateSupport         whether to calculate placement support
-	 * @param requireFullSupport       whether full placement support is required
-	 * @param unloading              how the boxes are unloaded, see {@link Unloading}
-	 */
-	public LoadAwarePlacementControlsBuilderFactory(
-			PlacementComparatorFactory comparatorBuilderFactory,
-			Comparator<BoxItem> boxItemComparator,
-			boolean calculateSupport,
-			boolean requireFullSupport,
-			Unloading unloading) {
-		this.unloading = unloading;
 		this.comparatorBuilderFactory = comparatorBuilderFactory;
 		this.boxItemComparator        = boxItemComparator;
 		this.requireFullSupport       = requireFullSupport;
@@ -71,7 +52,6 @@ public class LoadAwarePlacementControlsBuilderFactory implements PlacementContro
 	@Override
 	public PlacementControlsBuilder createPlacementControlsBuilder() {
 		return new LoadAwarePlacementControlsBuilder()
-				.withUnloading(unloading)
 				.withPlacementComparatorBuilderFactory(comparatorBuilderFactory)
 				.withBoxItemComparator(boxItemComparator)
 				.withStability(calculateSupport, requireFullSupport);

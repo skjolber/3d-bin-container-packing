@@ -9,7 +9,6 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.PlacementList;
@@ -91,30 +90,23 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	private int[] candidateIndexes;
 	private int indexedSize;
 
-	/** How the boxes are unloaded: whether a box placed under boxes which are already there may relieve the boxes below them */
-	protected Unloading unloading = Unloading.ANY_ORDER;
 
 	protected AbstractLoadWeightPlacementUtility(Stack stack) {
 		this.stack = stack;
 	}
 
-	@Override
-	public void setUnloading(Unloading unloading) {
-		this.unloading = unloading;
-	}
 
 	/**
 	 * The share of the weight of {@code supportee} (and the load on it) which a new placement under it would carry,
-	 * with the given contact area, and the relief for its current supporters if {@link Unloading#REVERSE_LOADING_ORDER}.
+	 * with the given contact area, and the relief for its current supporters (the result puts the new placement before
+	 * {@code supportee}, see {@link com.github.skjolber.packing.api.InsertionOrder}).
 	 *
 	 * @return the weight the new placement would carry
 	 */
 	protected double addSupporteeShare(Placement supportee, long area) {
 		double supporteeWeight = supportee.getWeight() + supportee.getLoadWeight();
-		double share = supporteeWeight * area / (area + supportee.getSupportedArea() + supportee.getLateSupportedArea());
-		if(unloading == Unloading.REVERSE_LOADING_ORDER) {
-			calculateRelifWeight(supportee, share);
-		}
+		double share = supporteeWeight * area / (area + supportee.getSupportedArea());
+		calculateRelifWeight(supportee, share);
 		return share;
 	}
 
@@ -707,7 +699,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 
 	/**
 	 * Link the placements already resting on a new placement (it was placed under them, for example into a gap
-	 * under an overhang), so that it carries part of their weight, see {@link Placement#addSupporteeAbove(Placement, long, Unloading)}.
+	 * under an overhang), so that it carries part of their weight, see {@link Placement#addSupporteeAbove(Placement, long)}.
 	 * Call after linking the new placement to its supporters.
 	 */
 	protected void addSupporteesAbove(Placement placement) {
@@ -722,7 +714,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 			for(int i = 0; i < placements.size(); i++) {
 				Placement candidate = placements.get(i);
 				if(candidate.getAbsoluteZ() == z && candidate.intersects2D(minX, maxX, minY, maxY)) {
-					placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY), unloading);
+					placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY));
 				}
 			}
 			return;
@@ -744,7 +736,7 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		Arrays.sort(candidateIndexes, 0, candidateCount);
 		for(int i = 0; i < candidateCount; i++) {
 			Placement candidate = indexedPlacements[candidateIndexes[i]];
-			placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY), unloading);
+			placement.addSupporteeAbove(candidate, candidate.overlapArea2D(minX, maxX, minY, maxY));
 		}
 	}
 

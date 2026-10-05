@@ -9,7 +9,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
@@ -33,24 +32,6 @@ import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxRea
  */
 public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 
-	/** How the boxes are unloaded, see {@link SupportGraph} */
-	protected final Unloading unloading;
-
-	/**
-	 * Validator for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
-	 */
-	public IdenticalBoxOnlyLoadValidator() {
-		this(Unloading.ANY_ORDER);
-	}
-
-	/**
-	 * @param unloading how the boxes are unloaded
-	 */
-	public IdenticalBoxOnlyLoadValidator(Unloading unloading) {
-		this.unloading = unloading;
-	}
-
-
 	/**
 	 * {@inheritDoc}
 	 *
@@ -64,7 +45,7 @@ public class IdenticalBoxOnlyLoadValidator implements LoadValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
-		SupportGraph graph = new SupportGraph(list, unloading);
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
 

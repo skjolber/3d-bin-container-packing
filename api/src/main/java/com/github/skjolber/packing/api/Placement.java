@@ -20,8 +20,6 @@ public class Placement implements Serializable {
 	protected int index;
 
 	protected long supportedArea;
-	/** Area resting on boxes placed later, which carry part of the load but do not count as support (see {@link Unloading#ANY_ORDER}) */
-	protected long lateSupportedArea;
 
 	// -----------------------------------------------------------------------
 	// Box-load tracking
@@ -319,30 +317,15 @@ public class Placement implements Serializable {
 	protected void addSupporter(PlacementLoad supporter) {
 		supporters.add(supporter);
 		
-		if(supporter.isLate()) {
-			lateSupportedArea += supporter.getArea();
-		} else {
-			supportedArea += supporter.getArea();
-		}
+		supportedArea += supporter.getArea();
 	}
 
 	/**
-	 * The share of the weight passed down by this placement which a supporter carries: by contact area, among the
-	 * supporters placed before this placement for those, and among all supporters for late supporters
-	 * (see {@link Unloading#ANY_ORDER}). The shares of the earlier supporters sum to one.
+	 * @return the share of the weight passed down by this placement (its own and the load on it) which a supporter
+	 *         carries: by contact area
 	 */
 	public double getShare(PlacementLoad supporterLink) {
-		if(supporterLink.isLate()) {
-			return (double)supporterLink.getArea() / (supportedArea + lateSupportedArea);
-		}
 		return supportedArea == 0 ? 0.0 : (double)supporterLink.getArea() / supportedArea;
-	}
-
-	/**
-	 * @return the area resting on boxes placed later, which carry part of the load but do not count as support
-	 */
-	public long getLateSupportedArea() {
-		return lateSupportedArea;
 	}
 
 	/**
@@ -438,7 +421,6 @@ public class Placement implements Serializable {
 		
 		loadWeight = 0.0;
 		supportedArea = 0;
-		lateSupportedArea = 0;
 	}
 
 	public void removeSupporter(Placement placement) {
@@ -449,11 +431,7 @@ public class Placement implements Serializable {
 			PlacementLoad supporterLink = supporters.get(i);
 			if(supporterLink.getPlacement() == placement) {
 				supporters.remove(i);
-				if(supporterLink.isLate()) {
-					lateSupportedArea -= supporterLink.getArea();
-				} else {
-					supportedArea -= supporterLink.getArea();
-				}
+				supportedArea -= supporterLink.getArea();
 				
 				propagateLoad(-supporterLink.getWeight());
 				break;
@@ -505,71 +483,55 @@ public class Placement implements Serializable {
 	}
 
 	/**
-	 * Records that this placement touches the bottom of {@code supportee}, which was placed before it (for example, this
-	 * placement went into a gap under an overhang). The weight passed down by {@code supportee}, its own and the load on it,
-	 * is shared again between all of its supporters by contact area, so its earlier supporters are relieved.
+	 * Records that this placement touches the bottom of {@code supportee}, which was placed before it (in the order of
+	 * the packager's search, for example into a gap under an overhang). The weight passed down by {@code supportee},
+	 * its own and the load on it, is shared again between all of its supporters by contact area. In the result, the
+	 * placements are put in insertion order (this placement before {@code supportee}), see {@link InsertionOrder}.
 	 * <p>
 	 * Undo with {@link #removeSupporteesAbove()} before removing this placement's own supporter links.
 	 *
 	 * @param supportee a placement resting on this placement, placed before it
 	 * @param area the contact area
-	 * @param unloading how the boxes are unloaded: with {@link Unloading#REVERSE_LOADING_ORDER}, this placement relieves the other supporters of {@code supportee}
 	 */
-	public void addSupporteeAbove(Placement supportee, long area, Unloading unloading) {
-		boolean late = unloading == Unloading.ANY_ORDER;
+	public void addSupporteeAbove(Placement supportee, long area) {
 		double carried = supportee.getWeight() + supportee.loadWeight;
-		// with late links, only the shares of the late links change
-		supportee.shareLoad(-carried, late);
-		supportees.add(new PlacementLoad(supportee, area, 0.0, late));
-		supportee.addSupporter(new PlacementLoad(this, area, 0.0, late));
-		supportee.shareLoad(carried, late);
+		supportee.shareLoad(-carried);
+		supportees.add(new PlacementLoad(supportee, area, 0.0));
+		supportee.addSupporter(new PlacementLoad(this, area, 0.0));
+		supportee.shareLoad(carried);
 	}
 
 	/**
-	 * Undo {@link #addSupporteeAbove(Placement, long, Unloading)} for all supportees of this placement, in reverse order.
+	 * Undo {@link #addSupporteeAbove(Placement, long)} for all supportees of this placement, in reverse order.
 	 * Call when this placement is the last placed (any placements above it, placed after it, are removed),
-	 * so that all of its supportees were linked by {@link #addSupporteeAbove(Placement, long, Unloading)}.
+	 * so that all of its supportees were linked by {@link #addSupporteeAbove(Placement, long)}.
 	 */
 	public void removeSupporteesAbove() {
 		if(supportees == null) {
 			return;
 		}
 		for(int i = supportees.size() - 1; i >= 0; i--) {
-			PlacementLoad supporteeLink = supportees.get(i);
-			Placement supportee = supporteeLink.getPlacement();
-			boolean late = supporteeLink.isLate();
+			Placement supportee = supportees.get(i).getPlacement();
 			double carried = supportee.getWeight() + supportee.loadWeight;
-			supportee.shareLoad(-carried, late);
+			supportee.shareLoad(-carried);
 			supportees.remove(i);
 			// this placement was linked last
 			PlacementLoad link = supportee.supporters.remove(supportee.supporters.size() - 1);
-			if(late) {
-				supportee.lateSupportedArea -= link.getArea();
-			} else {
-				supportee.supportedArea -= link.getArea();
-			}
-			supportee.shareLoad(carried, late);
+			supportee.supportedArea -= link.getArea();
+			supportee.shareLoad(carried);
 		}
 	}
 
 	/**
-	 * Pass weight down to the supporters, see {@link #getShare(PlacementLoad)}.
-	 *
-	 * @param lateOnly only to the late supporters
+	 * Pass weight down to the supporters, shared by contact area.
 	 */
-	private void shareLoad(double weight, boolean lateOnly) {
-		if(supporters == null) {
+	private void shareLoad(double weight) {
+		if(supporters == null || supportedArea == 0) {
 			return;
 		}
 		for (int i = 0; i < supporters.size(); i++) {
 			PlacementLoad link = supporters.get(i);
-			if(lateOnly && !link.isLate()) {
-				continue;
-			}
-			double share = getShare(link);
-			if(share > 0.0) {
-				link.getPlacement().propagateLoad(weight * share);
-			}
+			link.getPlacement().propagateLoad(weight * link.getArea() / supportedArea);
 		}
 	}
 

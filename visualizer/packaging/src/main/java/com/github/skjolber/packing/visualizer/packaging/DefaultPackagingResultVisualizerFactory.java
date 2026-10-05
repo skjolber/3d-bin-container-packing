@@ -14,19 +14,21 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.validator.InsertionOrderValidator;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightReason;
 import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
+import com.github.skjolber.packing.validator.reasons.BlockedInsertionReason;
+import com.github.skjolber.packing.validator.reasons.InsertedBeforeSupporterReason;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCenterOfGravityReason;
@@ -45,20 +47,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	private static final Logger LOGGER = Logger.getLogger(DefaultPackagingResultVisualizerFactory.class.getName());
 
 	protected final boolean calculatePoints;
-	/** How the boxes are unloaded, for validating their load limits */
-	protected final Unloading unloading;
-	
-	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints) {
-		this(calculatePoints, Unloading.ANY_ORDER);
-	}
 
-	/**
-	 * @param calculatePoints whether to calculate the free points after each placement
-	 * @param unloading how the boxes are unloaded (as configured for the packager), for validating their load limits
-	 */
-	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints, Unloading unloading) {
+	public DefaultPackagingResultVisualizerFactory(boolean calculatePoints) {
 		this.calculatePoints = calculatePoints;
-		this.unloading = unloading;
 	}
 	
 	/**
@@ -132,7 +123,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	}
 
 	/**
-	 * Visualize containers, and validate the load limits of their boxes (the load validators are chosen from the boxes' limits).
+	 * Visualize containers, and validate their insertion order (see {@link com.github.skjolber.packing.api.InsertionOrder}) and
+	 * the load limits of their boxes (the load validators are chosen from the boxes' limits).
 	 */
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		return visualize(inputContainers, new IdentityHashMap<>());
@@ -159,6 +151,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 
 			containerVisualization.setId(inputContainer.getId());
 			containerVisualization.setName(inputContainer.getDescription());
+			containerVisualization.setAccess(inputContainer.getAccess().name());
 			containerVisualization.setEmptyWeight(inputContainer.getEmptyWeight());
 			containerVisualization.setMaxLoadWeight(inputContainer.getMaxLoadWeight());
 			containerVisualization.setLoadWeight(inputContainer.getLoadWeight());
@@ -170,7 +163,7 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			containerVisualization.setStack(stackVisualization);
 
 			Stack stack = inputContainer.getStack();
-			SupportGraph supportGraph = new SupportGraph(stack.getPlacements(), unloading);
+			SupportGraph supportGraph = new SupportGraph(stack.getPlacements());
 			setCenterOfGravity(containerVisualization, stack.getPlacements());
 
 			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true, stack.getPlacements().size());
@@ -256,14 +249,17 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			visualization.add(containerVisualization);
 		}
 
+		InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
 		for (Container inputContainer : inputContainers) {
 			List<Placement> placements = inputContainer.getStack().getPlacements();
-			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).withUnloading(unloading).build();
+			List<ValidatorResultReason> reasons = new ArrayList<>();
+			// the placements must be in a possible insertion order
+			insertionOrderValidator.validate(placements, inputContainer.getAccess(), reasons);
+			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
 			if(loadValidator != null) {
-				List<ValidatorResultReason> reasons = new ArrayList<>();
 				loadValidator.isValid(placements, reasons);
-				addReasons(visualization, references, reasons);
 			}
+			addReasons(visualization, references, reasons);
 		}
 		return visualization;
 	}
@@ -328,6 +324,12 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	protected List<Placement> getPlacements(ValidatorResultReason reason) {
 		if(reason instanceof ExcessiveLoadWeightReason r) {
 			return List.of(r.getPlacement());
+		}
+		if(reason instanceof InsertedBeforeSupporterReason r) {
+			return List.of(r.getPlacement(), r.getSupporter());
+		}
+		if(reason instanceof BlockedInsertionReason r) {
+			return List.of(r.getPlacement(), r.getBlocking());
 		}
 		if(reason instanceof ExcessiveLoadPressureReason r) {
 			return List.of(r.getPlacement());

@@ -6,7 +6,6 @@ import java.util.List;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 
 /**
@@ -43,7 +42,6 @@ public class DefaultLoadValidatorBuilder {
 
 	private List<Placement> placements;
 	private Container container;
-	private Unloading unloading = Unloading.ANY_ORDER;
 
 	/**
 	 * Sets the list of placements to inspect for load constraints.
@@ -63,16 +61,6 @@ public class DefaultLoadValidatorBuilder {
 	 * @param container the container; must not be {@code null}
 	 * @return this builder
 	 */
-	/**
-	 * Sets how the boxes are unloaded, see {@link Unloading}. Default {@link Unloading#ANY_ORDER}.
-	 *
-	 * @param unloading how the boxes are unloaded
-	 * @return this builder
-	 */
-	public DefaultLoadValidatorBuilder withUnloading(Unloading unloading) {
-		this.unloading = unloading;
-		return this;
-	}
 
 	public DefaultLoadValidatorBuilder withContainer(Container container) {
 		this.container = container;
@@ -112,10 +100,10 @@ public class DefaultLoadValidatorBuilder {
 
 		List<LoadValidator> validators = new ArrayList<>(4);
 
-		if(needWeight) validators.add(new WeightLoadValidator(unloading));
-		if(needPressure) validators.add(new MaxPressureLoadValidator(unloading));
-		if(needBoxCount) validators.add(new MaxBoxCountLoadValidator(unloading));
-		if(needIdentical) validators.add(new IdenticalBoxOnlyLoadValidator(unloading));
+		if(needWeight) validators.add(new WeightLoadValidator());
+		if(needPressure) validators.add(new MaxPressureLoadValidator());
+		if(needBoxCount) validators.add(new MaxBoxCountLoadValidator());
+		if(needIdentical) validators.add(new IdenticalBoxOnlyLoadValidator());
 
 		if(validators.isEmpty()) {
 			return null;

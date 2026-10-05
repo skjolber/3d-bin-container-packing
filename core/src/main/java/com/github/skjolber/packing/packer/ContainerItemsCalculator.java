@@ -534,7 +534,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 				
 				container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), 
 				
-				container.getMaxLoadWeight(), stack, container.getMotion());
+				container.getMaxLoadWeight(), stack, container.getMotion(), container.getAccess());
 
 		ContainerCostCalculator costCalculator = item.getCostCalculator();
 		if(costCalculator != null) {

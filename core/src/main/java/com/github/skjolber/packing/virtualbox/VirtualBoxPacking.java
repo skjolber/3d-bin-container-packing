@@ -4,12 +4,15 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.packer.InsertionSequencer;
 
 /** Attempt-local inventory and expansion mapping; independent of delegate copying and local reindexing. */
 public class VirtualBoxPacking {
@@ -130,6 +133,8 @@ public class VirtualBoxPacking {
 				throw new IllegalStateException("Delegate result did not conserve original inventory");
 			}
 		}
+		// the expanded boxes are in the order of their layouts: sequence them (aggregation is only used without an order)
+		InsertionSequencer.sequence(containers, Order.NONE);
 		return new PackagerResult(containers, elapsed(start), packed.isTimeout(), packed.getCost());
 	}
 

@@ -6,14 +6,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
@@ -24,37 +22,34 @@ import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
 /**
  * Packing results with load limits must satisfy the load validators: the controls which
  * decide placements and the validators must agree on weight, pressure, box count and
- * identical-box limits, for each way of unloading.
+ * identical-box limits.
  */
 public class LoadLimitResultsValidTest {
 
 	private static final int SEEDS = 40;
 
-	@ParameterizedTest
-	@EnumSource(Unloading.class)
-	public void plainPackager(Unloading unloading) {
-		try (PlainPackager packager = PlainPackager.newBuilder().withUnloading(unloading).build()) {
-			check(packager, unloading);
+	@Test
+	public void plainPackager() {
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			check(packager);
 		}
 	}
 
-	@ParameterizedTest
-	@EnumSource(Unloading.class)
-	public void largestAreaFitFirstPackager(Unloading unloading) {
-		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().withUnloading(unloading).build()) {
-			check(packager, unloading);
+	@Test
+	public void largestAreaFitFirstPackager() {
+		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build()) {
+			check(packager);
 		}
 	}
 
-	@ParameterizedTest
-	@EnumSource(Unloading.class)
-	public void fastLargestAreaFitFirstPackager(Unloading unloading) {
-		try (FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().withUnloading(unloading).build()) {
-			check(packager, unloading);
+	@Test
+	public void fastLargestAreaFitFirstPackager() {
+		try (FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build()) {
+			check(packager);
 		}
 	}
 
-	private static void check(AbstractPackager<?> packager, Unloading unloading) {
+	private static void check(AbstractPackager<?> packager) {
 		List<String> failures = new ArrayList<>();
 		int validated = 0;
 		for(int load : new int[] { PackagerGoldenMasterTest.LOAD_WEIGHT, PackagerGoldenMasterTest.LOAD_WEIGHT_PRESSURE_COUNT, PackagerGoldenMasterTest.LOAD_IDENTICAL }) {
@@ -74,7 +69,6 @@ public class LoadLimitResultsValidTest {
 					LoadValidator validator = new DefaultLoadValidatorBuilder()
 							.withPlacements(container.getStack().getPlacements())
 							.withContainer(container)
-							.withUnloading(unloading)
 							.build();
 					if(validator == null) {
 						continue;

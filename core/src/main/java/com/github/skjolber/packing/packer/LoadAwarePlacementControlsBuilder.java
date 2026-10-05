@@ -8,7 +8,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorAttribute;
@@ -59,16 +58,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 
 	protected boolean fullSupport;
 	protected boolean calculateSupport;
-	protected Unloading unloading = Unloading.ANY_ORDER;
 
-	/**
-	 * @param unloading how the boxes are unloaded, see {@link Unloading}
-	 * @return this builder
-	 */
-	public LoadAwarePlacementControlsBuilder withUnloading(Unloading unloading) {
-		this.unloading = unloading;
-		return this;
-	}
 
 	/**
 	 * Sets the {@link PlacementComparatorFactory} used to produce a per-run comparator.
@@ -202,7 +192,6 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 				controls = new WeightPressureCountIdenticalLoadAwarePlacementControls(boxItems, pointControls, pointCalculator,
 						container, stack, order, effectiveComparator, boxItemComparator, fullSupport);
 			}
-			controls.setUnloading(unloading);
 			return controls;
 		}
 

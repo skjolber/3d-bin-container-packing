@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
@@ -31,8 +30,6 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
 public class PercentSupportedStabilityValidator implements StabilityValidator {
 
 	private final int minPercent;
-	/** How the boxes are unloaded, see {@link SupportGraph} */
-	protected final Unloading unloading;
 
 	/**
 	 * Creates a validator that requires at least {@code minPercent}% of the bottom
@@ -42,20 +39,10 @@ public class PercentSupportedStabilityValidator implements StabilityValidator {
 	 * @throws IllegalArgumentException if {@code minPercent} is not in [0, 100]
 	 */
 	public PercentSupportedStabilityValidator(int minPercent) {
-		this(minPercent, Unloading.ANY_ORDER);
-	}
-
-	/**
-	 * @param minPercent minimum required support percentage, in the range [0, 100]
-	 * @param unloading how the boxes are unloaded
-	 * @throws IllegalArgumentException if {@code minPercent} is not in [0, 100]
-	 */
-	public PercentSupportedStabilityValidator(int minPercent, Unloading unloading) {
 		if(minPercent < 0 || minPercent > 100) {
 			throw new IllegalArgumentException("minPercent must be in [0, 100], got: " + minPercent);
 		}
 		this.minPercent = minPercent;
-		this.unloading = unloading;
 	}
 
 	/**
@@ -79,7 +66,7 @@ public class PercentSupportedStabilityValidator implements StabilityValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 
-		SupportGraph graph = new SupportGraph(list, unloading);
+		SupportGraph graph = new SupportGraph(list);
 		for(Placement placement : list) {
 			if(placement.getAbsoluteZ() == 0) {
 				// Resting on the container floor — unconditionally 100% supported.

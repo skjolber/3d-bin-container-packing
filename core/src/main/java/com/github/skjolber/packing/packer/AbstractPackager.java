@@ -116,6 +116,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			if(result == null) {
 				return new PackagerResult(Collections.emptyList(), duration, false, -1);
 			}
+			InsertionSequencer.sequence(result.getPackList(), input.getOrder());
 			return new PackagerResult(result.getPackList(), duration, false, result.getCost());
 		} catch (PackagerInterruptedException e) {
 			long duration = System.currentTimeMillis() - start;

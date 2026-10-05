@@ -9,7 +9,6 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -51,12 +50,6 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	/** Factory method — subclasses return the appropriate utility variant. */
 	protected abstract LoadPlacementUtility createLoadPlacementUtility(Stack stack);
 
-	/**
-	 * @param unloading how the boxes are unloaded, see {@link Unloading}
-	 */
-	public void setUnloading(Unloading unloading) {
-		util.setUnloading(unloading);
-	}
 
 	/** Re-initializes internal arrays to hold at least {@code count} entries. */
 	public void initialize(int count) {

@@ -5,7 +5,6 @@ import java.util.List;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidator;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidatorBuilderFactory;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
@@ -48,17 +47,12 @@ public class ValidatorContainerItem extends ContainerItem {
 	}
 	
 	public PlacementValidator createPlacementValidator(Container container, List<Placement> placements) {
-		return createPlacementValidator(container, placements, Unloading.ANY_ORDER);
-	}
-
-	public PlacementValidator createPlacementValidator(Container container, List<Placement> placements, Unloading unloading) {
 		if(placementValidatorBuilderFactory == null) {
 			placementValidatorBuilderFactory = new DefaultPlacementValidatorBuilderFactory(null);
 		}
 		return placementValidatorBuilderFactory.createPlacementValidatorBuilder()
 				.withContainer(container)
 				.withPlacements(placements)
-				.withUnloading(unloading)
 				.build();
 	}
 	

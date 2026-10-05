@@ -1,10 +1,13 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.Comparator;
+import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerAccess;
+import com.github.skjolber.packing.api.InsertionOrder;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -29,6 +32,29 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;
+		// with a box item order, the order of the placements cannot be changed afterwards (see InsertionSequencer),
+		// so only boxes which can be inserted after the boxes already there are placed
+		this.checkInsertion = order != null && order != Order.NONE;
+	}
+
+	/**
+	 * Whether candidates must be insertable after the boxes already placed, see {@link InsertionOrder}.
+	 */
+	protected final boolean checkInsertion;
+
+	/**
+	 * @return true if the candidate can be inserted after the boxes already placed: none of them would rest on it,
+	 *         and none of them is in its path from the container's opening
+	 */
+	protected boolean isInsertable(Placement candidate) {
+		ContainerAccess access = container.getAccess();
+		List<Placement> placements = stack.getPlacements();
+		for (int i = 0; i < placements.size(); i++) {
+			if(InsertionOrder.mustPrecede(candidate, placements.get(i), access)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -61,15 +87,18 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 	 * Selects the better placement and retains the loser for the next candidate.
 	 */
 	protected Placement selectPlacement(Placement current, Placement candidate) {
-		if(current == null) {
-			return candidate;
-		}
-		if(placementComparator.compare(current, candidate) >= 0) {
+		if(current != null && placementComparator.compare(current, candidate) >= 0) {
 			recyclablePlacement = candidate;
 			return current;
 		}
-
-		recyclablePlacement = current;
+		// the candidate would be selected; the current placement (if any) is insertable
+		if(checkInsertion && !isInsertable(candidate)) {
+			recyclablePlacement = candidate;
+			return current;
+		}
+		if(current != null) {
+			recyclablePlacement = current;
+		}
 		return candidate;
 	}
 

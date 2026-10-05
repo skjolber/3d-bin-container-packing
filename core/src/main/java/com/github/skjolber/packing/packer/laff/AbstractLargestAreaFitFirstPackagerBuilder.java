@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
@@ -15,7 +14,6 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 	// only applies if no placementControlsBuilderFactory is provided
 	protected boolean requireFullSupport;
 	protected boolean calculateSupport;
-	protected Unloading unloading = Unloading.ANY_ORDER;
 
 	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
@@ -31,20 +29,6 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 	
-	/**
-	 * Set how the boxes are unloaded: this decides whether a box placed under boxes which are already there (for
-	 * example into a gap under an overhang) may relieve the boxes below them, when boxes have load limits.
-	 * Default {@link Unloading#ANY_ORDER}.
-	 *
-	 * @param unloading how the boxes are unloaded
-	 * @return this builder
-	 */
-	@SuppressWarnings("unchecked")
-	public B withUnloading(Unloading unloading) {
-		this.unloading = java.util.Objects.requireNonNull(unloading);
-		return (B)this;
-	}
-
 	public B withRequireFullSupport(boolean requireFullSupport) {
 		this.requireFullSupport = requireFullSupport;
 		return (B)this;

@@ -122,6 +122,7 @@
       "centerOfGravityX" : 1.0555555555555556,
       "centerOfGravityY" : 0.5,
       "centerOfGravityZ" : 0.9444444444444444,
+      "access" : "ANY",
       "emptyWeight" : 0,
       "maxLoadWeight" : 100,
       "loadWeight" : 9,

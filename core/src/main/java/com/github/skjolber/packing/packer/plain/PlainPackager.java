@@ -13,7 +13,6 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
@@ -151,7 +150,6 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		// only applies if no placementControlsBuilderFactory is provided
 		protected boolean requireFullSupport;
 		protected boolean calculateSupport;
-		protected Unloading unloading = Unloading.ANY_ORDER;
 		
 		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
@@ -168,18 +166,6 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 
-		/**
-		 * Set how the boxes are unloaded: this decides whether a box placed under boxes which are already there (for
-		 * example into a gap under an overhang) may relieve the boxes below them, when boxes have load limits.
-		 * Default {@link Unloading#ANY_ORDER}.
-		 *
-		 * @param unloading how the boxes are unloaded
-		 * @return this builder
-		 */
-		public Builder withUnloading(Unloading unloading) {
-			this.unloading = Objects.requireNonNull(unloading);
-			return this;
-		}
 		
 		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
@@ -225,7 +211,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 					: DefaultPlacementComparatorFactory.newFactory()
 							.higherVolumeIsBetter().higherWeightIsBetter()
 							.lowerAreaIsBetter().lowerZIsBetter();
-			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport, b.unloading);
+			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport);
 			
 			return this;
 		}
@@ -234,7 +220,6 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 			private boolean requireFullSupport;
 			private boolean calculateSupport;
-			private Unloading unloading = Unloading.ANY_ORDER;
 			private Comparator<BoxItem> boxItemComparator;
 			private PlacementComparatorFactory comparatorFactory;
 			
@@ -248,10 +233,6 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 				return this;
 			}
 			
-			public PlacementControlsBuilderFactoryBuilder withUnloading(Unloading unloading) {
-				this.unloading = Objects.requireNonNull(unloading);
-				return this;
-			}
 
 			public PlacementControlsBuilderFactoryBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
 				this.boxItemComparator = boxItemComparator;
@@ -301,7 +282,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 						.higherWeightIsBetter()
 						.lowerAreaIsBetter()
 						.lowerZIsBetter();
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport, unloading);
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();

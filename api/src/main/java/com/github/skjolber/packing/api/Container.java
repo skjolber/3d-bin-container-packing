@@ -26,6 +26,19 @@ public class Container {
 		protected int loadDy = -1; // y
 		protected int loadDz = -1; // z
 
+		protected ContainerAccess access = ContainerAccess.ANY;
+
+		/**
+		 * Set how boxes get into the container. Default {@link ContainerAccess#ANY}.
+		 *
+		 * @param access container access
+		 * @return this builder
+		 */
+		public Builder withAccess(ContainerAccess access) {
+			this.access = java.util.Objects.requireNonNull(access);
+			return this;
+		}
+
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
 			this.dy = dy;
@@ -97,7 +110,7 @@ public class Container {
 			}
 
 			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-					stack);
+					stack, null, access);
 		}
 
 	}
@@ -128,6 +141,8 @@ public class Container {
 	
 	protected final Motion motion;
 
+	protected final ContainerAccess access;
+
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack) {
 		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, null);
@@ -135,6 +150,12 @@ public class Container {
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack, Motion motion) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, motion, ContainerAccess.ANY);
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion, ContainerAccess access) {
+		this.access = access;
 		this.id = id;
 		this.description = description;
 
@@ -285,7 +306,7 @@ public class Container {
 
 	public Container copy(int stackCapacity) {
 		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-				new Stack(stackCapacity), motion);
+				new Stack(stackCapacity), motion, access);
 	}
 
 	public int getLoadDx() {
@@ -383,5 +404,12 @@ public class Container {
 
 	public Motion getMotion() {
 		return motion;
+	}
+
+	/**
+	 * @return how boxes get into the container
+	 */
+	public ContainerAccess getAccess() {
+		return access;
 	}
 }

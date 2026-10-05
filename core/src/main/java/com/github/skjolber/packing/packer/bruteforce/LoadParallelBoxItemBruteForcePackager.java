@@ -11,7 +11,6 @@ import java.util.concurrent.ThreadPoolExecutor;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -33,19 +32,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 
 	public static class Builder extends ParallelBruteForcePackagerBuilder {
 
-		protected Unloading unloading = Unloading.ANY_ORDER;
 
-		/**
-		 * Set how the boxes are unloaded: this decides whether a box placed under boxes which are already there (for
-		 * example into a gap under an overhang) may relieve the boxes below them. Default {@link Unloading#ANY_ORDER}.
-		 *
-		 * @param unloading how the boxes are unloaded
-		 * @return this builder
-		 */
-		public Builder withUnloading(Unloading unloading) {
-			this.unloading = Objects.requireNonNull(unloading);
-			return this;
-		}
 
 		@Override
 		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
@@ -117,7 +104,6 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			}
 			
 			LoadParallelBoxItemBruteForcePackager packager = new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
-			packager.setUnloading(unloading);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -142,7 +128,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 
 	@Override
 	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
-		return LoadBruteForcePackager.createLoadPlacementUtilityImpl(iterator, stack, unloading);
+		return LoadBruteForcePackager.createLoadPlacementUtilityImpl(iterator, stack);
 	}
 
 	@Override

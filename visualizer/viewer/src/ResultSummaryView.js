@@ -124,6 +124,7 @@ function ResultSummaryView({ packaging, packagings, resultIndex, colorMode, onSe
                 <div key={i} style={{ marginTop: '6px' }}>
                     <div style={{ color: '#42a5f5', fontWeight: 'bold' }}>{c.id || c.name || 'Container ' + i}</div>
                     <div style={rowStyle}><span style={labelStyle}>Boxes</span><span>{c.stack.placements.length}</span></div>
+                    {c.access !== 'ANY' && <div style={rowStyle}><span style={labelStyle}>Access</span><span>{c.access === 'FRONT' ? 'door at x end (orange)' : 'from the top (orange)'}</span></div>}
                     <div style={rowStyle}><span style={labelStyle}>Volume</span><span>{percent(c.loadVolume, c.maxLoadVolume)}</span></div>
                     <div style={rowStyle}><span style={labelStyle}>Weight</span><span>{c.loadWeight} / {c.maxLoadWeight} ({percent(c.loadWeight, c.maxLoadWeight)})</span></div>
                 </div>

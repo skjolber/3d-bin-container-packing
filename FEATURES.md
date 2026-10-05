@@ -87,9 +87,10 @@ not prove a globally minimum-cost packing for arbitrary inputs.
   placement decisions.
 - Optional load constraints: supported weight (the total weight resting on a
   box, through all levels above it), pressure, supported box count, and
-  identical-box-only stacking. Boxes placed under boxes which are already there
-  carry part of their weight; whether they relieve the boxes below depends on the
-  unloading setting (any order, or reverse loading order).
+  identical-box-only stacking.
+- Insertion order: the placements of each container are in an order in which the
+  boxes can be loaded, after the boxes they rest on and the boxes in their path
+  from the container's opening (any, top, or a door at one end).
 - Optional stability checks: full support, minimum support percentage,
   centre-of-gravity support, and stack centre of gravity.
 - Deadlines and custom interruption suppliers for cancellable packing and

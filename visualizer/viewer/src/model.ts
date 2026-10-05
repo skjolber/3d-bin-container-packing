@@ -77,6 +77,9 @@ export class Container extends Stackable {
     
     stack : Stack;
 
+    /** How boxes get into the container: ANY, TOP or FRONT (a door at x = dx). */
+    access : string = "ANY";
+
     /** Centre of gravity of the load, if it weighs anything. */
     centerOfGravity? : { x : number, y : number, z : number };
 
@@ -216,6 +219,7 @@ export function parsePackaging(json : any) : Packaging {
         container.loadWeight = containerJson.loadWeight;
         container.maxLoadVolume = containerJson.maxLoadVolume;
         container.loadVolume = containerJson.loadVolume;
+        container.access = containerJson.access ?? "ANY";
         if(containerJson.centerOfGravityX != null) {
             container.centerOfGravity = { x: containerJson.centerOfGravityX, y: containerJson.centerOfGravityY, z: containerJson.centerOfGravityZ };
         }

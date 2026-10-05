@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.util;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Unloading;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
 
@@ -27,10 +26,6 @@ public interface LoadPlacementUtility {
 	 */
 	void populatePointSupporters(Point point);
 
-	/**
-	 * @param unloading how the boxes are unloaded, see {@link Unloading}
-	 */
-	void setUnloading(Unloading unloading);
 
 	/**
 	 * Populates the internal list of placements that sit directly above

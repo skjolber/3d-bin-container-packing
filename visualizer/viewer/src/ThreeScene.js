@@ -150,7 +150,7 @@ class ThreeScene extends Component {
     var target = null;
     for(var ii = 0; ii < allIntersects.length; ii++) {
       var candidate = allIntersects[ii].object;
-      if (candidate.userData && candidate.userData.type === "cog") {
+      if (candidate.userData && (candidate.userData.type === "cog" || candidate.userData.type === "opening")) {
         continue;
       }
       if (candidate.userData && candidate.userData.type === "invalid") {

@@ -364,21 +364,24 @@ Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type o
 and LAFF packagers detect the constraints and enforce them; for brute force, use the load-aware
 variants (`LoadBruteForcePackager`, `LoadFastBruteForcePackager`, `LoadParallelBoxItemBruteForcePackager`).
 
-A box can be placed under boxes which are already there, for example into a gap under an overhang. It carries
-part of their weight, and its own limits are checked. Whether it also relieves the boxes which already support them
-depends on how the container is unloaded:
+## Insertion order
+The placements of each container are in insertion order: the order in which the boxes can be loaded. Each box comes
+after the boxes it rests on, and after the boxes it would otherwise have to pass on its way in. Set how boxes get into
+a container type with `withAccess(..)`:
 
 ```java
-PlainPackager packager = PlainPackager
-    .newBuilder()
-    .withUnloading(Unloading.REVERSE_LOADING_ORDER) // default: Unloading.ANY_ORDER
+Container container = Container.newBuilder()
+    .withSize(1200, 240, 260)
+    .withMaxLoadWeight(25_000)
+    .withAccess(ContainerAccess.FRONT) // a door at x = dx, loading from x = 0; or TOP; default ANY
     .build();
 ```
 
-With `ANY_ORDER` (the default), the box may be unloaded first, so the boxes below keep their full load, and it does
-not count as support. With `REVERSE_LOADING_ORDER`, it stays until the boxes above it are unloaded, and all touching
-boxes share the load by contact area. The LAFF and load-aware brute-force builders, and the validators
-(`withUnloading(..)`), have the same setting; validate with the setting used for packing.
+Without a box item order (`Order.NONE`), the packagers put the placements of each result in insertion order after
+packing (`InsertionSequencer`); the placements themselves are unchanged. With an order, only boxes which can be
+inserted after the boxes already there are placed. As boxes are only added on top of, or in front of, the boxes
+already there, the loads never decrease while loading: a result within its load limits is within them at every step
+of loading and unloading. `InsertionOrderValidator` (part of `DefaultValidator`) checks the order.
 
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
@@ -494,11 +497,12 @@ The viewer shows:
  * a comparison table when there are several results (`r` or click a row to switch)
  * whether the result is valid: the factory validates the boxes' load limits (and the whole result, given the input), logs the reasons, and the viewer outlines the boxes of invalid placements in red
  * colour modes (`c`): box item, group, support, and load relative to the max load weight
+ * the container's opening (orange), and boxes which are not in a possible insertion order
  * each container's centre of gravity, and for each box its supported area and load
  * the packing steps (`a` / `d`) and the free points after each placement (`p`, `w` / `s`)
 
 To "hot reload" the visualizer during development, make your unit tests write that file. The `*VisualizationTest`
-classes in `visualizer/packaging` are examples (load limits, unloading, groups and support, container costs,
+classes in `visualizer/packaging` are examples (load limits, insertion order, groups and support, container costs,
 virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
 `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=PackagerComparisonVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`.
 
@@ -541,7 +545,8 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
         * The load and stability validators find which boxes rest on which from the placements' positions (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked)
-        * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously such a box was assumed to relieve the boxes below when it was placed, but the relief was not recorded, and boxes could be overloaded). The new `withUnloading(Unloading)` setting decides whether it relieves the boxes below: by default (`ANY_ORDER`) it does not, as it may be unloaded first
+        * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously the relief for the boxes below was assumed when the box was placed, but not recorded, and boxes could be overloaded)
+        * The placements of each container are in insertion order (`InsertionOrder`): each box after the boxes it rests on, and after the boxes in its path from the container's opening (`Container.withAccess(ContainerAccess)`: `ANY`, `TOP` or `FRONT`). Without a box item order, results are reordered after packing (`InsertionSequencer`); with an order, only insertable boxes are placed. `DefaultValidator` checks the order (`InsertionOrderValidator`)
         * `NonIdenticalLoadBoxReason` names the box with the identical-box-only limit as the constrained placement (previously the box directly below the offending box)
      * Breaking changes:
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)

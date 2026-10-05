@@ -37,6 +37,17 @@ public class ContainerVisualizer extends StackableVisualizer {
 		this.centerOfGravityZ = centerOfGravityZ;
 	}
 
+	/** How boxes get into the container: ANY, TOP or FRONT (a door at x = dx) */
+	private String access;
+
+	public String getAccess() {
+		return access;
+	}
+
+	public void setAccess(String access) {
+		this.access = access;
+	}
+
 	private int emptyWeight;
 	private int maxLoadWeight;
 	private long loadWeight;
