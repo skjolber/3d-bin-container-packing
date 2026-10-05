@@ -255,8 +255,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		BoxStackValue stackValue = rotator.getStackValue(placementIndex);
 
+		// the boxes placed so far are a result, also when this box exceeds the remaining load weight
+		if(pointCalculatorStack.getStackIndex() > best.size()) {
+			best = pointCalculatorStack.getPoints();
+		}
+
 		if(stackValue.getBox().getWeight() > maxLoadWeight) {
-			return null;
+			return best;
 		}
 
 		Placement placement = placements.get(placementIndex);
@@ -264,10 +269,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		placement.setStackValue(stackValue);
 
 		maxLoadWeight -= stackValue.getBox().getWeight();
-
-		if(pointCalculatorStack.getStackIndex() > best.size()) {
-			best = pointCalculatorStack.getPoints();
-		}
 
 		pointCalculatorStack.push();
 
