@@ -40,6 +40,8 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	protected Order order = Order.NONE;
 
+	protected boolean insertionOrder = true;
+
 	protected List<BoxItemGroup> itemGroups = new ArrayList<>();
 
 	protected List<BoxItem> items = new ArrayList<>();
@@ -261,6 +263,12 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
+	@Override
+	public B withInsertionOrder(boolean insertionOrder) {
+		this.insertionOrder = insertionOrder;
+		return (B)this;
+	}
+
 	public B withOrder(Order order) {
 		this.order = order;
 		return (B) this;
@@ -283,7 +291,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 
 	/** @return the boxes and containers configured so far */
 	protected PackagerInput toInput() {
-		return new PackagerInput(items, itemGroups, containers, maxContainerCount, order);
+		return new PackagerInput(items, itemGroups, containers, maxContainerCount, order, insertionOrder);
 	}
 
 	/**

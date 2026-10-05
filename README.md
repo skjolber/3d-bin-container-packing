@@ -383,6 +383,11 @@ inserted after the boxes already there are placed. As boxes are only added on to
 already there, the loads never decrease while loading: a result within its load limits is within them at every step
 of loading and unloading. `InsertionOrderValidator` (part of `DefaultValidator`) checks the order.
 
+Putting the placements in insertion order takes time quadratic in the number of boxes per container. When only the
+outcome matters, for example to check whether an order fits during checkout, skip it with
+`withInsertionOrder(false)` on the result builder, and calculate the order later if needed with
+`InsertionSequencer.sequence(result.getContainers(), Order.NONE)`.
+
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
 

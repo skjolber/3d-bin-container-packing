@@ -95,7 +95,7 @@ class VirtualBoxEnvelopePackingTest {
 		packed.getStack().add(new Placement(packing.getItems().get(1).getBox().getStackValue(0), -1, 0, 1, 0, false));
 		PackagerResult delegateResult = new PackagerResult(List.of(packed), 0, false);
 		for(int attempt = 0; attempt < 2; attempt++) {
-			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime());
+			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime(), true);
 			PackagerResultAssert.assertThat(expanded).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			List<Placement> children = expanded.get(0).getStack().getPlacements();
 			assertThat(children).extracting(Placement::getAbsoluteX).containsExactly(3, 3, 0);

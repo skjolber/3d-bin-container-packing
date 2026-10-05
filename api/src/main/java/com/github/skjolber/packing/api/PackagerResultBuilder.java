@@ -63,6 +63,16 @@ public interface PackagerResultBuilder {
 
 	PackagerResultBuilder withOrder(Order order);
 
+	/**
+	 * Whether to put the placements of each container in insertion order (see {@link InsertionOrder}), when the box
+	 * items have no order. Default true. Skip it when only the outcome matters, for example to check whether an order
+	 * fits during checkout; the order can be calculated later, see {@code InsertionSequencer} in {@code core}.
+	 *
+	 * @param insertionOrder false to keep the placements in the order of the packager's search
+	 * @return this builder
+	 */
+	PackagerResultBuilder withInsertionOrder(boolean insertionOrder);
+
 	PackagerResultBuilder withInterruptDuration(long duration);
 
 	PackagerResultBuilder withInterruptDeadline(long deadline);

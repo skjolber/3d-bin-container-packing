@@ -20,12 +20,23 @@ public class PackagerInput {
 	protected final List<ContainerItem> containerItems;
 	protected final int maxContainerCount;
 	protected final Order order;
+	protected final boolean insertionOrder;
 
 	/**
 	 * @param boxItems box items, or null (or empty) when packing box item groups
 	 * @param boxItemGroups box item groups, or null (or empty) when packing box items
 	 */
 	public PackagerInput(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containerItems, int maxContainerCount, Order order) {
+		this(boxItems, boxItemGroups, containerItems, maxContainerCount, order, true);
+	}
+
+	/**
+	 * @param boxItems box items, or null (or empty) when packing box item groups
+	 * @param boxItemGroups box item groups, or null (or empty) when packing box items
+	 * @param insertionOrder whether to put the placements of results in insertion order (see {@link InsertionSequencer})
+	 */
+	public PackagerInput(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containerItems, int maxContainerCount, Order order, boolean insertionOrder) {
+		this.insertionOrder = insertionOrder;
 		this.boxItems = boxItems;
 		this.boxItemGroups = boxItemGroups;
 		this.containerItems = containerItems;
@@ -42,9 +53,9 @@ public class PackagerInput {
 			containerItemCopies.add(new ContainerItem(containerItem));
 		}
 		if(hasBoxItems()) {
-			return new PackagerInput(AbstractPackagerSession.copyBoxItems(boxItems), null, containerItemCopies, maxContainerCount, order);
+			return new PackagerInput(AbstractPackagerSession.copyBoxItems(boxItems), null, containerItemCopies, maxContainerCount, order, insertionOrder);
 		}
-		return new PackagerInput(null, AbstractPackagerSession.copyBoxItemGroups(boxItemGroups), containerItemCopies, maxContainerCount, order);
+		return new PackagerInput(null, AbstractPackagerSession.copyBoxItemGroups(boxItemGroups), containerItemCopies, maxContainerCount, order, insertionOrder);
 	}
 
 	/** @return true if packing box items, false if packing box item groups */
@@ -70,5 +81,12 @@ public class PackagerInput {
 
 	public Order getOrder() {
 		return order;
+	}
+
+	/**
+	 * @return whether to put the placements of results in insertion order (see {@link InsertionSequencer})
+	 */
+	public boolean isInsertionOrder() {
+		return insertionOrder;
 	}
 }

@@ -168,8 +168,9 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 	protected PackagerResult attempt(VirtualBoxPacking packing, PackagerInterruptSupplier stop, long start) {
 		// Filled envelopes are ordinary delegate items; equal envelopes share one counted item. Keep expansion
 		// outside the delegate's search/point loops, including the no-load path.
-		PackagerResult result = configured(stop).withBoxItems(packing.getItems()).build();
-		return packing.expand(result, items, start);
+		// the expanded result is put in insertion order, so the delegate's result need not be
+		PackagerResult result = configured(stop).withInsertionOrder(false).withBoxItems(packing.getItems()).build();
+		return packing.expand(result, items, start, insertionOrder);
 	}
 
 	protected PackagerResultBuilder configured(PackagerInterruptSupplier stop) {
@@ -178,7 +179,7 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 			copies.add(new ContainerItem(item));
 		}
 		return delegate.newResultBuilder().withContainerItems(copies).withMaxContainerCount(maxContainerCount)
-				.withOrder(order).withInterruptDeadline(-1).withInterrupt(stop::getAsBoolean);
+				.withOrder(order).withInsertionOrder(insertionOrder).withInterruptDeadline(-1).withInterrupt(stop::getAsBoolean);
 	}
 
 	protected boolean supportsAggregation() {

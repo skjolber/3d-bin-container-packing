@@ -93,4 +93,44 @@ public class InsertionOrderResultsTest {
 		assertThat(containers).isGreaterThan(SEEDS);
 		assertThat(failures).isEmpty();
 	}
+
+	/**
+	 * Without insertion order, the placements are in the order of the packager's search, which is often not a possible
+	 * insertion order; the insertion order can be calculated later.
+	 */
+	@ParameterizedTest
+	@EnumSource(ContainerAccess.class)
+	public void insertionOrderCanBeSkippedAndCalculatedLater(ContainerAccess access) {
+		InsertionOrderValidator validator = new InsertionOrderValidator();
+		int notInInsertionOrder = 0;
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			for (long seed = 0; seed < SEEDS; seed++) {
+				Random random = new Random(seed);
+				List<BoxItem> items = new ArrayList<>();
+				for (int i = 0; i < 15; i++) {
+					items.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(2 + random.nextInt(8), 2 + random.nextInt(8), 1 + random.nextInt(6)).withRotate3D().withWeight(1).build(), 1 + random.nextInt(3)));
+				}
+				List<ContainerItem> containerItems = ContainerItem.newListBuilder()
+						.withContainer(Container.newBuilder().withId("c").withSize(20, 15, 12).withMaxLoadWeight(100_000).withAccess(access).build(), 4)
+						.build();
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containerItems)
+						.withBoxItems(items)
+						.withMaxContainerCount(4)
+						.withInsertionOrder(false)
+						.build();
+				for (Container container : result.getContainers()) {
+					if(!validator.validate(container.getStack().getPlacements(), access, new ArrayList<>())) {
+						notInInsertionOrder++;
+					}
+				}
+				// later
+				assertThat(InsertionSequencer.sequence(result.getContainers(), Order.NONE)).isTrue();
+				for (Container container : result.getContainers()) {
+					assertThat(validator.validate(container.getStack().getPlacements(), access, new ArrayList<>())).isTrue();
+				}
+			}
+		}
+		assertThat(notInInsertionOrder).isGreaterThan(0);
+	}
 }

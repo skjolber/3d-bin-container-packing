@@ -96,7 +96,10 @@ public class VirtualBoxPacking {
 		return false;
 	}
 
-	protected PackagerResult expand(PackagerResult packed, List<BoxItem> originals, long start) {
+	/**
+	 * @param insertionOrder whether to put the expanded placements in insertion order (see {@link InsertionSequencer})
+	 */
+	protected PackagerResult expand(PackagerResult packed, List<BoxItem> originals, long start, boolean insertionOrder) {
 		if(!packed.isSuccess()) {
 			return new PackagerResult(List.of(), elapsed(start), packed.isTimeout(), packed.getCost());
 		}
@@ -134,7 +137,9 @@ public class VirtualBoxPacking {
 			}
 		}
 		// the expanded boxes are in the order of their layouts: sequence them (aggregation is only used without an order)
-		InsertionSequencer.sequence(containers, Order.NONE);
+		if(insertionOrder) {
+			InsertionSequencer.sequence(containers, Order.NONE);
+		}
 		return new PackagerResult(containers, elapsed(start), packed.isTimeout(), packed.getCost());
 	}
 

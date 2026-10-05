@@ -232,7 +232,9 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			session = newCompositeSession(getImprovementInput(input, baseline), packagerInterrupt);
 			ContainerResult result = packSession(packagerInterrupt, session);
 			if(result != null) {
-				InsertionSequencer.sequence(result.getPackList(), input.getOrder());
+				if(input.isInsertionOrder()) {
+					InsertionSequencer.sequence(result.getPackList(), input.getOrder());
+				}
 				PackagerResult improvement = new PackagerResult(result.getPackList(), 0L, false, result.getCost());
 				if(baseline == null || packagerResultComparator.compare(improvement, baseline) > 0) {
 					return withDuration(improvement, start);
@@ -267,7 +269,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 				return input;
 			}
 		}
-		return new PackagerInput(input.getBoxItems(), input.getBoxItemGroups(), input.getContainerItems(), baseline.size(), input.getOrder());
+		return new PackagerInput(input.getBoxItems(), input.getBoxItemGroups(), input.getContainerItems(), baseline.size(), input.getOrder(), input.isInsertionOrder());
 	}
 
 	private static PackagerResult withDuration(PackagerResult result, long start) {
