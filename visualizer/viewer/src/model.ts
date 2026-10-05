@@ -54,6 +54,10 @@ export class Box extends Stackable {
     maxLoadPressure?: number;
     maxLoadBoxCount?: number;
     maxLoadIdenticalOnly?: boolean;
+    /** Lower priorities are in earlier containers; undefined without one. */
+    containerPriority?: number;
+    /** Lower orders are extracted first; undefined without one. */
+    extractionOrder?: number;
 
     constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number,
                 weight: number,
@@ -268,6 +272,8 @@ export function parsePackaging(json : any) : Packaging {
                 );
                 box.boxItemKey = stackable.boxItemKey;
                 box.groupId = stackable.groupId ?? undefined;
+                box.containerPriority = stackable.containerPriority ?? undefined;
+                box.extractionOrder = stackable.extractionOrder ?? undefined;
 
                 var stackPlacement = new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points);
                 stackPlacement.supportedArea = placement.supportedArea ?? 0;

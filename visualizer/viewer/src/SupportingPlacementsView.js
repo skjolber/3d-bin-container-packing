@@ -366,6 +366,18 @@ function SupportingPlacementsView({ hoveredData }) {
                         <span style={valueStyle}>yes</span>
                     </div>
                 )}
+                {hoveredStackable.containerPriority != null && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Container priority</span>
+                        <span style={valueStyle}>{hoveredStackable.containerPriority}</span>
+                    </div>
+                )}
+                {hoveredStackable.extractionOrder != null && (
+                    <div style={rowStyle}>
+                        <span style={labelStyle}>Extraction order</span>
+                        <span style={valueStyle}>{hoveredStackable.extractionOrder}</span>
+                    </div>
+                )}
                 {hoveredLoadInfo && (
                     <>
                         <div style={dividerStyle} />

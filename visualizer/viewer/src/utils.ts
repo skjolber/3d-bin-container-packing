@@ -24,6 +24,8 @@ export interface BoxPlacementEntry {
     maxLoadPressure?: number;
     maxLoadBoxCount?: number;
     maxLoadIdenticalOnly?: boolean;
+    containerPriority?: number;
+    extractionOrder?: number;
   };
   color: string;
   isHovered: boolean;

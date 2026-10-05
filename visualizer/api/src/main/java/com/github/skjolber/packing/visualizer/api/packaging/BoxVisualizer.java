@@ -18,6 +18,11 @@ public class BoxVisualizer extends StackableVisualizer {
 		this.groupId = groupId;
 	}
 
+	/** Container priority, or null if none (0) */
+	protected Integer containerPriority;
+	/** Extraction order, or null if none (0) */
+	protected Integer extractionOrder;
+
 	protected Long maxLoadWeight;
 	protected Double maxLoadPressure;
 	protected Integer maxLoadBoxCount;
@@ -29,6 +34,22 @@ public class BoxVisualizer extends StackableVisualizer {
 
 	public void setType(String type) {
 		this.type = type;
+	}
+
+	public Integer getContainerPriority() {
+		return containerPriority;
+	}
+
+	public void setContainerPriority(Integer containerPriority) {
+		this.containerPriority = containerPriority;
+	}
+
+	public Integer getExtractionOrder() {
+		return extractionOrder;
+	}
+
+	public void setExtractionOrder(Integer extractionOrder) {
+		this.extractionOrder = extractionOrder;
 	}
 
 	public Integer getBoxItemKey() {

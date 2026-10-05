@@ -20,6 +20,8 @@ import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
+import com.github.skjolber.packing.validator.ContainerPriorityValidator;
+import com.github.skjolber.packing.validator.ExtractionOrderValidator;
 import com.github.skjolber.packing.validator.InsertionOrderValidator;
 import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
@@ -27,7 +29,9 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountR
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightReason;
 import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
+import com.github.skjolber.packing.validator.reasons.BlockedExtractionReason;
 import com.github.skjolber.packing.validator.reasons.BlockedInsertionReason;
+import com.github.skjolber.packing.validator.reasons.ContainerPriorityReason;
 import com.github.skjolber.packing.validator.reasons.InsertedBeforeSupporterReason;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
@@ -124,8 +128,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	}
 
 	/**
-	 * Visualize containers, and validate their insertion order (see {@link com.github.skjolber.packing.api.InsertionOrder}) and
-	 * the load limits of their boxes (the load validators are chosen from the boxes' limits).
+	 * Visualize containers, and validate their insertion order (see {@link com.github.skjolber.packing.api.InsertionOrder}),
+	 * the extraction order and container priority of their boxes, and the load limits of their boxes (the load validators
+	 * are chosen from the boxes' limits).
 	 */
 	public PackagingResultVisualizer visualize(List<Container> inputContainers) {
 		return visualize(inputContainers, new IdentityHashMap<>());
@@ -202,6 +207,12 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				if(boxItem != null && boxItem.getGroup() != null) {
 					boxVisualization.setGroupId(boxItem.getGroup().getId());
 				}
+				if(boxItem != null && boxItem.getContainerPriority() != 0) {
+					boxVisualization.setContainerPriority(boxItem.getContainerPriority());
+				}
+				if(boxItem != null && boxItem.getExtractionOrder() != 0) {
+					boxVisualization.setExtractionOrder(boxItem.getExtractionOrder());
+				}
 
 				if(stackValue.isMaxLoadBoxCount()) {
 					boxVisualization.setMaxLoadBoxCount(stackValue.getMaxLoadBoxCount());
@@ -261,17 +272,23 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		}
 
 		InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
+		ExtractionOrderValidator extractionOrderValidator = new ExtractionOrderValidator();
 		for (Container inputContainer : inputContainers) {
 			List<Placement> placements = inputContainer.getStack().getPlacements();
 			List<ValidatorResultReason> reasons = new ArrayList<>();
-			// the placements must be in a possible insertion order
+			// the placements must be in a possible insertion order, and extractable in their extraction order
 			insertionOrderValidator.validate(inputContainer, reasons);
+			extractionOrderValidator.validate(inputContainer, reasons);
 			LoadValidator loadValidator = new DefaultLoadValidatorBuilder().withContainer(inputContainer).withPlacements(placements).build();
 			if(loadValidator != null) {
 				loadValidator.isValid(placements, reasons);
 			}
 			addReasons(visualization, references, reasons);
 		}
+		// boxes in containers in order of their container priority
+		List<ValidatorResultReason> reasons = new ArrayList<>();
+		new ContainerPriorityValidator().validate(inputContainers, reasons);
+		addReasons(visualization, references, reasons);
 		return visualization;
 	}
 
@@ -310,6 +327,12 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 	}
 
 	protected void addReason(PackagingResultVisualizer visualization, Map<Placement, PlacementReferenceVisualizer> references, String type, int code, String message, List<Placement> placements) {
+		for (ValidationReasonVisualizer existing : visualization.getValidationReasons()) {
+			if(existing.getType().equals(type) && existing.getMessage().equals(message)) {
+				// also found by the visualizer's own validation, see visualize(List)
+				return;
+			}
+		}
 		LOGGER.warning("Invalid result: " + type + ": " + message);
 
 		ValidationReasonVisualizer reasonVisualization = new ValidationReasonVisualizer();
@@ -341,6 +364,12 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		}
 		if(reason instanceof BlockedInsertionReason r) {
 			return List.of(r.getPlacement(), r.getBlocking());
+		}
+		if(reason instanceof BlockedExtractionReason r) {
+			return List.of(r.getPlacement(), r.getBlocking());
+		}
+		if(reason instanceof ContainerPriorityReason r) {
+			return List.of(r.getPlacement(), r.getEarlier());
 		}
 		if(reason instanceof ExcessiveLoadPressureReason r) {
 			return List.of(r.getPlacement());

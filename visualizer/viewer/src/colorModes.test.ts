@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 
-import { ColorMode, getColor, getLoadFraction, getSupportedFraction, greenToRed, NO_VALUE_COLOR } from './colorModes';
+import { ColorMode, getColor, getExtractionColor, getLoadFraction, getSupportedFraction, greenToRed, NO_VALUE_COLOR } from './colorModes';
 import { parsePackagings } from './model';
 
 const sample = require('./fixtures/containers.json');
@@ -30,6 +30,19 @@ test('group: a colour per group id, grey without a group', () => {
   const random = () => ['#111111', '#222222'][next++];
   expect(getColor(ColorMode.GROUP, placements[0], colors, random)).toBe('#111111');
   expect(getColor(ColorMode.GROUP, placements[1], colors, random)).toBe('#111111');
+});
+
+test('extraction: a colour per extraction order, grey without one', () => {
+  const placements = parsePackagings(sample)[0].containers[0].stack.placements;
+  expect(getColor(ColorMode.EXTRACTION, placements[0], new Map(), () => '#000')).toBe(NO_VALUE_COLOR);
+
+  (placements[0].stackable as any).extractionOrder = 1;
+  (placements[1].stackable as any).extractionOrder = 2;
+  (placements[2].stackable as any).extractionOrder = 1;
+  const first = getColor(ColorMode.EXTRACTION, placements[0], new Map(), () => '#000');
+  expect(first).toBe(getExtractionColor(1));
+  expect(getColor(ColorMode.EXTRACTION, placements[2], new Map(), () => '#000')).toBe(first);
+  expect(getColor(ColorMode.EXTRACTION, placements[1], new Map(), () => '#000')).not.toBe(first);
 });
 
 test('box item mode keeps the own colour', () => {

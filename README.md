@@ -541,14 +541,14 @@ The viewer shows:
  * a summary of the result: whether it was packed, the time and cost, and the volume and weight used per container
  * a comparison table when there are several results (`r` or click a row to switch)
  * whether the result is valid: the factory validates the boxes' load limits (and the whole result, given the input), logs the reasons, and the viewer outlines the boxes of invalid placements in red
- * colour modes (`c`): box item, group, support, and load relative to the max load weight
+ * colour modes (`c`): box item, group, support, load relative to the max load weight, and extraction order
  * the container's opening (orange), and boxes which are not in a possible insertion order
  * each container's centre of gravity, and for each box its supported area and load
  * the packing steps (`a` / `d`) and the free points after each placement (`p`, `w` / `s`)
 
 To "hot reload" the visualizer during development, make your unit tests write that file. The `*VisualizationTest`
-classes in `visualizer/packaging` are examples (load limits, insertion order, groups and support, container costs,
-virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
+classes in `visualizer/packaging` are examples (load limits, insertion order, deliveries, groups and support, container
+costs, virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
 `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=PackagerComparisonVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`.
 
 For a tour of the features, run `ShowcaseVisualizationTest` while the viewer is open: it writes one scenario after
@@ -578,7 +578,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Virtual-box preprocessing
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation
-     * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support and load, and the centre of gravity
+     * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity
      * Behaviour changes:
         * The max load weight of a box limits the total weight resting on it, through all levels and paths of the support graph (previously only direct loads were counted)
         * The full-support fallback no longer skips positions at the edge of a point

@@ -260,6 +260,8 @@ export class StackableRenderer {
                     maxLoadPressure: boxStackable.maxLoadPressure,
                     maxLoadBoxCount: boxStackable.maxLoadBoxCount,
                     maxLoadIdenticalOnly: boxStackable.maxLoadIdenticalOnly,
+                    containerPriority: boxStackable.containerPriority,
+                    extractionOrder: boxStackable.extractionOrder,
                 }
             };
     

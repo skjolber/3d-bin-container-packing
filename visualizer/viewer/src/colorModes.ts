@@ -11,9 +11,11 @@ export enum ColorMode {
     SUPPORT = "support",
     /** Green (no load) to red (at or over the max load weight); grey without a max load weight. */
     LOAD = "load",
+    /** A colour per extraction order (for example a delivery stop); grey without one. */
+    EXTRACTION = "extraction",
 }
 
-export const COLOR_MODES : Array<ColorMode> = [ColorMode.BOX_ITEM, ColorMode.GROUP, ColorMode.SUPPORT, ColorMode.LOAD];
+export const COLOR_MODES : Array<ColorMode> = [ColorMode.BOX_ITEM, ColorMode.GROUP, ColorMode.SUPPORT, ColorMode.LOAD, ColorMode.EXTRACTION];
 
 export const NO_VALUE_COLOR = "#808080";
 
@@ -36,6 +38,12 @@ export function getLoadFraction(placement : StackPlacement) : number | undefined
         return placement.loadWeight > 0 ? Infinity : 0;
     }
     return placement.loadWeight / box.maxLoadWeight;
+}
+
+/** A distinct colour per extraction order: hues a golden angle apart, starting at red. */
+export function getExtractionColor(extractionOrder : number) : string {
+    const hue = ((extractionOrder - 1) * 137.508) % 360;
+    return `hsl(${Math.round((hue + 360) % 360)}, 75%, 50%)`;
 }
 
 /** From green (0) via yellow to red (1 or more), as a CSS colour. */
@@ -68,6 +76,10 @@ export function getColor(mode : ColorMode, placement : StackPlacement, groupColo
         case ColorMode.LOAD: {
             const fraction = getLoadFraction(placement);
             return fraction === undefined ? NO_VALUE_COLOR : greenToRed(fraction);
+        }
+        case ColorMode.EXTRACTION: {
+            const extractionOrder = (placement.stackable as Box).extractionOrder;
+            return extractionOrder == null ? NO_VALUE_COLOR : getExtractionColor(extractionOrder);
         }
         default:
             return undefined;

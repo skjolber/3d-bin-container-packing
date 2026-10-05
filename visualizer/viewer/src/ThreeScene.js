@@ -767,6 +767,8 @@ class ThreeScene extends Component {
                 {selectedBox.maxLoadPressure != null && <div>Max pressure: {selectedBox.maxLoadPressure}</div>}
                 {selectedBox.maxLoadBoxCount != null && <div>Max stack count: {selectedBox.maxLoadBoxCount}</div>}
                 {selectedBox.maxLoadIdenticalOnly === true && <div>Identical only</div>}
+                {selectedBox.containerPriority != null && <div>Container priority: {selectedBox.containerPriority}</div>}
+                {selectedBox.extractionOrder != null && <div>Extraction order: {selectedBox.extractionOrder}</div>}
                 <div>Supported: {selectedBox.supportedPercent} %</div>
                 {selectedBox.loadWeight > 0 && <div>Load weight: {Math.round(selectedBox.loadWeight * 100) / 100}</div>}
                 {selectedBox.reasons && selectedBox.reasons.map((reason, i) => (
