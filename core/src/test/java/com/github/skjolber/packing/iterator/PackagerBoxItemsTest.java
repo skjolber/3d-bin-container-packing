@@ -31,6 +31,17 @@ public class PackagerBoxItemsTest {
 
 	/* Removing the last group leaves exactly the box items of the other groups. */
 	@Test
+	public void firstBoxItemIndexOfAGroupMovesWhenAPrecedingGroupIsRemoved() {
+		List<BoxItemGroup> groups = groups(2, 3, 1);
+		PackagerBoxItems items = new PackagerBoxItems(groups);
+		assertThat(items.getFirstBoxItemIndex(groups.get(2))).isEqualTo(5);
+
+		// after removing a group, the following groups start earlier
+		items.getFilteredBoxItemGroups().remove(0);
+		assertThat(items.getFirstBoxItemIndex(groups.get(2))).isEqualTo(3);
+		assertThat(items.getFirstBoxItemIndex(groups.get(0))).isEqualTo(-1);
+	}
+	@Test
 	public void removingGroupRemovesItsBoxItems() {
 		List<BoxItemGroup> groups = groups(2, 5, 1);
 		PackagerBoxItems items = new PackagerBoxItems(groups);

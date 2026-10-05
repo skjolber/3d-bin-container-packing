@@ -23,7 +23,7 @@ limitations and non-goals.
 
 ## Build from source
 
-Use JDK 25 and the included Maven wrapper (Maven 3.9.12). Library sources target Java 17.
+Use JDK 25 and the included Maven wrapper (Maven 3.9.16). Library sources target Java 17.
 
 ```sh
 ./mvnw -B -ntp -Pdev -pl core -am test

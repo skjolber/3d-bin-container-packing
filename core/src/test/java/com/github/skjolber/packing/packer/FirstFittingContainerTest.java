@@ -59,16 +59,20 @@ public class FirstFittingContainerTest {
 
 	private static void assertUsesTheFirstContainer(AbstractPackager<?> packager) {
 		for(int count : new int[] {2, 4}) {
-			List<ContainerItem> containers = new ArrayList<>();
-			for(int i = 0; i < count; i++) {
-				containers.add(new ContainerItem(Container.newBuilder().withId("c" + i).withSize(2 + i, 1, 1).withMaxLoadWeight(100).build(), 1));
-			}
-			PackagerResult result = packager.newResultBuilder()
-					.withContainerItems(containers)
-					.withBoxItems(new BoxItem(Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).build(), 1))
-					.build();
+			// one container, or several (then the packagers first check whether a single container holds the boxes)
+			for(int maxContainerCount : new int[] {1, 2}) {
+				List<ContainerItem> containers = new ArrayList<>();
+				for(int i = 0; i < count; i++) {
+					containers.add(new ContainerItem(Container.newBuilder().withId("c" + i).withSize(2 + i, 1, 1).withMaxLoadWeight(100).build(), 1));
+				}
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containers)
+						.withBoxItems(new BoxItem(Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).build(), 1))
+						.withMaxContainerCount(maxContainerCount)
+						.build();
 
-			assertThat(result.getContainers()).as("%d container types", count).extracting(Container::getId).containsExactly("c0");
+				assertThat(result.getContainers()).as("%d container types, max %d containers", count, maxContainerCount).extracting(Container::getId).containsExactly("c0");
+			}
 		}
 	}
 }

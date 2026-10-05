@@ -43,7 +43,7 @@ Line length 200. Tabs for indentation (see `eclipse-formatter.xml`).
 
 Run commands from the repository root. Use JDK 25, matching CI and the
 Copilot setup; library sources target Java 17. Use the checked-in Maven
-wrapper (`./mvnw`, or `mvnw.cmd` on Windows), which pins Maven 3.9.12.
+wrapper (`./mvnw`, or `mvnw.cmd` on Windows), which pins Maven 3.9.16.
 The first run needs network access to download Maven and dependencies.
 
 ## Iteration
