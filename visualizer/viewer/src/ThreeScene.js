@@ -46,6 +46,7 @@ var maxPointNumbers;
 var maxStepNumber = 0;
 var minStepNumber = 0;
 var cameraInitialized = false;
+var lastLayoutKey = null; // the containers' sizes when the camera was last fitted
 
 var points = false;
 
@@ -389,12 +390,18 @@ class ThreeScene extends Component {
         x = x - (x % GRID_SPACING);
       }
       
+      // the containers' sizes: when they change (for example another scenario), fit the camera to them,
+      // otherwise keep the camera where the user left it
+      var layoutKey = parsed.containers.map(c => c.dx + "x" + c.dy + "x" + c.dz).join(",");
       if (!cameraInitialized) {
         camera.position.z = maxY * 2;
         camera.position.y = maxZ * 1.25;
         camera.position.x = maxX * 2;
         cameraInitialized = true;
+      } else if (layoutKey !== lastLayoutKey) {
+        component.fitCameraToObject(camera, controls, boxesGroup, 1.5);
       }
+      lastLayoutKey = layoutKey;
       
 	  // Add grid corresponding to containers
       var size = Math.max(maxY, maxX) + GRID_SPACING + GRID_SPACING + GRID_SPACING;

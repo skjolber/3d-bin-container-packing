@@ -511,6 +511,10 @@ classes in `visualizer/packaging` are examples (load limits, insertion order, gr
 virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
 `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=PackagerComparisonVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`.
 
+For a tour of the features, run `ShowcaseVisualizationTest` while the viewer is open: it writes one scenario after
+another, with a delay between them (`-Dshowcase.delay=20` seconds, `-Dshowcase.rounds=3`), and prints what to look
+at. The viewer fits the camera when the containers change size.
+
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
 # Get involved
