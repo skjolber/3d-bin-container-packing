@@ -13,8 +13,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<test.forkCount>1</test.forkCount>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<mockito.version>5.23.0</mockito.version>
@@ -267,8 +266,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<!-- compile against the Java 17 API, not only the Java 17 language level -->
+						<release>${maven.compiler.release}</release>
 					</configuration>
 				</plugin>
 				<plugin>
