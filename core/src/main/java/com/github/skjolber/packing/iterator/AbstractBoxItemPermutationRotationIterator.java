@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -71,6 +72,16 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	}
 
 	public abstract int length();
+
+	@Override
+	public void reset() {
+		// the first permutation is in ascending order
+		Arrays.sort(permutations);
+		System.arraycopy(reset, 0, rotations, 0, rotations.length);
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
+	}
 
 	protected int[] calculateFrequencies() {
 		int[] frequencies = new int[stackableItems.length];

@@ -74,6 +74,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
+			// a previous attempt left the iterator at its last permutation and rotations
+			containerIterators[i].reset();
 			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt);
 		}
 		
@@ -96,6 +98,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
+			// a previous attempt left the iterator at its last permutation and rotations
+			containerIterators[i].reset();
 			List<BoxItemGroup> excluded = containerIterators[i].getExcludedBoxItemGroups();
 			if(!canLoadNextGroup(excluded)) {
 				return null;

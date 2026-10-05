@@ -134,6 +134,12 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		calculate();
 	}
 	
+	@Override
+	public void reset() {
+		// the work units again from their first permutations
+		calculate();
+	}
+
 	private void calculate() {
 		int count = workUnits[0].getBoxCount();
 		BoxItemGroup[] groups = workUnits[0].getBoxItemGroups();
