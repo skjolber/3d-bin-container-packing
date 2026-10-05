@@ -48,6 +48,34 @@ class PointCalculator3DBatchStackTest {
 		assertThat(calculator.getPlacements()).isEmpty();
 	}
 
+	/*
+	 *       +-------+
+	 *       |   A   |      a search for two boxes, interrupted at the second level
+	 *       +-------+
+	 *
+	 * The next search starts at the first level, in an empty container.
+	 */
+	@Test
+	void clearToSizeStartsAtTheFirstLevel() {
+		PointCalculator3DStack calculator = new PointCalculator3DStack(3);
+		calculator.reset(4, 4, 4);
+		calculator.push();
+		calculator.add(0, placement(0, 0, 0));
+		calculator.push();
+
+		calculator.clearToSize(2, 2, 2);
+		assertThat(calculator.getStackIndex()).isZero();
+		assertThat(calculator.getPlacements()).isEmpty();
+		assertThat(calculator.size()).isEqualTo(1);
+		assertThat(calculator.get(0).getMaxX()).isEqualTo(1);
+
+		// both levels are available
+		calculator.push();
+		calculator.add(0, placement(0, 0, 0));
+		calculator.push();
+		assertThat(calculator.getStackIndex()).isEqualTo(2);
+	}
+
 	@Test
 	void ordinaryRedoKeepsExistingNextItemFilteringBehavior() {
 		PointCalculator3DStack calculator = new PointCalculator3DStack(3);
