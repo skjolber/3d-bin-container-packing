@@ -152,7 +152,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			List<Placement> stackPlacements, ControlledContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
-			PackagerInterruptSupplier interrupt) {
+			PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		
 		Container holder = containerItem.getContainer().clone();
 		
@@ -169,7 +169,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		permutations: 
 		do {
 			if(interrupt.getAsBoolean()) {
-				return null;
+				throw new PackagerInterruptedException();
 			}
 			// iterate over all rotations
 
@@ -192,7 +192,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 				int count = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, index, interrupt, minStackableAreaIndex, freeLoadWeights[index]);
 				if(count == Integer.MIN_VALUE) {
-					return null; // timeout
+					throw new PackagerInterruptedException();
 				}
 
 				// continue search, but see if this is the best fit so far
