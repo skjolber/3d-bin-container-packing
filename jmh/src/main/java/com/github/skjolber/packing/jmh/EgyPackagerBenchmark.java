@@ -16,6 +16,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -61,14 +62,28 @@ public class EgyPackagerBenchmark {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE);
 	}
 
+	@Benchmark
+	public int packagerOrdered(EgyPackagerState state) throws Exception {
+		return process(state.getBruteForcePackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL);
+	}
+
+	@Benchmark
+	public int fastPackagerOrdered(EgyPackagerState state) throws Exception {
+		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL);
+	}
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
+		return process(sets, deadline, Order.NONE);
+	}
+
+	public int process(List<BenchmarkSet> sets, long deadline, Order order) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
 			List<BoxItem> products = set.getProducts();
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withInterruptDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withOrder(order).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}
