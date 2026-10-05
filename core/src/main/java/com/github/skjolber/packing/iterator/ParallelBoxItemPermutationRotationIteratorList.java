@@ -175,6 +175,13 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		calculate();
 	}
 
+	/**
+	 * Back to the first permutations and rotations of the work units, see {@link BoxItemPermutationRotationIterator#reset()}.
+	 */
+	public void reset() {
+		calculate();
+	}
+
 	private void calculate() {
 		int count = getCount();
 

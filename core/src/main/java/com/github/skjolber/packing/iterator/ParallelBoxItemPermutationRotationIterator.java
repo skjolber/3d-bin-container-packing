@@ -25,6 +25,7 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 		super(source);
 		this.iterator = parent;
 		this.lastPermutation = source.lastPermutation == null ? null : source.lastPermutation.clone();
+		this.firstPermutation = source.firstPermutation == null ? null : source.firstPermutation.clone();
 		this.lastPermutationMaxIndex = source.lastPermutationMaxIndex;
 		this.checkLastPermutation = source.checkLastPermutation;
 	}
@@ -33,8 +34,23 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 		return new ParallelBoxItemPermutationRotationIterator(this, parent);
 	}
 
+	/** The first permutation of the work unit */
+	private int[] firstPermutation;
+
 	public void setPermutations(int[] permutations) {
 		this.permutations = permutations;
+		this.firstPermutation = permutations.clone();
+	}
+
+	@Override
+	public void reset() {
+		// back to the first permutation of the work unit
+		System.arraycopy(firstPermutation, 0, permutations, 0, permutations.length);
+		System.arraycopy(reset, 0, rotations, 0, rotations.length);
+		checkLastPermutation = false;
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
 	}
 
 	public int[] getLastPermutation() {

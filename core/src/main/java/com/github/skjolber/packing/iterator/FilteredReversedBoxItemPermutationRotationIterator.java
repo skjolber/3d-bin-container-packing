@@ -122,6 +122,11 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
+	public void reset() {
+		iterator.reset();
+	}
+
+	@Override
 	public int length() {
 		return iterator.length();
 	}

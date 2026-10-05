@@ -345,6 +345,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			
 			if(multithreaded) {
+				// a previous attempt left the work units at their last permutations
+				parallelIterators[i].reset();
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
@@ -425,7 +427,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			ContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
-			// run with linear approach
+			// run with linear approach, from the first permutation
+			iterators[i].reset();
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
 					interrupts[i], pointFilter);
@@ -576,6 +579,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			
 			if(multithreaded) {
+				// a previous attempt left the work units at their last permutations
+				parallelIterators[i].reset();
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
@@ -659,7 +664,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			ContainerItem containerItem = getContainerItem(i);
 			
 			// no need to split this job
-			// run with linear approach
+			// run with linear approach, from the first permutation
+			iterators[i].reset();
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
 			return truncateToGroup(ParallelBoxItemBruteForcePackager.this.pack(
 					runnables[0].pointCalculator,

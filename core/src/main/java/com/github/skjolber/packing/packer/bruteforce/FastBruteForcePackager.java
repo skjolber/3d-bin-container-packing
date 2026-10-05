@@ -144,6 +144,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(containerIterators[i].length() == 0) {
 				return null;
 			}
+			// a previous attempt left the iterator at its last permutation and rotations
+			containerIterators[i].reset();
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 			}
@@ -190,6 +192,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(!canLoadNextGroup(iteratorGroups)) {
 				return null;
 			}
+			// a previous attempt left the iterator at its last permutation and rotations
+			containerIterators[i].reset();
 			if(order != Order.NONE) {
 				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, Integer.MAX_VALUE), iteratorGroups);
 			}
