@@ -2,7 +2,10 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
@@ -22,7 +25,8 @@ import com.github.skjolber.packing.api.Stack;
  * otherwise n log n); through a door, by a stable topological sort, which keeps the order of the search wherever the
  * rules allow (quadratic in the number of placements). Boxes with different extraction orders (see
  * {@code BoxItem.withExtractionOrder(int)}) are inserted in descending extraction order, so that the boxes extracted
- * first are inserted last.
+ * first are inserted last, and the boxes of each box item group are inserted together, if possible (otherwise the
+ * groups are interleaved).
  */
 public final class InsertionSequencer {
 
@@ -59,8 +63,32 @@ public final class InsertionSequencer {
 		List<Placement> placements = stack.getPlacements();
 		Placement[] sequence = new Placement[placements.size()];
 		boolean sequenced;
-		if(hasExtractionOrders(placements)) {
-			sequenced = sequenceByExtractionOrder(placements, access, sequence);
+		// in one pass: whether the boxes are of several groups, and of several extraction orders
+		boolean groups = false;
+		boolean extractionOrders = false;
+		if(!placements.isEmpty()) {
+			BoxItem first = placements.get(0).getBoxItem();
+			Object group = first != null ? first.getGroupKey() : null;
+			int order = first != null ? first.getExtractionOrder() : 0;
+			for (int i = 1; i < placements.size(); i++) {
+				BoxItem boxItem = placements.get(i).getBoxItem();
+				if(!groups && !Objects.equals(boxItem != null ? boxItem.getGroupKey() : null, group)) {
+					groups = true;
+				}
+				if(!extractionOrders && (boxItem != null ? boxItem.getExtractionOrder() : 0) != order) {
+					extractionOrders = true;
+				}
+				if(groups && extractionOrders) {
+					break;
+				}
+			}
+		}
+		if(groups || extractionOrders) {
+			sequenced = sequenceInParts(placements, access, sequence, groups);
+			if(!sequenced && groups) {
+				// the groups cannot be inserted one at a time
+				sequenced = sequenceInParts(placements, access, sequence, false);
+			}
 		} else {
 			sequenced = sequence(placements, access, sequence, 0);
 		}
@@ -75,67 +103,101 @@ public final class InsertionSequencer {
 		return true;
 	}
 
-	private static boolean hasExtractionOrders(List<Placement> placements) {
-		for (int i = 1; i < placements.size(); i++) {
-			if(getExtractionOrder(placements.get(i)) != getExtractionOrder(placements.get(0))) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private static int getExtractionOrder(Placement placement) {
 		BoxItem boxItem = placement.getBoxItem();
 		return boxItem != null ? boxItem.getExtractionOrder() : 0;
 	}
 
 	/**
-	 * The boxes which are extracted last are inserted first: sequence the boxes of each extraction order, in descending
-	 * order. The packagers place boxes so that none of them must be inserted before a box which is extracted later,
-	 * which is checked.
+	 * @return the key of the placement's box item group, see {@link BoxItem#getGroupKey()}
+	 */
+	public static Object getGroupKey(Placement placement) {
+		BoxItem boxItem = placement.getBoxItem();
+		return boxItem != null ? boxItem.getGroupKey() : null;
+	}
+
+	/**
+	 * Sequence the placements in parts: by extraction order (descending: the boxes which are extracted last are
+	 * inserted first), and within each extraction order by box item group, so that the boxes of a group are inserted
+	 * together (the groups in the order in which they were placed). The packagers place boxes so that none of them must
+	 * be inserted before a box of an earlier part, which is checked.
 	 *
+	 * @param groups whether to insert the box item groups one at a time
 	 * @param sequence the sequence to fill
 	 * @return true if sequenced, false if there is no sequence
 	 */
-	protected static boolean sequenceByExtractionOrder(List<Placement> placements, ContainerAccess access, Placement[] sequence) {
+	protected static boolean sequenceInParts(List<Placement> placements, ContainerAccess access, Placement[] sequence, boolean groups) {
 		int n = placements.size();
 		int[] orders = new int[n];
+		int[] ranks = new int[n];
+		Map<Object, Integer> groupRanks = new HashMap<>();
 		for (int i = 0; i < n; i++) {
-			orders[i] = getExtractionOrder(placements.get(i));
-		}
-		Arrays.sort(orders);
-
-		int count = 0;
-		List<Placement> part = new ArrayList<>();
-		for (int k = n - 1; k >= 0; k--) {
-			if(k < n - 1 && orders[k] == orders[k + 1]) {
-				continue;
-			}
-			int order = orders[k];
-			part.clear();
-			for (int i = 0; i < n; i++) {
-				Placement placement = placements.get(i);
-				if(getExtractionOrder(placement) == order) {
-					part.add(placement);
+			Placement placement = placements.get(i);
+			orders[i] = getExtractionOrder(placement);
+			if(groups) {
+				Object key = getGroupKey(placement);
+				Integer rank = groupRanks.get(key);
+				if(rank == null) {
+					rank = groupRanks.size();
+					groupRanks.put(key, rank);
 				}
+				ranks[i] = rank;
 			}
-			if(!sequence(part, access, sequence, count)) {
-				return false;
-			}
-			count += part.size();
 		}
 
-		// a box extracted earlier is inserted later: it must not have to be inserted first
+		// stable insertion sort of the placements by part; usually already in order
+		int[] indexes = new int[n];
+		for (int i = 0; i < n; i++) {
+			indexes[i] = i;
+			int j = i;
+			while(j > 0 && isLaterPart(orders, ranks, indexes[j - 1], i)) {
+				indexes[j] = indexes[j - 1];
+				j--;
+			}
+			indexes[j] = i;
+		}
+
+		int[] parts = new int[n];
+		int part = 0;
+		List<Placement> partPlacements = new ArrayList<>();
+		int offset = 0;
+		for (int i = 0; i <= n; i++) {
+			if(i > 0 && (i == n || orders[indexes[i]] != orders[indexes[i - 1]] || ranks[indexes[i]] != ranks[indexes[i - 1]])) {
+				if(!sequence(partPlacements, access, sequence, offset)) {
+					return false;
+				}
+				for (int k = 0; k < partPlacements.size(); k++) {
+					parts[offset + k] = part;
+				}
+				offset += partPlacements.size();
+				partPlacements.clear();
+				part++;
+			}
+			if(i < n) {
+				partPlacements.add(placements.get(indexes[i]));
+			}
+		}
+
+		// a box of a later part must not have to be inserted before a box of an earlier part
 		for (int i = 0; i < n; i++) {
 			Placement placement = sequence[i];
-			int order = getExtractionOrder(placement);
 			for (int j = 0; j < i; j++) {
-				if(getExtractionOrder(sequence[j]) != order && placement.mustPrecede(sequence[j], access)) {
+				if(parts[j] != parts[i] && placement.mustPrecede(sequence[j], access)) {
 					return false;
 				}
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * @return true if the first placement belongs to a later part than the second
+	 */
+	private static boolean isLaterPart(int[] orders, int[] ranks, int first, int second) {
+		if(orders[first] != orders[second]) {
+			return orders[first] < orders[second];
+		}
+		return ranks[first] > ranks[second];
 	}
 
 	/**

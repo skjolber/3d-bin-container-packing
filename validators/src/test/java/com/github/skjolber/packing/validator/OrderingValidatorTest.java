@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.Placement;
@@ -16,9 +17,10 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.validator.reasons.BlockedExtractionReason;
 import com.github.skjolber.packing.validator.reasons.ContainerPriorityReason;
+import com.github.skjolber.packing.validator.reasons.InterleavedGroupReason;
 
 /**
- * Container priority and extraction order validation.
+ * Container priority, extraction order and group insertion validation.
  */
 public class OrderingValidatorTest {
 
@@ -93,5 +95,39 @@ public class OrderingValidatorTest {
 		assertThat(validator.validate(container(ContainerAccess.FRONT, a, b), new ArrayList<>())).isFalse();
 		// from above, side by side boxes do not block each other
 		assertThat(validator.validate(container(ContainerAccess.TOP, a, b), new ArrayList<>())).isTrue();
+	}
+
+	private static Placement place(String id, int x, BoxItemGroup group) {
+		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
+		BoxItem item = new BoxItem(box);
+		group.getItems().add(item);
+		item.setGroup(group);
+		return new Placement(box.getStackValue(0), 0, x, 0, 0);
+	}
+
+	//
+	//  insertion order: A1, B1, A2   B1 is inserted between the boxes of group A
+	//
+	//  1 +---+---+---+
+	//    |A1 |B1 |A2 |
+	//  0 +---+---+---+
+	//    0   1   2   3  x
+	//
+	@Test
+	void boxesOfAGroupAreInsertedTogether() {
+		GroupInsertionValidator validator = new GroupInsertionValidator();
+		BoxItemGroup a = new BoxItemGroup("A", new ArrayList<>(), 0);
+		BoxItemGroup b = new BoxItemGroup("B", new ArrayList<>(), 1);
+		Placement a1 = place("A1", 0, a);
+		Placement b1 = place("B1", 1, b);
+		Placement a2 = place("A2", 2, a);
+
+		List<ValidatorResultReason> reasons = new ArrayList<>();
+		assertThat(validator.validate(container(ContainerAccess.ANY, a1, b1, a2), reasons)).isFalse();
+		assertThat(reasons).singleElement().isInstanceOf(InterleavedGroupReason.class);
+		assertThat(((InterleavedGroupReason)reasons.get(0)).getPlacement()).isSameAs(a2);
+
+		assertThat(validator.validate(container(ContainerAccess.ANY, a1, a2, b1), new ArrayList<>())).isTrue();
+		assertThat(validator.validate(container(ContainerAccess.ANY, b1, a1, a2), new ArrayList<>())).isTrue();
 	}
 }

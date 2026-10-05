@@ -2,10 +2,14 @@ package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -153,5 +157,69 @@ public class InsertionSequencerTest {
 
 		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.ANY)).isFalse();
 		assertThat(stack.getPlacements()).containsExactly(a, b);
+	}
+
+	private static Placement place(String id, int x, int z, BoxItemGroup group) {
+		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
+		BoxItem item = new BoxItem(box);
+		group.getItems().add(item);
+		item.setGroup(group);
+		return new Placement(box.getStackValue(0), 0, x, 0, z);
+	}
+
+	private static BoxItemGroup group(String id, int index) {
+		return new BoxItemGroup(id, new ArrayList<>(), index);
+	}
+
+	//
+	//  z
+	//  2 +---+
+	//    |A2 |       by height, B1 would be inserted between A1 and A2;
+	//  1 +---+---+   the boxes of group A are inserted together
+	//    |A1 |B1 |
+	//  0 +---+---+
+	//    0   1   2  x
+	//
+	@Test
+	void boxesOfAGroupAreInsertedTogether() {
+		BoxItemGroup a = group("A", 0);
+		BoxItemGroup b = group("B", 1);
+		Placement a1 = place("A1", 0, 0, a);
+		Placement a2 = place("A2", 0, 1, a);
+		Placement b1 = place("B1", 1, 0, b);
+		Stack stack = stack(a1, a2, b1);
+
+		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.ANY)).isTrue();
+		assertThat(stack.getPlacements()).containsExactly(a1, a2, b1);
+
+		// in the order in which the groups were placed
+		Stack reversed = stack(b1, a1, a2);
+		assertThat(InsertionSequencer.sequence(reversed, ContainerAccess.ANY)).isTrue();
+		assertThat(reversed.getPlacements()).containsExactly(b1, a1, a2);
+	}
+
+	//
+	//  z
+	//  3 +---+
+	//    |A2 |       B1 rests on A1, and A2 on B1: the groups cannot be inserted one at a time,
+	//  2 +---+       so the boxes are inserted by height
+	//    |B1 |
+	//  1 +---+
+	//    |A1 |
+	//  0 +---+
+	//    0   1  x
+	//
+	@Test
+	void groupsWhichCannotBeInsertedTogetherAreInsertedByHeight() {
+		BoxItemGroup a = group("A", 0);
+		BoxItemGroup b = group("B", 1);
+		Placement a1 = place("A1", 0, 0, a);
+		Placement a2 = place("A2", 0, 2, a);
+		Placement b1 = place("B1", 0, 1, b);
+		Stack stack = stack(a1, a2, b1);
+
+		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.ANY)).isTrue();
+		assertThat(stack.getPlacements()).containsExactly(a1, b1, a2);
+		assertThat(List.of(a1, b1, a2)).extracting(p -> p.getBoxItem().getGroup().getId()).containsExactly("A", "B", "A");
 	}
 }

@@ -28,6 +28,7 @@ import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.validator.ContainerPriorityValidator;
 import com.github.skjolber.packing.validator.ExtractionOrderValidator;
+import com.github.skjolber.packing.validator.GroupInsertionValidator;
 import com.github.skjolber.packing.validator.InsertionOrderValidator;
 
 /**
@@ -165,6 +166,60 @@ public class OrderingResultsTest {
 				}
 			}
 		}
+	}
+
+	@ParameterizedTest
+	@EnumSource(ContainerAccess.class)
+	public void boxesOfAGroupAreInsertedTogether(ContainerAccess access) {
+		List<Supplier<AbstractPackager<?>>> packagers = List.of(
+				() -> PlainPackager.newBuilder().build(),
+				() -> LargestAreaFitFirstPackager.newBuilder().build(),
+				() -> FastLargestAreaFitFirstPackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build(),
+				() -> BruteForcePackager.newBuilder().build());
+
+		List<String> failures = new ArrayList<>();
+		int shared = 0;
+		for (Supplier<AbstractPackager<?>> supplier : packagers) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				boolean bruteForce = packager instanceof BruteForcePackager || packager instanceof FastBruteForcePackager;
+				for (long seed = 0; seed < SEEDS; seed++) {
+					Random random = new Random(seed);
+					List<BoxItemGroup> groups = new ArrayList<>();
+					for (int g = 0; g < (bruteForce ? 3 : 5); g++) {
+						List<BoxItem> items = new ArrayList<>();
+						for (int i = 0; i < 2; i++) {
+							Box.Builder box = Box.newBuilder().withId("g" + g + "-" + i).withSize(2 + random.nextInt(5), 2 + random.nextInt(5), 1 + random.nextInt(4)).withWeight(1);
+							// brute force: few rotations, as the search is exponential
+							items.add(new BoxItem((bruteForce ? box.withRotate2D() : box.withRotate3D()).build(), bruteForce ? 1 : 1 + random.nextInt(2)));
+						}
+						groups.add(new BoxItemGroup("g" + g, items));
+					}
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containers(12, 10, 8, access, 5))
+							.withBoxItemGroups(groups)
+							.withMaxContainerCount(5)
+							.withInterruptDuration(5_000)
+							.build();
+					String name = packager.getClass().getSimpleName() + " seed " + seed + ": ";
+					if(result.isSuccess() && !result.isInsertionOrder()) {
+						failures.add(name + "not in insertion order");
+					}
+					for (Container container : result.getContainers()) {
+						List<ValidatorResultReason> reasons = new ArrayList<>();
+						if(!new InsertionOrderValidator().validate(container, reasons) || !new GroupInsertionValidator().validate(container, reasons)) {
+							failures.add(name + reasons.get(0).getMessage());
+						}
+						List<Placement> placements = container.getStack().getPlacements();
+						if(!placements.get(0).getBoxItem().getGroupKey().equals(placements.get(placements.size() - 1).getBoxItem().getGroupKey())) {
+							shared++;
+						}
+					}
+				}
+			}
+		}
+		assertThat(shared).isGreaterThan(SEEDS);
+		assertThat(failures).isEmpty();
 	}
 
 	/**

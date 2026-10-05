@@ -392,6 +392,11 @@ Boxes which are already in a container (obstacles, see `withObstacles(..)` on th
 inserted first: the packagers only place boxes where no obstacle rests on them or is in their path, and the result
 containers keep the obstacles (`Container.getObstacles()`), which the validator includes.
 
+The boxes of a box item group are inserted together: no box of another group is inserted between them, so a group
+(for example the parts of one product or order) can be loaded, and unloaded, as a unit. The packagers only place a box
+where no box of an earlier group rests on it or is in its path; `GroupInsertionValidator` (part of `DefaultValidator`)
+checks the order.
+
 `PackagerResult.isInsertionOrder()` tells whether a result is known to be in insertion order: false when it was
 skipped, or when the boxes cannot be loaded in any order (possible through a door, as the packagers place boxes
 without regard to the door when there is no box item order).
@@ -415,9 +420,9 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
 
  * **Extraction order**: within a container, no box rests on, or is in the path of (see `withAccess(..)`), a box
    which is extracted earlier, so the boxes of each stop can be taken out without moving the boxes for later stops.
-   Boxes with the same extraction order (by default 0) are not constrained among themselves, and groups with different
-   extraction orders are not interleaved. The packagers place the boxes which are extracted last first, and the
-   placements of each container are in insertion order: the boxes extracted last are inserted first.
+   Boxes with the same extraction order (by default 0) are not constrained among themselves. The packagers place the
+   boxes which are extracted last first, and the placements of each container are in insertion order: the boxes
+   extracted last are inserted first.
  * **Container priority**: a hard constraint on which boxes go in earlier containers. A box with a lower value is never
    in a later container than a box with a higher value: the boxes of the next priority start in a container only after
    all the boxes of the priority before it are placed, in that container or an earlier one. With a box item order,
@@ -591,6 +596,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
         * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
         * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container strategy)
+        * The boxes of a box item group are inserted together, without boxes of other groups between them (previously they could be interleaved with other groups' boxes, by height)
         * The plain and LAFF packagers search all boxes of a box item group (previously a group which did not start at the first remaining box item was searched partly or not at all, so groups were moved to further containers, or packing failed)
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
         * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads

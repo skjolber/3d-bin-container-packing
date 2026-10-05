@@ -87,6 +87,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 	private StackValidator stackValidator = new StackValidator();
 	private InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
 	private ExtractionOrderValidator extractionOrderValidator = new ExtractionOrderValidator();
+	private GroupInsertionValidator groupInsertionValidator = new GroupInsertionValidator();
 	private ContainerPriorityValidator containerPriorityValidator = new ContainerPriorityValidator();
 	
 	@Override
@@ -167,6 +168,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			}
 			// boxes can be extracted in their extraction order
 			if(!extractionOrderValidator.validate(container, reasons)) {
+				return false;
+			}
+			// the boxes of each group are inserted together
+			if(!groupInsertionValidator.validate(container, reasons)) {
 				return false;
 			}
 			

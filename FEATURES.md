@@ -82,7 +82,8 @@ not prove a globally minimum-cost packing for arbitrary inputs.
 ## Constraints and controls
 
 - Manifest controls and box-item groups for deciding which items may share a
-  container.
+  container. The boxes of a group are inserted together, without boxes of other
+  groups between them.
 - Point and placement controls for packager-specific candidate-point and
   placement decisions.
 - Optional load constraints: supported weight (the total weight resting on a
@@ -114,7 +115,8 @@ the packager. It covers, among other checks:
 
 - container identity and container-count limits;
 - box counts and box-item order;
-- insertion order, extraction order and container priority;
+- insertion order, groups inserted together, extraction order and container
+  priority;
 - containment and box intersection;
 - weight, pressure, supported-count, and identical-supporter constraints;
 - stability and centre-of-gravity rules;

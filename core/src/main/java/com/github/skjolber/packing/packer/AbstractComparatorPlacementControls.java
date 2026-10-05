@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -36,6 +37,23 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		this.checkInsertion = order != null && order != Order.NONE;
 		this.checkObstacles = container != null && !container.getObstacles().isEmpty();
 		this.checkExtraction = hasExtractionOrders(boxItems);
+		this.checkGroups = !checkInsertion && hasGroups(boxItems);
+		this.checkInsertable = checkInsertion || checkObstacles || checkExtraction || checkGroups;
+	}
+
+	/**
+	 * Whether a candidate which would be selected must be checked, see {@link #isInsertable(Placement)}.
+	 */
+	protected final boolean checkInsertable;
+
+	/**
+	 * Whether the boxes belong to box item groups, which are inserted one at a time (see
+	 * {@link InsertionSequencer}): a candidate must not have to be inserted before a box of another group.
+	 */
+	protected final boolean checkGroups;
+
+	private static boolean hasGroups(BoxItemSource boxItems) {
+		return boxItems != null && !boxItems.isEmpty() && boxItems.get(0).getGroup() != null;
 	}
 
 	/**
@@ -78,6 +96,16 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			List<Placement> placements = stack.getPlacements();
 			for (int i = 0; i < placements.size(); i++) {
 				if(candidate.mustPrecede(placements.get(i), access)) {
+					return false;
+				}
+			}
+		}
+		if(checkGroups) {
+			Object group = InsertionSequencer.getGroupKey(candidate);
+			List<Placement> placements = stack.getPlacements();
+			for (int i = 0; i < placements.size(); i++) {
+				Placement placement = placements.get(i);
+				if(!Objects.equals(group, InsertionSequencer.getGroupKey(placement)) && candidate.mustPrecede(placement, access)) {
 					return false;
 				}
 			}
@@ -147,7 +175,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			return current;
 		}
 		// the candidate would be selected; the current placement (if any) is insertable
-		if((checkInsertion || checkObstacles || checkExtraction) && !isInsertable(candidate)) {
+		if(checkInsertable && !isInsertable(candidate)) {
 			recyclablePlacement = candidate;
 			return current;
 		}

@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -480,6 +481,60 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
+	 * Box item groups are inserted one at a time (see {@link InsertionSequencer}). The iterators place the groups in
+	 * order, each at a fixed range of levels, so a box must not have to be inserted before the boxes of the levels
+	 * before its group.
+	 *
+	 * @return for each level, the first level of its group, or null if the boxes are not of several groups
+	 */
+	protected static int[] getGroupStarts(BoxItemPermutationRotationIterator iterator) {
+		int length = iterator.length();
+		if(length < 2) {
+			return null;
+		}
+		BoxItem[] boxItems = iterator.getBoxItems();
+		for (int i = 0; i < boxItems.length; i++) {
+			if(boxItems[i] != null) {
+				if(boxItems[i].getGroup() == null) {
+					// not packing groups
+					return null;
+				}
+				break;
+			}
+		}
+		int[] permutations = iterator.getPermutations();
+		int[] starts = new int[length];
+		Object previous = boxItems[permutations[0]].getGroupKey();
+		for (int i = 1; i < length; i++) {
+			Object group = boxItems[permutations[i]].getGroupKey();
+			starts[i] = group.equals(previous) ? starts[i - 1] : i;
+			previous = group;
+		}
+		return starts[length - 1] == 0 ? null : starts;
+	}
+
+	/**
+	 * @param count the number of placed boxes which belong to earlier groups
+	 * @return true if a box at the point can be inserted after the first boxes of the stack: none of them rests on it,
+	 *         or is in its path
+	 */
+	protected static boolean isInsertableAfter(Point point, BoxStackValue stackValue, Stack stack, int count, ContainerAccess access) {
+		int x = point.getMinX();
+		int y = point.getMinY();
+		int z = point.getMinZ();
+		int endX = x + stackValue.getDx() - 1;
+		int endY = y + stackValue.getDy() - 1;
+		int endZ = z + stackValue.getDz() - 1;
+		List<Placement> placements = stack.getPlacements();
+		for (int i = 0; i < count; i++) {
+			if(placements.get(i).mustFollow(x, y, z, endX, endY, endZ, access)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
 	 * @return true if the boxes of the iterator have different extraction orders
 	 */
 	protected static boolean hasExtractionOrders(BoxItemPermutationRotationIterator iterator) {
@@ -527,6 +582,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			throws PackagerInterruptedException {
 		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
+		int[] groupStarts = getGroupStarts(iterator);
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
 		int[] nextPointIndexes = frames.nextPointIndexes;
 		int[] pointCounts = frames.pointCounts;
@@ -622,6 +678,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					continue;
 				}
 				if(checkExtraction && !isExtractable(pointCalculator.get(candidate), stackValue, stack, access)) {
+					continue;
+				}
+				if(groupStarts != null && groupStarts[level] > 0 && !isInsertableAfter(pointCalculator.get(candidate), stackValue, stack, groupStarts[level], access)) {
+					// a box of an earlier group rests on the box at this point, or is in its path
 					continue;
 				}
 				if(utility != null) {
