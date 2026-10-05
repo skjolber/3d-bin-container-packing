@@ -123,6 +123,10 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 
 	@Override
 	public void reset() {
+		if(firstPermutation == null) {
+			// no boxes
+			return;
+		}
 		// back to the first permutation of the work unit
 		System.arraycopy(firstPermutation, 0, permutations, 0, permutations.length);
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);

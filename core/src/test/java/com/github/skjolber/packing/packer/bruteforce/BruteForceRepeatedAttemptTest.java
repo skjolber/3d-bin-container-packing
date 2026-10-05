@@ -79,6 +79,30 @@ public class BruteForceRepeatedAttemptTest {
 		assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(2);
 	}
 
+	/**
+	 * With a box item order, fast brute force searches the rotations of the boxes; an attempt ends at the last
+	 * rotations, where these boxes (in a 10 x 8 x 6 container) fit three of five instead of four.
+	 */
+	@Test
+	public void fastBruteForceInOrderAttemptsAgainFromTheFirstRotations() throws PackagerInterruptedException {
+		List<BoxItem> boxItems = List.of(
+				new BoxItem(Box.newBuilder().withId("a").withSize(3, 3, 4).withRotate2D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("b").withSize(4, 3, 2).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("c").withSize(5, 6, 4).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("d").withSize(6, 6, 2).withRotate2D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("e").withSize(5, 4, 3).withRotate3D().withWeight(1).build(), 1));
+		List<ContainerItem> containers = ContainerItem.newListBuilder()
+				.withContainer(Container.newBuilder().withId("container").withSize(10, 8, 6).withMaxLoadWeight(20).build(), 6)
+				.build();
+
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			PackagerSession session = packager.createSession(new PackagerInput(boxItems, null, containers, 6, Order.CHRONOLOGICAL), () -> false);
+
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(4);
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(4);
+		}
+	}
+
 	@Test
 	public void bruteForceAttemptsAgainAfterAnInterruptedAttempt() throws PackagerInterruptedException {
 		// interrupt the first attempt during the search, after placing the first box

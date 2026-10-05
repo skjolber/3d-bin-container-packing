@@ -163,7 +163,9 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	@Override
 	public void reset() {
 		// the work units again from their first permutations
-		calculate();
+		for (ParallelBoxItemGroupPermutationRotationIterator workUnit : workUnits) {
+			workUnit.reset();
+		}
 	}
 
 	private void calculate() {

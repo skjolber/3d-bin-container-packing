@@ -179,7 +179,9 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	 * Back to the first permutations and rotations of the work units, see {@link BoxItemPermutationRotationIterator#reset()}.
 	 */
 	public void reset() {
-		calculate();
+		for (ParallelBoxItemPermutationRotationIterator workUnit : workUnits) {
+			workUnit.reset();
+		}
 	}
 
 	private void calculate() {
