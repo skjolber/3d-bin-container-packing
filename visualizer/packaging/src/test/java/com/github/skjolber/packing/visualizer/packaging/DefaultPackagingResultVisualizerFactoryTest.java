@@ -2,6 +2,7 @@ package com.github.skjolber.packing.visualizer.packaging;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.within;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
 import com.github.skjolber.packing.validator.DefaultValidator;
+import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PlacementReferenceVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.StackPlacementVisualizer;
@@ -153,5 +155,22 @@ class DefaultPackagingResultVisualizerFactoryTest {
 			// the invalid result is still visualized
 			assertThat(invalid.getContainers().get(0).getStack().getPlacements()).hasSize(3);
 		}
+	}
+
+	@Test
+	void calculatesSupportLoadsAndCenterOfGravity() {
+		PackagingResultVisualizer result = new DefaultPackagingResultVisualizerFactory(false).visualize(List.of(sampleContainer()));
+
+		ContainerVisualizer container = result.getContainers().get(0);
+		List<StackPlacementVisualizer> placements = container.getStack().getPlacements();
+		// A and B on the floor, C on both
+		assertThat(placements).extracting(StackPlacementVisualizer::getSupportedArea).containsExactly(0L, 0L, 2L);
+		// C (weight 4) rests half on A and half on B
+		assertThat(placements).extracting(StackPlacementVisualizer::getLoadWeight).containsExactly(2.0, 2.0, 0.0);
+
+		// weights 2, 3 and 4 at centres x 0.5, 1.5 and 1, z 0.5, 0.5 and 1.5
+		assertThat(container.getCenterOfGravityX()).isCloseTo(9.5 / 9, within(1e-9));
+		assertThat(container.getCenterOfGravityY()).isCloseTo(0.5, within(1e-9));
+		assertThat(container.getCenterOfGravityZ()).isCloseTo(8.5 / 9, within(1e-9));
 	}
 }

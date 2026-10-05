@@ -8,6 +8,35 @@ public class ContainerVisualizer extends StackableVisualizer {
 
 	private StackVisualizer stack;
 
+	/** Centre of gravity of the load, or null if it weighs nothing */
+	private Double centerOfGravityX;
+	private Double centerOfGravityY;
+	private Double centerOfGravityZ;
+
+	public Double getCenterOfGravityX() {
+		return centerOfGravityX;
+	}
+
+	public void setCenterOfGravityX(Double centerOfGravityX) {
+		this.centerOfGravityX = centerOfGravityX;
+	}
+
+	public Double getCenterOfGravityY() {
+		return centerOfGravityY;
+	}
+
+	public void setCenterOfGravityY(Double centerOfGravityY) {
+		this.centerOfGravityY = centerOfGravityY;
+	}
+
+	public Double getCenterOfGravityZ() {
+		return centerOfGravityZ;
+	}
+
+	public void setCenterOfGravityZ(Double centerOfGravityZ) {
+		this.centerOfGravityZ = centerOfGravityZ;
+	}
+
 	private int emptyWeight;
 	private int maxLoadWeight;
 	private long loadWeight;

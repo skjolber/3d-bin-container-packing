@@ -3,6 +3,7 @@ import { Color, Mesh, Object3D, Scene } from "three";
 import randomColor from "randomcolor";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Font } from "three/examples/jsm/loaders/FontLoader";
+import { getSupportedFraction } from "./colorModes";
 import { Box, Container, Point, StackPlacement, Stackable } from "./model";
 
 const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.typeface.json');
@@ -158,6 +159,16 @@ export class StackableRenderer {
             parent.add(containerGroup);
             containerGroup.add(containerLoad);
 
+            if(containerStackable.centerOfGravity) {
+                // centre of gravity of the load: a small white sphere
+                var cog = containerStackable.centerOfGravity;
+                var radius = Math.max(containerStackable.dx, containerStackable.dy, containerStackable.dz) / 80;
+                var cogMesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 }));
+                cogMesh.position.set(cog.y + offsetX, cog.z + offsetY, cog.x + offsetZ);
+                cogMesh.userData = { type: "cog" };
+                containerLoad.add(cogMesh);
+            }
+
             var nextColorScheme = colorScheme.getColorScheme(containerStackable);
             for (let s of containerStackable.stack.placements) {
                 this.add(containerLoad, nextColorScheme, s, offsetX, offsetY, offsetZ);
@@ -196,8 +207,12 @@ export class StackableRenderer {
                 step: boxStackable.step,
                 type: "box",
                 source: stackPlacement,
+                // the box item colour, restored when switching back from another colour mode
+                baseColor: material.color.clone(),
                 box: {
                     reasons: stackPlacement.reasons.map(reason => reason.message),
+                    supportedPercent: Math.round(getSupportedFraction(stackPlacement) * 100),
+                    loadWeight: stackPlacement.loadWeight,
                     id: boxStackable.id,
                     name: boxStackable.name,
                     dimensions: {

@@ -37,6 +37,8 @@ public class SupportGraph {
 	}
 
 	private final Map<Placement, Node> nodes;
+	/** The weight resting on each placement calculated so far */
+	private final Map<Placement, Double> loadWeights = new IdentityHashMap<>();
 
 	/**
 	 * Support graph for boxes unloaded in any order, see {@link Unloading#ANY_ORDER}.
@@ -142,5 +144,29 @@ public class SupportGraph {
 	public long getSupportedArea(Placement placement) {
 		Node node = nodes.get(placement);
 		return node != null ? node.supportedArea : 0L;
+	}
+
+	/**
+	 * The total weight resting on a placement, through all levels above it: each box above passes down its own weight
+	 * and the weight resting on it, shared between its supporters (see {@link #getShare(Placement, PlacementLoad)}).
+	 * <p>
+	 * Each placement is calculated once, as one can be reached through several paths (and walking every path grows
+	 * exponentially with the stack height).
+	 *
+	 * @param placement the placement
+	 * @return the weight resting on it
+	 */
+	public double getLoadWeight(Placement placement) {
+		Double known = loadWeights.get(placement);
+		if(known != null) {
+			return known;
+		}
+		double total = 0.0;
+		for(PlacementLoad supporteeLink : getSupportees(placement)) {
+			Placement supportee = supporteeLink.getPlacement();
+			total += (supportee.getWeight() + getLoadWeight(supportee)) * getShare(supportee, supporteeLink);
+		}
+		loadWeights.put(placement, total);
+		return total;
 	}
 }

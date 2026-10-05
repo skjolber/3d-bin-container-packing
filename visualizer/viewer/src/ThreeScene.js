@@ -9,6 +9,7 @@ import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
 import ResultSummaryView from "./ResultSummaryView";
+import { COLOR_MODES, ColorMode, getColor } from "./colorModes";
 
 import randomColor from "randomcolor";
 import { thisExpression } from "@babel/types";
@@ -50,6 +51,7 @@ var points = false;
 
 var stackableRenderer = new StackableRenderer();
 var memoryScheme = new MemoryColorScheme(new RandomColorScheme());
+var groupColors = new Map(); // colours by group id, for the group colour mode
 
 var gridXZ;
 
@@ -61,7 +63,7 @@ const font = new Font( helvetiker );
 class ThreeScene extends Component {
   constructor(props) {
     super(props);
-    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null, packaging: null };
+    this.state = { useWireFrame: false, selectedBox: null, hoveredData: null, packaging: null, colorMode: ColorMode.BOX_ITEM };
     visibleContainers = new Array();
     // Raw mouse position in client coordinates (updated on every mousemove)
     this.mouseX = 0;
@@ -148,6 +150,9 @@ class ThreeScene extends Component {
     var target = null;
     for(var ii = 0; ii < allIntersects.length; ii++) {
       var candidate = allIntersects[ii].object;
+      if (candidate.userData && candidate.userData.type === "cog") {
+        continue;
+      }
       if (candidate.userData && candidate.userData.type === "invalid") {
         // the red outline of an invalid box: hover the box
         candidate = candidate.parent;
@@ -444,6 +449,7 @@ class ThreeScene extends Component {
       xLabelMesh.rotation.x = Math.PI / 2;
       decorationsGroup.add( xLabelMesh );
 
+      component.applyColorMode(component.state.colorMode);
     };
 
     http(
@@ -455,6 +461,26 @@ class ThreeScene extends Component {
         "/assets/containers.json"
       ).then(load).catch((err) => { console.warn("Failed to load containers data:", err.message); });
     }, 500);
+  };
+
+  /**
+   * Colour the boxes for a colour mode (see colorModes.ts).
+   */
+  applyColorMode = (colorMode) => {
+    if (!visibleContainers) return;
+    for (const visibleContainer of visibleContainers) {
+      visibleContainer.traverse(obj => {
+        if (!obj.userData || obj.userData.type !== "box") return;
+        const color = getColor(colorMode, obj.userData.source, groupColors, randomColor);
+        if (color === undefined) {
+          obj.material.color.copy(obj.userData.baseColor);
+        } else {
+          obj.material.color.set(color);
+          obj.material.color.convertSRGBToLinear();
+        }
+      });
+    }
+    this.renderScene();
   };
 
   start = () => {
@@ -612,6 +638,13 @@ class ThreeScene extends Component {
         this.fitCameraToObject(camera, controls, mainGroup, 1.5);
         break
       }
+      case 67: {
+        // C: next colour mode
+        const colorMode = COLOR_MODES[(COLOR_MODES.indexOf(this.state.colorMode) + 1) % COLOR_MODES.length];
+        this.setState({ colorMode });
+        this.applyColorMode(colorMode);
+        break;
+      }
       default: {
         break;
       }
@@ -711,6 +744,8 @@ class ThreeScene extends Component {
                 {selectedBox.maxLoadPressure != null && <div>Max pressure: {selectedBox.maxLoadPressure}</div>}
                 {selectedBox.maxLoadBoxCount != null && <div>Max stack count: {selectedBox.maxLoadBoxCount}</div>}
                 {selectedBox.maxLoadIdenticalOnly === true && <div>Identical only</div>}
+                <div>Supported: {selectedBox.supportedPercent} %</div>
+                {selectedBox.loadWeight > 0 && <div>Load weight: {Math.round(selectedBox.loadWeight * 100) / 100}</div>}
                 {selectedBox.reasons && selectedBox.reasons.map((reason, i) => (
                   <div key={i} style={{ color: "#ef5350" }}>{reason}</div>
                 ))}
@@ -718,7 +753,7 @@ class ThreeScene extends Component {
             )}
         </div>
       {/* Result summary panel */}
-      <ResultSummaryView packaging={packaging} />
+      <ResultSummaryView packaging={packaging} colorMode={this.state.colorMode} />
       {/* Supporting placements popup — shown in a separate floating window on hover */}
       <SupportingPlacementsView
         hoveredData={hoveredData}

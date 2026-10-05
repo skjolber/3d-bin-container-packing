@@ -1,17 +1,15 @@
 package com.github.skjolber.packing.validator.load;
 
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Unloading;
-import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
 
 /**
@@ -70,7 +68,6 @@ public class MaxPressureLoadValidator implements LoadValidator {
 	public boolean isValid(List<Placement> list, List<ValidatorResultReason> reasons) {
 		boolean valid = true;
 		SupportGraph graph = new SupportGraph(list, unloading);
-		Map<Placement, Double> weightAbove = new IdentityHashMap<>();
 
 		for(Placement placement : list) {
 			BoxStackValue stackValue = placement.getStackValue();
@@ -90,7 +87,7 @@ public class MaxPressureLoadValidator implements LoadValidator {
 
 				Placement supportee = pl.getPlacement();
 				double share = graph.getShare(supportee, pl);
-				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(graph, supportee, share, weightAbove);
+				double weight = supportee.getWeight() * share + WeightLoadValidator.accumulateWeight(graph, supportee, share);
 				double linkPressure = Box.calculatePressure(contactArea, weight);
 				if(linkPressure > maxPressure) {
 					maxPressure = linkPressure;

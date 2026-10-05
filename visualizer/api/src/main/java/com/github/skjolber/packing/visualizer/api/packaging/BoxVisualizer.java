@@ -6,7 +6,18 @@ public class BoxVisualizer extends StackableVisualizer {
 
 	/** Per-result identity key; equal values represent the same box-item type. */
 	protected Integer boxItemKey;
+	/** Id of the box item group, or null if none */
+	protected String groupId;
 	protected long weight;
+
+	public String getGroupId() {
+		return groupId;
+	}
+
+	public void setGroupId(String groupId) {
+		this.groupId = groupId;
+	}
+
 	protected Long maxLoadWeight;
 	protected Double maxLoadPressure;
 	protected Integer maxLoadBoxCount;

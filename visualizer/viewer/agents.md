@@ -20,6 +20,8 @@ Interactive 3D front-end for visualising packing results. Renders packed contain
 - `src/ThreeScene.js`: scene, camera, controls, loading (polls `/assets/containers.json`) and the info panels
 - `src/SupportingPlacementsView.js`: hover popup with the supporting boxes and loads
 - `src/utils.ts`: load calculations
+- `src/colorModes.ts`: colour modes (box item, group, support, load), without three.js imports
+- `src/ResultSummaryView.js`: result summary, validation and colour mode panel
 - `src/setupProxy.js`: serves `public/assets/containers.json` without caching
 
 ## Input Data Format
@@ -32,6 +34,7 @@ written by the Java tests; `src/model.test.ts` parses it. Backwards compatibilit
 | A / D | Previous / next packaging step |
 | W / S | Previous / next point step |
 | P | Toggle free placement points |
+| C | Next colour mode: box item, group, support, load (see `src/colorModes.ts`) |
 | 1 / 2 | Rotate XY plane |
 | Mouse wheel | Zoom |
 | Left-drag | Rotate view |

@@ -29,6 +29,7 @@
           "dz" : 1,
           "type" : "box",
           "boxItemKey" : 0,
+          "groupId" : null,
           "weight" : 2,
           "maxLoadWeight" : 1,
           "maxLoadPressure" : null,
@@ -50,6 +51,8 @@
           "dy" : 1,
           "dz" : 2
         } ],
+        "supportedArea" : 0,
+        "loadWeight" : 2.0,
         "reasons" : [ 0 ]
       }, {
         "step" : 3,
@@ -67,6 +70,7 @@
           "dz" : 1,
           "type" : "box",
           "boxItemKey" : 1,
+          "groupId" : null,
           "weight" : 3,
           "maxLoadWeight" : null,
           "maxLoadPressure" : null,
@@ -81,6 +85,8 @@
           "dy" : 1,
           "dz" : 1
         } ],
+        "supportedArea" : 0,
+        "loadWeight" : 2.0,
         "reasons" : [ ]
       }, {
         "step" : 4,
@@ -98,6 +104,7 @@
           "dz" : 1,
           "type" : "box",
           "boxItemKey" : 2,
+          "groupId" : null,
           "weight" : 4,
           "maxLoadWeight" : null,
           "maxLoadPressure" : null,
@@ -105,9 +112,14 @@
           "maxLoadIdenticalOnly" : null
         },
         "points" : [ ],
+        "supportedArea" : 2,
+        "loadWeight" : 0.0,
         "reasons" : [ ]
       } ]
     },
+    "centerOfGravityX" : 1.0555555555555556,
+    "centerOfGravityY" : 0.5,
+    "centerOfGravityZ" : 0.9444444444444444,
     "emptyWeight" : 0,
     "maxLoadWeight" : 100,
     "loadWeight" : 9,

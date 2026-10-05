@@ -47,6 +47,8 @@ export class Stackable {
 export class Box extends Stackable {
 
     boxItemKey?: number;
+    /** Id of the box item group, if any. */
+    groupId?: string;
     weight: number;
     maxLoadWeight?: number;
     maxLoadPressure?: number;
@@ -74,6 +76,9 @@ export class Container extends Stackable {
     loadDz : number;
     
     stack : Stack;
+
+    /** Centre of gravity of the load, if it weighs anything. */
+    centerOfGravity? : { x : number, y : number, z : number };
 
     emptyWeight : number = 0;
     maxLoadWeight : number = 0;
@@ -106,6 +111,11 @@ export class StackPlacement {
     step : number;
 
     points : Array<Point>;
+
+    /** Area resting on boxes which count as support (the floor is not counted). */
+    supportedArea : number = 0;
+    /** Total weight resting on the box, as calculated by the validators. */
+    loadWeight : number = 0;
 
     /** The validation reasons which concern this placement; empty if valid. */
     reasons : Array<ValidationReason> = [];
@@ -193,6 +203,9 @@ export function parsePackaging(json : any) : Packaging {
         container.loadWeight = containerJson.loadWeight;
         container.maxLoadVolume = containerJson.maxLoadVolume;
         container.loadVolume = containerJson.loadVolume;
+        if(containerJson.centerOfGravityX != null) {
+            container.centerOfGravity = { x: containerJson.centerOfGravityX, y: containerJson.centerOfGravityY, z: containerJson.centerOfGravityZ };
+        }
 
         if(container.step < minStep || minStep == -1) {
             minStep = container.step;
@@ -229,8 +242,11 @@ export function parsePackaging(json : any) : Packaging {
                     stackable.maxLoadBoxCount, stackable.maxLoadIdenticalOnly
                 );
                 box.boxItemKey = stackable.boxItemKey;
+                box.groupId = stackable.groupId ?? undefined;
 
                 var stackPlacement = new StackPlacement(box, placement.step, placement.x, placement.y, placement.z, points);
+                stackPlacement.supportedArea = placement.supportedArea ?? 0;
+                stackPlacement.loadWeight = placement.loadWeight ?? 0;
                 for (const reasonIndex of placement.reasons ?? []) {
                     stackPlacement.reasons.push(validationReasons[reasonIndex]);
                 }

@@ -12,8 +12,16 @@ function percent(value, max) {
  *
  * Props:
  *   packaging – the parsed Packaging (see model.ts), or null before the first load
+ *   colorMode – the current colour mode (see colorModes.ts)
  */
-function ResultSummaryView({ packaging }) {
+const LEGENDS = {
+    'box item': 'a colour per box item',
+    'group': 'a colour per group, grey without',
+    'support': 'green: fully supported, red: unsupported',
+    'load': 'green: no load, red: at or over max load weight, grey: no limit',
+};
+
+function ResultSummaryView({ packaging, colorMode }) {
     if (!packaging) return null;
 
     const { containers, success, timeout, duration, cost, valid, validationReasons } = packaging;
@@ -58,6 +66,8 @@ function ResultSummaryView({ packaging }) {
                 <div key={i} style={{ color: '#ef5350', maxWidth: '360px' }}>{reason.type}: {reason.message}</div>
             ))}
             {validationReasons.length > MAX_REASONS && <div style={{ color: '#ef5350' }}>… and {validationReasons.length - MAX_REASONS} more (see the log)</div>}
+            <div style={rowStyle}><span style={labelStyle}>Colours (C)</span><span>{colorMode}</span></div>
+            <div style={{ color: '#aaa', maxWidth: '360px' }}>{LEGENDS[colorMode]}</div>
             <div style={rowStyle}><span style={labelStyle}>Containers</span><span>{containers.length}</span></div>
             <div style={rowStyle}><span style={labelStyle}>Boxes</span><span>{boxes}</span></div>
             <div style={rowStyle}><span style={labelStyle}>Volume used</span><span>{percent(loadVolume, maxLoadVolume)}</span></div>

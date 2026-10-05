@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { isSameBoxItem } from './utils';
+import { getSupportedFraction } from './colorModes';
 
 const MAX_DIM = 640;
 const CANVAS_PADDING = 24;
@@ -371,11 +372,15 @@ function SupportingPlacementsView({ hoveredData }) {
                         <div style={{ ...sectionHeadStyle, color: '#81c784' }}>Actual load (step {hoveredData.currentStep})</div>
                         <div style={rowStyle}>
                             <span style={labelStyle}>Load weight</span>
-                            <span style={valueStyle}>{fmt(hoveredLoadInfo.loadWeight)}</span>
+                            <span style={valueStyle}>{fmt(source.loadWeight ?? hoveredLoadInfo.loadWeight)}</span>
                         </div>
                         <div style={rowStyle}>
                             <span style={labelStyle}>Load pressure</span>
-                            <span style={valueStyle}>{fmt(hoveredLoadInfo.loadPressure)}</span>
+                            <span style={valueStyle}>{fmt(source.loadWeight != null ? source.loadWeight / (hoveredStackable.dx * hoveredStackable.dy) : hoveredLoadInfo.loadPressure)}</span>
+                        </div>
+                        <div style={rowStyle}>
+                            <span style={labelStyle}>Supported</span>
+                            <span style={valueStyle}>{Math.round(getSupportedFraction(source) * 100)} %</span>
                         </div>
                         <div style={rowStyle}>
                             <span style={labelStyle}>Direct boxes on top</span>

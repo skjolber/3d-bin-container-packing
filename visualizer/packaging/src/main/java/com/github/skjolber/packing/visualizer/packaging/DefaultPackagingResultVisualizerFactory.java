@@ -21,8 +21,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
-import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
-import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
+import com.github.skjolber.packing.validator.SupportGraph;
 import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
 import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadPressureReason;
@@ -31,6 +30,8 @@ import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxRea
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableCenterOfGravityReason;
 import com.github.skjolber.packing.validator.stability.reasons.UnstableStackCenterOfGravityReason;
+import com.github.skjolber.packing.visualizer.api.packaging.BoxVisualizer;
+import com.github.skjolber.packing.visualizer.api.packaging.ContainerVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PackagingResultVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PlacementReferenceVisualizer;
 import com.github.skjolber.packing.visualizer.api.packaging.PointVisualizer;
@@ -146,6 +147,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			containerVisualization.setStack(stackVisualization);
 
 			Stack stack = inputContainer.getStack();
+			SupportGraph supportGraph = new SupportGraph(stack.getPlacements(), unloading);
+			setCenterOfGravity(containerVisualization, stack.getPlacements());
 
 			DefaultPointCalculator3D pointCalculator = new DefaultPointCalculator3D(true, stack.getPlacements().size());
 			pointCalculator.clearToSize(inputContainer.getDx(), inputContainer.getDy(), inputContainer.getDz());
@@ -169,6 +172,9 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				Object boxItemIdentity = boxItem != null ? boxItem : box;
 				boxVisualization.setBoxItemKey(boxItemKeys.computeIfAbsent(boxItemIdentity, key -> boxItemKeys.size()));
 				boxVisualization.setWeight(box.getWeight());
+				if(boxItem != null && boxItem.getGroup() != null) {
+					boxVisualization.setGroupId(boxItem.getGroup().getId());
+				}
 
 				if(stackValue.isMaxLoadBoxCount()) {
 					boxVisualization.setMaxLoadBoxCount(stackValue.getMaxLoadBoxCount());
@@ -189,6 +195,8 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 				stackPlacement.setZ(placement.getAbsoluteZ());
 				stackPlacement.setStackable(boxVisualization);
 				stackPlacement.setStep(step);
+				stackPlacement.setSupportedArea(supportGraph.getSupportedArea(placement));
+				stackPlacement.setLoadWeight(supportGraph.getLoadWeight(placement));
 				references.put(placement, new PlacementReferenceVisualizer(containerIndex, i));
 
 				if(calculatePoints) {
@@ -235,6 +243,34 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 			}
 		}
 		return visualization;
+	}
+
+	/**
+	 * Set the centre of gravity of the load: the boxes' centres of gravity (by default their centres), weighted by their weight.
+	 */
+	protected void setCenterOfGravity(ContainerVisualizer containerVisualization, List<Placement> placements) {
+		double weight = 0;
+		double x = 0;
+		double y = 0;
+		double z = 0;
+		for (Placement placement : placements) {
+			BoxStackValue stackValue = placement.getStackValue();
+			double w = placement.getWeight();
+			weight += w;
+			x += w * (placement.getAbsoluteX() + getCenterOfGravity(stackValue.getCenterOfGravityX(), stackValue.getDx()));
+			y += w * (placement.getAbsoluteY() + getCenterOfGravity(stackValue.getCenterOfGravityY(), stackValue.getDy()));
+			z += w * (placement.getAbsoluteZ() + getCenterOfGravity(stackValue.getCenterOfGravityZ(), stackValue.getDz()));
+		}
+		if(weight > 0) {
+			containerVisualization.setCenterOfGravityX(x / weight);
+			containerVisualization.setCenterOfGravityY(y / weight);
+			containerVisualization.setCenterOfGravityZ(z / weight);
+		}
+	}
+
+	private static double getCenterOfGravity(int centerOfGravity, int size) {
+		// -1: not configured, use the centre
+		return centerOfGravity == -1 ? size / 2.0 : centerOfGravity;
 	}
 
 	protected void addReasons(PackagingResultVisualizer visualization, Map<Placement, PlacementReferenceVisualizer> references, List<ValidatorResultReason> reasons) {
