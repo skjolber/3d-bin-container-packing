@@ -49,6 +49,12 @@ public interface BoxItemPermutationRotationIterator {
 
 	int length();
 
+	/**
+	 * Back to the first permutation and rotations, so that a packaging attempt iterates all of them: an attempt leaves
+	 * the iterator at its last permutation and rotations.
+	 */
+	void reset();
+
 	BoxStackValue getStackValue(int index);
 
 	/**
