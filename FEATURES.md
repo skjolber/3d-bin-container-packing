@@ -122,7 +122,10 @@ on which, so results from any packager can be validated.
 
 - Java API module with builder-based model and result APIs.
 - OpenAPI model, client, server, and test modules.
-- Three.js-based visualiser intended for inspecting algorithms and results.
+- Three.js-based visualiser intended for inspecting algorithms and results:
+  result summaries, comparison of several results (for example packagers),
+  validation reasons on the boxes they concern, colour modes for groups,
+  support and load, and the centre of gravity.
 - JMH benchmarks for packagers, iterators, point calculators, and container
   strategies.
 - Thread-safe packager instances; selected algorithms also offer explicit

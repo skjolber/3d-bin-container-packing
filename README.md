@@ -477,7 +477,30 @@ npm install
 npm start
 ```
 
-The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. It shows a summary of the result (or compares several results of the same order, for example from different packagers), and whether it is valid: the factory validates the boxes' load limits (and, if given the input, the whole result), and outlines the boxes of invalid placements in red. To "hot reload" the visualizer during development, make your unit tests write that file (see the `VisualizationTest` and `*VisualizationTest` examples in `visualizer/packaging`, which are run by hand, for example from the IDE or with `./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=WeightConstraintVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`).
+The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. Write it with
+`DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`), for one result or several results of the same order:
+
+```java
+Map<String, PackagerResult> results = new LinkedHashMap<>();
+results.put("plain", plainResult);
+results.put("composite", compositeResult);
+new DefaultPackagingResultVisualizerFactory(true) // true: calculate the free points after each placement
+    .visualize(results, validator.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems), file);
+```
+
+The viewer shows:
+
+ * a summary of the result: whether it was packed, the time and cost, and the volume and weight used per container
+ * a comparison table when there are several results (`r` or click a row to switch)
+ * whether the result is valid: the factory validates the boxes' load limits (and the whole result, given the input), logs the reasons, and the viewer outlines the boxes of invalid placements in red
+ * colour modes (`c`): box item, group, support, and load relative to the max load weight
+ * each container's centre of gravity, and for each box its supported area and load
+ * the packing steps (`a` / `d`) and the free points after each placement (`p`, `w` / `s`)
+
+To "hot reload" the visualizer during development, make your unit tests write that file. The `*VisualizationTest`
+classes in `visualizer/packaging` are examples (load limits, unloading, groups and support, container costs,
+virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
+`./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=PackagerComparisonVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`.
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
@@ -501,6 +524,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
      * Substantially faster point calculation, placement search, support calculation and load validation
+     * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support and load, and the centre of gravity
      * Behaviour changes:
         * The max load weight of a box limits the total weight resting on it, through all levels and paths of the support graph (previously only direct loads were counted)
         * The full-support fallback no longer skips positions at the edge of a point
