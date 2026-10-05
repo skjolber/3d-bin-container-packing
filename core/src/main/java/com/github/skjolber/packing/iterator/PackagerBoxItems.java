@@ -148,10 +148,26 @@ public class PackagerBoxItems {
 		return startIndex;
 	}
 	
+	/**
+	 * @return the index of the first box item of the group, or -1 if the group was removed. The index changes when
+	 *         groups before it are removed.
+	 */
+	public int getFirstBoxItemIndex(BoxItemGroup group) {
+		int index = 0;
+		for(int i = 0; i < groups.size(); i++) {
+			BoxItemGroup g = groups.get(i);
+			if(g == group) {
+				return index;
+			}
+			index += g.size();
+		}
+		return -1;
+	}
+
 	public int getFirstBoxItemIndexForGroup(int groupIndex) {
 		int index = 0;
 		for(int i = 0; i < groupIndex; i++) {
-			index += groups.get(index).size();
+			index += groups.get(i).size();
 		}
 		return index;
 	}

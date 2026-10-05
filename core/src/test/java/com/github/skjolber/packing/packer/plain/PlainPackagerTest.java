@@ -448,8 +448,9 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				assertEquals(c.getStack().size(), 1);
 			}
 			
-			assertEquals(containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "petrol-1");
-			assertEquals(containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId(), "lighter-2");
+			// the larger group first
+			assertEquals("lighter-2", containers.get(0).getStack().getPlacements().get(0).getStackValue().getBox().getId());
+			assertEquals("petrol-1", containers.get(1).getStack().getPlacements().get(0).getStackValue().getBox().getId());
 			
 			assertValid(build);
 		} finally {
