@@ -283,3 +283,46 @@ export function parsePackaging(json : any) : Packaging {
         validationReasons
     };
 }
+
+/** Extent of the containers laid out side by side along x (see {@link getLayoutPositions}). */
+export interface LayoutExtent {
+    x : number;
+    y : number;
+    z : number;
+}
+
+/**
+ * The x position of each container: side by side along x, separated by (and aligned to) the grid spacing.
+ */
+export function getLayoutPositions(containers : Array<Container>, spacing : number) : Array<number> {
+    var positions = new Array<number>();
+    var x = 0;
+    for (const container of containers) {
+        positions.push(x);
+        x += container.dx + spacing;
+        x = x - (x % spacing);
+    }
+    return positions;
+}
+
+/**
+ * The extent which holds the containers of every result, so that results can be compared on the same grid.
+ */
+export function getLayoutExtent(packagings : Array<Packaging>, spacing : number) : LayoutExtent {
+    var extent = { x: 0, y: 0, z: 0 };
+    for (const packaging of packagings) {
+        var positions = getLayoutPositions(packaging.containers, spacing);
+        packaging.containers.forEach((container, i) => {
+            extent.x = Math.max(extent.x, positions[i] + container.dx);
+            extent.y = Math.max(extent.y, container.dy);
+            extent.z = Math.max(extent.z, container.dz);
+        });
+    }
+    return extent;
+}
+
+/** A key for the containers of all results: equal keys can be shown with the same camera. */
+export function getLayoutKey(packagings : Array<Packaging>) : string {
+    return packagings.map(p => p.containers.map(c => c.dx + "x" + c.dy + "x" + c.dz).join(",")).join("|");
+}
+

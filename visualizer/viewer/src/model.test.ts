@@ -1,6 +1,6 @@
 import { expect, test } from '@jest/globals';
 
-import { Box, parsePackagings } from './model';
+import { Box, getLayoutExtent, getLayoutKey, getLayoutPositions, parsePackagings } from './model';
 
 // written by DefaultPackagingResultVisualizerFactoryTest in visualizer/packaging
 const sample = require('./fixtures/containers.json');
@@ -56,3 +56,19 @@ test('parses the sample written by the Java visualizer', () => {
   expect(placements[0].points.length).toBeGreaterThan(0);
   expect(packaging.maxPointNumbers[2]).toBe(placements[0].points.length);
 });
+
+test('lays out containers along x, with an extent covering every result', () => {
+  const packagings = parsePackagings(sample);
+  const container = packagings[0].containers[0];
+
+  // 2 wide, then aligned to the spacing of 10
+  expect(getLayoutPositions([container, container, container], 10)).toEqual([0, 10, 20]);
+
+  // the second result is empty: the extent is that of the first
+  expect(getLayoutExtent(packagings, 10)).toEqual({ x: 2, y: 1, z: 2 });
+  expect(getLayoutExtent([packagings[1]], 10)).toEqual({ x: 0, y: 0, z: 0 });
+
+  // the key does not depend on which result is shown
+  expect(getLayoutKey(packagings)).toBe('2x1x2|');
+});
+

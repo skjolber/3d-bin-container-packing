@@ -4,7 +4,7 @@ import { Stats } from "stats-js";
 import { Color } from "three";
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry';
 import { MemoryColorScheme, RandomColorScheme, StackableRenderer } from "./api";
-import { StackPlacement, parsePackagings } from "./model";
+import { StackPlacement, getLayoutExtent, getLayoutKey, getLayoutPositions, parsePackagings } from "./model";
 import { http, computeLoads } from "./utils";
 import { Font } from 'three/examples/jsm/loaders/FontLoader';
 import SupportingPlacementsView from "./SupportingPlacementsView";
@@ -93,7 +93,10 @@ class ThreeScene extends Component {
 
   // Helper function to fit camera to an object
   fitCameraToObject = (camera, controls, object, offset = 1.0) => {
-    const box = new THREE.Box3().setFromObject(object);
+    this.fitCameraToBox(camera, controls, new THREE.Box3().setFromObject(object), offset);
+  };
+
+  fitCameraToBox = (camera, controls, box, offset = 1.0) => {
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());
 
@@ -351,12 +354,6 @@ class ThreeScene extends Component {
       visibleContainers = [];
       decorationsGroup.clear();
 
-      var x = 0;
-
-      var maxX = 0;
-      var maxY = 0;
-      var maxZ = 0;
-
       if(!parsed) {
         component.setState({ packaging: null });
         return;
@@ -368,38 +365,32 @@ class ThreeScene extends Component {
       pointNumber = -1;
       stepNumber = maxStepNumber;
 
+      var positions = getLayoutPositions(parsed.containers, GRID_SPACING);
       for(var i = 0; i < parsed.containers.length; i++) {
         var container = parsed.containers[i];
-
-        // TODO return controls instead
-        var visibleContainer = stackableRenderer.add(boxesGroup, memoryScheme, new StackPlacement(container, 0, x, 0, 0), 0, 0, 0);
+        var visibleContainer = stackableRenderer.add(boxesGroup, memoryScheme, new StackPlacement(container, 0, positions[i], 0, 0), 0, 0, 0);
         visibleContainers.push(visibleContainer);
-
-
-        if(x + container.dx > maxX) {
-          maxX = x + container.dx;
-        }
-        if(container.dy > maxY) {
-          maxY = container.dy;
-        }
-        if(container.dz > maxZ) {
-          maxZ = container.dz;
-        }
-
-        x += container.dx + GRID_SPACING;
-        x = x - (x % GRID_SPACING);
       }
-      
-      // the containers' sizes: when they change (for example another scenario), fit the camera to them,
+
+      // the grid, axes and camera cover the containers of every result in the file, so that switching results (R)
+      // keeps the same reference
+      var packagings = component.packagings && component.packagings.length > 0 ? component.packagings : [parsed];
+      var extent = getLayoutExtent(packagings, GRID_SPACING);
+      var maxX = extent.x;
+      var maxY = extent.y;
+      var maxZ = extent.z;
+
+      // when the containers change (for example another scenario), fit the camera to them,
       // otherwise keep the camera where the user left it
-      var layoutKey = parsed.containers.map(c => c.dx + "x" + c.dy + "x" + c.dz).join(",");
+      var layoutKey = getLayoutKey(packagings);
       if (!cameraInitialized) {
         camera.position.z = maxY * 2;
         camera.position.y = maxZ * 1.25;
         camera.position.x = maxX * 2;
         cameraInitialized = true;
       } else if (layoutKey !== lastLayoutKey) {
-        component.fitCameraToObject(camera, controls, boxesGroup, 1.5);
+        // three.js x, y and z are the container y, z and x axes
+        component.fitCameraToBox(camera, controls, new THREE.Box3(new THREE.Vector3(0, 0, 0), new THREE.Vector3(maxY, maxZ, maxX)), 1.5);
       }
       lastLayoutKey = layoutKey;
       
