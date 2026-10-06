@@ -81,7 +81,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	 * @return null if this packager supports the input, otherwise the reason why not
 	 */
 	public String getUnsupportedReason(PackagerInput input) {
-		if(input.getOrder() != null && input.getOrder() != Order.NONE && hasDecreasingContainerPriorities(input)) {
+		if(input.getOrder() != Order.NONE && hasDecreasingContainerPriorities(input)) {
 			// the box items arrive in the given order: they cannot be reordered by container priority
 			return "Container priorities must not decrease in the box item order";
 		}
@@ -185,7 +185,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			return InsertionSequencer.sequence(containers, input.getOrder());
 		}
 		// with a box item order, only insertable boxes are placed
-		return input.getOrder() != null && input.getOrder() != Order.NONE;
+		return input.getOrder() != Order.NONE;
 	}
 
 	public ContainerResult packSession(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {

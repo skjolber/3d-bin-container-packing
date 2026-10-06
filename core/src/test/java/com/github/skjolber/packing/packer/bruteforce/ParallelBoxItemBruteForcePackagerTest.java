@@ -523,4 +523,17 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			executorService.shutdownNow();
 		}
 	}
+
+	@Test
+	void inputWithoutOrderIsSupported() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
+		try {
+			List<BoxItem> products = List.of(new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build(), 1));
+			List<ContainerItem> containers = List.of(new ContainerItem(Container.newBuilder().withId("c").withSize(1, 1, 1).withMaxLoadWeight(10).build(), 1));
+			// no order is the same as Order.NONE
+			assertThat(packager.getUnsupportedReason(new com.github.skjolber.packing.packer.PackagerInput(products, null, containers, 1, null))).isNull();
+		} finally {
+			packager.close();
+		}
+	}
 }

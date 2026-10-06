@@ -26,6 +26,7 @@ public class PackagerInput {
 	/**
 	 * @param boxItems box items, or null (or empty) when packing box item groups
 	 * @param boxItemGroups box item groups, or null (or empty) when packing box items
+	 * @param order the box item order, or null for {@link Order#NONE}
 	 */
 	public PackagerInput(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containerItems, int maxContainerCount, Order order) {
 		this(boxItems, boxItemGroups, containerItems, maxContainerCount, order, true);
@@ -34,6 +35,7 @@ public class PackagerInput {
 	/**
 	 * @param boxItems box items, or null (or empty) when packing box item groups
 	 * @param boxItemGroups box item groups, or null (or empty) when packing box items
+	 * @param order the box item order, or null for {@link Order#NONE}
 	 * @param insertionOrder whether to put the placements of results in insertion order (see {@link InsertionSequencer})
 	 */
 	public PackagerInput(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containerItems, int maxContainerCount, Order order, boolean insertionOrder) {
@@ -42,7 +44,7 @@ public class PackagerInput {
 		this.boxItemGroups = boxItemGroups;
 		this.containerItems = containerItems;
 		this.maxContainerCount = maxContainerCount;
-		this.order = order;
+		this.order = order != null ? order : Order.NONE;
 	}
 
 	/**
