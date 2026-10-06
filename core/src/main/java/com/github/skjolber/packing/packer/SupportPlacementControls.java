@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer;
 
+import java.util.List;
+
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
@@ -124,5 +126,44 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 			placement.setSupportedArea(supportIndex.calculateAreaSupport(stack.getPlacements(), point.getMinX(), point.getMinY(), point.getMinZ(), stackValue));
 		}
 		return placement;
+	}
+
+	/**
+	 * A box placed under boxes which are already there (into the gap under an overhang) supports them too: recalculate
+	 * their supported area. Recalculating (rather than adding the contact area) gives the same result however often
+	 * this is called.
+	 */
+	@Override
+	public void accepted(Placement placement) {
+		List<Placement> placements = stack.getPlacements();
+		// the placement is the last in the stack
+		updateSupportedAreaAbove(placement, placements, placements.size() - 1);
+	}
+
+	/**
+	 * Recalculate the supported area of the placements which rested on placements which are rolled back (the last
+	 * placements of the stack).
+	 */
+	@Override
+	public void undo(List<Placement> placements) {
+		List<Placement> remaining = stack.getPlacements().subList(0, stack.size() - placements.size());
+		for(int i = 0; i < placements.size(); i++) {
+			updateSupportedAreaAbove(placements.get(i), remaining, remaining.size());
+		}
+	}
+
+	/**
+	 * @param below a placement
+	 * @param placements the placements of the stack
+	 * @param count the number of placements before {@code below}, at the start of {@code placements}
+	 */
+	private void updateSupportedAreaAbove(Placement below, List<Placement> placements, int count) {
+		int z = below.getAbsoluteEndZ() + 1;
+		for(int i = 0; i < count; i++) {
+			Placement above = placements.get(i);
+			if(above.getAbsoluteZ() == z && above.intersects2D(below)) {
+				above.setSupportedArea(supportIndex.calculateAreaSupport(placements, above.getAbsoluteX(), above.getAbsoluteY(), above.getAbsoluteZ(), above.getStackValue()));
+			}
+		}
 	}
 }
