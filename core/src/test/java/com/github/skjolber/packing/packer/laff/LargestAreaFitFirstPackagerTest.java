@@ -18,6 +18,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
@@ -565,5 +566,45 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
+	//
+	//  container 2 x 1 x 3; boxes in order a (1 x 1 x 1), b (1 x 1 x 2), c (1 x 1 x 1). The first level is as high as
+	//  a, so b is skipped, and c is placed. Then b waits for the next container: on the next level of the first
+	//  container, it would be after c.
+	//
+	//   container 1     container 2
+	//    |   |           |   |
+	//    |   |           |b  |
+	//    |a c|           |b  |
+	//
+	@Test
+	void testSkippedBoxWaitsForTheNextContainer() {
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			Container container = Container.newBuilder()
+					.withDescription("1")
+					.withEmptyWeight(1)
+					.withSize(2, 1, 3)
+					.withMaxLoadWeight(100)
+					.build();
 
+			List<BoxItem> products = new ArrayList<>();
+			products.add(new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withRotate2D().withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("b").withSize(1, 1, 2).withRotate2D().withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("c").withSize(1, 1, 1).withRotate2D().withWeight(1).build(), 1));
+
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItems(new ContainerItem(container, 2))
+					.withBoxItems(products)
+					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withMaxContainerCount(2)
+					.build();
+
+			assertTrue(build.isSuccess());
+			assertEquals(2, build.size());
+			org.assertj.core.api.Assertions.assertThat(build.get(0).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("a", "c");
+			org.assertj.core.api.Assertions.assertThat(build.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("b");
+		} finally {
+			packager.close();
+		}
+	}
 }

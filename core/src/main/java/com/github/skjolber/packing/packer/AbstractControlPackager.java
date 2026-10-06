@@ -111,6 +111,12 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 			
+			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(boxItemSource, placement.getBoxItem(), removed)) {
+				manifestControls.declined(removed);
+				pointControls.declined(removed);
+
+				removed.clear();
+			}
 			boxItemSource.decrement(placement.getBoxItem().getIndex(), 1);
 
 			manifestControls.accepted(placement.getBoxItem());
@@ -484,4 +490,21 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			Container container, 
 			PointCalculator pointCalculator, Stack stack
 		);
+
+	/**
+	 * With {@link Order#CRONOLOGICAL_ALLOW_SKIPPING}, the boxes before a placed box in the order were skipped: they are
+	 * not placed in this container (later boxes could otherwise make room for them), but wait for the next container,
+	 * so that the boxes in a container are in the order.
+	 *
+	 * @param placed the box item just placed; its index is its position in the box items
+	 * @param removed the skipped box items are added here
+	 * @return true if any box items were skipped
+	 */
+	protected static boolean removeSkippedBoxItems(BoxItemSource boxItemSource, BoxItem placed, List<BoxItem> removed) {
+		int skipped = placed.getIndex();
+		for(int i = 0; i < skipped; i++) {
+			removed.add(boxItemSource.remove(0));
+		}
+		return skipped > 0;
+	}
 }
