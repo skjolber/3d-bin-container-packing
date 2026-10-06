@@ -100,8 +100,7 @@ public class PackagerConformanceTest {
 		EXPECTED.put("groups",                     "S S S S S S S S S S");
 		EXPECTED.put("chronological",              "S S S S S R S S R S");
 		EXPECTED.put("chronologicalGroups",        "S S S S S R S S R S");
-		// LAFF: boxes in a container are not in the box item order (not investigated yet)
-		EXPECTED.put("allowSkipping",              "S G G R R R R R R S");
+		EXPECTED.put("allowSkipping",              "S S S R R R R R R S");
 		EXPECTED.put("allowSkippingGroups",        "S S S R R R R R R S");
 		EXPECTED.put("containerPriorities",        "S S S S S R S S R S");
 		EXPECTED.put("containerPrioritiesGroups",  "S S S S S R S S R S");

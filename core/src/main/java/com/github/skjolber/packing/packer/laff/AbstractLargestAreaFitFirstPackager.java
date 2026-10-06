@@ -329,6 +329,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
 			
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(filteredBoxItems, result.getBoxItem(), removed)) {
+				boxItemControls.declined(removed);
+				pointControls.declined(removed);
+				maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
+
+				removed.clear();
+			}
 			filteredBoxItems.decrement(result.getBoxItem().getLocalIndex(), 1);
 
 			boxItemControls.accepted(result.getBoxItem());

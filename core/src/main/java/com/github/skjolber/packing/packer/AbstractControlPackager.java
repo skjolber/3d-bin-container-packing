@@ -134,6 +134,13 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 			
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(boxItemSource, placement.getBoxItem(), removed)) {
+				manifestControls.declined(removed);
+				pointControls.declined(removed);
+				maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
+
+				removed.clear();
+			}
 			boxItemSource.decrement(placement.getBoxItem().getLocalIndex(), 1);
 
 			manifestControls.accepted(placement.getBoxItem());
@@ -292,6 +299,23 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 	 *        are declined, as the next priority must then wait for the next container)
 	 * @return the end index of the items which may be placed, 0 if none
 	 */
+	/**
+	 * With {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}, the boxes before a placed box in the order were skipped: they are
+	 * not placed in this container (later boxes could otherwise make room for them), but wait for the next container,
+	 * so that the boxes in a container are in the order.
+	 *
+	 * @param placed the box item just placed; its local index is its position in the box items
+	 * @param removed the skipped box items are added here
+	 * @return true if any box items were skipped
+	 */
+	protected static boolean removeSkippedBoxItems(BoxItemSource boxItemSource, BoxItem placed, List<BoxItem> removed) {
+		int skipped = placed.getLocalIndex();
+		for(int i = 0; i < skipped; i++) {
+			removed.add(boxItemSource.remove(0));
+		}
+		return skipped > 0;
+	}
+
 	protected static int getContainerPriorityEnd(BoxItemSource boxItems, int maxContainerPriority) {
 		if(boxItems.isEmpty()) {
 			return 0;
