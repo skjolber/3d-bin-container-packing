@@ -22,6 +22,8 @@ import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInput;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.validator.DefaultValidator;
 
 /**
  * Box item groups accepted one container at a time, so that the remaining groups are accepted in later containers.
@@ -274,5 +276,118 @@ public class BruteForceBoxItemGroupsTest {
 
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
+	}
+
+	@Test
+	public void bruteForceSearchesGroupOrders() {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withGroupOrderSearch(4).build()) {
+			assertSearchesGroupOrders(packager);
+		}
+	}
+
+	@Test
+	public void fastBruteForceSearchesGroupOrders() {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withGroupOrderSearch(4).build()) {
+			assertSearchesGroupOrders(packager);
+		}
+	}
+
+	@Test
+	public void parallelBruteForceSearchesGroupOrders() {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(4).build()) {
+			assertSearchesGroupOrders(packager);
+		}
+	}
+
+	/**
+	 * With the group orders searched, a container is not closed by the first group which does not fit. Containers with
+	 * room for 5 unit cubes; groups a, b (3 cubes) and c, d (2):
+	 *
+	 * <pre>
+	 *   largest first:        [a a a . .]  [b b b c c]  [d d . . .]     3 containers
+	 *   group orders searched:[a a a c c]  [b b b d d]                  2 containers
+	 * </pre>
+	 */
+	private static void assertSearchesGroupOrders(AbstractPackager<?> packager) {
+		List<BoxItemGroup> groups = new ArrayList<>();
+		int[] counts = {3, 3, 2, 2};
+		String[] ids = {"a", "b", "c", "d"};
+		for(int g = 0; g < ids.length; g++) {
+			List<BoxItem> boxItems = new ArrayList<>();
+			for(int i = 0; i < counts[g]; i++) {
+				boxItems.add(new BoxItem(Box.newBuilder().withId(ids[g] + i).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+			groups.add(new BoxItemGroup(ids[g], boxItems));
+		}
+		List<ContainerItem> containers = List.of(new ContainerItem(Container.newBuilder().withId("row").withSize(5, 1, 1).withMaxLoadWeight(100).build(), 4));
+
+		PackagerResult result = packager.newResultBuilder()
+				.withContainerItems(containers)
+				.withBoxItemGroups(groups)
+				.withMaxContainerCount(4)
+				.withInterruptDuration(10_000)
+				.build();
+
+		assertThat(result.isSuccess()).isTrue();
+		assertThat(result.getContainers()).hasSize(2);
+		try (DefaultValidator validator = new DefaultValidator()) {
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(4)
+					.withBoxItemGroups(groups));
+		} catch (java.io.IOException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+
+	/**
+	 * Results for searched group orders hold any of the remaining groups; they must be accepted correctly, over several
+	 * containers.
+	 */
+	@Test
+	public void groupOrderSearchResultsAreValid() throws Exception {
+		List<AbstractPackager<?>> packagers = List.of(
+				BruteForcePackager.newBuilder().withGroupOrderSearch(5).build(),
+				FastBruteForcePackager.newBuilder().withGroupOrderSearch(5).build(),
+				ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(5).build());
+		try (DefaultValidator validator = new DefaultValidator()) {
+			for (AbstractPackager<?> packager : packagers) {
+				int containers = 0;
+				for (long seed = 0; seed < 30; seed++) {
+					java.util.Random random = new java.util.Random(seed);
+					List<BoxItemGroup> groups = new ArrayList<>();
+					int index = 0;
+					int groupCount = 3 + random.nextInt(3);
+					for (int g = 0; g < groupCount; g++) {
+						List<BoxItem> boxItems = new ArrayList<>();
+						int count = 1 + random.nextInt(2);
+						for (int i = 0; i < count; i++) {
+							boxItems.add(new BoxItem(Box.newBuilder().withId("b" + index++).withSize(1 + random.nextInt(2), 1 + random.nextInt(2), 1).withRotate2D().withWeight(1).build(), 1));
+						}
+						groups.add(new BoxItemGroup("g" + g, boxItems));
+					}
+					List<ContainerItem> containerItems = List.of(new ContainerItem(Container.newBuilder().withId("c").withSize(4, 2, 1).withMaxLoadWeight(100).build(), 10));
+
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(containerItems)
+							.withBoxItemGroups(groups)
+							.withMaxContainerCount(10)
+							.withInterruptDuration(10_000)
+							.build();
+
+					assertThat(result.isSuccess()).as("%s seed %d", packager.getClass().getSimpleName(), seed).isTrue();
+					containers += result.size();
+					PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+							.withContainerItems(containerItems)
+							.withMaxContainerCount(10)
+							.withBoxItemGroups(groups));
+				}
+				assertThat(containers).isGreaterThan(30);
+			}
+		} finally {
+			for (AbstractPackager<?> packager : packagers) {
+				packager.close();
+			}
+		}
 	}
 }

@@ -45,6 +45,12 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 		}
 
 		@Override
+		public Builder withGroupOrderSearch(int maxGroups) {
+			super.withGroupOrderSearch(maxGroups);
+			return this;
+		}
+
+		@Override
 		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
@@ -68,6 +74,7 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
+			packager.setGroupOrderSearch(groupOrderSearch);
 			return packager;
 		}
 	}

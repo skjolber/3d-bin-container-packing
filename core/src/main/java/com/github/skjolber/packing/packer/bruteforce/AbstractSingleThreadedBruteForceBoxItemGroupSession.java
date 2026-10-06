@@ -64,7 +64,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 	@Override
 	public Container accept(IntermediatePackagerResult result) {
 		
-		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+		// results for another order of the groups (see attemptGroupOrders) hold any of the remaining groups
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult && !bruteForceResult.isGroupOrder()) {
 			
 			bruteForceResult.markDirty();
 			Stack stack = bruteForceResult.getStack();

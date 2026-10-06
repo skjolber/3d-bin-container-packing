@@ -40,6 +40,11 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private ArrayList<Placement> loadOrder;
 
 	private byte flags = STACK_DIRTY;
+	/**
+	 * Whether the result is for an order of the box item groups other than the session's: then it may hold any of the
+	 * remaining groups, not the first, see {@link AbstractBruteForceBoxItemGroupSession#attemptGroupOrders}
+	 */
+	private boolean groupOrder;
 
 	private long loadVolume;
 	private int loadWeight;
@@ -188,6 +193,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		copy.loadVolume = loadVolume;
 		copy.loadWeight = loadWeight;
 		copy.flags = (byte)(STACK_DIRTY | (flags & CONTAINS_LAST_STACKABLE));
+		copy.groupOrder = groupOrder;
 		return copy;
 	}
 
@@ -236,6 +242,14 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	@Override
 	public boolean isEmpty() {
 		return points.isEmpty();
+	}
+
+	public boolean isGroupOrder() {
+		return groupOrder;
+	}
+
+	void setGroupOrder(boolean groupOrder) {
+		this.groupOrder = groupOrder;
 	}
 
 	public boolean containsLastStackable() {

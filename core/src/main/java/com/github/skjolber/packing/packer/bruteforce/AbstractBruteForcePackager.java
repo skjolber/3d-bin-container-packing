@@ -74,6 +74,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
+	/** Search the orders of the remaining box item groups when there are at most this many of them (0 for never) */
+	protected int groupOrderSearch;
+
+	protected void setGroupOrderSearch(int groupOrderSearch) {
+		this.groupOrderSearch = groupOrderSearch;
+	}
+
 
 
 	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
@@ -171,6 +178,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		session.setOrder(input.getOrder());
 		session.setReverseSymmetric(isReverseSymmetric(input));
+		if(session instanceof AbstractBruteForceBoxItemGroupSession groupSession) {
+			groupSession.setGroupOrderSearch(groupOrderSearch);
+		}
 		return session;
 	}
 

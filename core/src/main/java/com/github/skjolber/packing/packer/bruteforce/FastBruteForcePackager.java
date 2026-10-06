@@ -80,6 +80,23 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected int groupOrderSearch;
+
+		/**
+		 * Also search the orders of the box item groups, when there are at most this many groups left: groups are
+		 * packed in order, and another order can fill a container better. The search is exponential in the number of
+		 * groups (for example 120 orders for 5 groups). Not used with a box item order.
+		 *
+		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
+		 * @return this builder
+		 */
+		public FastBruteForcePackagerBuilder withGroupOrderSearch(int maxGroups) {
+			if(maxGroups < 0) {
+				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
+			}
+			this.groupOrderSearch = maxGroups;
+			return this;
+		}
 
 		/**
 		 * Set the comparator which picks the order of box item groups with the same container priority and extraction
@@ -123,6 +140,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
+			packager.setGroupOrderSearch(groupOrderSearch);
 			return packager;
 		}
 		
@@ -201,9 +219,22 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		
 		@Override
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best) throws PackagerInterruptedException {
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best);
+		}
+
+		@Override
+		protected Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator() {
+			return intermediatePackagerResultComparator;
+		}
+
+		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult best, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(containerIterators[i].length() == 0) {
 				return null;
+			}
+			if(isGroupOrderSearch()) {
+				return attemptGroupOrders(i, best);
 			}
 			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
 			if(!canLoadNextGroup(iteratorGroups)) {

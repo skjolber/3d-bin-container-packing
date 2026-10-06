@@ -66,6 +66,23 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected ContainerStrategyFactory containerStrategyFactory;
 
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected int groupOrderSearch;
+
+		/**
+		 * Also search the orders of the box item groups, when there are at most this many groups left: groups are
+		 * packed in order, and another order can fill a container better. The search is exponential in the number of
+		 * groups (for example 120 orders for 5 groups). Not used with a box item order.
+		 *
+		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
+		 * @return this builder
+		 */
+		public ParallelBruteForcePackagerBuilder withGroupOrderSearch(int maxGroups) {
+			if(maxGroups < 0) {
+				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
+			}
+			this.groupOrderSearch = maxGroups;
+			return this;
+		}
 
 		/**
 		 * Set the comparator which picks the order of box item groups with the same container priority and extraction
@@ -176,6 +193,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
+			packager.setGroupOrderSearch(groupOrderSearch);
 			return packager;
 		}
 	}
@@ -601,7 +619,22 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		@Override
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best) throws PackagerInterruptedException {
+			// each order is searched on this thread
+			BruteForceWorker worker = runnables[0];
+			return ParallelBoxItemBruteForcePackager.this.pack(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(containerIndex), containerIndex, iterator, interrupts[0], pointFilter, best);
+		}
+
+		@Override
+		protected Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator() {
+			return intermediatePackagerResultComparator;
+		}
+
+		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			if(isGroupOrderSearch()) {
+				return attemptGroupOrders(i, currentBest);
+			}
 			BoxItemGroup[] iteratorGroups = iterators[i].getBoxItemGroups();
 			if(!canLoadNextGroup(iteratorGroups)) {
 				return null;
@@ -732,7 +765,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public Container accept(IntermediatePackagerResult result) {
-			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			// results for another order of the groups (see attemptGroupOrders) hold any of the remaining groups
+			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult && !bruteForceResult.isGroupOrder()) {
 				
 				bruteForceResult.markDirty();
 				Stack stack = bruteForceResult.getStack();

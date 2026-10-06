@@ -437,7 +437,9 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
 The plain, LAFF and brute-force packagers support both, also for groups. Without a box item order, groups go into
 containers lowest container priority first, then the groups which are extracted last, then the largest
 (`withBoxItemGroupComparator(..)`); the brute-force packagers keep the boxes of each group in that order and permute
-them within the group.
+them within the group. As a container then holds the first groups which fit, `withGroupOrderSearch(maxGroups)` on the
+brute-force builders also tries the other orders of the remaining groups when there are at most `maxGroups` of them
+(exponential in the number of groups).
 Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
 (`ExtractionOrderValidator`, `ContainerPriorityValidator`).
 
