@@ -85,7 +85,7 @@ public class BruteForceLoadVolumeBoundTest {
 	public void bruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
 		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().build();
-				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withComparator(withoutLoadVolumeBound(comparator)).build()) {
+				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
 					assertThat(pack(bounded, seed, MAX_BOXES, 1, groups)).as("seed %d, groups %s", seed, groups).isEqualTo(pack(unbounded, seed, MAX_BOXES, 1, groups));
@@ -98,7 +98,7 @@ public class BruteForceLoadVolumeBoundTest {
 	public void fastBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
 		try (FastBruteForcePackager bounded = FastBruteForcePackager.newBuilder().build();
-				FastBruteForcePackager unbounded = FastBruteForcePackager.newBuilder().withComparator(withoutLoadVolumeBound(comparator)).build()) {
+				FastBruteForcePackager unbounded = FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
 					assertThat(pack(bounded, seed, MAX_BOXES, 1, groups)).as("seed %d, groups %s", seed, groups).isEqualTo(pack(unbounded, seed, MAX_BOXES, 1, groups));
@@ -112,7 +112,7 @@ public class BruteForceLoadVolumeBoundTest {
 	public void parallelBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
 		try (ParallelBoxItemBruteForcePackager bounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build();
-				ParallelBoxItemBruteForcePackager unbounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withComparator(withoutLoadVolumeBound(comparator)).build()) {
+				ParallelBoxItemBruteForcePackager unbounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
 					// 5! permutations: split between the threads
@@ -126,7 +126,7 @@ public class BruteForceLoadVolumeBoundTest {
 	public void loadBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
 		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().build();
-				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withComparator(withoutLoadVolumeBound(comparator)).build()) {
+				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				assertThat(pack(bounded, seed, MAX_BOXES, 1, false, LOAD_WEIGHT_PRESSURE_COUNT)).as("seed %d", seed)
 						.isEqualTo(pack(unbounded, seed, MAX_BOXES, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));

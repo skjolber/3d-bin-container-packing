@@ -66,17 +66,17 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	protected static final FastBruteForceBoxStackValuePointComparator DEFAULT_POINT_COMPARATOR = new DefaultFastBruteForceBoxStackValuePointComparator();
 
-	public static FastBruteForcePackagerBuilder newBuilder() {
-		return new FastBruteForcePackagerBuilder();
+	public static Builder newBuilder() {
+		return new Builder();
 	}
 
-	public static class FastBruteForcePackagerBuilder {
+	public static class Builder {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		protected ContainerStrategyFactory containerStrategyFactory;
 		
-		public FastBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -93,7 +93,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param requireFullSupport true to require full support
 		 * @return this builder
 		 */
-		public FastBruteForcePackagerBuilder withRequireFullSupport(boolean requireFullSupport) {
+		public Builder withRequireFullSupport(boolean requireFullSupport) {
 			this.requireFullSupport = requireFullSupport;
 			return this;
 		}
@@ -106,7 +106,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
 		 * @return this builder
 		 */
-		public FastBruteForcePackagerBuilder withGroupOrderSearch(int maxGroups) {
+		public Builder withGroupOrderSearch(int maxGroups) {
 			if(maxGroups < 0) {
 				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
 			}
@@ -121,7 +121,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public FastBruteForcePackagerBuilder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -134,12 +134,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param factory container strategy factory
 		 * @return this builder
 		 */
-		public FastBruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
-		public FastBruteForcePackagerBuilder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
+		public Builder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
 			this.pointComparator = pointComparator;
 			return this;
 		}

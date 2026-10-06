@@ -172,7 +172,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 		
-		public Builder withPackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.packagerResultComparator = comparator;
 			return this;
 		}

@@ -34,7 +34,6 @@ import com.github.skjolber.packing.iterator.ParallelBoxItemGroupPermutationRotat
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.PackagerInput;
-import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -50,11 +49,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private volatile boolean interrupted;
 	}
 
-	public static ParallelBruteForcePackagerBuilder newBuilder() {
-		return new ParallelBruteForcePackagerBuilder();
+	public static Builder newBuilder() {
+		return new Builder();
 	}
 
-	public static class ParallelBruteForcePackagerBuilder {
+	public static class Builder {
 
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
@@ -76,12 +75,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		 * @param requireFullSupport true to require full support
 		 * @return this builder
 		 */
-		public ParallelBruteForcePackagerBuilder withRequireFullSupport(boolean requireFullSupport) {
+		public Builder withRequireFullSupport(boolean requireFullSupport) {
 			this.requireFullSupport = requireFullSupport;
 			return this;
 		}
 
-		public ParallelBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -94,7 +93,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
 		 * @return this builder
 		 */
-		public ParallelBruteForcePackagerBuilder withGroupOrderSearch(int maxGroups) {
+		public Builder withGroupOrderSearch(int maxGroups) {
 			if(maxGroups < 0) {
 				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
 			}
@@ -109,7 +108,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public ParallelBruteForcePackagerBuilder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -122,12 +121,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		 * @param factory container strategy factory
 		 * @return this builder
 		 */
-		public ParallelBruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
-		public ParallelBruteForcePackagerBuilder withThreads(int threads) {
+		public Builder withThreads(int threads) {
 			if(threads < 1) {
 				throw new IllegalArgumentException("Unexpected thread count " + threads);
 			}
@@ -143,7 +142,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		 * @return this builder
 		 */
 
-		public ParallelBruteForcePackagerBuilder withParallelizationCount(int parallelizationCount) {
+		public Builder withParallelizationCount(int parallelizationCount) {
 			if(parallelizationCount < 1) {
 				throw new IllegalArgumentException("Unexpected parallelization count " + parallelizationCount);
 			}
@@ -151,25 +150,25 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return this;
 		}
 
-		public ParallelBruteForcePackagerBuilder withExecutorService(ExecutorService executorService) {
+		public Builder withExecutorService(ExecutorService executorService) {
 			this.executorService = executorService;
 
 			return this;
 		}
 
-		public ParallelBruteForcePackagerBuilder withAvailableProcessors(int factor) {
+		public Builder withAvailableProcessors(int factor) {
 			this.threads = Runtime.getRuntime().availableProcessors() / factor;
 
 			return this;
 		}
 		
 
-		public ParallelBruteForcePackagerBuilder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
+		public Builder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
 			this.pointFilter = pointFilter;
 			return this;
 		}
 
-		public ParallelBruteForcePackagerBuilder withSkipReversePermutations(boolean filterReversePermutations) {
+		public Builder withSkipReversePermutations(boolean filterReversePermutations) {
 			this.filterReversePermutations = filterReversePermutations;
 			return this;
 		}

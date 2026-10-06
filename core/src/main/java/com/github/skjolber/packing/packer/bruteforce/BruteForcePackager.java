@@ -350,18 +350,18 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	protected static final BruteForcePointIteratorFilter DEFAULT_POINT_FILTER = new DefaultPointFilter();
 
-	public static BruteForcePackagerBuilder newBuilder() {
-		return new BruteForcePackagerBuilder();
+	public static Builder newBuilder() {
+		return new Builder();
 	}
 
-	public static class BruteForcePackagerBuilder {
+	public static class Builder {
 
 		protected Comparator<IntermediatePackagerResult> comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
 		protected ContainerStrategyFactory containerStrategyFactory;
 		
-		public BruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -378,7 +378,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 * @param requireFullSupport true to require full support
 		 * @return this builder
 		 */
-		public BruteForcePackagerBuilder withRequireFullSupport(boolean requireFullSupport) {
+		public Builder withRequireFullSupport(boolean requireFullSupport) {
 			this.requireFullSupport = requireFullSupport;
 			return this;
 		}
@@ -391,7 +391,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
 		 * @return this builder
 		 */
-		public BruteForcePackagerBuilder withGroupOrderSearch(int maxGroups) {
+		public Builder withGroupOrderSearch(int maxGroups) {
 			if(maxGroups < 0) {
 				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
 			}
@@ -406,7 +406,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public BruteForcePackagerBuilder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -419,12 +419,12 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 * @param factory container strategy factory
 		 * @return this builder
 		 */
-		public BruteForcePackagerBuilder withContainerStrategyFactory(ContainerStrategyFactory factory) {
+		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
-		public BruteForcePackagerBuilder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
+		public Builder withPointFilter(BruteForcePointIteratorFilter pointFilter) {
 			this.pointFilter = pointFilter;
 			return this;
 		}
@@ -445,7 +445,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			return packager;
 		}
 		
-		public BruteForcePackagerBuilder withSkipReversePermutations(boolean filterReversePermutations) {
+		public Builder withSkipReversePermutations(boolean filterReversePermutations) {
 			this.filterReversePermutations = filterReversePermutations;
 			return this;
 		}
