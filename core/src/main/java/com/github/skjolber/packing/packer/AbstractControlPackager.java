@@ -194,7 +194,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -280,6 +280,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			boxItemControls.attempt(boxItemGroup, boxItemStartIndex, boxItemGroup.size());
 			
 			while(!boxItemGroup.isEmpty()) {
+				if(interrupt.getAsBoolean()) {
+					throw new PackagerInterruptedException();
+				}
 				
 				// groups before this one may have been removed
 				boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndex(boxItemGroup);
