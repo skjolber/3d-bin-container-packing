@@ -160,7 +160,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 	}
 
-	private final ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService;
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 	protected final BruteForcePointIteratorFilter pointFilter;
@@ -177,7 +176,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
-		this.executorCompletionService = new ExecutorCompletionService<BruteForceIntermediatePackagerResult>(executorService);
 		this.pointFilter = pointFilter;
 		this.filterReversePermutations = filterReversePermutations;
 	}
@@ -349,6 +347,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				parallelIterators[i].reset();
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (session forks), and the futures of an attempt are
+				// cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					BruteForceWorker worker = runnables[j];
@@ -584,6 +585,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				parallelIterators[i].reset();
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (session forks), and the futures of an attempt are
+				// cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					BruteForceWorker worker = runnables[j];

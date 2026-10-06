@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,8 +19,10 @@ import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultC
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.validator.DefaultValidator;
 
 class ParallelContainerPackingStrategyTest {
 
@@ -83,6 +86,48 @@ class ParallelContainerPackingStrategyTest {
 			for (AbstractPackager<?> packager : packagers) {
 				packager.close();
 			}
+			executorService.shutdownNow();
+		}
+	}
+
+	/**
+	 * The parallel container strategy attempts containers in session forks at the same time; with parallel brute force,
+	 * each attempt splits its permutations between workers. The attempts must not take each other's workers' results.
+	 */
+	@Test
+	void parallelBruteForceAttemptsContainersAtTheSameTime() throws Exception {
+		ExecutorService executorService = Executors.newFixedThreadPool(4);
+		try (DefaultValidator validator = new DefaultValidator();
+				ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+						.withThreads(4)
+						.withParallelizationCount(2)
+						.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))
+						.build()) {
+			for (int seed = 0; seed < 20; seed++) {
+				Random random = new Random(seed);
+				List<BoxItem> boxItems = new ArrayList<>();
+				for (int i = 0; i < 5; i++) {
+					boxItems.add(new BoxItem(Box.newBuilder().withId("b" + i).withSize(1 + random.nextInt(2), 1 + random.nextInt(2), 1).withWeight(1).build(), 1));
+				}
+				List<ContainerItem> containers = List.of(
+						new ContainerItem(Container.newBuilder().withId("small").withSize(2, 2, 1).withMaxLoadWeight(10).build(), 5),
+						new ContainerItem(Container.newBuilder().withId("medium").withSize(3, 2, 1).withMaxLoadWeight(10).build(), 2),
+						new ContainerItem(Container.newBuilder().withId("large").withSize(4, 2, 1).withMaxLoadWeight(10).build(), 1));
+
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containers)
+						.withMaxContainerCount(5)
+						.withBoxItems(boxItems)
+						.withInterruptDuration(10_000)
+						.build();
+
+				PackagerResultAssert.assertThat(result).isSuccess();
+				PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+						.withContainerItems(containers)
+						.withMaxContainerCount(5)
+						.withBoxItems(boxItems));
+			}
+		} finally {
 			executorService.shutdownNow();
 		}
 	}
