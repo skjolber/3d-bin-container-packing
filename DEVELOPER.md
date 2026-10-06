@@ -113,7 +113,8 @@ try (PlainPackager packager = PlainPackager.newBuilder()
 }
 ```
 
-All packager builders have `withContainerStrategyFactory(..)`. `LargestContainerFirstStrategy` and
+All packager builders have `withContainerStrategyFactory(..)`; for `CompositePackager`, the strategy
+also applies to the baseline packagers. `LargestContainerFirstStrategy` and
 `BackToFrontPlacementComparator` in the `test` module (package
 `com.github.skjolber.packing.test.example`) are complete examples which depend on the `api` module
 only. The built-in strategies are in the `core` package

@@ -34,7 +34,8 @@ import com.github.skjolber.packing.packer.PackagerInput;
  * prefers fewer containers).</li>
  * </ol>
  * The better of the improvement and the baseline is returned. If the improvement is interrupted, the baseline is
- * returned.
+ * returned. With a container strategy set on the builder, the baseline packagers pack with it too, so that both
+ * results follow it.
  *
  * <pre>
  *  baseline:     plain ────────────────────────────────▶ result A
@@ -135,8 +136,8 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		}
 
 		/**
-		 * Set the factory which selects the container strategy of the improvement: which containers to use, and in
-		 * which order.
+		 * Set the factory which selects the container strategy: which containers to use, and in which order. The
+		 * baseline packagers pack with it too (by default, they pack with their own).
 		 *
 		 * @param factory container strategy factory
 		 * @return this builder
@@ -200,6 +201,46 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		return "No packager supports the input: " + stages.get(0).packager.getUnsupportedReason(input);
 	}
 
+	/** Whether a container strategy was set on the builder: the baseline packagers then pack with it too */
+	private boolean customContainerStrategy;
+
+	@Override
+	protected void setContainerStrategyFactory(ContainerStrategyFactory factory) {
+		super.setContainerStrategyFactory(factory);
+		this.customContainerStrategy = true;
+	}
+
+	/**
+	 * Pack the input with a baseline packager's session and this packager's container strategy.
+	 */
+	protected PackagerResult packWithContainerStrategy(AbstractPackager<?> packager, PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
+		long start = System.currentTimeMillis();
+
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+		if(deadline != -1L) {
+			booleanSupplierBuilder.withDeadline(deadline);
+		}
+		if(interrupt != null) {
+			booleanSupplierBuilder.withInterrupt(interrupt);
+		}
+		booleanSupplierBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+
+		PackagerInterruptSupplier packagerInterrupt = booleanSupplierBuilder.build();
+		try {
+			PackagerSession session = packager.createSession(input, packagerInterrupt);
+			ContainerResult result = packSession(packagerInterrupt, session);
+			long duration = System.currentTimeMillis() - start;
+			if(result == null) {
+				return new PackagerResult(Collections.emptyList(), duration, false, -1);
+			}
+			return new PackagerResult(result.getPackList(), duration, false, result.getCost(), sequence(input, result.getPackList()));
+		} catch (PackagerInterruptedException e) {
+			return new PackagerResult(Collections.emptyList(), System.currentTimeMillis() - start, true, -1);
+		} finally {
+			packagerInterrupt.close();
+		}
+	}
+
 	@Override
 	public PackagerResult pack(PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
 		long start = System.currentTimeMillis();
@@ -209,7 +250,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			if(!packager.supports(input)) {
 				continue;
 			}
-			PackagerResult result = packager.pack(input, deadline, interrupt);
+			PackagerResult result = customContainerStrategy ? packWithContainerStrategy(packager, input, deadline, interrupt) : packager.pack(input, deadline, interrupt);
 			if(result.isTimeout()) {
 				// the deadline or interrupt applies to the improvement too
 				return withDuration(baseline != null ? baseline : result, start);

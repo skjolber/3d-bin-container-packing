@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -230,6 +231,36 @@ public class CompositePackagerTest {
 			assertThat(result.isSuccess()).isTrue();
 		}
 		assertThat(costly.getAttempts()).isZero();
+	}
+
+	//
+	//  two cubes; a small container holds one (cost 10, two available), the large container both (cost 100).
+	//  The cheapest packing uses the small containers:
+	//
+	//    small [a]   small [b]      not      large [a][b]
+	//
+	@Test
+	public void usesTheCheapestContainers() throws Exception {
+		Container small = Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(1).build();
+		Container large = Container.newBuilder().withId("large").withSize(2, 1, 1).withMaxLoadWeight(2).build();
+		List<ContainerItem> containers = List.of(
+				new ContainerItem(small, 2, new FixedContainerCostCalculator(10, small.getVolume(), null, 0)),
+				new ContainerItem(large, 1, new FixedContainerCostCalculator(100, large.getVolume(), null, 0)));
+		try (CompositePackager packager = CompositePackager.newBuilder()
+				.withPackager(PlainPackager.newBuilder().build())
+				.withPackager(FastBruteForcePackager.newBuilder().build(), 1000)
+				.build()) {
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(containers)
+					.withBoxItems(new BoxItem(square(1), 2))
+					.withMaxContainerCount(2)
+					.withInterruptDuration(INTERRUPT_DURATION)
+					.build();
+
+			assertThat(result.isSuccess()).isTrue();
+			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("small", "small");
+			assertThat(result.getCost()).isEqualTo(20);
+		}
 	}
 
 	@Test

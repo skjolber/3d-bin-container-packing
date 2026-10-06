@@ -486,6 +486,7 @@ The first packager (or those added with `withBaselinePackager(..)`) first packs 
 baseline result. Then, for each container the container strategy attempts, the packagers are tried in order
 until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
 The better result is returned (see `PackagerResultComparator`), and the baseline if the deadline passes.
+A container strategy set with `withContainerStrategyFactory(..)` applies to the baseline too.
 
 For random orders in the shipping containers of issue #1158, a plain and fast brute force composite (200 ms budget)
 packed every order, with 2-6 % less container volume than the plain packager, at 10-60 ms per order; brute force alone
