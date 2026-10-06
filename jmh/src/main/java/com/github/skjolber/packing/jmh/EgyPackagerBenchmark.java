@@ -67,6 +67,16 @@ public class EgyPackagerBenchmark {
 		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL);
 	}
 
+	@Benchmark
+	public int packagerSkipping(EgyPackagerState state) throws Exception {
+		return process(state.getBruteForcePackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
+	@Benchmark
+	public int fastPackagerSkipping(EgyPackagerState state) throws Exception {
+		return process(state.getFastBruteForcePackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
 		return process(sets, deadline, Order.NONE);
 	}

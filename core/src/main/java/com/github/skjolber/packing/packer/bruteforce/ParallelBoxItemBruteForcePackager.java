@@ -502,7 +502,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			BruteForceWorker worker = runnables[0];
 			ContainerItem containerItem = getContainerItem(i);
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
-				return packInOrderSkipping(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, null, getMaxContainerPriority(iterator));
+				return packInOrderSkipping(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, null, getMaxContainerPriority(iterator), best);
 			}
 			if(order != Order.NONE) {
 				return packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, best, getLimit(iterator));
@@ -770,7 +770,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 					// groups are skipped whole
 					return packInOrderSkipping(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(i), i, iterators[i], interrupts[0], pointFilter,
-							getGroupSkipEnds(iteratorGroups, iterators[i].length()), getMaxContainerPriority(iterators[i]));
+							getGroupSkipEnds(iteratorGroups, iterators[i].length()), getMaxContainerPriority(iterators[i]), currentBest);
 				}
 				return truncateToGroup(packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(i), i, iterators[i], interrupts[0], pointFilter, currentBest, Integer.MAX_VALUE), iteratorGroups);
 			}

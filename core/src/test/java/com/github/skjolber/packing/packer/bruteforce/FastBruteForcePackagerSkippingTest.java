@@ -225,12 +225,9 @@ public class FastBruteForcePackagerSkippingTest {
 				}
 				int length = permutations.length;
 				if(level == length) {
-					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
-						best.volume = placedVolume;
-						best.count = placedCount;
-						best.points = pointCalculator.getPoints();
-						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
-						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					// every arrangement is compared: no bound
+					if(placedCount > 0) {
+						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
 					return;
 				}

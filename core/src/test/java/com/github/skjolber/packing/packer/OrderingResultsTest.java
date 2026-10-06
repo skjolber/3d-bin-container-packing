@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -22,6 +23,8 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
@@ -422,6 +425,55 @@ public class OrderingResultsTest {
 				assertThat(result.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("b");
 			}
 		}
+	}
+
+	//
+	//  container 3 x 1 x 1; boxes in order B (3 x 1 x 1), s1 and s2 (1 x 1 x 1). The first container holds either B or
+	//  both small boxes; with skipping, the result comparator chooses:
+	//
+	//   most volume (default):   [   B   ]   then [s1][s2]
+	//   most boxes:              [s1][s2]    then [   B   ]
+	//
+	@Test
+	public void bruteForceSkippingChoosesByTheResultComparator() {
+		Comparator<IntermediatePackagerResult> mostBoxes = (a, b) -> {
+			int sizes = Integer.compare(size(a), size(b));
+			return sizes != 0 ? sizes : Long.compare(a.getLoadVolume(), b.getLoadVolume());
+		};
+		List<Supplier<AbstractPackager<?>>> packagers = List.of(
+				() -> BruteForcePackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build(),
+				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build(),
+				() -> BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(mostBoxes).build(),
+				() -> FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(mostBoxes).build(),
+				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withIntermediatePackagerResultComparator(mostBoxes).build());
+		for (int i = 0; i < packagers.size(); i++) {
+			try (AbstractPackager<?> packager = packagers.get(i).get()) {
+				List<BoxItem> items = List.of(
+						new BoxItem(Box.newBuilder().withId("B").withSize(3, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("s1").withSize(1, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("s2").withSize(1, 1, 1).withWeight(1).build(), 1));
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containers(3, 1, 1, ContainerAccess.ANY, 2))
+						.withBoxItems(items)
+						.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
+						.withMaxContainerCount(2)
+						.withInterruptDuration(10_000)
+						.build();
+
+				String name = packager.getClass().getSimpleName() + (i < 3 ? " most volume" : " most boxes");
+				assertThat(result.isSuccess()).as(name).isTrue();
+				assertThat(result.get(0).getStack().getPlacements()).as(name).extracting(p -> p.getStackValue().getBox().getId())
+						.containsExactlyElementsOf(i < 3 ? List.of("B") : List.of("s1", "s2"));
+			}
+		}
+	}
+
+	private static int size(IntermediatePackagerResult result) {
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			return bruteForceResult.getSize();
+		}
+		return result.isEmpty() ? 0 : result.getStack().size();
 	}
 
 	private static List<Supplier<AbstractPackager<?>>> bruteForcePackagers() {

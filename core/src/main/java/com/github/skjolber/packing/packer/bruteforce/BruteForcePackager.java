@@ -474,7 +474,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
-				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, null, getMaxContainerPriority(iterator));
+				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, null, getMaxContainerPriority(iterator), best);
 			}
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
@@ -547,7 +547,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 				// groups are skipped whole
 				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter,
-						getGroupSkipEnds(iteratorGroups, iterator.length()), getMaxContainerPriority(iterator));
+						getGroupSkipEnds(iteratorGroups, iterator.length()), getMaxContainerPriority(iterator), best);
 			}
 			if(order != Order.NONE) {
 				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, Integer.MAX_VALUE), iteratorGroups);

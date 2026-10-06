@@ -954,18 +954,20 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * Pack the boxes in the iterator's order (a box item order, {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}) into one
 	 * container: any box may be skipped (it waits for a later container), and the boxes which are placed are in the order,
 	 * each insertable after the boxes before it. The search (see {@link #searchInOrderSkipping}) tries each rotation of each
-	 * box at each point, and skipping it; the best arrangement has the most volume, then the most boxes.
+	 * box at each point, and skipping it; the best arrangement is chosen by the result comparator, as in the other searches.
 	 *
 	 * @param skipEnds for each box, the box to continue with when skipping it, or -1 if it cannot be skipped (box item
 	 *        groups are skipped whole), or null if each box can be skipped
 	 * @param maxContainerPriority the highest container priority which may be placed (see
 	 *        {@link AbstractBruteForceBoxItemSession#getMaxContainerPriority(BoxItemPermutationRotationIterator)})
+	 * @param best the best result so far, or null. When results with less load volume always compare worse,
+	 *        returns an empty result if no result can load more than {@code best}.
 	 * @return the result, or an empty result; the result may hold any of the boxes (see
 	 *         {@link BruteForceIntermediatePackagerResult#isAnyRemaining()})
 	 */
 	public BruteForceIntermediatePackagerResult packInOrderSkipping(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int[] skipEnds,
-			int maxContainerPriority) throws PackagerInterruptedException {
+			int maxContainerPriority, IntermediatePackagerResult best) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
@@ -990,39 +992,86 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(utility != null) {
 			utility.initialize(length);
 		}
-		SkippingBest best = new SkippingBest(length);
+		SkippingBest arrangements = newSkippingBest(result, best, stackPlacements, stackPlacementCount);
 		if(requireFullSupport) {
 			searchInOrderSkippingFullSupport(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder.getMaxLoadWeight(),
-					holder.getMaxLoadVolume(), interrupt, utility, pointFilter, holder.getObstacles(), holder.getAccess(), best);
+					holder.getMaxLoadVolume(), interrupt, utility, pointFilter, holder.getObstacles(), holder.getAccess(), arrangements);
 		} else {
 			searchInOrderSkipping(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder.getMaxLoadWeight(), holder.getMaxLoadVolume(), interrupt,
-					utility, pointFilter, holder.getObstacles(), holder.getAccess(), best);
+					utility, pointFilter, holder.getObstacles(), holder.getAccess(), arrangements);
 		}
 		stack.clear();
-		if(best.count > 0) {
-			int[] placedPermutations = new int[best.count];
-			int[] placedRotations = new int[best.count];
-			System.arraycopy(best.permutations, 0, placedPermutations, 0, best.count);
-			System.arraycopy(best.rotations, 0, placedRotations, 0, best.count);
-			result.setStateFromReusablePoints(best.points, new PermutationRotationState(placedRotations, placedPermutations), stackPlacements, stackPlacementCount);
-		}
-		result.markDirty();
-		return result;
+		BruteForceIntermediatePackagerResult packed = arrangements.best;
+		packed.markDirty();
+		return packed;
 	}
 
-	/** The best arrangement found by {@link #searchInOrderSkipping} */
-	protected static class SkippingBest {
-		/** the box (index in the iterator's box items) of each placement */
-		protected final int[] permutations;
-		/** the rotation of each placement */
-		protected final int[] rotations;
-		protected List<Point> points = Collections.emptyList();
-		protected int count;
-		protected long volume = -1L;
+	/**
+	 * @param empty an empty result for the container, for the best arrangement
+	 * @param best the best result so far (of other attempts), or null
+	 */
+	protected SkippingBest newSkippingBest(BruteForceIntermediatePackagerResult empty, IntermediatePackagerResult best, Placement[] stackPlacements, int stackPlacementCount) {
+		BruteForceIntermediatePackagerResult candidate = new BruteForceIntermediatePackagerResult(empty.getContainerItem(), new Stack(empty.getIterator().length()), empty.getContainerItemIndex(),
+				empty.getIterator(), empty.isCalculateLoads());
+		candidate.setAnyRemaining(true);
+		return new SkippingBest(intermediatePackagerResultComparator, prefersHigherLoadVolume, getMinLoadVolume(best), stackPlacements, stackPlacementCount, empty, candidate);
+	}
 
-		protected SkippingBest(int length) {
-			this.permutations = new int[length];
-			this.rotations = new int[length];
+	/**
+	 * The best arrangement found by the searches which skip boxes (see {@link #searchInOrderSkipping}): the best by the
+	 * result comparator, as for the other searches.
+	 */
+	protected static class SkippingBest {
+
+		private final Comparator<IntermediatePackagerResult> comparator;
+		/** results with less load volume always compare worse: only search where the load volume can be enough */
+		private final boolean volumeBound;
+		/** the load volume of the best result so far (of other attempts) */
+		private final long minLoadVolume;
+		private final Placement[] placements;
+		private final int placementCount;
+
+		/** the best arrangement, or an empty result */
+		protected BruteForceIntermediatePackagerResult best;
+		private BruteForceIntermediatePackagerResult candidate;
+		/** the number of boxes of the best arrangement */
+		protected int count;
+
+		protected SkippingBest(Comparator<IntermediatePackagerResult> comparator, boolean volumeBound, long minLoadVolume, Placement[] placements, int placementCount,
+				BruteForceIntermediatePackagerResult best, BruteForceIntermediatePackagerResult candidate) {
+			this.comparator = comparator;
+			this.volumeBound = volumeBound;
+			this.minLoadVolume = minLoadVolume;
+			this.placements = placements;
+			this.placementCount = placementCount;
+			this.best = best;
+			this.candidate = candidate;
+		}
+
+		/**
+		 * @param loadVolume the most load volume an arrangement can have
+		 * @return false if such an arrangement cannot be better than the best
+		 */
+		protected boolean canBeBetter(long loadVolume) {
+			return !volumeBound || (loadVolume >= minLoadVolume && loadVolume >= best.getLoadVolume());
+		}
+
+		/**
+		 * Keep an arrangement if it is better than the best.
+		 *
+		 * @param points the points of the placed boxes
+		 * @param permutations the box (index in the iterator's box items) of each placement
+		 * @param rotations the rotation of each placement
+		 * @param count the number of placed boxes
+		 */
+		protected void offer(List<Point> points, int[] permutations, int[] rotations, int count) {
+			candidate.setState(points, new PermutationRotationState(rotations, permutations, count), placements, placementCount);
+			if(comparator.compare(best, candidate) < 0) {
+				BruteForceIntermediatePackagerResult swap = best;
+				best = candidate;
+				candidate = swap;
+				this.count = count;
+			}
 		}
 	}
 
@@ -1080,18 +1129,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				long placedVolume = placedVolumes[level];
 				if(level == length) {
 					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
-						best.volume = placedVolume;
-						best.count = placedCount;
-						best.points = pointCalculator.getPoints();
-						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
-						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
+						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
 					level = parents[level];
 					descend = false;
 					continue;
 				}
-				if(placedVolume + remainingVolumes[level] < best.volume || (placedVolume + remainingVolumes[level] == best.volume && placedCount + length - level <= best.count)) {
+				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
 					// cannot beat the best arrangement
 					level = parents[level];
 					descend = false;
@@ -1314,18 +1359,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				long placedVolume = placedVolumes[level];
 				if(level == length) {
 					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
-						best.volume = placedVolume;
-						best.count = placedCount;
-						best.points = pointCalculator.getPoints();
-						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
-						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
+						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
 					level = parents[level];
 					descend = false;
 					continue;
 				}
-				if(placedVolume + remainingVolumes[level] < best.volume || (placedVolume + remainingVolumes[level] == best.volume && placedCount + length - level <= best.count)) {
+				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
 					// cannot beat the best arrangement
 					level = parents[level];
 					descend = false;

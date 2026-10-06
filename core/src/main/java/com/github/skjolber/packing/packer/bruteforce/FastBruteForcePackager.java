@@ -182,7 +182,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			containerIterators[i].reset();
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator,
-						null, getMaxContainerPriority(containerIterators[i]));
+						null, getMaxContainerPriority(containerIterators[i]), best);
 			}
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
@@ -249,7 +249,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
 				// groups are skipped whole
 				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator,
-						getGroupSkipEnds(iteratorGroups, containerIterators[i].length()), getMaxContainerPriority(containerIterators[i]));
+						getGroupSkipEnds(iteratorGroups, containerIterators[i].length()), getMaxContainerPriority(containerIterators[i]), best);
 			}
 			if(order != Order.NONE) {
 				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, Integer.MAX_VALUE), iteratorGroups);
@@ -584,19 +584,20 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * Pack the boxes in the iterator's order (a box item order, {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}) into one
 	 * container: any box may be skipped (it waits for a later container), and the boxes which are placed are in the order,
 	 * each insertable after the boxes before it. As
-	 * {@link AbstractBruteForcePackager#packInOrderSkipping(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, int[], int)},
+	 * {@link AbstractBruteForcePackager#packInOrderSkipping(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, int[], int, IntermediatePackagerResult)},
 	 * but the search (see {@link #searchInOrderSkipping}) tries each rotation of a box at its best point only.
 	 *
 	 * @param skipEnds for each box, the box to continue with when skipping it, or -1 if it cannot be skipped (box item
 	 *        groups are skipped whole), or null if each box can be skipped
 	 * @param maxContainerPriority the highest container priority which may be placed (see
 	 *        {@link AbstractBruteForceBoxItemSession#getMaxContainerPriority(BoxItemPermutationRotationIterator)})
+	 * @param best the best result so far, or null (see {@link AbstractBruteForcePackager#packInOrderSkipping})
 	 * @return the result, or an empty result; the result may hold any of the boxes (see
 	 *         {@link BruteForceIntermediatePackagerResult#isAnyRemaining()})
 	 */
 	public BruteForceIntermediatePackagerResult packInOrderSkipping(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount,
 			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt,
-			FastBruteForceBoxStackValuePointComparator pointComparator, int[] skipEnds, int maxContainerPriority) throws PackagerInterruptedException {
+			FastBruteForceBoxStackValuePointComparator pointComparator, int[] skipEnds, int maxContainerPriority, IntermediatePackagerResult best) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
@@ -621,24 +622,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		if(utility != null) {
 			utility.initialize(length);
 		}
-		SkippingBest best = new SkippingBest(length);
+		SkippingBest arrangements = newSkippingBest(result, best, stackPlacements, stackPlacementCount);
 		if(requireFullSupport) {
 			searchInOrderSkippingFullSupport(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder, interrupt, utility,
-					pointComparator, best);
+					pointComparator, arrangements);
 		} else {
 			searchInOrderSkipping(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder, interrupt, utility,
-					pointComparator, best);
+					pointComparator, arrangements);
 		}
 		stack.clear();
-		if(best.count > 0) {
-			int[] placedPermutations = new int[best.count];
-			int[] placedRotations = new int[best.count];
-			System.arraycopy(best.permutations, 0, placedPermutations, 0, best.count);
-			System.arraycopy(best.rotations, 0, placedRotations, 0, best.count);
-			result.setState(best.points, new PermutationRotationState(placedRotations, placedPermutations), stackPlacements, stackPlacementCount);
-		}
-		result.markDirty();
-		return result;
+		BruteForceIntermediatePackagerResult packed = arrangements.best;
+		packed.markDirty();
+		return packed;
 	}
 
 	/**
@@ -688,18 +683,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				long placedVolume = placedVolumes[level];
 				if(level == length) {
 					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
-						best.volume = placedVolume;
-						best.count = placedCount;
-						best.points = pointCalculator.getPoints();
-						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
-						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
+						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
 					level = parents[level];
 					descend = false;
 					continue;
 				}
-				if(placedVolume + remainingVolumes[level] < best.volume || (placedVolume + remainingVolumes[level] == best.volume && placedCount + length - level <= best.count)) {
+				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
 					// cannot beat the best arrangement
 					level = parents[level];
 					descend = false;
@@ -865,18 +856,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				long placedVolume = placedVolumes[level];
 				if(level == length) {
 					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
-						best.volume = placedVolume;
-						best.count = placedCount;
-						best.points = pointCalculator.getPoints();
-						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
-						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
+						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
 					level = parents[level];
 					descend = false;
 					continue;
 				}
-				if(placedVolume + remainingVolumes[level] < best.volume || (placedVolume + remainingVolumes[level] == best.volume && placedCount + length - level <= best.count)) {
+				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
 					// cannot beat the best arrangement
 					level = parents[level];
 					descend = false;
