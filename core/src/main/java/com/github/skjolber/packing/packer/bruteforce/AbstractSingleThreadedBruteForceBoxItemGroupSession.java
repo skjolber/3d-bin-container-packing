@@ -113,7 +113,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				// remove stacked items which did not make it
 				stack.setSize(p.size());
 				
-				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 	
 				// remove session inventory
 				removeInventory(p);
@@ -130,7 +130,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				stackPlacementCount = 0;
 				boxItemGroups = Collections.emptyList();
 				
-				return packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				return packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 			}
 		} else {
 			Stack stack = result.getStack();

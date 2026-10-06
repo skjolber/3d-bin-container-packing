@@ -70,7 +70,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 			bruteForceResult.markDirty();
 			Stack stack = bruteForceResult.getStack();
 			
-			Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+			Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 						
 			int size = stack.size();
 			if(stackPlacementCount > size) {

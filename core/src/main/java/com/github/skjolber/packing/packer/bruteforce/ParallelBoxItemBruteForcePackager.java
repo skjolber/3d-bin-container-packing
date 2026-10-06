@@ -442,7 +442,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				bruteForceResult.markDirty();
 				Stack stack = bruteForceResult.getStack();
 				
-				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 				
 				if(!bruteForceResult.containsLastStackable()) {
 					// this result does not consume all placements
@@ -688,7 +688,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				bruteForceResult.markDirty();
 				Stack stack = bruteForceResult.getStack();
 				
-				Container container = packagerContainerItems.toContainer(bruteForceResult.getContainerItem(), stack);
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 	
 				if(!bruteForceResult.containsLastStackable()) {
 					// this result does not consume all placements
