@@ -199,8 +199,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		return null;
 	}
 
-	private BoxItemPermutationRotationIterator filterReversePermutations(BoxItemPermutationRotationIterator iterator, boolean abortOnAnyBoxTooBig) {
-		if(!filterReversePermutations || !abortOnAnyBoxTooBig) {
+	/**
+	 * @param skip whether to skip reverse permutations for this attempt (see {@link #isReverseSymmetric(PackagerInput)})
+	 */
+	private BoxItemPermutationRotationIterator filterReversePermutations(BoxItemPermutationRotationIterator iterator, boolean skip) {
+		if(!filterReversePermutations || !skip) {
 			return iterator;
 		}
 
@@ -336,7 +339,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
 			boolean multithreaded;
-			long permutationCount = filterReversePermutations && abortOnAnyBoxTooBig
+			long permutationCount = filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig
 					? new FilteredReversedBoxItemPermutationRotationIterator(iterators[i]).countPermutations()
 					: iterators[i].countPermutations();
 			if(permutationCount > 2L * parallelizationCount) {
@@ -361,7 +364,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					
 					worker.setContainerItem(containerItem);
 					worker.setContainerIndex(i);
-					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
+					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), reverseSymmetric && abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
 					}
@@ -434,7 +437,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// no need to split this job
 			// run with linear approach, from the first permutation
 			iterators[i].reset();
-			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
+			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], reverseSymmetric && abortOnAnyBoxTooBig);
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
 					interrupts[0], pointFilter);
 		}
@@ -574,7 +577,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
 			boolean multithreaded;
-			long permutationCount = filterReversePermutations && abortOnAnyBoxTooBig
+			long permutationCount = filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig
 					? new FilteredReversedBoxItemPermutationRotationIterator(iterators[i]).countPermutations()
 					: iterators[i].countPermutations();
 			if(permutationCount > 2L * parallelizationCount) {
@@ -599,7 +602,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					
 					worker.setContainerItem(containerItem);
 					worker.setContainerIndex(i);
-					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), abortOnAnyBoxTooBig);
+					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), reverseSymmetric && abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
 					}
@@ -675,7 +678,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// no need to split this job
 			// run with linear approach, from the first permutation
 			iterators[i].reset();
-			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
+			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], reverseSymmetric && abortOnAnyBoxTooBig);
 			return truncateToGroup(ParallelBoxItemBruteForcePackager.this.pack(
 					runnables[0].pointCalculator,
 					runnables[0].placements,

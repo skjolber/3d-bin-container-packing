@@ -171,7 +171,40 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			session = createBoxItemGroupSession(groups, input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 		}
 		session.setOrder(input.getOrder());
+		session.setReverseSymmetric(isReverseSymmetric(input));
 		return session;
+	}
+
+	/**
+	 * Whether a permutation and its reverse can be expected to pack equally well, so that skipping reverse permutations
+	 * only skips equivalent arrangements. Not when the insertion order matters: box extraction orders, container access,
+	 * obstacles or initial points, or box load limits (the order decides which box is below).
+	 */
+	protected static boolean isReverseSymmetric(PackagerInput input) {
+		if(hasLoadLimits(input)) {
+			return false;
+		}
+		for (ContainerItem containerItem : input.getContainerItems()) {
+			Container container = containerItem.getContainer();
+			if(container.getAccess() != ContainerAccess.ANY || !container.getObstacles().isEmpty() || containerItem.hasInitialPoints()) {
+				return false;
+			}
+		}
+		List<BoxItem> boxItems;
+		if(input.hasBoxItems()) {
+			boxItems = input.getBoxItems();
+		} else {
+			boxItems = new ArrayList<>();
+			for (BoxItemGroup group : input.getBoxItemGroups()) {
+				boxItems.addAll(group.getItems());
+			}
+		}
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getExtractionOrder() != boxItems.get(0).getExtractionOrder()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override

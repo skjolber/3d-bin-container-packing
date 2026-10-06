@@ -438,7 +438,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			// a previous attempt left the iterator at its last permutation and rotations
 			iterator.reset();
 			
-			if(filterReversePermutations && abortOnAnyBoxTooBig && !isOrdered()) {
+			if(filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig && !isOrdered()) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
 			if(order != Order.NONE) {
@@ -492,7 +492,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			// a previous attempt left the iterator at its last permutation and rotations
 			iterator.reset();
 			
-			if(filterReversePermutations && abortOnAnyBoxTooBig && order == Order.NONE) {
+			if(filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig && order == Order.NONE) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
 			if(order != Order.NONE) {

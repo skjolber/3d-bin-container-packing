@@ -32,6 +32,11 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected Order order = Order.NONE;
 	/** Whether the box items have different container priorities (they are sorted by container priority) */
 	protected final boolean containerPriorities;
+	/**
+	 * Whether a permutation and its reverse can be expected to pack equally well, so that skipping reverse permutations
+	 * is an option, see {@link AbstractBruteForcePackager#isReverseSymmetric(com.github.skjolber.packing.packer.PackagerInput)}
+	 */
+	protected boolean reverseSymmetric = true;
 
 	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
@@ -75,6 +80,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		this.globalIndexes = source.globalIndexes;
 		this.order = source.order;
 		this.containerPriorities = source.containerPriorities;
+		this.reverseSymmetric = source.reverseSymmetric;
 		this.boxes = source.boxes.clone();
 		this.boxesRemaining = source.boxesRemaining.clone();
 		this.boxItems = new BoxItem[source.boxItems.length];
@@ -92,10 +98,15 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		this.order = order != null ? order : Order.NONE;
 	}
 
+	public void setReverseSymmetric(boolean reverseSymmetric) {
+		this.reverseSymmetric = reverseSymmetric;
+	}
+
 	@Override
 	public PackagerSession fresh() {
 		PackagerSession fresh = super.fresh();
 		((AbstractBruteForceBoxItemSession)fresh).setOrder(order);
+		((AbstractBruteForceBoxItemSession)fresh).setReverseSymmetric(reverseSymmetric);
 		return fresh;
 	}
 

@@ -37,7 +37,8 @@ same physical container are valid, provide each orientation as a separate
 | `CompositePackager` | Combines packagers: cheap packagers give a baseline and are tried first for each container; costly packagers run only where the cheaper ones do not fit all remaining boxes, optionally with a time budget. |
 
 Brute-force packagers remove duplicate rotations and can skip reverse-equivalent
-permutations. They remain exponential in the number of independently ordered
+permutations (not when the insertion order matters: extraction orders, container
+access, obstacles or load limits). They remain exponential in the number of independently ordered
 boxes; use an interrupt deadline for production requests.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
