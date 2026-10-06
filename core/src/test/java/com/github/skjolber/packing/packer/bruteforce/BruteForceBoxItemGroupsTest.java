@@ -225,36 +225,36 @@ public class BruteForceBoxItemGroupsTest {
 	}
 
 	@Test
-	public void bruteForcePacksTheLargestGroupFirst() {
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withGroupOrderSearch(0).build()) {
-			assertPacksTheLargestGroupFirst(packager);
+	public void bruteForceFillsTheFirstContainer() {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			assertFillsTheFirstContainer(packager);
 		}
 	}
 
 	@Test
-	public void fastBruteForcePacksTheLargestGroupFirst() {
-		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withGroupOrderSearch(0).build()) {
-			assertPacksTheLargestGroupFirst(packager);
+	public void fastBruteForceFillsTheFirstContainer() {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			assertFillsTheFirstContainer(packager);
 		}
 	}
 
 	@Test
-	public void parallelBruteForcePacksTheLargestGroupFirst() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(0).build()) {
-			assertPacksTheLargestGroupFirst(packager);
+	public void parallelBruteForceFillsTheFirstContainer() {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+			assertFillsTheFirstContainer(packager);
 		}
 	}
 
 	/**
-	 * Without the group order search, groups are packed in the order the plain packager picks them, the largest first.
-	 * Containers with room for 4 unit cubes; groups a (2 cubes), b (3) and c (2):
+	 * Each container gets the best order of the remaining groups. Containers with room for 4 unit cubes; groups a
+	 * (2 cubes), b (3) and c (2):
 	 *
 	 * <pre>
 	 *   input order:    [a a . .]  [b b b .]  [c c . .]     3 containers
-	 *   largest first:  [b b b .]  [a a c c]                2 containers
+	 *   best orders:    [a a c c]  [b b b .]                2 containers
 	 * </pre>
 	 */
-	private static void assertPacksTheLargestGroupFirst(AbstractPackager<?> packager) {
+	private static void assertFillsTheFirstContainer(AbstractPackager<?> packager) {
 		List<BoxItemGroup> groups = new ArrayList<>();
 		int[] counts = {2, 3, 2};
 		String[] ids = {"a", "b", "c"};
@@ -276,6 +276,8 @@ public class BruteForceBoxItemGroupsTest {
 
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
+		assertThat(result.get(0).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId().substring(0, 1)).containsOnly("a", "c");
+		assertThat(result.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId().substring(0, 1)).containsOnly("b");
 	}
 
 	@Test

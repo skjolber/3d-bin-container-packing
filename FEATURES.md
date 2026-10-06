@@ -40,9 +40,8 @@ require full support (boxes rest completely on the floor or on the boxes below),
 remove duplicate rotations and can skip reverse-equivalent permutations (not when
 the insertion order matters: extraction orders, container access, obstacles, load
 limits or full support). Without a box item order, they try every order of the box
-item groups for each container (exponential in the number of groups, which
-`withGroupOrderSearch(..)` can limit). They remain exponential in the number of
-independently ordered boxes; use an interrupt deadline for production requests.
+item groups for each container. They are exponential in the number of groups and
+of independently ordered boxes; use an interrupt deadline for production requests.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
 filled factor grids for repeated items, container-sized grid blocks for counts

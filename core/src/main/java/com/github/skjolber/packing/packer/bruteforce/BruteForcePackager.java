@@ -367,7 +367,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected int groupOrderSearch = Integer.MAX_VALUE;
 		protected boolean requireFullSupport;
 
 		/**
@@ -380,24 +379,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 */
 		public Builder withRequireFullSupport(boolean requireFullSupport) {
 			this.requireFullSupport = requireFullSupport;
-			return this;
-		}
-
-		/**
-		 * Limit the search of the orders of the box item groups. Without a box item order, groups are packed in order,
-		 * and each container tries every order of the remaining groups, as another order can fill it better. Orders
-		 * which cannot give a better result are skipped, but the search is exponential in the number of groups. By
-		 * default, the orders of all groups are searched.
-		 *
-		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 to pack the
-		 *        groups in the order the plain packager picks them
-		 * @return this builder
-		 */
-		public Builder withGroupOrderSearch(int maxGroups) {
-			if(maxGroups < 0) {
-				throw new IllegalArgumentException("Expected a non-negative number of groups, got " + maxGroups);
-			}
-			this.groupOrderSearch = maxGroups;
 			return this;
 		}
 
@@ -442,7 +423,6 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
-			packager.setGroupOrderSearch(groupOrderSearch);
 			packager.setRequireFullSupport(requireFullSupport);
 			return packager;
 		}

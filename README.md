@@ -440,8 +440,7 @@ containers lowest container priority first, then the groups which are extracted 
 (`withBoxItemGroupComparator(..)`). The brute-force packagers pack groups in an order, permuting the boxes within each
 group, and a container holds the first groups which fit; they try every order of the remaining groups for each
 container (groups of the same container priority change places), skipping the orders which cannot give a better result.
-This is exponential in the number of groups: `withGroupOrderSearch(maxGroups)` limits the search to when at most
-`maxGroups` groups remain, and 0 packs the groups in the order above.
+This is exponential in the number of groups; use a deadline.
 Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
 (`ExtractionOrderValidator`, `ContainerPriorityValidator`).
 

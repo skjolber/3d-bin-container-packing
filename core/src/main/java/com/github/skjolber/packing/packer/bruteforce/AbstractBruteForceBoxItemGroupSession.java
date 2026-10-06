@@ -51,24 +51,15 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		this.initialBoxItemGroups = copyBoxItemGroups(source.initialBoxItemGroups);
 		this.boxItemGroups = copyBoxItemGroups(source.boxItemGroups);
 		this.remainingGroupPositions = new ArrayList<>(source.remainingGroupPositions);
-		this.groupOrderSearch = source.groupOrderSearch;
 		this.skipGroupOrders = source.skipGroupOrders;
 	}
-
-	/** Search the orders of the remaining groups when there are at most this many (by default all; 0 for never) */
-	protected int groupOrderSearch = Integer.MAX_VALUE;
 
 	/** Skip the orders which cannot give a better result (see {@link #attemptGroupOrders}); tests turn this off */
 	boolean skipGroupOrders = true;
 
-	public void setGroupOrderSearch(int groupOrderSearch) {
-		this.groupOrderSearch = groupOrderSearch;
-	}
-
 	@Override
 	public PackagerSession fresh() {
 		PackagerSession fresh = super.fresh();
-		((AbstractBruteForceBoxItemGroupSession)fresh).setGroupOrderSearch(groupOrderSearch);
 		((AbstractBruteForceBoxItemGroupSession)fresh).skipGroupOrders = skipGroupOrders;
 		return fresh;
 	}
@@ -77,7 +68,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * @return whether to search the orders of the remaining groups in this attempt (see {@link #attemptGroupOrders})
 	 */
 	protected boolean isGroupOrderSearch() {
-		return order == Order.NONE && boxItemGroups.size() > 1 && boxItemGroups.size() <= groupOrderSearch;
+		return order == Order.NONE && boxItemGroups.size() > 1;
 	}
 
 	/**
