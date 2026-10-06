@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer;
 
+import java.util.List;
+
 import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
@@ -225,5 +227,11 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	@Override
 	public void accepted(Placement placement) {
 		util.accepted(placement);
+	}
+
+	@Override
+	public void undo(List<Placement> placements) {
+		// a group which did not fit: remove the loads of its placements
+		util.undo(placements);
 	}
 }

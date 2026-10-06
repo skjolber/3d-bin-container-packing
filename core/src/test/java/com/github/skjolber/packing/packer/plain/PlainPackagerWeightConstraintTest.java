@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.plain;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +9,10 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
@@ -321,6 +325,48 @@ public class PlainPackagerWeightConstraintTest extends AbstractPackagerConstrain
 			Placement top = placementAt(placements, 1);
 			StackPlacementAssert.assertThat(bot).hasLoadWeight((double) top.getWeight());
 			StackPlacementAssert.assertThat(top).hasLoadWeight(0.0);
+		} finally {
+			packager.close();
+		}
+	}
+
+	//
+	//  column 1 x 1 x 3; groups in order, a group which does not fit is skipped:
+	//
+	//   group 1: X (carries at most 2)
+	//   group 2: Y1 (weight 2, carries at most 1) on X, then Y2 (weight 1) on Y1 would put 3 on X:
+	//            the group does not fit, and is rolled back
+	//   group 3: Z (weight 2) rests on X only if Y1's weight was removed from X
+	//
+	//   container 1     container 2
+	//      | |             | |
+	//      |Z|             |Y2|
+	//      |X|             |Y1|
+	//
+	@Test
+	void rolledBackGroupLeavesNoLoad() {
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			Container container = Container.newBuilder().withId("column").withSize(1, 1, 3).withMaxLoadWeight(100).build();
+
+			List<BoxItemGroup> groups = new ArrayList<>();
+			groups.add(new BoxItemGroup("1", List.of(new BoxItem(Box.newBuilder().withId("X").withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(2).build(), 1))));
+			groups.add(new BoxItemGroup("2", List.of(
+					new BoxItem(Box.newBuilder().withId("Y1").withSize(1, 1, 1).withWeight(2).withMaxLoadWeight(1).build(), 1),
+					new BoxItem(Box.newBuilder().withId("Y2").withSize(1, 1, 1).withWeight(1).build(), 1))));
+			groups.add(new BoxItemGroup("3", List.of(new BoxItem(Box.newBuilder().withId("Z").withSize(1, 1, 1).withWeight(2).build(), 1))));
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(List.of(new ContainerItem(container, 3)))
+					.withBoxItemGroups(groups)
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
+					.withMaxContainerCount(3)
+					.build();
+
+			PackagerResultAssert.assertThat(result).isSuccess();
+			assertThat(result.getContainers()).hasSize(2);
+			assertThat(result.get(0).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("X", "Z");
+			assertThat(result.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("Y1", "Y2");
 		} finally {
 			packager.close();
 		}

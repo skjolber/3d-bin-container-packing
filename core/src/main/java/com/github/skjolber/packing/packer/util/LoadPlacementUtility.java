@@ -1,7 +1,10 @@
 package com.github.skjolber.packing.packer.util;
 
+import java.util.List;
+
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.point.Point;
 
@@ -59,6 +62,22 @@ public interface LoadPlacementUtility {
 	 */
 	default void accepted(Placement placement) {
 		addSupportersLoad(placement);
+	}
+
+	/**
+	 * Undo {@link #accepted(Placement)} for placements which are removed again, for example a box item group which did
+	 * not fit: their loads no longer rest on the placements below them. The placements must be the last placed, in the
+	 * order they were placed. Placements which are already undone are skipped.
+	 */
+	default void undo(List<Placement> placements) {
+		for(int i = placements.size() - 1; i >= 0; i--) {
+			Placement placement = placements.get(i);
+			placement.removeSupporteesAbove();
+			for(PlacementLoad placementLoad : placement.getSupporters()) {
+				placementLoad.getPlacement().removeLastSupportee();
+			}
+			placement.clearLoad();
+		}
 	}
 
 	/**

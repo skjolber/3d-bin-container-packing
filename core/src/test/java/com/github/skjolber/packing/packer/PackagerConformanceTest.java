@@ -113,7 +113,8 @@ public class PackagerConformanceTest {
 		EXPECTED.put("obstaclesGroups",            "S S S S S S S S S S");
 		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S S S S");
 		EXPECTED.put("loadLimits",                 "S S S R R R S S S S");
-		// LAFF: rolled back groups leave their loads (not investigated yet)
+		// LAFF: a box taller than its level starts a new level, where it must rest on the boxes below (load limits);
+		// it is not placed when they cannot carry it, although it would fit beside them on the level's floor
 		EXPECTED.put("loadLimitsGroups",           "S G G R R R S S S S");
 	}
 
