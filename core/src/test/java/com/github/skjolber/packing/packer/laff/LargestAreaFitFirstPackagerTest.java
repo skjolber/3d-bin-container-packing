@@ -599,5 +599,50 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
+	//
+	//  container 2 x 2 x 2 with an obstacle (X) in a corner of the floor; groups of 3 (a) and 4 (b) unit cubes:
+	//
+	//   level 1:  a a      level 2:  b b
+	//             X a                b b
+	//
+	@Test
+	void testStackingGroupsWithObstacles() {
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			Container container = Container.newBuilder()
+					.withDescription("1")
+					.withEmptyWeight(1)
+					.withSize(2, 2, 2)
+					.withMaxLoadWeight(100)
+					.build();
 
+			List<BoxItemGroup> groups = new ArrayList<>();
+			for (String id : List.of("a", "b")) {
+				List<BoxItem> products = new ArrayList<>();
+				int count = id.equals("a") ? 3 : 4;
+				for(int i = 0; i < count; i++) {
+					products.add(new BoxItem(Box.newBuilder().withId(id + i).withSize(1, 1, 1).withWeight(1).build(), 1));
+				}
+				groups.add(new BoxItemGroup(id, products));
+			}
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withObstacles(o -> o.withObstacle(0, 0, 0, 1, 1, 1));
+			}).withBoxItemGroups(groups).build();
+
+			assertTrue(build.isSuccess());
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
+
+			Container packed = build.getContainers().get(0);
+			Placement obstacle = packed.getObstacles().get(0);
+			List<Placement> placements = packed.getStack().getPlacements();
+			assertEquals(7, placements.size());
+			for (Placement placement : placements) {
+				assertFalse(placement.intersects3D(obstacle));
+			}
+		} finally {
+			packager.close();
+		}
+	}
 }

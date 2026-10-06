@@ -110,8 +110,7 @@ public class PackagerConformanceTest {
 		EXPECTED.put("frontAccess",                "S S S S S S S S S S");
 		EXPECTED.put("frontAccessGroups",          "S S S S S S S S S S");
 		EXPECTED.put("obstacles",                  "S S S S S S S S S S");
-		// LAFF: new levels lose the obstacles' free space
-		EXPECTED.put("obstaclesGroups",            "S G G S S S S S S S");
+		EXPECTED.put("obstaclesGroups",            "S S S S S S S S S S");
 		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S S S S");
 		EXPECTED.put("loadLimits",                 "S S S R R R S S S S");
 		// LAFF: rolled back groups leave their loads (not investigated yet)
