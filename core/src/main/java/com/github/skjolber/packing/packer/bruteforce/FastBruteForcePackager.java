@@ -25,6 +25,7 @@ import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationItera
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -182,6 +183,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			// a previous attempt left the iterator at its last permutation and rotations
 			containerIterators[i].reset();
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator,
+						null, getMaxContainerPriority(containerIterators[i]));
+			}
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 			}
@@ -238,11 +243,17 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				return attemptGroupOrders(i, best);
 			}
 			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
-			if(!canLoadNextGroup(iteratorGroups)) {
+			// when skipping, the first group may be skipped
+			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
 			}
 			// a previous attempt left the iterator at its last permutation and rotations
 			containerIterators[i].reset();
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+				// groups are skipped whole
+				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator,
+						getGroupSkipEnds(iteratorGroups, containerIterators[i].length()), getMaxContainerPriority(containerIterators[i]));
+			}
 			if(order != Order.NONE) {
 				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, Integer.MAX_VALUE), iteratorGroups);
 			}
@@ -572,6 +583,305 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return result;
 	}
 
+	/**
+	 * Pack the boxes in the iterator's order (a box item order, {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}) into one
+	 * container: any box may be skipped (it waits for a later container), and the boxes which are placed are in the order,
+	 * each insertable after the boxes before it. As
+	 * {@link AbstractBruteForcePackager#packInOrderSkipping(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, int[], int)},
+	 * but the search (see {@link #searchInOrderSkipping}) tries each rotation of a box at its best point only.
+	 *
+	 * @param skipEnds for each box, the box to continue with when skipping it, or -1 if it cannot be skipped (box item
+	 *        groups are skipped whole), or null if each box can be skipped
+	 * @param maxContainerPriority the highest container priority which may be placed (see
+	 *        {@link AbstractBruteForceBoxItemSession#getMaxContainerPriority(BoxItemPermutationRotationIterator)})
+	 * @return the result, or an empty result; the result may hold any of the boxes (see
+	 *         {@link BruteForceIntermediatePackagerResult#isAnyRemaining()})
+	 */
+	public BruteForceIntermediatePackagerResult packInOrderSkipping(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount,
+			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt,
+			FastBruteForceBoxStackValuePointComparator pointComparator, int[] skipEnds, int maxContainerPriority) throws PackagerInterruptedException {
+		Container holder = containerItem.getContainer().copy(iterator.length());
+		Stack stack = holder.getStack();
+
+		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, utility != null);
+		result.setAnyRemaining(true);
+		int length = iterator.length();
+		if(length == 0 || stackPlacements.length == 0) {
+			return result;
+		}
+
+		int[] permutations = iterator.getPermutations();
+		BoxItem[] boxItems = iterator.getBoxItems();
+		long[] minAreas = getMinAreas(boxItems, permutations);
+
+		pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+		if(containerItem.hasInitialPoints()) {
+			pointCalculator.setPoints(containerItem.getInitialPoints());
+			pointCalculator.clear();
+		}
+		pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
+		if(utility != null) {
+			utility.initialize(length);
+		}
+		SkippingBest best = new SkippingBest(length);
+		searchInOrderSkipping(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder, interrupt, utility,
+				pointComparator, best);
+		stack.clear();
+		if(best.count > 0) {
+			int[] placedPermutations = new int[best.count];
+			int[] placedRotations = new int[best.count];
+			System.arraycopy(best.permutations, 0, placedPermutations, 0, best.count);
+			System.arraycopy(best.rotations, 0, placedRotations, 0, best.count);
+			result.setState(best.points, new PermutationRotationState(placedRotations, placedPermutations), stackPlacements, stackPlacementCount);
+		}
+		result.markDirty();
+		return result;
+	}
+
+	/**
+	 * Depth-first search over a box item order where boxes may be skipped. Each level tries each rotation of its box at
+	 * the best point (by the point comparator) where the box is insertable after the boxes placed before it; then the
+	 * level also tries skipping its box. Levels are boxes, while the point calculator has a frame for each placed box.
+	 *
+	 * @param skipEnds for each level, the level to continue with when skipping it, -1 if it cannot be skipped, or null
+	 *        for the next level
+	 * @param maxContainerPriority the highest container priority which may be placed
+	 * @param best the best arrangement: the most volume, then the most boxes
+	 */
+	protected void searchInOrderSkipping(FastPointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, long[] minAreas,
+			int[] skipEnds, int maxContainerPriority, BoxItemPermutationRotationIterator iterator, Stack stack, Container container, PackagerInterruptSupplier interrupt,
+			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator, SkippingBest best) throws PackagerInterruptedException {
+		int length = permutations.length;
+		long maxLoadVolume = container.getMaxLoadVolume();
+
+		// for each level: how it continues, how it was reached, and the state when entering it
+		boolean[] skipping = new boolean[length + 1];
+		int[] rotationIndexes = new int[length];
+		int[] parents = new int[length + 1];
+		int[] placedCounts = new int[length + 1];
+		long[] placedVolumes = new long[length + 1];
+		int[] freeLoadWeights = new int[length + 1];
+		int[] maxContainerPriorities = new int[length + 1];
+		int[] placedPermutations = new int[length];
+		int[] placedRotations = new int[length];
+
+		// the volume of the boxes from each level on, as a bound
+		long[] remainingVolumes = new long[length + 1];
+		for (int i = length - 1; i >= 0; i--) {
+			remainingVolumes[i] = remainingVolumes[i + 1] + boxItems[permutations[i]].getBox().getVolume();
+		}
+
+		int level = 0;
+		parents[0] = -1;
+		freeLoadWeights[0] = container.getMaxLoadWeight();
+		maxContainerPriorities[0] = maxContainerPriority;
+		boolean descend = true;
+		while(true) {
+			if(descend) {
+				if(interrupt.getAsBoolean()) {
+					throw new PackagerInterruptedException();
+				}
+				int placedCount = placedCounts[level];
+				long placedVolume = placedVolumes[level];
+				if(level == length) {
+					// every box is placed or skipped: keep the arrangement if the best so far
+					if(placedVolume > best.volume || (placedVolume == best.volume && placedCount > best.count)) {
+						best.volume = placedVolume;
+						best.count = placedCount;
+						best.points = pointCalculator.getPoints();
+						System.arraycopy(placedPermutations, 0, best.permutations, 0, placedCount);
+						System.arraycopy(placedRotations, 0, best.rotations, 0, placedCount);
+					}
+					level = parents[level];
+					descend = false;
+					continue;
+				}
+				if(placedVolume + remainingVolumes[level] < best.volume || (placedVolume + remainingVolumes[level] == best.volume && placedCount + length - level <= best.count)) {
+					// cannot beat the best arrangement
+					level = parents[level];
+					descend = false;
+					if(level == -1) {
+						return;
+					}
+					continue;
+				}
+				BoxItem boxItem = boxItems[permutations[level]];
+				Box box = boxItem.getBox();
+				skipping[level] = !(boxItem.getContainerPriority() <= maxContainerPriorities[level]
+						&& box.getWeight() <= freeLoadWeights[level]
+						&& placedVolume + box.getVolume() <= maxLoadVolume);
+				rotationIndexes[level] = 0;
+			} else if(!skipping[level]) {
+				// back from the next level: remove this level's placement and restore the free points
+				int placedCount = placedCounts[level];
+				if(utility != null) {
+					Placement placement = placements[placedCount];
+					placement.removeSupporteesAbove();
+					for(PlacementLoad placementLoad : placement.getSupporters()) {
+						placementLoad.getPlacement().removeLastSupportee();
+					}
+					placement.clearLoad();
+				}
+				stack.remove(stack.size() - 1);
+				pointCalculator.setStackSize(placedCount);
+				if(best.count == length) {
+					// the best arrangement places all boxes: unwind without trying more candidates
+					level = parents[level];
+					if(level == -1) {
+						return;
+					}
+					continue;
+				}
+			} else {
+				// back from skipping this level's box
+				level = parents[level];
+				if(level == -1) {
+					return;
+				}
+				continue;
+			}
+
+			int placedCount = placedCounts[level];
+			if(!skipping[level]) {
+				// the next rotation of this level's box which fits at a point
+				BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
+				BoxStackValue stackValue = null;
+				int pointIndex = -1;
+				while(pointIndex == -1 && rotationIndexes[level] < stackValues.length) {
+					stackValue = stackValues[rotationIndexes[level]];
+					rotationIndexes[level]++;
+					if(utility == null) {
+						pointIndex = getBestPoint(pointCalculator, stackValue, stack, placedCount, container, iterator, pointComparator);
+					} else {
+						pointIndex = getBestPointWithLoad(pointCalculator, stackValue, stack, placedCount, container, iterator, utility, pointComparator);
+					}
+				}
+				if(pointIndex != -1) {
+					// place the box and continue with the next level
+					Placement placement = placements[placedCount];
+					SimplePoint3D point = pointCalculator.get(pointIndex);
+					if(utility != null) {
+						// the utility caches are primed for the last point checked: repopulate them for the selected point
+						utility.populatePointSupporters(point);
+						utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
+						placement.clearLoad();
+						placement.setIndex(stack.size());
+						placement.setSupportedArea(utility.getSupportedAreaAtPoint(point, stackValue, false));
+					}
+					placement.setStackValue(stackValue);
+					placement.setPoint(point);
+					pointCalculator.add(pointIndex, placement);
+					stack.add(placement);
+					if(utility != null) {
+						utility.addSupportersLoad(placement);
+					}
+					int nextLevel = level + 1;
+					if(nextLevel < length) {
+						if(minAreas[nextLevel] != minAreas[level]) {
+							pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
+						} else {
+							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
+						}
+					}
+					placedPermutations[placedCount] = permutations[level];
+					placedRotations[placedCount] = rotationIndexes[level] - 1;
+					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
+							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
+					level = nextLevel;
+					descend = true;
+					continue;
+				}
+				// no more rotations: try skipping the box
+				skipping[level] = true;
+			}
+
+			// skip this level's box: it waits for a later container, and so do the boxes of a higher container priority
+			int skipEnd = skipEnds != null ? skipEnds[level] : level + 1;
+			if(skipEnd == -1) {
+				// cannot skip here (inside a box item group)
+				level = parents[level];
+				descend = false;
+				if(level == -1) {
+					return;
+				}
+				continue;
+			}
+			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxItems[permutations[level]].getContainerPriority());
+			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
+					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
+			level = skipEnd;
+			descend = true;
+		}
+	}
+
+	/**
+	 * @param placedCount the number of boxes placed, which the box must be insertable after
+	 * @return the best point (by the point comparator) for a box with a box item order, or -1 if none
+	 */
+	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxStackValue stackValue, Stack stack, int placedCount, Container container,
+			BoxItemPermutationRotationIterator iterator, FastBruteForceBoxStackValuePointComparator pointComparator) {
+		boolean checkObstacles = !container.getObstacles().isEmpty();
+		boolean checkExtraction = hasExtractionOrders(iterator);
+		int bestPointIndex = -1;
+		for(int k = 0; k < pointCalculator.size(); k++) {
+			SimplePoint3D point = pointCalculator.get(k);
+			if(!point.fits3D(stackValue)) {
+				continue;
+			}
+			if(placedCount > 0 && !isInsertableAfter(point, stackValue, stack, placedCount, container.getAccess())) {
+				continue;
+			}
+			if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
+				continue;
+			}
+			if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+				continue;
+			}
+			if(bestPointIndex == -1 || pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) > 0) {
+				bestPointIndex = k;
+			}
+		}
+		return bestPointIndex;
+	}
+
+	/**
+	 * As {@link #getBestPoint(FastPointCalculator3DStack, BoxStackValue, Stack, int, Container, BoxItemPermutationRotationIterator, FastBruteForceBoxStackValuePointComparator)},
+	 * for boxes with load limits: the boxes below must carry the box at the point.
+	 */
+	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxStackValue stackValue, Stack stack, int placedCount, Container container,
+			BoxItemPermutationRotationIterator iterator, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
+		boolean checkObstacles = !container.getObstacles().isEmpty();
+		boolean checkExtraction = hasExtractionOrders(iterator);
+		int bestPointIndex = -1;
+		for(int k = 0; k < pointCalculator.size(); k++) {
+			SimplePoint3D point = pointCalculator.get(k);
+			if(!point.fits3D(stackValue)) {
+				continue;
+			}
+			if(placedCount > 0 && !isInsertableAfter(point, stackValue, stack, placedCount, container.getAccess())) {
+				continue;
+			}
+			if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
+				continue;
+			}
+			if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+				continue;
+			}
+			if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {
+				continue;
+			}
+			// validate the load only for points which would be selected
+			utility.populatePointSupporters(point);
+			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
+			if(utility.getSupportedAreaAtPoint(point, stackValue, false) == -1L) {
+				continue;
+			}
+			bestPointIndex = k;
+		}
+		return bestPointIndex;
+	}
+
 	private void calculateFreeLoadWeights(BoxItemPermutationRotationIterator rotator, long[] freeLoadWeights, int permutationIndex) {
 		long nextFreeLoadWeight = freeLoadWeights[permutationIndex] - rotator.getStackValue(permutationIndex).getBox().getWeight();
 		for(int i = permutationIndex + 1; i < freeLoadWeights.length; i++) {
@@ -775,10 +1085,5 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		return placementIndex;
-	}
-
-	@Override
-	protected boolean supportsSkipping() {
-		return false;
 	}
 }

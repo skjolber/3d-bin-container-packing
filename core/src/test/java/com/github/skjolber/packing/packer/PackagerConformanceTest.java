@@ -94,9 +94,8 @@ public class PackagerConformanceTest {
 		EXPECTED.put("groups",                     "S S S S S S S");
 		EXPECTED.put("chronological",              "S S S S S S S");
 		EXPECTED.put("chronologicalGroups",        "S S S S S S S");
-		// fast brute force: skipping is not supported
-		EXPECTED.put("allowSkipping",              "S S S S R S S");
-		EXPECTED.put("allowSkippingGroups",        "S S S S R S S");
+		EXPECTED.put("allowSkipping",              "S S S S S S S");
+		EXPECTED.put("allowSkippingGroups",        "S S S S S S S");
 		EXPECTED.put("containerPriorities",        "S S S S S S S");
 		EXPECTED.put("containerPrioritiesGroups",  "S S S S S S S");
 		EXPECTED.put("extractionOrder",            "S S S S S S S");
@@ -111,7 +110,7 @@ public class PackagerConformanceTest {
 		// it is not placed when they cannot carry it, although it would fit beside them on the level's floor
 		EXPECTED.put("loadLimitsGroups",           "S G G S S S S");
 		EXPECTED.put("chronologicalLoadLimits",    "S S S S S S S");
-		EXPECTED.put("allowSkippingLoadLimits",    "S S S S R S S");
+		EXPECTED.put("allowSkippingLoadLimits",    "S S S S S S S");
 	}
 
 	/** An input */

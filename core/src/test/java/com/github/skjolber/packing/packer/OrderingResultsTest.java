@@ -393,14 +393,6 @@ public class OrderingResultsTest {
 		}
 	}
 
-	@Test
-	public void fastBruteForceDoesNotSupportSkipping() {
-		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
-			List<BoxItem> items = smallItems(new Random(1), 3);
-			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.CHRONOLOGICAL_ALLOW_SKIPPING))).contains("CHRONOLOGICAL_ALLOW_SKIPPING");
-		}
-	}
-
 	//
 	//  container 2 x 1 x 1; boxes in order a (1 x 1 x 1), b (2 x 1 x 1), c (1 x 1 x 1). With skipping, b waits for
 	//  the next container, and c is placed after a; without skipping, the container closes at b.
@@ -410,10 +402,7 @@ public class OrderingResultsTest {
 	//
 	@Test
 	public void bruteForceSkipsBoxesWhichDoNotFit() {
-		List<Supplier<AbstractPackager<?>>> packagers = List.of(
-				() -> BruteForcePackager.newBuilder().build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
-		for (Supplier<AbstractPackager<?>> supplier : packagers) {
+		for (Supplier<AbstractPackager<?>> supplier : bruteForcePackagers()) {
 			try (AbstractPackager<?> packager = supplier.get()) {
 				List<BoxItem> items = List.of(
 						new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build(), 1),

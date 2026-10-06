@@ -118,9 +118,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				return "Controls not supported";
 			}
 		}
-		if(input.getOrder() == Order.CHRONOLOGICAL_ALLOW_SKIPPING && !supportsSkipping()) {
-			return "Order CHRONOLOGICAL_ALLOW_SKIPPING not supported for " + getClass().getSimpleName();
-		}
 		return null;
 	}
 
@@ -1084,14 +1081,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 	}
 
-	/**
-	 * @return true if the packager supports {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}
-	 */
-	protected boolean supportsSkipping() {
-		return true;
-	}
-
-	private static void enter(int level, int parent, int placedCount, long placedVolume, int freeLoadWeight, int maxContainerPriority,
+	/** Enter a level of {@link #searchInOrderSkipping}: how it was reached, and the state when entering it */
+	protected static void enter(int level, int parent, int placedCount, long placedVolume, int freeLoadWeight, int maxContainerPriority,
 			int[] parents, int[] placedCounts, long[] placedVolumes, int[] freeLoadWeights, int[] maxContainerPriorities) {
 		parents[level] = parent;
 		placedCounts[level] = placedCount;

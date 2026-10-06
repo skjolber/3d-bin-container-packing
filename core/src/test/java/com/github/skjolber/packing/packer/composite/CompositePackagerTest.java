@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.packer.plain.heavy.HeavyItemsOnGroundLevelPointControls;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
 
@@ -214,15 +215,17 @@ public class CompositePackagerTest {
 
 	@Test
 	public void skipsPackagersWhichDoNotSupportTheInput() throws Exception {
-		// brute force does not support skipping boxes in the box item order
-		List<ContainerItem> containers = List.of(new ContainerItem(container("row", 2, 1), 1));
+		// brute force does not support custom point controls
+		ContainerItem containerItem = new ContainerItem(container("row", 2, 1), 1);
+		containerItem.setPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(100));
+		List<ContainerItem> containers = List.of(containerItem);
 		List<BoxItem> boxItems = List.of(new BoxItem(square(1), 2));
 		CountingFastBruteForcePackager costly = new CountingFastBruteForcePackager();
 		try (CompositePackager packager = CompositePackager.newBuilder()
 				.withPackager(PlainPackager.newBuilder().build())
 				.withPackager(costly)
 				.build()) {
-			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING).build();
+			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
 
 			assertThat(result.isSuccess()).isTrue();
 		}
