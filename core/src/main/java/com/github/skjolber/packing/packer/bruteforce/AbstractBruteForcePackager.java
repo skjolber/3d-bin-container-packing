@@ -78,8 +78,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
-	/** Search the orders of the remaining box item groups when there are at most this many of them (0 for never) */
-	protected int groupOrderSearch;
+	/** Search the orders of the remaining box item groups when there are at most this many of them (by default all; 0 for never) */
+	protected int groupOrderSearch = Integer.MAX_VALUE;
 
 	/** Place boxes only where they rest completely on the floor or on the boxes below (see {@link FullSupportCandidates}) */
 	protected boolean requireFullSupport;
@@ -87,6 +87,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	protected void setRequireFullSupport(boolean requireFullSupport) {
 		this.requireFullSupport = requireFullSupport;
 	}
+
+	/** Skip the group orders which cannot give a better result (see {@link AbstractBruteForceBoxItemGroupSession#attemptGroupOrders}); tests turn this off */
+	boolean skipGroupOrders = true;
 
 	protected void setGroupOrderSearch(int groupOrderSearch) {
 		this.groupOrderSearch = groupOrderSearch;
@@ -182,6 +185,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		session.setReverseSymmetric(!requireFullSupport && isReverseSymmetric(input));
 		if(session instanceof AbstractBruteForceBoxItemGroupSession groupSession) {
 			groupSession.setGroupOrderSearch(groupOrderSearch);
+			groupSession.skipGroupOrders = skipGroupOrders;
 		}
 		return session;
 	}

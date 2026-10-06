@@ -39,8 +39,10 @@ Brute-force packagers enforce box load limits when the boxes have them, can
 require full support (boxes rest completely on the floor or on the boxes below),
 remove duplicate rotations and can skip reverse-equivalent permutations (not when
 the insertion order matters: extraction orders, container access, obstacles, load
-limits or full support). They remain exponential in the number of independently ordered boxes;
-use an interrupt deadline for production requests.
+limits or full support). Without a box item order, they try every order of the box
+item groups for each container (exponential in the number of groups, which
+`withGroupOrderSearch(..)` can limit). They remain exponential in the number of
+independently ordered boxes; use an interrupt deadline for production requests.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
 filled factor grids for repeated items, container-sized grid blocks for counts

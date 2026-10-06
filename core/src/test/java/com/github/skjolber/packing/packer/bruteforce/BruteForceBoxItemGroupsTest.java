@@ -226,28 +226,28 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void bruteForcePacksTheLargestGroupFirst() {
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withGroupOrderSearch(0).build()) {
 			assertPacksTheLargestGroupFirst(packager);
 		}
 	}
 
 	@Test
 	public void fastBruteForcePacksTheLargestGroupFirst() {
-		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withGroupOrderSearch(0).build()) {
 			assertPacksTheLargestGroupFirst(packager);
 		}
 	}
 
 	@Test
 	public void parallelBruteForcePacksTheLargestGroupFirst() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(0).build()) {
 			assertPacksTheLargestGroupFirst(packager);
 		}
 	}
 
 	/**
-	 * Groups are packed in the order the plain packager picks them, the largest first. Containers with room for 4
-	 * unit cubes; groups a (2 cubes), b (3) and c (2):
+	 * Without the group order search, groups are packed in the order the plain packager picks them, the largest first.
+	 * Containers with room for 4 unit cubes; groups a (2 cubes), b (3) and c (2):
 	 *
 	 * <pre>
 	 *   input order:    [a a . .]  [b b b .]  [c c . .]     3 containers
@@ -280,27 +280,27 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void bruteForceSearchesGroupOrders() {
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withGroupOrderSearch(4).build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			assertSearchesGroupOrders(packager);
 		}
 	}
 
 	@Test
 	public void fastBruteForceSearchesGroupOrders() {
-		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withGroupOrderSearch(4).build()) {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
 			assertSearchesGroupOrders(packager);
 		}
 	}
 
 	@Test
 	public void parallelBruteForceSearchesGroupOrders() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(4).build()) {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertSearchesGroupOrders(packager);
 		}
 	}
 
 	/**
-	 * With the group orders searched, a container is not closed by the first group which does not fit. Containers with
+	 * The group orders are searched: a container is not closed by the first group which does not fit. Containers with
 	 * room for 5 unit cubes; groups a, b (3 cubes) and c, d (2):
 	 *
 	 * <pre>
@@ -347,9 +347,9 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void groupOrderSearchResultsAreValid() throws Exception {
 		List<AbstractPackager<?>> packagers = List.of(
-				BruteForcePackager.newBuilder().withGroupOrderSearch(5).build(),
-				FastBruteForcePackager.newBuilder().withGroupOrderSearch(5).build(),
-				ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withGroupOrderSearch(5).build());
+				BruteForcePackager.newBuilder().build(),
+				FastBruteForcePackager.newBuilder().build(),
+				ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 		try (DefaultValidator validator = new DefaultValidator()) {
 			for (AbstractPackager<?> packager : packagers) {
 				int containers = 0;
@@ -389,5 +389,64 @@ public class BruteForceBoxItemGroupsTest {
 				packager.close();
 			}
 		}
+	}
+
+	/**
+	 * The group order search skips the orders which cannot give a better result: the results are the same as when
+	 * every order is tried.
+	 */
+	@Test
+	public void skippingGroupOrdersGivesTheSameResults() {
+		List<java.util.function.Supplier<AbstractBruteForcePackager>> packagers = List.of(
+				() -> BruteForcePackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build());
+		for (java.util.function.Supplier<AbstractBruteForcePackager> supplier : packagers) {
+			try (AbstractBruteForcePackager skipping = supplier.get(); AbstractBruteForcePackager everyOrder = supplier.get()) {
+				everyOrder.skipGroupOrders = false;
+				for (long seed = 0; seed < 30; seed++) {
+					for (boolean priorities : new boolean[] { false, true }) {
+						assertThat(packGroupOrders(skipping, seed, priorities))
+								.as("%s seed %d priorities %s", skipping.getClass().getSimpleName(), seed, priorities)
+								.isEqualTo(packGroupOrders(everyOrder, seed, priorities));
+					}
+				}
+			}
+		}
+	}
+
+	/** @return the placements of each container (box id and position) */
+	private static List<String> packGroupOrders(AbstractPackager<?> packager, long seed, boolean priorities) {
+		java.util.Random random = new java.util.Random(seed);
+		List<BoxItemGroup> groups = new ArrayList<>();
+		int index = 0;
+		int groupCount = 3 + random.nextInt(3);
+		for (int g = 0; g < groupCount; g++) {
+			List<BoxItem> boxItems = new ArrayList<>();
+			int count = 1 + random.nextInt(2);
+			for (int i = 0; i < count; i++) {
+				boxItems.add(new BoxItem(Box.newBuilder().withId("b" + index++).withSize(1 + random.nextInt(2), 1 + random.nextInt(2), 1).withRotate2D().withWeight(1).build(), 1));
+			}
+			BoxItemGroup group = new BoxItemGroup("g" + g, boxItems);
+			if(priorities) {
+				group.withContainerPriority(random.nextInt(2));
+			}
+			groups.add(group);
+		}
+		PackagerResult result = packager.newResultBuilder()
+				.withContainerItems(List.of(new ContainerItem(Container.newBuilder().withId("c").withSize(4, 2, 1).withMaxLoadWeight(100).build(), 10)))
+				.withBoxItemGroups(groups)
+				.withMaxContainerCount(10)
+				.withInterruptDuration(10_000)
+				.build();
+		List<String> containers = new ArrayList<>();
+		for (Container container : result.getContainers()) {
+			StringBuilder builder = new StringBuilder();
+			for (Placement placement : container.getStack().getPlacements()) {
+				builder.append(placement.getStackValue().getBox().getId()).append('@').append(placement.getAbsoluteX()).append(',').append(placement.getAbsoluteY())
+						.append(' ').append(placement.getStackValue().getDx()).append('x').append(placement.getStackValue().getDy()).append(' ');
+			}
+			containers.add(builder.toString());
+		}
+		return containers;
 	}
 }

@@ -52,10 +52,14 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		this.boxItemGroups = copyBoxItemGroups(source.boxItemGroups);
 		this.remainingGroupPositions = new ArrayList<>(source.remainingGroupPositions);
 		this.groupOrderSearch = source.groupOrderSearch;
+		this.skipGroupOrders = source.skipGroupOrders;
 	}
 
-	/** Search the orders of the remaining groups when there are at most this many of them (0 for never) */
-	protected int groupOrderSearch;
+	/** Search the orders of the remaining groups when there are at most this many (by default all; 0 for never) */
+	protected int groupOrderSearch = Integer.MAX_VALUE;
+
+	/** Skip the orders which cannot give a better result (see {@link #attemptGroupOrders}); tests turn this off */
+	boolean skipGroupOrders = true;
 
 	public void setGroupOrderSearch(int groupOrderSearch) {
 		this.groupOrderSearch = groupOrderSearch;
@@ -65,6 +69,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	public PackagerSession fresh() {
 		PackagerSession fresh = super.fresh();
 		((AbstractBruteForceBoxItemGroupSession)fresh).setGroupOrderSearch(groupOrderSearch);
+		((AbstractBruteForceBoxItemGroupSession)fresh).skipGroupOrders = skipGroupOrders;
 		return fresh;
 	}
 
@@ -79,6 +84,16 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * Pack the remaining groups in each of their orders, and keep the best result. Groups are packed in order, and a
 	 * container holds the first groups which fit: another order can fill the container better, for example by
 	 * leaving out a group which does not fit with the others.
+	 * <br>
+	 * <br>
+	 * A result holds the groups before the first group which it does not hold completely (or which does not fit the
+	 * container at all). The orders which begin with the same groups up to and including that group cannot give a
+	 * better result, so they are skipped (see {@link #nextGroupOrder(int[], int)}). When a result holds all groups, no
+	 * other order is better.
+	 * <br>
+	 * <br>
+	 * With container priorities, the groups of a priority come after the groups of the lower priorities in each order:
+	 * the remaining groups are sorted by priority, and only the groups of the same priority change places.
 	 *
 	 * @param containerIndex the container
 	 * @param best the best result so far, or null
@@ -92,7 +107,15 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 			groupOrder[k] = k;
 		}
 		BruteForceIntermediatePackagerResult bestResult = null;
+		// the position of the first group which the last result did not hold completely
+		int decisive = 0;
 		do {
+			int violation = getContainerPriorityViolation(groupOrder);
+			if(violation != -1) {
+				// neither does any order which begins with the same groups
+				decisive = violation;
+				continue;
+			}
 			List<BoxItemGroup> groups = copyGroups(boxItemGroups, groupOrder);
 			DefaultBoxItemGroupPermutationRotationIterator iterator = DefaultBoxItemGroupPermutationRotationIterator.newBuilder()
 					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
@@ -101,23 +124,68 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 					.build();
 			BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
 			if(iteratorGroups[0] == null) {
-				// the first group does not fit the container
+				// the first group does not fit the container: neither does any order which begins with it
+				decisive = 0;
 				continue;
 			}
-			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packGroupOrder(containerIndex, iterator, best), iteratorGroups);
-			if(result != null && !result.isEmpty() && (bestResult == null || getIntermediatePackagerResultComparator().compare(bestResult, result) < 0)) {
+			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packGroupOrder(containerIndex, iterator, groupOrder, best), iteratorGroups);
+			int size = result != null ? result.getSize() : 0;
+			if(size > 0 && (bestResult == null || getIntermediatePackagerResultComparator().compare(bestResult, result) < 0)) {
 				result.setAnyRemaining(true);
 				bestResult = result;
 			}
-		} while(nextGroupOrder(groupOrder));
+			if(!skipGroupOrders) {
+				decisive = groupOrder.length - 1;
+				continue;
+			}
+			decisive = getFirstIncompleteGroup(iteratorGroups, size);
+			if(decisive == iteratorGroups.length) {
+				// all groups fit: no order is better
+				break;
+			}
+		} while(nextGroupOrder(groupOrder, decisive));
 		return bestResult;
+	}
+
+	/**
+	 * @return the first position in the order where a group has a lower container priority than the group before it, or
+	 *         -1 if none
+	 */
+	private int getContainerPriorityViolation(int[] groupOrder) {
+		for (int k = 1; k < groupOrder.length; k++) {
+			if(boxItemGroups.get(groupOrder[k]).getContainerPriority() < boxItemGroups.get(groupOrder[k - 1]).getContainerPriority()) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
+	/**
+	 * @param iteratorGroups an iterator's groups in their order (null if excluded)
+	 * @param size the number of boxes of a result holding whole groups
+	 * @return the position of the first group which the result does not hold completely, or the number of groups if it
+	 *         holds all of them
+	 */
+	protected static int getFirstIncompleteGroup(BoxItemGroup[] iteratorGroups, int size) {
+		int count = 0;
+		for (int p = 0; p < iteratorGroups.length; p++) {
+			BoxItemGroup group = iteratorGroups[p];
+			if(group == null || size < count + group.getBoxCount()) {
+				return p;
+			}
+			count += group.getBoxCount();
+		}
+		return iteratorGroups.length;
 	}
 
 	/**
 	 * Pack the boxes of an iterator into a container, as {@link #attempt(int, IntermediatePackagerResult, boolean)}
 	 * does with the session's iterators.
+	 *
+	 * @param iterator the iterator for the groups in the order
+	 * @param groupOrder the order of the remaining groups (see {@link #copyGroups(List, int[])})
 	 */
-	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best) throws PackagerInterruptedException;
+	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
 
 	protected abstract Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator();
 
@@ -125,7 +193,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * Copies of the groups in an order, for an iterator of their own: building an iterator points the boxes' stack
 	 * values to the iterator's boxes, so iterators must not share them (results are calculated from them later).
 	 */
-	private static List<BoxItemGroup> copyGroups(List<BoxItemGroup> groups, int[] groupOrder) {
+	protected static List<BoxItemGroup> copyGroups(List<BoxItemGroup> groups, int[] groupOrder) {
 		List<BoxItemGroup> copies = new ArrayList<>(groupOrder.length);
 		for (int k : groupOrder) {
 			BoxItemGroup group = groups.get(k);
@@ -145,9 +213,29 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	}
 
 	/**
+	 * Skip to the next order which differs from this order up to and including a position.
+	 *
+	 * @param position the position
+	 * @return true if there is such an order (lexicographically), false if this was the last
+	 */
+	protected boolean nextGroupOrder(int[] groupOrder, int position) {
+		// the last order with these groups up to the position: the other groups in descending order
+		for (int a = position + 1; a < groupOrder.length; a++) {
+			for (int b = a + 1; b < groupOrder.length; b++) {
+				if(groupOrder[b] > groupOrder[a]) {
+					int swap = groupOrder[a];
+					groupOrder[a] = groupOrder[b];
+					groupOrder[b] = swap;
+				}
+			}
+		}
+		return nextGroupOrder(groupOrder);
+	}
+
+	/**
 	 * @return true if there is a next order (lexicographically), false if this was the last
 	 */
-	private static boolean nextGroupOrder(int[] groupOrder) {
+	protected static boolean nextGroupOrder(int[] groupOrder) {
 		int i = groupOrder.length - 2;
 		while(i >= 0 && groupOrder[i] >= groupOrder[i + 1]) {
 			i--;

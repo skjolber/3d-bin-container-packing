@@ -64,7 +64,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected ContainerStrategyFactory containerStrategyFactory;
 
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected int groupOrderSearch;
+		protected int groupOrderSearch = Integer.MAX_VALUE;
 		protected boolean requireFullSupport;
 
 		/**
@@ -86,11 +86,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		/**
-		 * Also search the orders of the box item groups, when there are at most this many groups left: groups are
-		 * packed in order, and another order can fill a container better. The search is exponential in the number of
-		 * groups (for example 120 orders for 5 groups). Not used with a box item order.
+		 * Limit the search of the orders of the box item groups. Without a box item order, groups are packed in order,
+		 * and each container tries every order of the remaining groups, as another order can fill it better. Orders
+		 * which cannot give a better result are skipped, but the search is exponential in the number of groups. By
+		 * default, the orders of all groups are searched.
 		 *
-		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
+		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 to pack the
+		 *        groups in the order the plain packager picks them
 		 * @return this builder
 		 */
 		public Builder withGroupOrderSearch(int maxGroups) {
@@ -653,9 +655,115 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			return new ParallelGroupSession(this);
 		}
 
+		/**
+		 * Search a container's permutations on the threads, split into work units.
+		 *
+		 * @param units the work units
+		 * @param iteratorGroups the groups of the work units' iterator, in their order (null if excluded)
+		 * @param wholeGroups true to keep the whole groups of results (see {@link #truncateToWholeGroups}), false to
+		 *        keep the whole remaining groups (see {@link #truncateToGroup})
+		 * @param filterReverse whether to skip reverse permutations
+		 * @return the best result (holding whole groups), or null
+		 */
+		private BruteForceIntermediatePackagerResult packMultithreaded(int i, ParallelBoxItemGroupPermutationRotationIteratorList units, BoxItemGroup[] iteratorGroups, boolean wholeGroups,
+				IntermediatePackagerResult currentBest, boolean filterReverse) throws PackagerInterruptedException {
+			LocalInterrupt localInterrupt = new LocalInterrupt();
+
+			// one per attempt: attempts may run concurrently (session forks), and the futures of an attempt are
+			// cancelled when it is done, after which they would otherwise be taken by the next attempt
+			ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
+			List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
+			for (int j = 0; j < runnables.length; j++) {
+				BruteForceWorker worker = runnables[j];
+				
+				ContainerItem containerItem = getContainerItem(i);
+				
+				worker.setContainerItem(containerItem);
+				worker.setContainerIndex(i);
+				worker.setBest(currentBest);
+				BoxItemPermutationRotationIterator iterator = filterReversePermutations(units.getIterator(j), filterReverse);
+				if(iterator == null) {
+					continue;
+				}
+				worker.setIterator(iterator);
+
+				// each worker has its own copy of the interrupt
+				PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
+
+				PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
+
+				worker.setInterrupt(booleanSupplier);
+
+				futures.add(executorCompletionService.submit(worker));
+			}
+
+			try {
+				BruteForceIntermediatePackagerResult best = null;
+				for (int j = 0; j < futures.size(); j++) {
+					try {
+						try {
+							Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
+							
+							BruteForceIntermediatePackagerResult result = wholeGroups ? truncateToWholeGroups(future.get(), iteratorGroups) : truncateToGroup(future.get(), iteratorGroups);
+							if(result != null) {
+								if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
+									best = result;
+									
+									if(best.containsLastStackable()) { // will not match any better than this
+										// cancel others
+										localInterrupt.interrupted = true;
+										// don't break, so we're waiting for all the remaining threads to finish
+									}
+								}
+							}
+						} catch (ExecutionException e1) {
+							Throwable cause = e1.getCause();
+							if(cause instanceof PackagerInterruptedException) {
+								if(localInterrupt.interrupted) {
+									continue;
+								}
+								throw (PackagerInterruptedException)cause;
+							}
+							throw e1.getCause();
+						}
+					} catch (InterruptedException e1) {
+						// ignore
+						localInterrupt.interrupted = true;
+						return null;
+					} catch (PackagerInterruptedException e) {
+						localInterrupt.interrupted = true;
+						throw e;
+					} catch (Throwable e) {
+						localInterrupt.interrupted = true;
+						throw new PackagerException(e);
+					}
+				}
+				// was the search interrupted?
+				if(sourceInterrupt.getAsBoolean()) {
+					throw new PackagerInterruptedException();
+				}
+				return best;
+			} finally {
+				for (Future<BruteForceIntermediatePackagerResult> future : futures) {
+					future.cancel(true);
+				}
+			}
+		}
+
 		@Override
-		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best) throws PackagerInterruptedException {
-			// each order is searched on this thread
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException {
+			if(iterator.countPermutations() > 2L * parallelizationCount) {
+				// split the order's permutations between the threads; the work units need boxes of their own (see copyGroups)
+				Container container = getContainerItem(containerIndex).getContainer();
+				ParallelBoxItemGroupPermutationRotationIteratorList units = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
+						.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
+						.withBoxItemGroups(copyGroups(boxItemGroups, groupOrder))
+						.withMaxLoadWeight(container.getMaxLoadWeight())
+						.withParallelizationCount(parallelizationCount)
+						.build();
+				return packMultithreaded(containerIndex, units, units.getBoxItemGroups(), true, best, false);
+			}
+			// few permutations: search on this thread
 			BruteForceWorker worker = runnables[0];
 			return ParallelBoxItemBruteForcePackager.this.pack(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(containerIndex), containerIndex, iterator, interrupts[0], pointFilter, best);
 		}
@@ -702,89 +810,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			if(multithreaded) {
 				// a previous attempt left the work units at their last permutations
 				parallelIterators[i].reset();
-				LocalInterrupt localInterrupt = new LocalInterrupt();
-
-				// one per attempt: attempts may run concurrently (session forks), and the futures of an attempt are
-				// cancelled when it is done, after which they would otherwise be taken by the next attempt
-				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
-				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
-				for (int j = 0; j < runnables.length; j++) {
-					BruteForceWorker worker = runnables[j];
-					
-					ContainerItem containerItem = getContainerItem(i);
-					
-					worker.setContainerItem(containerItem);
-					worker.setContainerIndex(i);
-					worker.setBest(currentBest);
-					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), reverseSymmetric && abortOnAnyBoxTooBig);
-					if(iterator == null) {
-						continue;
-					}
-					worker.setIterator(iterator);
-
-					// each worker has its own copy of the interrupt
-					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
-
-					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
-
-					worker.setInterrupt(booleanSupplier);
-
-					futures.add(executorCompletionService.submit(worker));
-				}
-
-				try {
-					BruteForceIntermediatePackagerResult best = null;
-					for (int j = 0; j < futures.size(); j++) {
-						try {
-							try {
-								Future<BruteForceIntermediatePackagerResult> future = executorCompletionService.take();
-								
-								// TODO can truncate be moved to thread?
-								BruteForceIntermediatePackagerResult result = truncateToGroup(future.get(), iteratorGroups);
-								if(result != null) {
-									if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
-										best = result;
-										
-										if(best.containsLastStackable()) { // will not match any better than this
-											// cancel others
-											localInterrupt.interrupted = true;
-											// don't break, so we're waiting for all the remaining threads to finish
-										}
-									}
-								}
-							} catch (ExecutionException e1) {
-								Throwable cause = e1.getCause();
-								if(cause instanceof PackagerInterruptedException) {
-									if(localInterrupt.interrupted) {
-										continue;
-									}
-									throw (PackagerInterruptedException)cause;
-								}
-								throw e1.getCause();
-							}
-						} catch (InterruptedException e1) {
-							// ignore
-							localInterrupt.interrupted = true;
-							return null;
-						} catch (PackagerInterruptedException e) {
-							localInterrupt.interrupted = true;
-							throw e;
-						} catch (Throwable e) {
-							localInterrupt.interrupted = true;
-							throw new PackagerException(e);
-						}
-					}
-					// was the search interrupted?
-					if(sourceInterrupt.getAsBoolean()) {
-						throw new PackagerInterruptedException();
-					}
-					// throw away boxes from incomplete groups
-					return best;
-				} finally {
-					for (Future<BruteForceIntermediatePackagerResult> future : futures) {
-						future.cancel(true);
-					}
-				}
+				return packMultithreaded(i, parallelIterators[i], iteratorGroups, false, currentBest, reverseSymmetric && abortOnAnyBoxTooBig);
 			}
 			
 			ContainerItem containerItem = getContainerItem(i);

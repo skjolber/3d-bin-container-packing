@@ -82,7 +82,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
-		protected int groupOrderSearch;
+		protected int groupOrderSearch = Integer.MAX_VALUE;
 		protected boolean requireFullSupport;
 
 		/**
@@ -99,11 +99,13 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		/**
-		 * Also search the orders of the box item groups, when there are at most this many groups left: groups are
-		 * packed in order, and another order can fill a container better. The search is exponential in the number of
-		 * groups (for example 120 orders for 5 groups). Not used with a box item order.
+		 * Limit the search of the orders of the box item groups. Without a box item order, groups are packed in order,
+		 * and each container tries every order of the remaining groups, as another order can fill it better. Orders
+		 * which cannot give a better result are skipped, but the search is exponential in the number of groups. By
+		 * default, the orders of all groups are searched.
 		 *
-		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 for never
+		 * @param maxGroups the maximum number of remaining groups for which to search their orders, or 0 to pack the
+		 *        groups in the order the plain packager picks them
 		 * @return this builder
 		 */
 		public Builder withGroupOrderSearch(int maxGroups) {
@@ -240,7 +242,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		
 		@Override
-		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best) throws PackagerInterruptedException {
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException {
 			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best);
 		}
 
