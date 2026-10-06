@@ -116,6 +116,8 @@ public class PackagerConformanceTest {
 		// LAFF: a box taller than its level starts a new level, where it must rest on the boxes below (load limits);
 		// it is not placed when they cannot carry it, although it would fit beside them on the level's floor
 		EXPECTED.put("loadLimitsGroups",           "S G G R R R S S S S");
+		EXPECTED.put("chronologicalLoadLimits",    "S S S R R R S S S S");
+		EXPECTED.put("allowSkippingLoadLimits",    "S S S R R R S R S S");
 	}
 
 	/** An input */
@@ -189,6 +191,8 @@ public class PackagerConformanceTest {
 		});
 		SCENARIOS.put("loadLimits", random -> items(random, true));
 		SCENARIOS.put("loadLimitsGroups", random -> groups(random, true));
+		SCENARIOS.put("chronologicalLoadLimits", random -> withOrder(items(random, true), Order.CHRONOLOGICAL));
+		SCENARIOS.put("allowSkippingLoadLimits", random -> withOrder(items(random, true), Order.CHRONOLOGICAL_ALLOW_SKIPPING));
 	}
 
 	private static Box box(Random random, int index, boolean load) {

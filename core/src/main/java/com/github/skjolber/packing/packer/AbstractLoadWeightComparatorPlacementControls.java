@@ -141,6 +141,12 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 			recyclePlacement(placement);
 			return result;
 		}
+		// the candidate would be selected: check that it can be inserted (box item order, groups, extraction order,
+		// obstacles), as selectPlacement(..) does
+		if(checkInsertable && !isInsertable(placement)) {
+			recyclePlacement(placement);
+			return result;
+		}
 		populate(point3d, box);
 		long supportedArea = util.getSupportedAreaAtPoint(point3d, stackValue, fullSupport);
 		if (supportedArea == -1L) {
