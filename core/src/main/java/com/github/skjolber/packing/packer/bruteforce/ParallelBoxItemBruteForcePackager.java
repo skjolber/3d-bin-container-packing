@@ -129,7 +129,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 	}
 
-	private final ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService;
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 
@@ -139,7 +138,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
-		this.executorCompletionService = new ExecutorCompletionService<BruteForceIntermediatePackagerResult>(executorService);
 	}
 
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
@@ -218,6 +216,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (the packager is thread-safe), and the futures of an
+				// attempt are cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
@@ -398,6 +399,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (the packager is thread-safe), and the futures of an
+				// attempt are cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];

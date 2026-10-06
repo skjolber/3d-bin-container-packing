@@ -403,6 +403,40 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 		}
 	}
 
+	/**
+	 * The packager is thread-safe: packings at the same time must not take each other's worker results.
+	 */
+	@Test
+	void packsFromSeveralThreadsAtTheSameTime() throws Exception {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(2).build();
+		ExecutorService callers = Executors.newFixedThreadPool(4);
+		try {
+			List<java.util.concurrent.Future<Boolean>> results = new ArrayList<>();
+			for(int i = 0; i < 40; i++) {
+				results.add(callers.submit(() -> {
+					List<BoxItem> products = new ArrayList<>();
+					for(String id : new String[] {"a", "b", "c", "d", "e"}) {
+						products.add(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1));
+					}
+					Container container = Container.newBuilder().withDescription("1").withSize(5, 1, 1).withMaxLoadWeight(100).build();
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(ContainerItem.newListBuilder().withContainer(container, 1).build())
+							.withBoxItems(products)
+							.withMaxContainerCount(1)
+							.withDeadline(System.currentTimeMillis() + 10_000)
+							.build();
+					return result.isSuccess();
+				}));
+			}
+			for (java.util.concurrent.Future<Boolean> result : results) {
+				assertTrue(result.get());
+			}
+		} finally {
+			callers.shutdownNow();
+			packager.shutdown();
+    }
+  }
+  
 	@Test
 	void closeShutsDownTheExecutorServiceCreatedByTheBuilder() {
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
