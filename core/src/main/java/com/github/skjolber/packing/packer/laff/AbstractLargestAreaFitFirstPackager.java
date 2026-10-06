@@ -230,18 +230,18 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				// best placement may not be at the current level offset
 				// keep all points between the level floor and the top of the target placement
 
-				if(controlledContainerItem.hasInitialPoints()) {
-					// account for obstacles etc
-					if(!pointCalculator.setPoints(controlledContainerItem.getInitialPoints(), 0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getAbsoluteEndZ())) {
-						// no more points
-						break;
-					}
-				} else {
-					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, result.getAbsoluteEndZ());
-					pointCalculator.setPoints(Arrays.asList(levelFloor));
+				if(!setLevelPoints(pointCalculator, controlledContainerItem, container, levelOffset, result.getAbsoluteEndZ())) {
+					// no more points
+					break;
 				}
-				pointCalculator.clear();
-				
+
+				// the points were reset for the level: the first placement's point index refers to the previous points
+				int pointIndex = findPointIndex(pointCalculator, result);
+				if(pointIndex == -1) {
+					break;
+				}
+				result.setPoint(pointIndex, result.getAbsoluteX(), result.getAbsoluteY(), result.getAbsoluteZ());
+
 				levelOffset = result.getAbsoluteEndZ() + 1;
 
 				newLevel = false;
@@ -256,18 +256,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						break;
 					}
 
-					// prepare points for a new level						
-					if(controlledContainerItem.hasInitialPoints()) {
-						// account for obstacles etc
-						if(!pointCalculator.setPoints(controlledContainerItem.getInitialPoints(), 0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1)) {
-							// no more points
-							break;
-						}
-					} else {
-						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-						pointCalculator.setPoints(Arrays.asList(levelFloor));
+					// prepare points for a new level
+					if(!setLevelPoints(pointCalculator, controlledContainerItem, container, levelOffset, container.getLoadDz() - 1)) {
+						// no more points
+						break;
 					}
-					pointCalculator.clear();
 					
 					// remove boxes which are too big for the max new level
 					long maxArea = pointCalculator.getMaxArea();
@@ -468,12 +461,20 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						break;
 					}
 					
-					DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, bestPoint.getStackValue().getDz() - 1 + levelOffset);
-					
-					pointCalculator.setPoints(Arrays.asList(levelFloor));
-					pointCalculator.clear();
-					
-					levelOffset += bestPoint.getStackValue().getDz();
+					// best placement may not be at the current level offset (obstacles etc)
+					// keep all points between the level floor and the top of the target placement
+					if(!setLevelPoints(pointCalculator, controlledContainerItem, container, levelOffset, bestPoint.getAbsoluteEndZ())) {
+						break;
+					}
+
+					// the points were reset for the level: the first placement's point index refers to the previous points
+					int pointIndex = findPointIndex(pointCalculator, bestPoint);
+					if(pointIndex == -1) {
+						break;
+					}
+					bestPoint.setPoint(pointIndex, bestPoint.getAbsoluteX(), bestPoint.getAbsoluteY(), bestPoint.getAbsoluteZ());
+
+					levelOffset = bestPoint.getAbsoluteEndZ() + 1;
 
 					newLevel = false;
 				} else {
@@ -487,10 +488,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 							break;
 						}
 
-						// prepare points for a new level						
-						DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, container.getLoadDz() - 1);
-						pointCalculator.setPoints(Arrays.asList(levelFloor));
-						pointCalculator.clear();
+						// prepare points for a new level
+						if(!setLevelPoints(pointCalculator, controlledContainerItem, container, levelOffset, container.getLoadDz() - 1)) {
+							// no more points
+							break;
+						}
 						
 						// remove groups which have boxes which are too big for the max level size
 						long maxArea = pointCalculator.getMaxArea();
@@ -708,5 +710,45 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	public LargestAreaFitFirstResultBuilder newResultBuilder() {
 		return new LargestAreaFitFirstResultBuilder();
 	}
-	
+
+	/**
+	 * Set the free points of a level: the space from the level offset up to a height, less the container's obstacles.
+	 *
+	 * @param maxZ the top of the level
+	 * @return false if there is no free space
+	 */
+	protected static boolean setLevelPoints(PointCalculator pointCalculator, ControlledContainerItem containerItem, Container container, int levelOffset, int maxZ) {
+		if(containerItem.hasInitialPoints()) {
+			// account for obstacles etc
+			if(!pointCalculator.setPoints(containerItem.getInitialPoints(), 0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, maxZ)) {
+				return false;
+			}
+		} else {
+			DefaultPoint3D levelFloor = new DefaultPoint3D(0, 0, levelOffset, container.getLoadDx() - 1, container.getLoadDy() - 1, maxZ);
+			pointCalculator.setPoints(Arrays.asList(levelFloor));
+		}
+		pointCalculator.clear();
+		return true;
+	}
+
+	/**
+	 * @return the index of the point where the placement is, or -1
+	 */
+	protected static int findPointIndex(PointCalculator pointCalculator, Placement placement) {
+		int index = placement.getPointIndex();
+		if(index >= 0 && index < pointCalculator.size() && isPointOf(pointCalculator.get(index), placement)) {
+			return index;
+		}
+		for (int i = 0; i < pointCalculator.size(); i++) {
+			if(isPointOf(pointCalculator.get(i), placement)) {
+				return i;
+			}
+		}
+		return -1;
+	}
+
+	private static boolean isPointOf(Point point, Placement placement) {
+		return point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()
+				&& point.fits3D(placement.getStackValue());
+	}
 }

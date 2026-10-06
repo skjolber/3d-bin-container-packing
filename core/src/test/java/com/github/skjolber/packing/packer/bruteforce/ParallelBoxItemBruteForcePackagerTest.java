@@ -436,7 +436,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			packager.shutdown();
     }
   }
-  
+
 	@Test
 	void closeShutsDownTheExecutorServiceCreatedByTheBuilder() {
 		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
