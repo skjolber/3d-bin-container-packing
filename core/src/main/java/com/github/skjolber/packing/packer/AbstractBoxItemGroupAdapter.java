@@ -88,6 +88,6 @@ public abstract class AbstractBoxItemGroupAdapter extends AbstractPackagerAdapte
 		return packagerContainerItems.getContainerItem(index);
 	}
 
-	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig);
+	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 }

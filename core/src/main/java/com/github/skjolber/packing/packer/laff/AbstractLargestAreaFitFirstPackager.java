@@ -84,7 +84,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		@Override
 		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
-				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+				ControlledContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return AbstractLargestAreaFitFirstPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig);
 		}
 
@@ -363,7 +363,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	protected abstract PointCalculator createPointCalculator(BoxItemSource source);
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlledContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlledContainerItem;
 		Container container = containerItem.getContainer();
 		
@@ -445,8 +445,15 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			
 			int markLevelOffset = levelOffset;
 			boolean markNewLevel = newLevel;
+
+			if(boxItemControls != null) {
+				boxItemControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
+			}
 			
 			while(!boxItemGroup.isEmpty()) {
+				if(interrupt.getAsBoolean()) {
+					throw new PackagerInterruptedException();
+				}
 				// groups before this one may have been removed
 				int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndex(boxItemGroup);
 				if(boxItemStartIndex == -1) {
@@ -649,6 +656,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			
 			if(boxItemControls != null) {
 				boxItemControls.attemptSuccess(boxItemGroup);
+			}
+			if(pointControls != null) {
+				pointControls.attemptSuccess(boxItemGroup);
 			}
 		}
 		
