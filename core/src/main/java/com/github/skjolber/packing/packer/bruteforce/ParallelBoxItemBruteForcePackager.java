@@ -189,13 +189,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		if(reason != null) {
 			return reason;
 		}
-		// the permutations are split between threads
-		if(input.getOrder() != Order.NONE) {
-			return "Order not supported for parallel brute force packager";
-		}
-		if(hasContainerPriorities(input)) {
-			return "Container priorities not supported for parallel brute force packager";
-		}
 		return null;
 	}
 
@@ -335,6 +328,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			if(isOrdered()) {
+				return attemptOrdered(i, currentBest);
+			}
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
@@ -440,6 +436,26 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], reverseSymmetric && abortOnAnyBoxTooBig);
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
 					interrupts[0], pointFilter);
+		}
+
+		/**
+		 * With a box item order (one permutation) or container priorities (boxes permuted within blocks of the same
+		 * priority), the permutations are not split between the threads: search on this thread, like
+		 * {@link BruteForcePackager}.
+		 */
+		private BruteForceIntermediatePackagerResult attemptOrdered(int i, IntermediatePackagerResult best) throws PackagerInterruptedException {
+			DefaultBoxItemPermutationRotationIterator iterator = iterators[i];
+			if(iterator.length() == 0) {
+				return null;
+			}
+			// a previous attempt left the iterator at its last permutation and rotations
+			iterator.reset();
+			BruteForceWorker worker = runnables[0];
+			ContainerItem containerItem = getContainerItem(i);
+			if(order != Order.NONE) {
+				return packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, best, getLimit(iterator));
+			}
+			return pack(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, best, getLimit(iterator));
 		}
 
 		@Override
@@ -572,6 +588,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			BoxItemGroup[] iteratorGroups = iterators[i].getBoxItemGroups();
 			if(!canLoadNextGroup(iteratorGroups)) {
 				return null;
+			}
+			if(order != Order.NONE) {
+				// a box item order: one permutation, searched on this thread
+				iterators[i].reset();
+				BruteForceWorker worker = runnables[0];
+				return truncateToGroup(packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(i), i, iterators[i], interrupts[0], pointFilter, currentBest, Integer.MAX_VALUE), iteratorGroups);
 			}
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations

@@ -394,18 +394,6 @@ public class OrderingResultsTest {
 	}
 
 	@Test
-	public void parallelBruteForceDoesNotSupportContainerPrioritiesOrOrder() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
-			List<BoxItem> items = items(new Random(1), 3, false);
-			items.get(0).withContainerPriority(0);
-			items.get(1).withContainerPriority(1);
-			items.get(2).withContainerPriority(1);
-			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.NONE))).contains("Container priorities");
-			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.CHRONOLOGICAL))).contains("Order");
-		}
-	}
-
-	@Test
 	public void bruteForceDoesNotSupportSkipping() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			List<BoxItem> items = smallItems(new Random(1), 3);
@@ -416,7 +404,9 @@ public class OrderingResultsTest {
 	private static List<Supplier<AbstractPackager<?>>> bruteForcePackagers() {
 		return List.of(
 				() -> BruteForcePackager.newBuilder().build(),
-				() -> FastBruteForcePackager.newBuilder().build());
+				() -> FastBruteForcePackager.newBuilder().build(),
+				// a box item order or container priorities are searched on one thread
+				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 	}
 
 	/** Few boxes with few rotations: the brute-force search is exponential. */
