@@ -34,25 +34,23 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 			failWithMessage("Unable to pack " + items.size() + " items using " + actual.getClass().getName());
 		}
 
-		int divider = 4;
-		while (divider < 10) {
+		// shorter deadlines, halved until the packager gives up: it must not take much longer than the deadline
+		for(long unrealisticDuration = packDuration / 4; ; unrealisticDuration /= 2) {
 			timestamp = System.currentTimeMillis();
-			long unrealisticDuration = packDuration / divider;
 			result = actual.newResultBuilder().withInterruptDeadline(timestamp + unrealisticDuration).withBoxItems(items).withContainerItems(containerItems).build();
-			if(!result.getContainers().isEmpty()) {
-				continue;
+			if(result.getContainers().isEmpty()) {
+				long elapsed = System.currentTimeMillis() - timestamp;
+				if(elapsed >= unrealisticDuration + LEEWAY) {
+					failWithMessage("Expected packager " + actual.getClass().getName() + " exited before " + unrealisticDuration + "ms, but existed after " + elapsed + "ms");
+				}
+				return myself;
 			}
-			long elapsed = System.currentTimeMillis() - timestamp;
-
-			if(elapsed >= unrealisticDuration + LEEWAY) {
-				failWithMessage("Expected packager " + actual.getClass().getName() + " exited before " + unrealisticDuration + "ms, but existed after " + elapsed + "ms");
+			if(unrealisticDuration == 0) {
+				// packed although the deadline had passed
+				failWithMessage("Unexpectedly was able to pack using " + actual.getClass().getName());
+				return myself;
 			}
-
-			return myself;
 		}
-		failWithMessage("Unexpectedly was able to pack using " + actual.getClass().getName());
-
-		return myself;
 	}
 
 }
