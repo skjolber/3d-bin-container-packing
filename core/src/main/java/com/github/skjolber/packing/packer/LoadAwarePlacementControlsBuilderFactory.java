@@ -20,6 +20,11 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
  */
 public class LoadAwarePlacementControlsBuilderFactory implements PlacementControlsBuilderFactory {
 
+	@Override
+	public boolean supportsLoad() {
+		return true;
+	}
+
 	protected final PlacementComparatorFactory comparatorBuilderFactory;
 	protected final Comparator<BoxItem> boxItemComparator;
 	protected final boolean requireFullSupport;

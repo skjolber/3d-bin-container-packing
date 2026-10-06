@@ -45,6 +45,13 @@ try (PlainPackager packager = PlainPackager.newBuilder()
 level; configure both when a rule must apply throughout the packing. Brute-force
 packagers use their own point-filter/comparator extension points instead.
 
+Custom placement controls replace the default ones, so the packager options
+which configure the default controls (`withCalculateSupport(..)`,
+`withRequireFullSupport(..)`) cannot be combined with them: `build()` throws.
+Packagers reject inputs with box load limits unless the factory's
+`supportsLoad()` returns true; return true only if the controls respect the
+load-constraint flags the packager sets on the builder.
+
 Prefer extending existing controls when possible. `ComparatorPlacementControls`
 provides candidate iteration and protected `createPlacement`/`selectPlacement`
 hooks; rejecting a candidate in `createPlacement` returns `null`. For ranking

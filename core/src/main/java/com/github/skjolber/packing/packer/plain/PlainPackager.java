@@ -269,6 +269,9 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		}
 		
 		public PlainPackager build() {
+			if(placementControlsBuilderFactory != null && (requireFullSupport || calculateSupport)) {
+				throw new IllegalStateException("Support options only apply to the default placement controls: configure support with the placement controls");
+			}
 			if(packagerResultComparator == null) {
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
@@ -344,4 +347,15 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		return EmptyIntermediatePackagerResult.EMPTY;
 	}
 
+	@Override
+	public String getUnsupportedReason(PackagerInput input) {
+		String reason = super.getUnsupportedReason(input);
+		if(reason != null) {
+			return reason;
+		}
+		if(!placementControlsBuilderFactory.supportsLoad() && hasLoadLimits(input)) {
+			return "Load limits not supported by the placement controls";
+		}
+		return null;
+	}
 }

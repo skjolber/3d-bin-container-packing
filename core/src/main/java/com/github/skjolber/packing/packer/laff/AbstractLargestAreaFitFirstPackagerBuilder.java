@@ -64,6 +64,15 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 	
+	/**
+	 * The support options only apply to the default placement controls.
+	 */
+	protected void checkSupportOptions() {
+		if((placementControlsBuilderFactory != null || firstPlacementControlsBuilderFactory != null) && (requireFullSupport || calculateSupport)) {
+			throw new IllegalStateException("Support options only apply to the default placement controls: configure support with the placement controls");
+		}
+	}
+
 	public B withFirstPlacementControlsBuilderFactory(
 			PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		this.firstPlacementControlsBuilderFactory = placementControlsBuilderFactory;

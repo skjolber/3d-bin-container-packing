@@ -784,5 +784,16 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	public LargestAreaFitFirstResultBuilder newResultBuilder() {
 		return new LargestAreaFitFirstResultBuilder();
 	}
-	
+
+	@Override
+	public String getUnsupportedReason(PackagerInput input) {
+		String reason = super.getUnsupportedReason(input);
+		if(reason != null) {
+			return reason;
+		}
+		if((!placementControlsBuilderFactory.supportsLoad() || !firstPlacementControlsBuilderFactory.supportsLoad()) && hasLoadLimits(input)) {
+			return "Load limits not supported by the placement controls";
+		}
+		return null;
+	}
 }

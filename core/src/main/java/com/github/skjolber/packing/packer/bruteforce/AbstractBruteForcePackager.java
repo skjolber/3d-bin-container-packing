@@ -91,33 +91,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return false;
 	}
 
-	private static boolean hasMaxLoad(List<BoxItem> boxItems) {
-		for (BoxItem boxItem : boxItems) {
-			if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	@Override
 	public String getUnsupportedReason(PackagerInput input) {
 		String reason = super.getUnsupportedReason(input);
 		if(reason != null) {
 			return reason;
 		}
-		if(!supportsLoad()) {
-			if(input.hasBoxItems()) {
-				if(hasMaxLoad(input.getBoxItems())) {
-					return "Max load not supported for brute force packager";
-				}
-			} else if(input.getBoxItemGroups() != null) {
-				for (BoxItemGroup group : input.getBoxItemGroups()) {
-					if(hasMaxLoad(group.getItems())) {
-						return "Max load not supported for brute force packager";
-					}
-				}
-			}
+		if(!supportsLoad() && hasLoadLimits(input)) {
+			return "Max load not supported for brute force packager";
 		}
 		for(ContainerItem container : input.getContainerItems()) {
 			if(container.hasControls()) {

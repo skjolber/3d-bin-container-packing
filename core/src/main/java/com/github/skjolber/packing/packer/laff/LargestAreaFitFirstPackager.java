@@ -33,6 +33,7 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 	public static class Builder extends AbstractLargestAreaFitFirstPackagerBuilder<Builder> {
 
 		public LargestAreaFitFirstPackager build() {
+			checkSupportOptions();
 			if(intermediatePackagerResultComparator == null) {
 				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}

@@ -88,6 +88,32 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 		return null;
 	}
 
+	/**
+	 * @return true if any of the boxes have load limits (max load weight, pressure or box count, identical boxes only)
+	 */
+	protected static boolean hasLoadLimits(PackagerInput input) {
+		if(input.hasBoxItems()) {
+			return hasLoadLimits(input.getBoxItems());
+		}
+		if(input.getBoxItemGroups() != null) {
+			for (BoxItemGroup group : input.getBoxItemGroups()) {
+				if(hasLoadLimits(group.getItems())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	private static boolean hasLoadLimits(List<BoxItem> boxItems) {
+		for (BoxItem boxItem : boxItems) {
+			if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private static boolean hasDecreasingContainerPriorities(PackagerInput input) {
 		if(input.hasBoxItems()) {
 			List<BoxItem> boxItems = input.getBoxItems();
