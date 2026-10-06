@@ -434,8 +434,10 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
    all the boxes of the priority before it are placed, in that container or an earlier one. With a box item order,
    the priorities must not decrease in that order.
 
-The plain, LAFF and brute-force packagers support both, also for groups, except the parallel brute-force packagers,
-which do not support container priorities (see `getUnsupportedReason(..)`; `CompositePackager` skips such stages).
+The plain, LAFF and brute-force packagers support both, also for groups. Without a box item order, groups go into
+containers lowest container priority first, then the groups which are extracted last, then the largest
+(`withBoxItemGroupComparator(..)`); the brute-force packagers keep the boxes of each group in that order and permute
+them within the group.
 Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
 (`ExtractionOrderValidator`, `ContainerPriorityValidator`).
 

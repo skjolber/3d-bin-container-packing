@@ -24,6 +24,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -65,6 +66,13 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  */
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
+
+	/** Picks the order of box item groups with equal container priority and extraction order, see {@link #sortGroups(List)} */
+	protected Comparator<BoxItemGroup> boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
+
+	protected void setBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
+		this.boxItemGroupComparator = boxItemGroupComparator;
+	}
 
 
 
@@ -155,24 +163,50 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		} else {
 			AbstractPackagerSession.initializeGlobalIndexesForGroups(input.getBoxItemGroups());
 			List<BoxItemGroup> groups = input.getBoxItemGroups();
-			if(sort) {
-				// the groups of a lower container priority first; groups are packed in order
-				groups = new ArrayList<>(groups);
-				for (int i = 1; i < groups.size(); i++) {
-					BoxItemGroup group = groups.get(i);
-					int j = i - 1;
-					while(j >= 0 && groups.get(j).getContainerPriority() > group.getContainerPriority()) {
-						groups.set(j + 1, groups.get(j));
-						j--;
-					}
-					groups.set(j + 1, group);
-				}
+			if(input.getOrder() == Order.NONE) {
+				// groups are packed in order: the order in which the plain packager picks them
+				groups = sortGroups(groups);
 			}
 			session = createBoxItemGroupSession(groups, input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 		}
 		session.setOrder(input.getOrder());
 		session.setReverseSymmetric(isReverseSymmetric(input));
 		return session;
+	}
+
+	/**
+	 * Sort box item groups in the order the plain packager picks them (see {@code AnyOrderBoxItemGroupIterator}): the
+	 * lowest container priority first, then the groups which are extracted last, then the best by the group comparator
+	 * (by default the largest). Groups which are equal keep their order.
+	 *
+	 * @return the sorted groups (a new list)
+	 */
+	protected List<BoxItemGroup> sortGroups(List<BoxItemGroup> groups) {
+		List<BoxItemGroup> sorted = new ArrayList<>(groups);
+		for (int i = 1; i < sorted.size(); i++) {
+			BoxItemGroup group = sorted.get(i);
+			int j = i - 1;
+			while(j >= 0 && isPickedAfter(sorted.get(j), group)) {
+				sorted.set(j + 1, sorted.get(j));
+				j--;
+			}
+			sorted.set(j + 1, group);
+		}
+		return sorted;
+	}
+
+	/**
+	 * @return true if the plain packager picks group b before group a
+	 */
+	private boolean isPickedAfter(BoxItemGroup a, BoxItemGroup b) {
+		if(a.getContainerPriority() != b.getContainerPriority()) {
+			return a.getContainerPriority() > b.getContainerPriority();
+		}
+		if(a.getExtractionOrder() != b.getExtractionOrder()) {
+			// the groups which are extracted last are placed first
+			return a.getExtractionOrder() < b.getExtractionOrder();
+		}
+		return boxItemGroupComparator.compare(a, b) < 0;
 	}
 
 	/**

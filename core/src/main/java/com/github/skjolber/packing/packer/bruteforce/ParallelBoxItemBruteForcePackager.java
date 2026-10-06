@@ -65,6 +65,20 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected boolean filterReversePermutations = false;
 		protected ContainerStrategyFactory containerStrategyFactory;
 
+		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+
+		/**
+		 * Set the comparator which picks the order of box item groups with the same container priority and extraction
+		 * order (by default the largest group first, like the plain packager).
+		 *
+		 * @param comparator box item group comparator
+		 * @return this builder
+		 */
+		public ParallelBruteForcePackagerBuilder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+			this.boxItemGroupComparator = comparator;
+			return this;
+		}
+
 		/**
 		 * Set the factory which selects the container strategy: which containers to use, and in which order.
 		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
@@ -158,6 +172,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			if(boxItemGroupComparator != null) {
+				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			return packager;
 		}

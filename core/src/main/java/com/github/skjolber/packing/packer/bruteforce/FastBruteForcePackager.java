@@ -79,6 +79,20 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+
+		/**
+		 * Set the comparator which picks the order of box item groups with the same container priority and extraction
+		 * order (by default the largest group first, like the plain packager).
+		 *
+		 * @param comparator box item group comparator
+		 * @return this builder
+		 */
+		public FastBruteForcePackagerBuilder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+			this.boxItemGroupComparator = comparator;
+			return this;
+		}
+
 		/**
 		 * Set the factory which selects the container strategy: which containers to use, and in which order.
 		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
@@ -105,6 +119,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			if(boxItemGroupComparator != null) {
+				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			return packager;
 		}

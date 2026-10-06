@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
@@ -38,6 +39,12 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 		}
 
 		@Override
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+			super.withBoxItemGroupComparator(comparator);
+			return this;
+		}
+
+		@Override
 		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
 			this.containerStrategyFactory = Objects.requireNonNull(factory);
 			return this;
@@ -57,6 +64,9 @@ public class LoadFastBruteForcePackager extends FastBruteForcePackager {
 			LoadFastBruteForcePackager packager = new LoadFastBruteForcePackager(comparator, pointComparator);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			if(boxItemGroupComparator != null) {
+				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			return packager;
 		}

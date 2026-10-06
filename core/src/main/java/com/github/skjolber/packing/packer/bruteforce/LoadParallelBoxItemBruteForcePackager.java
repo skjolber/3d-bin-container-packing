@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
@@ -33,6 +34,12 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 	public static class Builder extends ParallelBruteForcePackagerBuilder {
 
 
+
+		@Override
+		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+			super.withBoxItemGroupComparator(comparator);
+			return this;
+		}
 
 		@Override
 		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
@@ -109,6 +116,9 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
+			}
+			if(boxItemGroupComparator != null) {
+				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			return packager;
 		}

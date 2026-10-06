@@ -221,4 +221,58 @@ public class BruteForceBoxItemGroupsTest {
 			}
 		}
 	}
+
+	@Test
+	public void bruteForcePacksTheLargestGroupFirst() {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			assertPacksTheLargestGroupFirst(packager);
+		}
+	}
+
+	@Test
+	public void fastBruteForcePacksTheLargestGroupFirst() {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			assertPacksTheLargestGroupFirst(packager);
+		}
+	}
+
+	@Test
+	public void parallelBruteForcePacksTheLargestGroupFirst() {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+			assertPacksTheLargestGroupFirst(packager);
+		}
+	}
+
+	/**
+	 * Groups are packed in the order the plain packager picks them, the largest first. Containers with room for 4
+	 * unit cubes; groups a (2 cubes), b (3) and c (2):
+	 *
+	 * <pre>
+	 *   input order:    [a a . .]  [b b b .]  [c c . .]     3 containers
+	 *   largest first:  [b b b .]  [a a c c]                2 containers
+	 * </pre>
+	 */
+	private static void assertPacksTheLargestGroupFirst(AbstractPackager<?> packager) {
+		List<BoxItemGroup> groups = new ArrayList<>();
+		int[] counts = {2, 3, 2};
+		String[] ids = {"a", "b", "c"};
+		for(int g = 0; g < ids.length; g++) {
+			List<BoxItem> boxItems = new ArrayList<>();
+			for(int i = 0; i < counts[g]; i++) {
+				boxItems.add(new BoxItem(Box.newBuilder().withId(ids[g] + i).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+			groups.add(new BoxItemGroup(ids[g], boxItems));
+		}
+		Container container = Container.newBuilder().withId("row").withSize(4, 1, 1).withMaxLoadWeight(100).build();
+
+		PackagerResult result = packager.newResultBuilder()
+				.withContainerItems(List.of(new ContainerItem(container, 3)))
+				.withBoxItemGroups(groups)
+				.withMaxContainerCount(3)
+				.withInterruptDuration(10_000)
+				.build();
+
+		assertThat(result.isSuccess()).isTrue();
+		assertThat(result.getContainers()).hasSize(2);
+	}
 }
