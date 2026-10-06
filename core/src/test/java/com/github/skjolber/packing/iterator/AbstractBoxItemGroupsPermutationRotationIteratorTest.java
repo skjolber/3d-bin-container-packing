@@ -343,4 +343,44 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		assertNotEquals(before[index], after[index]);
 	}
+
+	/**
+	 * Skipping permutations from a box of the first group permutes the first group only; the boxes of the second group
+	 * stay in the second group:
+	 *
+	 * <pre>
+	 *   [a b c] [d e]
+	 * </pre>
+	 */
+	@Test
+	public void testNextPermutationMaxIndexKeepsBoxesInTheirGroup() {
+		List<BoxItemGroup> groups = new ArrayList<>();
+		groups.add(new BoxItemGroup("1", new ArrayList<>(List.of(box("a"), box("b"), box("c")))));
+		groups.add(new BoxItemGroup("2", new ArrayList<>(List.of(box("d"), box("e")))));
+
+		BoxItemPermutationRotationIterator iterator = newBuilder()
+				.withLoadSize(5, 1, 1)
+				.withBoxItemGroups(groups)
+				.withMaxLoadWeight(100)
+				.build();
+
+		List<String> seen = new ArrayList<>();
+		do {
+			int[] permutations = iterator.getPermutations();
+			String first = "" + permutations[0] + permutations[1] + permutations[2];
+			String second = "" + permutations[3] + permutations[4];
+			char[] firstSorted = first.toCharArray();
+			Arrays.sort(firstSorted);
+			assertEquals("012", new String(firstSorted), Arrays.toString(permutations));
+			assertEquals("34", second, Arrays.toString(permutations));
+			seen.add(first);
+		} while (iterator.nextPermutation(1) != -1);
+
+		// the first two boxes of the first group in each order
+		assertEquals(List.of("012", "021", "102", "120", "201", "210"), seen);
+	}
+
+	private static BoxItem box(String id) {
+		return new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1);
+	}
 }
