@@ -81,6 +81,8 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
+			// an executor service created here is shut down when the packager is closed
+			boolean ownExecutorService = executorService == null;
 			if(executorService == null) {
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
@@ -104,6 +106,7 @@ public class LoadParallelBoxItemBruteForcePackager extends ParallelBoxItemBruteF
 			}
 			
 			LoadParallelBoxItemBruteForcePackager packager = new LoadParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
+			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}

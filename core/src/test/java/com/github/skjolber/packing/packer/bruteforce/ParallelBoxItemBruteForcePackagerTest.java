@@ -506,4 +506,21 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			packager.close();
 		}
 	}
+
+	@Test
+	void closeShutsDownTheExecutorServiceCreatedByTheBuilder() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
+		packager.close();
+		assertTrue(packager.getExecutorService().isShutdown());
+
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		try {
+			ParallelBoxItemBruteForcePackager withExecutorService = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(4).build();
+			withExecutorService.close();
+			// the caller's executor service
+			assertFalse(executorService.isShutdown());
+		} finally {
+			executorService.shutdownNow();
+		}
+	}
 }

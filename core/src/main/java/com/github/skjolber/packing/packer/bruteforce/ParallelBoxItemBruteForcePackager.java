@@ -129,6 +129,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
+			// an executor service created here is shut down when the packager is closed
+			boolean ownExecutorService = executorService == null;
 			if(executorService == null) {
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
@@ -153,6 +155,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			}
 			
 			ParallelBoxItemBruteForcePackager packager = new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
+			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
 			if(containerStrategyFactory != null) {
 				packager.setContainerStrategyFactory(containerStrategyFactory);
 			}
@@ -793,6 +796,21 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				count += i;
 			}
 			return count;
+		}
+	}
+
+	/** Whether the builder created the executor service: then it is shut down when the packager is closed */
+	private boolean shutdownExecutorServiceOnClose;
+
+	protected void setShutdownExecutorServiceOnClose(boolean shutdownExecutorServiceOnClose) {
+		this.shutdownExecutorServiceOnClose = shutdownExecutorServiceOnClose;
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		if(shutdownExecutorServiceOnClose) {
+			executorService.shutdownNow();
 		}
 	}
 
