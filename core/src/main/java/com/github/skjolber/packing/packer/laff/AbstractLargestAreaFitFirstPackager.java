@@ -443,12 +443,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 			
 			if(!removedBoxItemGroups.isEmpty()) {
-				if(boxItemControls != null) {
-					boxItemControls.filteredGroups(removedBoxItemGroups);
-				}
-				if(pointControls != null) {
-					pointControls.filteredGroups(removedBoxItemGroups);
-				}
+				boxItemControls.filteredGroups(removedBoxItemGroups);
+				pointControls.filteredGroups(removedBoxItemGroups);
 				maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 				removedBoxItemGroups.clear();
 			}
@@ -569,12 +565,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						}
 						
 						if(!removedBoxItemGroups.isEmpty()) {
-							if(boxItemControls != null) {
-								boxItemControls.filteredGroups(removedBoxItemGroups);
-							}
-							if(pointControls != null) {
-								pointControls.filteredGroups(removedBoxItemGroups);
-							}
+							boxItemControls.filteredGroups(removedBoxItemGroups);
+							pointControls.filteredGroups(removedBoxItemGroups);
 							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
 						}
@@ -593,9 +585,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				packagerBoxItems.decrement(bestPoint.getBoxItem().getLocalIndex());
 
 				boxItemControls.accepted(bestPoint.getBoxItem());
-				if(pointControls != null) {
-					pointControls.accepted(bestPoint.getBoxItem());
-				}
+				pointControls.accepted(bestPoint.getBoxItem());
 				
 				placementControls.accepted(bestPoint);
 
@@ -660,12 +650,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
 					}
 
-					if(boxItemControls != null) {
-						boxItemControls.undo(removedBoxItems);
-					}
-					if(pointControls != null) {
-						pointControls.undo(removedBoxItems);
-					}
+					boxItemControls.undo(removedBoxItems);
+					pointControls.undo(removedBoxItems);
 					
 					placementControls.undo(removedBoxPlacements);
 					firstPlacementControls.undo(removedBoxPlacements);
@@ -673,12 +659,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					removedBoxItems.clear();
 				}
 				
-				if(boxItemControls != null) {
-					boxItemControls.attemptFailure(boxItemGroup);
-				}
-				if(pointControls != null) {
-					pointControls.attemptFailure(boxItemGroup);
-				}
+				boxItemControls.attemptFailure(boxItemGroup);
+				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
 				// the group waits for the next container, and so do the groups of higher container priorities
@@ -704,12 +686,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			// successfully stacked group
 			boxItemGroup.reset();
 			
-			if(boxItemControls != null) {
-				boxItemControls.attemptSuccess(boxItemGroup);
-			}
-			if(pointControls != null) {
-				pointControls.attemptSuccess(boxItemGroup);
-			}
+			boxItemControls.attemptSuccess(boxItemGroup);
+			pointControls.attemptSuccess(boxItemGroup);
 		}
 		
 		return new DefaultIntermediatePackagerResult(controlledContainerItem, stack);
