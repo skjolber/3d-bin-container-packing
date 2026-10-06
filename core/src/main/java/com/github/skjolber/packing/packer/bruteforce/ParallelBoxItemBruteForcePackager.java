@@ -97,6 +97,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
+			// an executor service created here is shut down when the packager is closed
+			boolean ownExecutorService = executorService == null;
 			if(executorService == null) {
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
@@ -121,11 +123,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 				}
 			}
-			return new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
+			ParallelBoxItemBruteForcePackager packager = new ParallelBoxItemBruteForcePackager(executorService, parallelizationCount, comparator);
+			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
+			return packager;
 		}
 	}
 
-	private final ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService;
 	private final int parallelizationCount;
 	private final ExecutorService executorService;
 
@@ -135,7 +138,6 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		this.parallelizationCount = parallelizationCount;
 		this.executorService = executorService;
-		this.executorCompletionService = new ExecutorCompletionService<BruteForceIntermediatePackagerResult>(executorService);
 	}
 
 	private class RunnableAdapter implements Callable<BruteForceIntermediatePackagerResult> {
@@ -214,6 +216,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (the packager is thread-safe), and the futures of an
+				// attempt are cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
@@ -224,7 +229,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					runnableAdapter.setContainerIndex(i);
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
 
-					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
+					// each worker has its own copy of the interrupt
+					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
@@ -274,7 +280,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						}
 					}
 					// was the search interrupted?
-					if(interrupts[i].getAsBoolean()) {
+					if(interrupts[0].getAsBoolean()) {
 						return null;
 					}
 					return best;
@@ -291,7 +297,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			// run with linear approach, from the first permutation
 			iterators[i].reset();
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, containerItem, i, iterators[i],
-					interrupts[i]);
+					interrupts[0]);
 		}
 
 		@Override
@@ -393,6 +399,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 				LocalInterrupt localInterrupt = new LocalInterrupt();
 
+				// one per attempt: attempts may run concurrently (the packager is thread-safe), and the futures of an
+				// attempt are cancelled when it is done, after which they would otherwise be taken by the next attempt
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(runnables.length);
 				for (int j = 0; j < runnables.length; j++) {
 					RunnableAdapter runnableAdapter = runnables[j];
@@ -403,7 +412,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					runnableAdapter.setContainerIndex(i);
 					runnableAdapter.setIterator(parallelIterators[i].getIterator(j));
 
-					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
+					// each worker has its own copy of the interrupt
+					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
@@ -455,7 +465,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						}
 					}
 					// was the search interrupted?
-					if(interrupts[i].getAsBoolean()) {
+					if(interrupts[0].getAsBoolean()) {
 						return null;
 					}
 					// throw away boxes from incomplete groups
@@ -478,7 +488,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					containerItem,
 					i,
 					iterators[i],
-					interrupts[i]
+					interrupts[0]
 			), excluded);
 		}
 
@@ -578,6 +588,21 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				count += i;
 			}
 			return count;
+		}
+	}
+
+	/** Whether the builder created the executor service: then it is shut down when the packager is closed */
+	private boolean shutdownExecutorServiceOnClose;
+
+	protected void setShutdownExecutorServiceOnClose(boolean shutdownExecutorServiceOnClose) {
+		this.shutdownExecutorServiceOnClose = shutdownExecutorServiceOnClose;
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		if(shutdownExecutorServiceOnClose) {
+			executorService.shutdownNow();
 		}
 	}
 

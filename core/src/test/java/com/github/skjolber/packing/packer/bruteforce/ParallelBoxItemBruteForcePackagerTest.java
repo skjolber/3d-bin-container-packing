@@ -403,4 +403,89 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 		}
 	}
 
+	/**
+	 * The packager is thread-safe: packings at the same time must not take each other's worker results.
+	 */
+	@Test
+	void packsFromSeveralThreadsAtTheSameTime() throws Exception {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(2).build();
+		ExecutorService callers = Executors.newFixedThreadPool(4);
+		try {
+			List<java.util.concurrent.Future<Boolean>> results = new ArrayList<>();
+			for(int i = 0; i < 40; i++) {
+				results.add(callers.submit(() -> {
+					List<BoxItem> products = new ArrayList<>();
+					for(String id : new String[] {"a", "b", "c", "d", "e"}) {
+						products.add(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1));
+					}
+					Container container = Container.newBuilder().withDescription("1").withSize(5, 1, 1).withMaxLoadWeight(100).build();
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(ContainerItem.newListBuilder().withContainer(container, 1).build())
+							.withBoxItems(products)
+							.withMaxContainerCount(1)
+							.withDeadline(System.currentTimeMillis() + 10_000)
+							.build();
+					return result.isSuccess();
+				}));
+			}
+			for (java.util.concurrent.Future<Boolean> result : results) {
+				assertTrue(result.get());
+			}
+		} finally {
+			callers.shutdownNow();
+			packager.shutdown();
+    }
+  }
+
+	@Test
+	void closeShutsDownTheExecutorServiceCreatedByTheBuilder() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
+		packager.close();
+		assertTrue(packager.getExecutorService().isShutdown());
+
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		try {
+			ParallelBoxItemBruteForcePackager withExecutorService = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(4).build();
+			withExecutorService.close();
+			// the caller's executor service
+			assertFalse(executorService.isShutdown());
+		} finally {
+			executorService.shutdownNow();
+    }
+  }
+	//
+	//  three container types, more than the two work units; only the last holds the three different unit cubes,
+	//  which have enough permutations to be split between the work units:
+	//
+	//   [a]   [a][b]   [a][b][c]
+	//
+	@Test
+	void packsWithMoreContainerTypesThanWorkUnits() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
+		try {
+			List<ContainerItem> containers = ContainerItem.newListBuilder()
+					.withContainer(Container.newBuilder().withDescription("1").withSize(1, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.withContainer(Container.newBuilder().withDescription("2").withSize(2, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.withContainer(Container.newBuilder().withDescription("3").withSize(3, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.build();
+
+			List<BoxItem> products = new ArrayList<>();
+			for(String id : new String[] {"a", "b", "c"}) {
+				products.add(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(containers)
+					.withBoxItems(products)
+					.withMaxContainerCount(1)
+					.withDeadline(System.currentTimeMillis() + 10_000)
+					.build();
+
+			assertTrue(result.isSuccess());
+			assertEquals(1, result.size());
+			assertEquals(3, result.get(0).getStack().size());
+		} finally {
+			packager.close();
+		}
+	}
 }
