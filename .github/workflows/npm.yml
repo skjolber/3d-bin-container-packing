@@ -7,7 +7,7 @@ on:
   push:
     branches: [ '**' ]
     paths:
-      - 'visualizer/**'
+      - 'visualizer/viewer/**'
 
 jobs:
   build:
