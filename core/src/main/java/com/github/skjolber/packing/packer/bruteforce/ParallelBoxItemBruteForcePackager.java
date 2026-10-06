@@ -66,6 +66,20 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
 		protected int groupOrderSearch;
+		protected boolean requireFullSupport;
+
+		/**
+		 * Place boxes only where they rest completely on the floor or on the boxes below: at the free points, and
+		 * shifted from a free point onto the corner of a box below (as the plain packager's full support). Boxes do not
+		 * rest on obstacles.
+		 *
+		 * @param requireFullSupport true to require full support
+		 * @return this builder
+		 */
+		public ParallelBruteForcePackagerBuilder withRequireFullSupport(boolean requireFullSupport) {
+			this.requireFullSupport = requireFullSupport;
+			return this;
+		}
 
 		public ParallelBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
 			this.comparator = comparator;
@@ -198,6 +212,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			packager.setGroupOrderSearch(groupOrderSearch);
+			packager.setRequireFullSupport(requireFullSupport);
 			return packager;
 		}
 	}

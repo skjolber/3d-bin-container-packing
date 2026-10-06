@@ -455,7 +455,11 @@ PlainPackager packager = PlainPackager
     .build();
 ```
 
-The LAFF packager builders have the same options.
+The LAFF packager builders have the same options. The brute-force packager builders have `withRequireFullSupport(true)`:
+boxes are placed only where they rest completely on the floor or on the boxes below, at the free points and shifted from
+a free point onto the corner of a box below (as the plain packager does when no free point holds a box fully supported).
+Boxes do not rest on obstacles. Brute force has no `withCalculateSupport(..)`: it keeps the arrangement with the most
+volume, rather than ranking positions.
 
 ## Container costs
 Give container types a cost to prefer cheaper combinations of containers, using
@@ -588,7 +592,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
 # History
  * 5.0.0: Major release. Breaking changes.
      * Box load constraints: max load weight, pressure, box count and identical boxes only
-     * Support calculation + full support for plain and LAFF packagers
+     * Support calculation + full support for plain and LAFF packagers; full support for the brute-force packagers
      * Container costs and container strategies (ordered, parallel, allocation), and custom container strategies
      * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
@@ -601,7 +605,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
-        * `withSkipReversePermutations(..)` no longer applies when the insertion order matters (extraction orders, container access other than `ANY`, obstacles or initial points, load limits): a permutation and its reverse do not pack equally well there
+        * `withSkipReversePermutations(..)` no longer applies when the insertion order matters (extraction orders, container access other than `ANY`, obstacles or initial points, load limits, full support): a permutation and its reverse do not pack equally well there
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`

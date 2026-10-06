@@ -78,6 +78,18 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return super.add(index, placement);
 	}
 
+	/**
+	 * As {@link #add(int, Placement)}, for a placement within the free point rather than at its origin (see
+	 * {@link FullSupportCandidates}): the arrangement keeps the placement's position.
+	 *
+	 * @param position the placement's position
+	 */
+	public boolean add(int index, Placement placement, SimplePoint3D position) {
+		boolean result = add(index, placement);
+		stackItems[this.stackIndex].point = position;
+		return result;
+	}
+
 	@Override
 	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		stackItems[stackIndex].point = values.get(index);

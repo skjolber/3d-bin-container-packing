@@ -54,6 +54,28 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		return super.add(index, placement);
 	}
 
+	/**
+	 * As {@link #add(int, Placement)}, for a placement within the free point rather than at its origin (see
+	 * {@link FullSupportCandidates}): the arrangement keeps the placement's position.
+	 *
+	 * @param position the placement's position
+	 */
+	public boolean add(int index, Placement placement, SimplePoint3D position) {
+		boolean result = add(index, placement);
+		stackItems[stackSize - 1].point = position;
+		return result;
+	}
+
+	private FullSupportCandidates fullSupportCandidates;
+
+	/** @return the positions where a box is fully supported, when full support is required (reused) */
+	FullSupportCandidates getFullSupportCandidates() {
+		if(fullSupportCandidates == null) {
+			fullSupportCandidates = new FullSupportCandidates();
+		}
+		return fullSupportCandidates;
+	}
+
 	@Override
 	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		snapshot = null;

@@ -21,6 +21,8 @@ final class BruteForceSearchFrames {
 	final int[] freeLoadWeights;
 	/** The rotation of the box at the level, in the search in a box item order (which tries the rotations). */
 	final int[] rotationIndexes;
+	/** The positions where the box at the level is fully supported, when full support is required (created on first use). */
+	private final FullSupportCandidates[] fullSupportCandidates;
 
 	BruteForceSearchFrames(int levels) {
 		this.nextPointIndexes = new int[levels];
@@ -29,5 +31,15 @@ final class BruteForceSearchFrames {
 		this.minStackableAreaIndexes = new int[levels];
 		this.freeLoadWeights = new int[levels];
 		this.rotationIndexes = new int[levels];
+		this.fullSupportCandidates = new FullSupportCandidates[levels];
+	}
+
+	FullSupportCandidates getFullSupportCandidates(int level) {
+		FullSupportCandidates candidates = fullSupportCandidates[level];
+		if(candidates == null) {
+			candidates = new FullSupportCandidates();
+			fullSupportCandidates[level] = candidates;
+		}
+		return candidates;
 	}
 }
