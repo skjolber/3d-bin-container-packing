@@ -476,6 +476,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig && !isOrdered()) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
 			}
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, null, getMaxContainerPriority(iterator));
+			}
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
 			}
@@ -533,7 +536,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				return attemptGroupOrders(i, best);
 			}
 			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
-			if(!canLoadNextGroup(iteratorGroups)) {
+			// when skipping, the first group may be skipped
+			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
 			}
 			BoxItemPermutationRotationIterator iterator = containerIterators[i];
@@ -542,6 +546,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			
 			if(filterReversePermutations && reverseSymmetric && abortOnAnyBoxTooBig && order == Order.NONE) {
 				iterator = new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+			}
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+				// groups are skipped whole
+				return packInOrderSkipping(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter,
+						getGroupSkipEnds(iteratorGroups, iterator.length()), getMaxContainerPriority(iterator));
 			}
 			if(order != Order.NONE) {
 				return truncateToGroup(packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, Integer.MAX_VALUE), iteratorGroups);

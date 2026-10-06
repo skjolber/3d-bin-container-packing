@@ -186,8 +186,10 @@ packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
 different point limit at each placement step.
 
 With a box item order (`Order.CHRONOLOGICAL`), the brute-force packagers search the rotations and positions of the
-boxes in that order (the fast brute-force packagers take the best position for each box); skipping boxes
-(`Order.CHRONOLOGICAL_ALLOW_SKIPPING`) is not supported. With container priorities, they only permute the boxes within
+boxes in that order (the fast brute-force packagers take the best position for each box). With skipping
+(`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), the brute-force packagers also try skipping each box (or box item group), which
+then waits for a later container, and keep the arrangement with the most volume; the fast brute-force packagers do not
+support skipping. With container priorities, they only permute the boxes within
 each priority. The parallel packagers search these inputs on one thread, as the permutations cannot be split between
 threads (except box item groups with container priorities, which are still split).
 

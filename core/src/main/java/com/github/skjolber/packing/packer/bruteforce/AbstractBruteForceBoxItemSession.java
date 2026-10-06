@@ -155,6 +155,24 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		return limit;
 	}
 
+	/**
+	 * Boxes which do not fit the container wait for a later container, and so do the boxes of a higher container
+	 * priority (see {@link AbstractBruteForcePackager#packInOrderSkipping}).
+	 *
+	 * @param iterator the container's iterator, by box item index (null if the box item does not fit, or is packed)
+	 * @return the highest container priority which may be placed in the container
+	 */
+	protected int getMaxContainerPriority(BoxItemPermutationRotationIterator iterator) {
+		BoxItem[] iteratorItems = iterator.getBoxItems();
+		int maxContainerPriority = Integer.MAX_VALUE;
+		for(int i = 0; i < boxItems.length; i++) {
+			if(boxItems[i] != null && iteratorItems[i] == null) {
+				maxContainerPriority = Math.min(maxContainerPriority, boxItems[i].getContainerPriority());
+			}
+		}
+		return maxContainerPriority;
+	}
+
 	/** @return copies of the box items at the start of the packaging operation */
 	protected List<BoxItem> copyInitialBoxItems() {
 		List<BoxItem> copies = new ArrayList<>(boxes.length);

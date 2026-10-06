@@ -394,10 +394,44 @@ public class OrderingResultsTest {
 	}
 
 	@Test
-	public void bruteForceDoesNotSupportSkipping() {
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+	public void fastBruteForceDoesNotSupportSkipping() {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
 			List<BoxItem> items = smallItems(new Random(1), 3);
 			assertThat(packager.getUnsupportedReason(new PackagerInput(items, null, containers(10, 10, 8, ContainerAccess.ANY, 2), 2, Order.CHRONOLOGICAL_ALLOW_SKIPPING))).contains("CHRONOLOGICAL_ALLOW_SKIPPING");
+		}
+	}
+
+	//
+	//  container 2 x 1 x 1; boxes in order a (1 x 1 x 1), b (2 x 1 x 1), c (1 x 1 x 1). With skipping, b waits for
+	//  the next container, and c is placed after a; without skipping, the container closes at b.
+	//
+	//   container 1   container 2
+	//     [a][c]        [ b  ]
+	//
+	@Test
+	public void bruteForceSkipsBoxesWhichDoNotFit() {
+		List<Supplier<AbstractPackager<?>>> packagers = List.of(
+				() -> BruteForcePackager.newBuilder().build(),
+				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+		for (Supplier<AbstractPackager<?>> supplier : packagers) {
+			try (AbstractPackager<?> packager = supplier.get()) {
+				List<BoxItem> items = List.of(
+						new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("b").withSize(2, 1, 1).withWeight(1).build(), 1),
+						new BoxItem(Box.newBuilder().withId("c").withSize(1, 1, 1).withWeight(1).build(), 1));
+				PackagerResult result = packager.newResultBuilder()
+						.withContainerItems(containers(2, 1, 1, ContainerAccess.ANY, 2))
+						.withBoxItems(items)
+						.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
+						.withMaxContainerCount(2)
+						.withInterruptDuration(10_000)
+						.build();
+
+				assertThat(result.isSuccess()).isTrue();
+				assertThat(result.getContainers()).hasSize(2);
+				assertThat(result.get(0).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("a", "c");
+				assertThat(result.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("b");
+			}
 		}
 	}
 

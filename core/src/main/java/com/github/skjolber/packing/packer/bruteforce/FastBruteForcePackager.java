@@ -666,4 +666,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
 		return null;
 	}
+
+	@Override
+	protected boolean supportsSkipping() {
+		return false;
+	}
 }

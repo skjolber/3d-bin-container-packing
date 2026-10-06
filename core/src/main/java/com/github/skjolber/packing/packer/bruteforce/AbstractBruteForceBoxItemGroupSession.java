@@ -106,7 +106,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 			}
 			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packGroupOrder(containerIndex, iterator, best), iteratorGroups);
 			if(result != null && !result.isEmpty() && (bestResult == null || getIntermediatePackagerResultComparator().compare(bestResult, result) < 0)) {
-				result.setGroupOrder(true);
+				result.setAnyRemaining(true);
 				bestResult = result;
 			}
 		} while(nextGroupOrder(groupOrder));
@@ -168,6 +168,31 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 			groupOrder[b] = swap;
 		}
 		return true;
+	}
+
+	/**
+	 * With {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}, groups are skipped whole.
+	 *
+	 * @param iteratorGroups the iterator's groups in their order (null if excluded)
+	 * @param length the iterator's number of boxes
+	 * @return for each box of the iterator's permutation, the box to continue with when skipping it: the first box of
+	 *         the next group for the first box of a group, otherwise -1
+	 */
+	protected static int[] getGroupSkipEnds(BoxItemGroup[] iteratorGroups, int length) {
+		int[] skipEnds = new int[length];
+		int start = 0;
+		for (BoxItemGroup group : iteratorGroups) {
+			if(group == null) {
+				continue;
+			}
+			int count = group.getBoxCount();
+			skipEnds[start] = start + count;
+			for (int k = start + 1; k < start + count; k++) {
+				skipEnds[k] = -1;
+			}
+			start += count;
+		}
+		return skipEnds;
 	}
 
 	/**

@@ -100,8 +100,9 @@ public class PackagerConformanceTest {
 		EXPECTED.put("groups",                     "S S S S S S S S S S");
 		EXPECTED.put("chronological",              "S S S S S S S S S S");
 		EXPECTED.put("chronologicalGroups",        "S S S S S S S S S S");
-		EXPECTED.put("allowSkipping",              "S S S R R R R R R S");
-		EXPECTED.put("allowSkippingGroups",        "S S S R R R R R R S");
+		// fast brute force: skipping is not supported
+		EXPECTED.put("allowSkipping",              "S S S S R S S R S S");
+		EXPECTED.put("allowSkippingGroups",        "S S S S R S S R S S");
 		EXPECTED.put("containerPriorities",        "S S S S S S S S S S");
 		EXPECTED.put("containerPrioritiesGroups",  "S S S S S S S S S S");
 		EXPECTED.put("extractionOrder",            "S S S S S S S S S S");

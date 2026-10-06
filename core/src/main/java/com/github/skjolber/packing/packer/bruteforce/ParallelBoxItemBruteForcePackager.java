@@ -487,6 +487,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			iterator.reset();
 			BruteForceWorker worker = runnables[0];
 			ContainerItem containerItem = getContainerItem(i);
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+				return packInOrderSkipping(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, null, getMaxContainerPriority(iterator));
+			}
 			if(order != Order.NONE) {
 				return packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, i, iterator, interrupts[0], pointFilter, best, getLimit(iterator));
 			}
@@ -636,13 +639,19 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 				return attemptGroupOrders(i, currentBest);
 			}
 			BoxItemGroup[] iteratorGroups = iterators[i].getBoxItemGroups();
-			if(!canLoadNextGroup(iteratorGroups)) {
+			// when skipping, the first group may be skipped
+			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
 			}
 			if(order != Order.NONE) {
 				// a box item order: one permutation, searched on this thread
 				iterators[i].reset();
 				BruteForceWorker worker = runnables[0];
+				if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING) {
+					// groups are skipped whole
+					return packInOrderSkipping(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(i), i, iterators[i], interrupts[0], pointFilter,
+							getGroupSkipEnds(iteratorGroups, iterators[i].length()), getMaxContainerPriority(iterators[i]));
+				}
 				return truncateToGroup(packInOrder(worker.pointCalculator, worker.placements, worker.placementCount, getContainerItem(i), i, iterators[i], interrupts[0], pointFilter, currentBest, Integer.MAX_VALUE), iteratorGroups);
 			}
 			// is there enough work to do parallelization?
@@ -766,7 +775,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		@Override
 		public Container accept(IntermediatePackagerResult result) {
 			// results for another order of the groups (see attemptGroupOrders) hold any of the remaining groups
-			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult && !bruteForceResult.isGroupOrder()) {
+			if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult && !bruteForceResult.isAnyRemaining()) {
 				
 				bruteForceResult.markDirty();
 				Stack stack = bruteForceResult.getStack();
