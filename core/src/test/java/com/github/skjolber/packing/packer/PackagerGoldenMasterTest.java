@@ -393,7 +393,7 @@ public class PackagerGoldenMasterTest {
 	/**
 	 * Checksum of the result summary: success, and the number of boxes, loaded volume and weight per container.
 	 */
-	protected static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
+	public static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
 		Random random = new Random(seed);
 		List<BoxItem> items = createItems(random, new Random(seed * 31 + 7), maxBoxes, maxCount, load);
 		List<ContainerItem> containers = createContainers(random);
@@ -409,7 +409,7 @@ public class PackagerGoldenMasterTest {
 		return hash;
 	}
 
-	protected static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups) {
+	public static long packSummary(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups) {
 		return packSummary(packager, seed, maxBoxes, maxCount, groups, LOAD_NONE);
 	}
 

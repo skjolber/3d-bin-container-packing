@@ -67,6 +67,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		protected Comparator<BoxItemGroup> boxItemGroupComparator;
 		protected int groupOrderSearch;
 
+		public ParallelBruteForcePackagerBuilder withComparator(Comparator<IntermediatePackagerResult> comparator) {
+			this.comparator = comparator;
+			return this;
+		}
+
 		/**
 		 * Also search the orders of the box item groups, when there are at most this many groups left: groups are
 		 * packed in order, and another order can fill a container better. The search is exponential in the number of
@@ -264,6 +269,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PointCalculator3DStack pointCalculator;
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
+		private IntermediatePackagerResult best;
 
 		/** Whether the boxes have load limits: then the placements track loads */
 		private final boolean load;
@@ -309,9 +315,17 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			this.containerIndex = containerIndex;
 		}
 
+		/**
+		 * @param best the best result so far, or null: permutations which cannot load more are skipped (see
+		 *        {@link AbstractBruteForcePackager#pack(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, IntermediatePackagerResult)})
+		 */
+		public void setBest(IntermediatePackagerResult best) {
+			this.best = best;
+		}
+
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, placementCount, containerItem, containerIndex, iterator, interrupt, pointFilter);
+			return ParallelBoxItemBruteForcePackager.this.pack(pointCalculator, placements, placementCount, containerItem, containerIndex, iterator, interrupt, pointFilter, best);
 		}
 	}
 
@@ -398,6 +412,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					
 					worker.setContainerItem(containerItem);
 					worker.setContainerIndex(i);
+					worker.setBest(currentBest);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), reverseSymmetric && abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
@@ -473,7 +488,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			iterators[i].reset();
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], reverseSymmetric && abortOnAnyBoxTooBig);
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
-					interrupts[0], pointFilter);
+					interrupts[0], pointFilter, currentBest);
 		}
 
 		/**
@@ -686,6 +701,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					
 					worker.setContainerItem(containerItem);
 					worker.setContainerIndex(i);
+					worker.setBest(currentBest);
 					BoxItemPermutationRotationIterator iterator = filterReversePermutations(parallelIterators[i].getIterator(j), reverseSymmetric && abortOnAnyBoxTooBig);
 					if(iterator == null) {
 						continue;
@@ -771,7 +787,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					i,
 					iterator,
 					interrupts[0],
-					pointFilter
+					pointFilter,
+					currentBest
 			), iteratorGroups);
 		}
 

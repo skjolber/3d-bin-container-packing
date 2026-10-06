@@ -2,8 +2,10 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import static com.github.skjolber.packing.packer.PackagerGoldenMasterTest.LOAD_WEIGHT_PRESSURE_COUNT;
 import static com.github.skjolber.packing.packer.PackagerGoldenMasterTest.pack;
+import static com.github.skjolber.packing.packer.PackagerGoldenMasterTest.packSummary;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
@@ -44,19 +46,36 @@ public class BruteForceLoadVolumeBoundTest {
 		}
 	}
 
+	@Test
+	public void parallelBruteForceAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult() throws PackagerInterruptedException {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(1).build()) {
+			// few permutations: searched on one thread
+			assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(packager);
+			// 3! permutations: split between the threads
+			assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(packager, 3);
+		}
+	}
+
 	private static void assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(AbstractPackager<?> packager) throws PackagerInterruptedException {
-		// The small container holds one of the boxes, the large container both:
+		assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(packager, 2);
+	}
+
+	private static void assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(AbstractPackager<?> packager, int count) throws PackagerInterruptedException {
+		// The small container holds one of the boxes, the large container all of them:
 		//
-		//   small [a]     large [a][b]
+		//   small [a]     large [a][b]..
 		//
-		Box box = Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).build();
+		List<BoxItem> boxItems = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			boxItems.add(new BoxItem(Box.newBuilder().withId("box" + i).withSize(1, 1, 1).withWeight(1).build(), 1));
+		}
 		List<ContainerItem> containers = List.of(
-				new ContainerItem(Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(2).build(), 1),
-				new ContainerItem(Container.newBuilder().withId("large").withSize(2, 1, 1).withMaxLoadWeight(2).build(), 1));
-		PackagerSession session = packager.createSession(new PackagerInput(List.of(new BoxItem(box, 2)), null, containers, 1, Order.NONE), () -> false);
+				new ContainerItem(Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(count).build(), 1),
+				new ContainerItem(Container.newBuilder().withId("large").withSize(count, 1, 1).withMaxLoadWeight(count).build(), 1));
+		PackagerSession session = packager.createSession(new PackagerInput(boxItems, null, containers, 1, Order.NONE), () -> false);
 
 		IntermediatePackagerResult large = session.attempt(1, null, false);
-		assertThat(large.getStack().size()).isEqualTo(2);
+		assertThat(large.getStack().size()).isEqualTo(count);
 
 		assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(1);
 		assertThat(session.attempt(0, large, false).isEmpty()).isTrue();
@@ -83,6 +102,21 @@ public class BruteForceLoadVolumeBoundTest {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
 					assertThat(pack(bounded, seed, MAX_BOXES, 1, groups)).as("seed %d, groups %s", seed, groups).isEqualTo(pack(unbounded, seed, MAX_BOXES, 1, groups));
+				}
+			}
+		}
+	}
+
+	/** Parallel results are chosen among equally good results in thread completion order: compare summaries. */
+	@Test
+	public void parallelBruteForceResultsAreTheSameWithoutTheBound() {
+		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
+		try (ParallelBoxItemBruteForcePackager bounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build();
+				ParallelBoxItemBruteForcePackager unbounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withComparator(withoutLoadVolumeBound(comparator)).build()) {
+			for(int seed = 0; seed < SEEDS; seed++) {
+				for(boolean groups : new boolean[] {false, true}) {
+					// 5! permutations: split between the threads
+					assertThat(packSummary(bounded, seed, 5, 1, groups)).as("seed %d, groups %s", seed, groups).isEqualTo(packSummary(unbounded, seed, 5, 1, groups));
 				}
 			}
 		}
