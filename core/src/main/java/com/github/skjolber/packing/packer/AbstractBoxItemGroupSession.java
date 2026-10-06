@@ -1,8 +1,10 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -102,6 +104,9 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 
 	@Override
 	public Container accept(IntermediatePackagerResult result) {
+		// check before changing anything, so that a rejected result leaves the session as it was
+		checkWholeGroups(result.getStack());
+
 		Container container = packagerContainerItems.toContainer(resolveContainerItem(result), result.getStack());
 
 		Stack stack = container.getStack();
@@ -121,6 +126,38 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		this.remainingBoxItemGroups = remainingBoxItems;
 
 		return container;
+	}
+
+	/**
+	 * Groups are packed whole: a result (also from another packager) must hold all boxes of each group it holds boxes
+	 * of, and only boxes of the remaining groups.
+	 */
+	private void checkWholeGroups(Stack stack) {
+		Map<Integer, Integer> countByGlobalIndex = new HashMap<>(stack.size() * 2);
+		for (Placement placement : stack.getPlacements()) {
+			countByGlobalIndex.merge(((BoxItem) placement.getStackValue().getBox().getBoxItem()).getGlobalIndex(), 1, Integer::sum);
+		}
+		int matched = 0;
+		for (BoxItemGroup group : remainingBoxItemGroups) {
+			boolean present = false;
+			boolean complete = true;
+			for (BoxItem boxItem : group.getItems()) {
+				Integer count = countByGlobalIndex.get(boxItem.getGlobalIndex());
+				if(count != null) {
+					present = true;
+					matched++;
+				}
+				if(count == null || count != boxItem.getCount()) {
+					complete = false;
+				}
+			}
+			if(present && !complete) {
+				throw new IllegalArgumentException("Result does not contain complete box item group " + group.getId());
+			}
+		}
+		if(matched != countByGlobalIndex.size()) {
+			throw new IllegalArgumentException("Result contains box items outside the remaining box item groups");
+		}
 	}
 
 	private BoxItem findRemainingBoxItem(int globalIndex) {
