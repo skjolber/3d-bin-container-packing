@@ -363,7 +363,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 					worker.setIterator(iterator);
 
-					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
+					// each worker has its own copy of the interrupt
+					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
@@ -413,8 +414,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						}
 					}
 					// was the search interrupted?
-					if(interrupts[i].getAsBoolean()) {
-						return null;
+					if(sourceInterrupt.getAsBoolean()) {
+						throw new PackagerInterruptedException();
 					}
 					return best;
 				} finally {
@@ -431,7 +432,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 			iterators[i].reset();
 			BoxItemPermutationRotationIterator iterator = filterReversePermutations(iterators[i], abortOnAnyBoxTooBig);
 			return ParallelBoxItemBruteForcePackager.this.pack(runnables[0].pointCalculator, runnables[0].placements, runnables[0].placementCount, containerItem, i, iterator,
-					interrupts[i], pointFilter);
+					interrupts[0], pointFilter);
 		}
 
 		@Override
@@ -597,7 +598,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					}
 					worker.setIterator(iterator);
 
-					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[i];
+					// each worker has its own copy of the interrupt
+					PackagerInterruptSupplier interruptBooleanSupplier = interrupts[j];
 
 					PackagerInterruptSupplier booleanSupplier = () -> localInterrupt.interrupted || interruptBooleanSupplier.getAsBoolean();
 
@@ -649,8 +651,8 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 						}
 					}
 					// was the search interrupted?
-					if(interrupts[i].getAsBoolean()) {
-						return null;
+					if(sourceInterrupt.getAsBoolean()) {
+						throw new PackagerInterruptedException();
 					}
 					// throw away boxes from incomplete groups
 					return best;
@@ -674,7 +676,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					containerItem,
 					i,
 					iterator,
-					interrupts[i],
+					interrupts[0],
 					pointFilter
 			), iteratorGroups);
 		}

@@ -472,4 +472,38 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 		}
 	}
 
+	//
+	//  three container types, more than the two work units; only the last holds the three different unit cubes,
+	//  which have enough permutations to be split between the work units:
+	//
+	//   [a]   [a][b]   [a][b][c]
+	//
+	@Test
+	void packsWithMoreContainerTypesThanWorkUnits() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
+		try {
+			List<ContainerItem> containers = ContainerItem.newListBuilder()
+					.withContainer(Container.newBuilder().withId("1").withSize(1, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.withContainer(Container.newBuilder().withId("2").withSize(2, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.withContainer(Container.newBuilder().withId("3").withSize(3, 1, 1).withMaxLoadWeight(100).build(), 1)
+					.build();
+
+			List<BoxItem> products = new ArrayList<>();
+			for(String id : List.of("a", "b", "c")) {
+				products.add(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1));
+			}
+
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(containers)
+					.withBoxItems(products)
+					.withMaxContainerCount(1)
+					.withInterruptDuration(10_000)
+					.build();
+
+			assertTrue(result.isSuccess());
+			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("3");
+		} finally {
+			packager.close();
+		}
+	}
 }
