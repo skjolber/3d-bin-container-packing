@@ -278,6 +278,8 @@ public class RecursiveBruteForceSearch {
 		Placement placement = placements[placementIndex];
 		placement.setStackValue(stackValue);
 		placement.setPoint(point);
+		// as the iterative search: results link the loads of reused placements
+		placement.clearLoad();
 		placement.setIndex(stack.size());
 		placement.setSupportedArea(supportedArea);
 		pointCalculator.add(pointIndex, placement);

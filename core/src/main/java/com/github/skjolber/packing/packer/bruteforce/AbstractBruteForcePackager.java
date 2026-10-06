@@ -738,6 +738,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			// place the box; add(..) replaces the free points with those around the new placement
 			placement.setPoint(pointCalculator.get(pointIndex));
 			if(utility != null) {
+				// results link the loads of the placements they build their stack from (see
+				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
+				placement.clearLoad();
 				placement.setIndex(stack.size());
 				placement.setSupportedArea(supportedArea);
 			}
@@ -1033,6 +1036,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					// place the box and continue with the next level
 					placement.setPoint(pointCalculator.get(pointIndex));
 					if(utility != null) {
+						// results link the loads of the placements they build their stack from (see
+						// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
+						placement.clearLoad();
 						placement.setIndex(stack.size());
 						placement.setSupportedArea(supportedArea);
 					}
@@ -1510,6 +1516,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			// place the box; add(..) replaces the free points with those around the new placement
 			placement.setPoint(pointCalculator.get(pointIndex));
 			if(utility != null) {
+				// results link the loads of the placements they build their stack from (see
+				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
+				placement.clearLoad();
 				placement.setIndex(stack.size());
 				placement.setSupportedArea(supportedArea);
 			}
