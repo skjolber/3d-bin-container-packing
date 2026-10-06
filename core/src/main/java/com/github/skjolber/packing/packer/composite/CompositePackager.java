@@ -45,7 +45,9 @@ import com.github.skjolber.packing.packer.PackagerInput;
  * </pre>
  *
  * Each packager after the first can have a budget: the time it may run for, counted from the start of the
- * improvement. Once the budget is used up, the packager is not used any more.
+ * improvement. Once the budget is used up, the packager is not used any more. The first packager which supports the
+ * input has no budget, as its results bound the other packagers; when the packagers before it do not support the
+ * input, its budget is not used.
  * <br>
  * <br>
  * Thread-safe implementation, if the packagers are. Closing this packager closes the packagers.
@@ -102,7 +104,8 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		 * Add a packager tried for each container, after the packagers added before it, for a limited time.
 		 *
 		 * @param packager packager
-		 * @param budget the time in milliseconds the packager may run for, counted from the start of the improvement
+		 * @param budget the time in milliseconds the packager may run for, counted from the start of the improvement;
+		 *        not used when it is the first packager which supports the input
 		 * @return this builder
 		 */
 		public Builder withPackager(AbstractPackager<?> packager, long budget) {
