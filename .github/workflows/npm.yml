@@ -6,6 +6,8 @@ name: NPM build
 on:
   push:
     branches: [ '**' ]
+    paths:
+      - 'visualizer/viewer/**'
 
 jobs:
   build:
