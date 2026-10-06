@@ -7,6 +7,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Placement;
 
 /**
  * The input of a packaging operation: either box items or box item groups, the available containers, the
@@ -50,7 +51,13 @@ public class PackagerInput {
 	public PackagerInput withCopies() {
 		List<ContainerItem> containerItemCopies = new ArrayList<>(containerItems.size());
 		for(ContainerItem containerItem : containerItems) {
-			containerItemCopies.add(new ContainerItem(containerItem));
+			ContainerItem copy = new ContainerItem(containerItem);
+			List<Placement> obstacles = containerItem.getContainer().getObstacles();
+			if(!copy.hasInitialPoints() && !obstacles.isEmpty()) {
+				// obstacles given with the container: the space around them is free
+				copy.setInitialPoints(ObstaclePoints.getFreePoints(containerItem.getContainer(), obstacles));
+			}
+			containerItemCopies.add(copy);
 		}
 		if(hasBoxItems()) {
 			return new PackagerInput(AbstractPackagerSession.copyBoxItems(boxItems), null, containerItemCopies, maxContainerCount, order, insertionOrder);

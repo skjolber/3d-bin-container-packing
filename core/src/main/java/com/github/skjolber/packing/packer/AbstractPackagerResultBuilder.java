@@ -22,7 +22,6 @@ import com.github.skjolber.packing.api.packager.control.manifest.ManifestControl
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 
 /**
  * {@linkplain PackagerResult} builder scaffold.
@@ -145,21 +144,14 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				}
 				// calculate points from obstacles
 				Container container = containerItem.getContainer();
-				
-				DefaultPointCalculator3D ep = new DefaultPointCalculator3D(false, obstacles.size() + 1);
-				ep.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-				
+
 				List<Placement> obstaclePlacements = new ArrayList<>(obstacles.size());
 				for(int i = 0; i < obstacles.size(); i++) {
-					Placement obstacle = createStackPlacement(obstacles.get(i));
-					if(!ep.addObstacle(obstacle)) {
-						throw new IllegalStateException("Unable to add obstacle #" + i + " " + obstacles.get(i));
-					}
-					obstaclePlacements.add(obstacle);
+					obstaclePlacements.add(createStackPlacement(obstacles.get(i)));
 				}
 				// keep the obstacles with the container, as boxes are inserted after them (see ContainerAccess)
 				packContainerItem = new ContainerItem(containerItem, container.withObstacles(obstaclePlacements));
-				packContainerItem.setInitialPoints(ep.getAll());
+				packContainerItem.setInitialPoints(ObstaclePoints.getFreePoints(container, obstaclePlacements));
 			} else {
 				packContainerItem = new ContainerItem(containerItem);
 				packContainerItem.setInitialPoints(points);
