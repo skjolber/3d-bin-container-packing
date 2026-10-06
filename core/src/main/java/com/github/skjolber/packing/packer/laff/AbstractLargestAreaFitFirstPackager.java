@@ -440,7 +440,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			int markLevelOffset = levelOffset;
 			boolean markNewLevel = newLevel;
 
-			boxItemControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
+			if(boxItemControls != null) {
+				boxItemControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
+			}
 			
 			while(!boxItemGroup.isEmpty()) {
 				// groups before this one may have been removed
