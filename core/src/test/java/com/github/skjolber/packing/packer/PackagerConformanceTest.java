@@ -114,8 +114,8 @@ public class PackagerConformanceTest {
 		EXPECTED.put("obstaclesGroups",            "S G G S S S S S S S");
 		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S S S S");
 		EXPECTED.put("loadLimits",                 "S S S R R R S S S S");
-		// LAFF: rolled back groups leave their loads; brute force (and composite through it): load limits ignored for groups
-		EXPECTED.put("loadLimitsGroups",           "S G G G G G S S S G");
+		// LAFF: rolled back groups leave their loads (not investigated yet)
+		EXPECTED.put("loadLimitsGroups",           "S G G R R R S S S S");
 	}
 
 	/** An input */
