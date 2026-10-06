@@ -17,14 +17,14 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
-class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest {
+class ParallelBoxItemBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest {
 
 	private ExecutorService executorService;
 
 	@Override
-	protected LoadParallelBoxItemBruteForcePackager createPackager() {
+	protected ParallelBoxItemBruteForcePackager createPackager() {
 		executorService = Executors.newFixedThreadPool(2);
-		return LoadParallelBoxItemBruteForcePackager.newBuilder()
+		return ParallelBoxItemBruteForcePackager.newBuilder()
 				.withExecutorService(executorService)
 				.withParallelizationCount(2)
 				.build();
@@ -34,7 +34,7 @@ class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePa
 	void usesThePointFilterWithLoadConstraints() {
 		CountingPointFilter pointFilter = new CountingPointFilter();
 		executorService = Executors.newFixedThreadPool(2);
-		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder()
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
 				.withExecutorService(executorService)
 				.withParallelizationCount(2)
 				.withPointFilter(pointFilter)
@@ -44,17 +44,6 @@ class LoadParallelBoxItemBruteForcePackagerTest extends AbstractLoadBruteForcePa
 		assertThat(pointFilter.getCount()).isPositive();
 	}
 
-	@Test
-	void builderKeepsSkipReversePermutations() {
-		executorService = Executors.newFixedThreadPool(2);
-		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder()
-				.withExecutorService(executorService)
-				.withParallelizationCount(2)
-				.withSkipReversePermutations(true)
-				.build()) {
-			assertThat(packager.filterReversePermutations).isTrue();
-		}
-	}
 
 	@AfterEach
 	void shutdownExecutor() {

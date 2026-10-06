@@ -31,9 +31,6 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadFastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.composite.CompositePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
@@ -79,9 +76,6 @@ public class PackagerConformanceTest {
 		PACKAGERS.put("bruteForce", () -> BruteForcePackager.newBuilder().build());
 		PACKAGERS.put("fastBruteForce", () -> FastBruteForcePackager.newBuilder().build());
 		PACKAGERS.put("parallelBruteForce", () -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
-		PACKAGERS.put("loadBruteForce", () -> LoadBruteForcePackager.newBuilder().build());
-		PACKAGERS.put("loadFastBruteForce", () -> LoadFastBruteForcePackager.newBuilder().build());
-		PACKAGERS.put("loadParallelBruteForce", () -> LoadParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 		PACKAGERS.put("composite", () -> CompositePackager.newBuilder()
 				.withPackager(PlainPackager.newBuilder().build())
 				.withPackager(FastBruteForcePackager.newBuilder().build(), 1000)
@@ -95,29 +89,29 @@ public class PackagerConformanceTest {
 	private static final Map<String, String> EXPECTED = new LinkedHashMap<>();
 
 	static {
-		//                                         plain laff fastLaff bruteForce fastBruteForce parallelBruteForce loadBruteForce loadFastBruteForce loadParallelBruteForce composite
-		EXPECTED.put("boxItems",                   "S S S S S S S S S S");
-		EXPECTED.put("groups",                     "S S S S S S S S S S");
-		EXPECTED.put("chronological",              "S S S S S S S S S S");
-		EXPECTED.put("chronologicalGroups",        "S S S S S S S S S S");
+		//                                         plain laff fastLaff bruteForce fastBruteForce parallelBruteForce composite
+		EXPECTED.put("boxItems",                   "S S S S S S S");
+		EXPECTED.put("groups",                     "S S S S S S S");
+		EXPECTED.put("chronological",              "S S S S S S S");
+		EXPECTED.put("chronologicalGroups",        "S S S S S S S");
 		// fast brute force: skipping is not supported
-		EXPECTED.put("allowSkipping",              "S S S S R S S R S S");
-		EXPECTED.put("allowSkippingGroups",        "S S S S R S S R S S");
-		EXPECTED.put("containerPriorities",        "S S S S S S S S S S");
-		EXPECTED.put("containerPrioritiesGroups",  "S S S S S S S S S S");
-		EXPECTED.put("extractionOrder",            "S S S S S S S S S S");
-		EXPECTED.put("extractionOrderGroups",      "S S S S S S S S S S");
-		EXPECTED.put("frontAccess",                "S S S S S S S S S S");
-		EXPECTED.put("frontAccessGroups",          "S S S S S S S S S S");
-		EXPECTED.put("obstacles",                  "S S S S S S S S S S");
-		EXPECTED.put("obstaclesGroups",            "S S S S S S S S S S");
-		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S S S S");
-		EXPECTED.put("loadLimits",                 "S S S R R R S S S S");
+		EXPECTED.put("allowSkipping",              "S S S S R S S");
+		EXPECTED.put("allowSkippingGroups",        "S S S S R S S");
+		EXPECTED.put("containerPriorities",        "S S S S S S S");
+		EXPECTED.put("containerPrioritiesGroups",  "S S S S S S S");
+		EXPECTED.put("extractionOrder",            "S S S S S S S");
+		EXPECTED.put("extractionOrderGroups",      "S S S S S S S");
+		EXPECTED.put("frontAccess",                "S S S S S S S");
+		EXPECTED.put("frontAccessGroups",          "S S S S S S S");
+		EXPECTED.put("obstacles",                  "S S S S S S S");
+		EXPECTED.put("obstaclesGroups",            "S S S S S S S");
+		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S");
+		EXPECTED.put("loadLimits",                 "S S S S S S S");
 		// LAFF: a box taller than its level starts a new level, where it must rest on the boxes below (load limits);
 		// it is not placed when they cannot carry it, although it would fit beside them on the level's floor
-		EXPECTED.put("loadLimitsGroups",           "S G G R R R S S S S");
-		EXPECTED.put("chronologicalLoadLimits",    "S S S R R R S S S S");
-		EXPECTED.put("allowSkippingLoadLimits",    "S S S R R R S R S S");
+		EXPECTED.put("loadLimitsGroups",           "S G G S S S S");
+		EXPECTED.put("chronologicalLoadLimits",    "S S S S S S S");
+		EXPECTED.put("allowSkippingLoadLimits",    "S S S S R S S");
 	}
 
 	/** An input */

@@ -36,7 +36,6 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePackagerBuilder;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
-import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager.Builder;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -266,8 +265,12 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		private PackagerInterruptSupplier interrupt;
 		private int containerIndex;
 
-		public BruteForceWorker(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea) {
-			this.placements = getPlacements(placementsCount, supportsLoad());
+		/** Whether the boxes have load limits: then the placements track loads */
+		private final boolean load;
+
+		public BruteForceWorker(int placementsCount, int maxIteratorLength, long minStackableItemVolume, long minStackableArea, boolean load) {
+			this.load = load;
+			this.placements = getPlacements(placementsCount, load);
 			this.placementCount = placementsCount;
 
 			this.pointCalculator = new PointCalculator3DStack(maxIteratorLength + 1);
@@ -275,7 +278,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		public BruteForceWorker fork(int maxIteratorLength) {
-			return new BruteForceWorker(placementCount, maxIteratorLength, 0L, 0L);
+			return new BruteForceWorker(placementCount, maxIteratorLength, 0L, 0L, load);
 		}
 
 		public void removeFirstPlacements(int size) {
@@ -965,10 +968,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		long minStackableItemVolume = getMinBoxItemVolume(items);
 		long minStackableArea = getMinBoxItemArea(items);
+		boolean load = hasLoadLimits(items);
 
 		BruteForceWorker[] runnables = new BruteForceWorker[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
-			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea, load);
 		}
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
@@ -1029,10 +1033,11 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 
 		long minStackableItemVolume = getMinBoxItemVolume(items);
 		long minStackableArea = getMinBoxItemArea(items);
+		boolean load = hasLoadLimits(items);
 
 		BruteForceWorker[] runnables = new BruteForceWorker[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
-			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea);
+			runnables[i] = new BruteForceWorker(count, maxIteratorLength, minStackableItemVolume, minStackableArea, load);
 		}
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
@@ -1052,9 +1057,5 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		return new ParallelGroupSession(items, itemGroups, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
 	}
 
-	@Override
-	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
-		return null;
-	}
 
 }

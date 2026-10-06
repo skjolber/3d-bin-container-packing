@@ -23,6 +23,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 	protected BoxItemGroupPermutationRotationIterator[] containerIterators;
 	protected Placement[] stackPlacements;
 	protected int stackPlacementCount;
+	/** Whether the boxes have load limits: then the placements track loads */
+	protected final boolean load;
 	protected PackagerInterruptSupplier interrupt;
 	
 	public AbstractSingleThreadedBruteForceBoxItemGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
@@ -38,6 +40,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 			count += stackableItem.getCount();
 		}
 		
+		this.load = load;
 		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
 		this.stackPlacementCount = count;
 	}
@@ -50,6 +53,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 			this.containerIterators[i] = ((DefaultBoxItemGroupPermutationRotationIterator) source.containerIterators[i]).fork();
 		}
 		this.stackPlacementCount = source.stackPlacementCount;
+		this.load = load;
 		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	

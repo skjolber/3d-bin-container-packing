@@ -105,7 +105,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 		return false;
 	}
 
-	private static boolean hasLoadLimits(List<BoxItem> boxItems) {
+	protected static boolean hasLoadLimits(List<BoxItem> boxItems) {
 		for (BoxItem boxItem : boxItems) {
 			if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
 				return true;

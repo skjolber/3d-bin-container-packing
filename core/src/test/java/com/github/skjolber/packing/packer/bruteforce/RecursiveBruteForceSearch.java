@@ -60,7 +60,7 @@ public class RecursiveBruteForceSearch {
 		return pointCalculator.getBestPoints();
 	}
 
-	/** As {@code LoadBruteForcePackager.packStackPlacement(..)}. */
+	/** As {@code BruteForcePackager.packStackPlacementWithLoad(..)}. */
 	public static List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points, LoadPlacementUtility utility,
 			BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
@@ -332,14 +332,14 @@ public class RecursiveBruteForceSearch {
 	}
 
 	/** Load-aware brute-force packager using the recursive search. */
-	public static class RecursiveLoadBruteForcePackager extends LoadBruteForcePackager {
+	public static class RecursiveLoadBruteForcePackager extends BruteForcePackager {
 
 		public RecursiveLoadBruteForcePackager(BruteForcePointIteratorFilter pointFilter) {
-			super(new BruteForceIntermediatePackagerResultComparator(), pointFilter);
+			super(new BruteForceIntermediatePackagerResultComparator(), pointFilter, false);
 		}
 
 		@Override
-		protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
+		protected List<Point> packStackPlacementWithLoad(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 				Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility,
 				BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
 			return RecursiveBruteForceSearch.packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points,

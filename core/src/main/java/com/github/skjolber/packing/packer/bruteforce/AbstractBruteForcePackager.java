@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.eclipse.collections.api.iterator.IntIterator;
 
+import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -34,6 +35,9 @@ import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightPressureCountLoadAwarePlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -102,18 +106,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 	}
 
-	protected boolean supportsLoad() {
-		return false;
-	}
 
 	@Override
 	public String getUnsupportedReason(PackagerInput input) {
 		String reason = super.getUnsupportedReason(input);
 		if(reason != null) {
 			return reason;
-		}
-		if(!supportsLoad() && hasLoadLimits(input)) {
-			return "Max load not supported for brute force packager";
 		}
 		for(ContainerItem container : input.getContainerItems()) {
 			if(container.hasControls()) {
@@ -389,12 +387,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		
 		Stack stack = holder.getStack();
 		
-		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
+		// with box load limits, the search tracks the loads of the placed boxes
+		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
 		
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
-
-		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
 
 		if(limit == 0) {
 			return bestResult;
@@ -504,7 +503,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
-		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
+		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
 		if(limit == 0) {
 			return result;
 		}
@@ -515,7 +515,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			// cannot load more than the best result
 			return result;
 		}
-		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
 
 		int[] permutations = iterator.getPermutations();
 		int[] rotations = new int[permutations.length];
@@ -795,13 +794,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
-		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, supportsLoad());
+		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
 		result.setAnyRemaining(true);
 		int length = iterator.length();
 		if(length == 0 || stackPlacements.length == 0) {
 			return result;
 		}
-		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
 
 		int[] permutations = iterator.getPermutations();
 		BoxItem[] boxItems = iterator.getBoxItems();
@@ -1101,7 +1100,33 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		maxContainerPriorities[level] = maxContainerPriority;
 	}
 
-	protected abstract LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack);
+	/**
+	 * @return the load placement utility for the box load limits of the iterator's boxes, or null if they have none
+	 */
+	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
+		boolean maxLoadWeight = false;
+		boolean maxLoadPressure = false;
+		boolean maxLoadBoxCount = false;
+		boolean loadIdenticalBox = false;
+		for(int i = 0; i < iterator.length(); i++) {
+			Box box = iterator.getStackValue(i).getBox();
+			maxLoadWeight |= box.isMaxLoadWeight();
+			maxLoadPressure |= box.isMaxLoadPressure();
+			maxLoadBoxCount |= box.isMaxLoadBoxCount();
+			loadIdenticalBox |= box.isLoadIdenticalBoxOnly();
+		}
+
+		if(!maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount && !loadIdenticalBox) {
+			return null;
+		}
+		if(maxLoadWeight && !maxLoadPressure && !maxLoadBoxCount && !loadIdenticalBox) {
+			return new WeightLoadAwarePlacementUtility(stack);
+		}
+		if(!loadIdenticalBox) {
+			return new WeightPressureCountLoadAwarePlacementUtility(stack);
+		}
+		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
+	}
 
 	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container,
@@ -1126,6 +1151,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
 			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
 			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
+		if(loadPlacementUtility != null) {
+			return packStackPlacementWithLoad(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount);
+		}
 		pointCalculator.resetBest();
 		if(placements.length == 0) {
 			return Collections.emptyList();
@@ -1144,6 +1172,31 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
 		search(pointCalculator, placements, iterator, stack, maxLoadWeight, interrupt, minStackableAreaIndex, maxPackableCount, null, pointFilter, container.getObstacles(), container.getAccess());
+		return pointCalculator.getBestPoints();
+	}
+
+	/**
+	 * As {@link #packStackPlacement(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, Container, PackagerInterruptSupplier, int, List, LoadPlacementUtility, BruteForcePointIteratorFilter, int)},
+	 * for boxes with load limits: the search tracks the loads of the placed boxes, and places a box only where the boxes
+	 * below can carry it.
+	 */
+	protected List<Point> packStackPlacementWithLoad(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
+			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
+			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
+		pointCalculator.resetBest();
+		if(placements.length == 0 || maxPackableCount == 0) {
+			return Collections.emptyList();
+		}
+
+		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		if(points != null) {
+			pointCalculator.setPoints(points);
+			pointCalculator.clear();
+		}
+		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
+
+		loadPlacementUtility.initialize(iterator.length());
+		search(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, pointFilter, container.getObstacles(), container.getAccess());
 		return pointCalculator.getBestPoints();
 	}
 

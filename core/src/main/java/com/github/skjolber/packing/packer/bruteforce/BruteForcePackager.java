@@ -442,14 +442,14 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		
 		public BruteForceSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, containers, containerCount, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
+			super(boxItems, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
 			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		private BruteForceSession(BruteForceSession source) {
-			super(source, BruteForcePackager.this.supportsLoad());
+			super(source, source.load);
 			this.pointCalculator = new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
@@ -494,14 +494,14 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, BruteForcePackager.this.supportsLoad());
+			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
 			this.pointCalculator =  new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
 
 		private BruteForceGroupSession(BruteForceGroupSession source) {
-			super(source, BruteForcePackager.this.supportsLoad());
+			super(source, source.load);
 			this.pointCalculator = new PointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.reset(1, 1, 1);
 		}
@@ -614,9 +614,5 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		return new BruteForceSession(boxItems, containers, containerCount, containerIterators, interrupt);
 	}
 
-	@Override
-	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
-		return null;
-	}
 
 }

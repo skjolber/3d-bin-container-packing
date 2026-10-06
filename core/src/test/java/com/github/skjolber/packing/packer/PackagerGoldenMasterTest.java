@@ -20,8 +20,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.ClosestVolumeAndAreaPointFilter;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
@@ -290,28 +288,28 @@ public class PackagerGoldenMasterTest {
 
 	@Test
 	public void loadBruteForcePackagerWeight() throws IOException {
-		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			check("EXPECTED_LOAD_BRUTE_FORCE_WEIGHT", EXPECTED_LOAD_BRUTE_FORCE_WEIGHT, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT));
 		}
 	}
 
 	@Test
 	public void loadBruteForcePackager() throws IOException {
-		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			check("EXPECTED_LOAD_BRUTE_FORCE", EXPECTED_LOAD_BRUTE_FORCE, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
 		}
 	}
 
 	@Test
 	public void loadBruteForcePackagerIdentical() throws IOException {
-		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			check("EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL", EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL, seed -> pack(packager, seed, 5, 1, false, LOAD_IDENTICAL));
 		}
 	}
 
 	@Test
 	public void loadBruteForcePackagerPointFilter() throws IOException {
-		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().withPointFilter(new ClosestVolumeAndAreaPointFilter()).build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withPointFilter(new ClosestVolumeAndAreaPointFilter()).build()) {
 			check("EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER", EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER, seed -> pack(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
 		}
 	}
@@ -325,7 +323,7 @@ public class PackagerGoldenMasterTest {
 
 	@Test
 	public void loadParallelBruteForcePackager() throws IOException {
-		try (LoadParallelBoxItemBruteForcePackager packager = LoadParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
+		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
 			check("EXPECTED_LOAD_PARALLEL_BRUTE_FORCE", EXPECTED_LOAD_PARALLEL_BRUTE_FORCE, seed -> packSummary(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
 		}
 	}

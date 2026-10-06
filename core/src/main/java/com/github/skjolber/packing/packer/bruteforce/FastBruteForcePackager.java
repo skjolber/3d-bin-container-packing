@@ -13,6 +13,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
@@ -152,14 +153,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		public FastBruteForceSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
+			super(boxItems, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
 		}
 
 		private FastBruteForceSession(FastBruteForceSession source) {
-			super(source, FastBruteForcePackager.this.supportsLoad());
+			super(source, source.load);
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
 		}
@@ -195,14 +196,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		public FastBruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
-			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, FastBruteForcePackager.this.supportsLoad());
+			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
 		}
 
 		private FastBruteForceGroupSession(FastBruteForceGroupSession source) {
-			super(source, FastBruteForcePackager.this.supportsLoad());
+			super(source, source.load);
 			this.pointCalculator = new FastPointCalculator3DStack(getMaxIteratorLength() + 1);
 			this.pointCalculator.clearToSize(1, 1, 1);
 		}
@@ -302,10 +303,27 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	protected void clearStack(Stack stack, LoadPlacementUtility loadPlacementUtility) {
-		stack.clear();
+		if(loadPlacementUtility != null) {
+			setStackSize(stack, 0, loadPlacementUtility);
+		} else {
+			stack.clear();
+		}
 	}
 
+	/**
+	 * Remove the placements above a size from the stack, and with load limits, their loads from the boxes below.
+	 */
 	protected void setStackSize(Stack stack, int size, LoadPlacementUtility loadPlacementUtility) {
+		if(loadPlacementUtility != null) {
+			for(int i = stack.size() - 1; i >= size; i--) {
+				Placement placement = stack.getPlacements().get(i);
+				placement.removeSupporteesAbove();
+				for(PlacementLoad supporter : placement.getSupporters()) {
+					supporter.getPlacement().removeLastSupportee();
+				}
+				placement.clearLoad();
+			}
+		}
 		stack.setSize(size);
 	}
 
@@ -341,13 +359,15 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		
 		Stack stack = holder.getStack();
 		
-		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, supportsLoad());
+		// with box load limits, the placement tracks the loads of the placed boxes
+		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
+
+		BruteForceIntermediatePackagerResult bestResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, loadPlacementUtility != null);
 		
 		// optimization: compare pack results by looking only at count within the same permutation 
-		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, supportsLoad());
+		BruteForceIntermediatePackagerResult bestPermutationResult = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, loadPlacementUtility != null);
 
 		long[] freeLoadWeights = calculateFreeLoadWeights(holder, iterator);
-		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
 		if(loadPlacementUtility != null) {
 			loadPlacementUtility.initialize(iterator.length());
 		}
@@ -491,7 +511,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
-		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, supportsLoad());
+		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), containerIndex, iterator, loadPlacementUtility != null);
 		if(limit == 0) {
 			return result;
 		}
@@ -504,7 +525,6 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		long[] freeLoadWeights = calculateFreeLoadWeights(holder, iterator);
-		LoadPlacementUtility loadPlacementUtility = createLoadPlacementUtility(iterator, stack);
 		if(loadPlacementUtility != null) {
 			loadPlacementUtility.initialize(iterator.length());
 		}
@@ -593,6 +613,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
 			LoadPlacementUtility loadPlacementUtility, FastBruteForceBoxStackValuePointComparator pointComparator,
 			int maxPackableCount, int[] insertAfterCounts) {
+		if(loadPlacementUtility != null) {
+			return packStackPlacementWithLoad(pointCalculator, placements, iterator, stack, container, placementIndex, interrupt, minStackableAreaIndex, freeWeightLoad,
+					loadPlacementUtility, pointComparator, maxPackableCount, insertAfterCounts);
+		}
 		boolean checkObstacles = !container.getObstacles().isEmpty();
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		// pack as many items as possible from placementIndex
@@ -662,9 +686,95 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		return placementIndex;
 	}
 
-	@Override
-	protected LoadPlacementUtility createLoadPlacementUtility(BoxItemPermutationRotationIterator iterator, Stack stack) {
-		return null;
+	/**
+	 * As {@link #packStackPlacement(FastPointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, Container, int, PackagerInterruptSupplier, int, long, LoadPlacementUtility, FastBruteForceBoxStackValuePointComparator, int, int[])},
+	 * for boxes with load limits: each box is placed at the best point where the boxes below can carry it, and the loads
+	 * of the placed boxes are tracked.
+	 *
+	 * @return the index of the first box which was not placed, or Integer.MIN_VALUE if interrupted
+	 */
+	protected int packStackPlacementWithLoad(FastPointCalculator3DStack pointCalculator, Placement[] placements,
+			BoxItemPermutationRotationIterator iterator, Stack stack, Container container, int placementIndex,
+			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, long freeWeightLoad,
+			LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator,
+			int maxPackableCount, int[] insertAfterCounts) {
+		boolean checkObstacles = !container.getObstacles().isEmpty();
+		boolean checkExtraction = hasExtractionOrders(iterator);
+		while (placementIndex < maxPackableCount) {
+			if(interrupt.getAsBoolean()) {
+				return Integer.MIN_VALUE;
+			}
+
+			BoxStackValue stackValue = iterator.getStackValue(placementIndex);
+			Box box = stackValue.getBox();
+			if(box.getWeight() > freeWeightLoad) {
+				break;
+			}
+			int bestPointIndex = -1;
+			for(int k = 0; k < pointCalculator.size(); k++) {
+				SimplePoint3D point = pointCalculator.get(k);
+				if(!point.fits3D(stackValue)) {
+					continue;
+				}
+				if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
+					continue;
+				}
+				if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+					continue;
+				}
+				if(insertAfterCounts.length != 0 && insertAfterCounts[placementIndex] > 0 && !isInsertableAfter(point, stackValue, stack, insertAfterCounts[placementIndex], container.getAccess())) {
+					continue;
+				}
+				if(bestPointIndex != -1 && pointComparator.compare(stackValue, pointCalculator.get(bestPointIndex), point) <= 0) {
+					continue;
+				}
+
+				utility.populatePointSupporters(point);
+				utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
+				long supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
+				if(supportedArea == -1L) {
+					continue;
+				}
+
+				bestPointIndex = k;
+			}
+
+			if(bestPointIndex == -1) {
+				break;
+			}
+
+			SimplePoint3D point = pointCalculator.get(bestPointIndex);
+			// Candidate evaluation leaves the utility primed for the last point checked,
+			// so repopulate its caches for the selected point before adding the load.
+			utility.populatePointSupporters(point);
+			utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
+			long bestSupportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
+
+			Placement placement = placements[placementIndex];
+			placement.clearLoad();
+			placement.setStackValue(stackValue);
+			placement.setPoint(point);
+			placement.setIndex(stack.size());
+			placement.setSupportedArea(bestSupportedArea);
+
+			pointCalculator.add(bestPointIndex, placement);
+			stack.add(placement);
+			utility.addSupportersLoad(placement);
+
+			freeWeightLoad -= box.getWeight();
+			placementIndex++;
+
+			if(placementIndex < maxPackableCount) {
+				if(placementIndex == minStackableAreaIndex) {
+					minStackableAreaIndex = iterator.getMinStackableAreaIndex(placementIndex);
+					pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(placementIndex));
+				} else {
+					pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(placementIndex));
+				}
+			}
+		}
+
+		return placementIndex;
 	}
 
 	@Override

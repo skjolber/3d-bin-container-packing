@@ -91,8 +91,8 @@ public class BruteForceLoadVolumeBoundTest {
 	@Test
 	public void loadBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
-		try (LoadBruteForcePackager bounded = LoadBruteForcePackager.newBuilder().build();
-				LoadBruteForcePackager unbounded = LoadBruteForcePackager.newBuilder().withComparator(withoutLoadVolumeBound(comparator)).build()) {
+		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().build();
+				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				assertThat(pack(bounded, seed, MAX_BOXES, 1, false, LOAD_WEIGHT_PRESSURE_COUNT)).as("seed %d", seed)
 						.isEqualTo(pack(unbounded, seed, MAX_BOXES, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));

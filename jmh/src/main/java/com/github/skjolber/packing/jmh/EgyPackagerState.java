@@ -22,7 +22,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.LoadBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.generator.Item;
@@ -46,7 +45,6 @@ public class EgyPackagerState {
 	private List<BenchmarkSet> filteredParallelBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> filteredBruteForcePackager = new ArrayList<>();
-	private List<BenchmarkSet> loadBruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
 
@@ -90,7 +88,6 @@ public class EgyPackagerState {
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 		BruteForcePackager filteredPackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
-		LoadBruteForcePackager loadPackager = LoadBruteForcePackager.newBuilder().build();
 
 		PlainPackager plainPackager = PlainPackager.newBuilder().build();
 
@@ -99,7 +96,6 @@ public class EgyPackagerState {
 		// single-threaded
 		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
 		this.filteredBruteForcePackager.add(new BenchmarkSet(filteredPackager, stackableItems3D, containers));
-		this.loadBruteForcePackager.add(new BenchmarkSet(loadPackager, stackableItems3D, containers));
 
 		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
 
@@ -179,9 +175,6 @@ public class EgyPackagerState {
 		for (BenchmarkSet benchmarkSet : filteredBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
-		for (BenchmarkSet benchmarkSet : loadBruteForcePackager) {
-			benchmarkSet.getPackager().close();
-		}
 		for (BenchmarkSet benchmarkSet : plainPackager) {
 			benchmarkSet.getPackager().close();
 		}
@@ -204,9 +197,6 @@ public class EgyPackagerState {
 		return filteredBruteForcePackager;
 	}
 
-	public List<BenchmarkSet> getLoadBruteForcePackager() {
-		return loadBruteForcePackager;
-	}
 
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;

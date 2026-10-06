@@ -36,7 +36,7 @@ public class BruteForceDeepSearchTest {
 
 	@Test
 	public void loadBruteForcePacksManyBoxesOnASmallThreadStack() throws InterruptedException {
-		try (LoadBruteForcePackager packager = LoadBruteForcePackager.newBuilder().build()) {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			assertPacksAllBoxes(packager, Box.newBuilder().withId("cube").withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1).build());
 		}
 	}

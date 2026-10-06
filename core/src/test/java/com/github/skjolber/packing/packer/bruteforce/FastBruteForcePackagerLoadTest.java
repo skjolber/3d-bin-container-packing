@@ -19,11 +19,11 @@ import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
-class LoadFastBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest {
+class FastBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest {
 
 	@Test
 	void validatesOnlyPointsWhichCanImproveTheCurrentBest() {
-		LoadFastBruteForcePackager packager = createPackager();
+		FastBruteForcePackager packager = createPackager();
 		try {
 			Container container = Container.newBuilder().withSize(10, 10, 10).withMaxLoadWeight(100).build();
 			Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1).build();
@@ -54,8 +54,8 @@ class LoadFastBruteForcePackagerTest extends AbstractLoadBruteForcePackagerTest 
 	}
 
 	@Override
-	protected LoadFastBruteForcePackager createPackager() {
-		return LoadFastBruteForcePackager.newBuilder().build();
+	protected FastBruteForcePackager createPackager() {
+		return FastBruteForcePackager.newBuilder().build();
 	}
 
 	private static class CountingLoadPlacementUtility implements LoadPlacementUtility {

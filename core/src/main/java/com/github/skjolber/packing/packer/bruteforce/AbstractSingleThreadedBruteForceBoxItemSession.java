@@ -20,6 +20,8 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 	protected BoxItemPermutationRotationIterator[] containerIterators;
 	protected Placement[] stackPlacements;
 	protected int stackPlacementCount;
+	/** Whether the boxes have load limits: then the placements track loads */
+	protected final boolean load;
 	protected final PackagerInterruptSupplier interrupt;
 
 	public AbstractSingleThreadedBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
@@ -39,6 +41,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 			count += stackableItem.getCount();
 		}
 		
+		this.load = load;
 		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
 		this.stackPlacementCount = count;
 	}
@@ -51,6 +54,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 			this.containerIterators[i] = ((DefaultBoxItemPermutationRotationIterator) source.containerIterators[i]).fork();
 		}
 		this.stackPlacementCount = source.stackPlacementCount;
+		this.load = load;
 		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
 	}
 	

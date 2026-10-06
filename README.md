@@ -368,9 +368,8 @@ Box box = Box.newBuilder()
     .build();
 ```
 
-Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type on top. The plain
-and LAFF packagers detect the constraints and enforce them; for brute force, use the load-aware
-variants (`LoadBruteForcePackager`, `LoadFastBruteForcePackager`, `LoadParallelBoxItemBruteForcePackager`).
+Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type on top. The packagers
+detect the constraints and enforce them.
 
 ## Insertion order
 The placements of each container are in insertion order: the order in which the boxes can be loaded. Each box comes
@@ -602,7 +601,6 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
-        * The load-aware brute-force builders apply `withSkipReversePermutations(..)`, and `LoadParallelBoxItemBruteForcePackager` uses its point filter when boxes have load constraints
         * `withSkipReversePermutations(..)` no longer applies when the insertion order matters (extraction orders, container access other than `ANY`, obstacles or initial points, load limits): a permutation and its reverse do not pack equally well there
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
@@ -635,6 +633,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
         * `clone()` methods renamed to `copy()` (they are copy constructors, not `Object.clone()`), including `Point.copy(maxX, maxY, maxZ)`; `ClonablePackagerInterruptSupplier` renamed to `CopyablePackagerInterruptSupplier`
         * Builder options which had no effect removed: `withPoints(..)` on the brute-force packager builders and `withFirstBoxItemGroupComparator(..)` on the LAFF builders
+        * `LoadBruteForcePackager`, `LoadFastBruteForcePackager` and `LoadParallelBoxItemBruteForcePackager` removed: `BruteForcePackager`, `FastBruteForcePackager` and `ParallelBoxItemBruteForcePackager` enforce box load limits when the boxes have them
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
         * The module descriptors export all public packages

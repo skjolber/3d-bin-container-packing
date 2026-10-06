@@ -56,8 +56,8 @@ public class BruteForceSearchReferenceTest {
 	@Test
 	public void loadBruteForceSearchMatchesRecursiveReference() {
 		for(BruteForcePointIteratorFilter pointFilter : pointFilters()) {
-			try (LoadBruteForcePackager packager = new LoadBruteForcePackager(new BruteForceIntermediatePackagerResultComparator(), pointFilter);
-					LoadBruteForcePackager reference = new RecursiveLoadBruteForcePackager(pointFilter)) {
+			try (BruteForcePackager packager = new BruteForcePackager(new BruteForceIntermediatePackagerResultComparator(), pointFilter, false);
+					BruteForcePackager reference = new RecursiveLoadBruteForcePackager(pointFilter)) {
 				for(int seed = 0; seed < SEEDS; seed++) {
 					for(int load : new int[] {LOAD_WEIGHT, LOAD_WEIGHT_PRESSURE_COUNT, LOAD_IDENTICAL}) {
 						assertThat(pack(packager, seed, MAX_BOXES, 1, false, load))
