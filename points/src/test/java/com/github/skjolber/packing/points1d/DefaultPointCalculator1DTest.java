@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points1d;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
@@ -24,8 +25,7 @@ public class DefaultPointCalculator1DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		BoxItem boxItem = new BoxItem(box, 1);
 		

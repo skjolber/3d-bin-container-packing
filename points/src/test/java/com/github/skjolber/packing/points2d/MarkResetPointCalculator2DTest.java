@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points2d;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -95,8 +96,7 @@ public class MarkResetPointCalculator2DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(1).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 1, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		new BoxItem(box, 1);
 		

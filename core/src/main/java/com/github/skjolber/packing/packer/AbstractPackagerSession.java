@@ -48,7 +48,8 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
 		List<BoxItem> copies = new ArrayList<>(items.size());
 		for(BoxItem item : items) {
-			copies.add(new BoxItem(item.getBox().copy(), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()).withOrderingOf(item));
+			// boxes are not modified: the copies share them
+			copies.add(item.copy());
 		}
 		return copies;
 	}

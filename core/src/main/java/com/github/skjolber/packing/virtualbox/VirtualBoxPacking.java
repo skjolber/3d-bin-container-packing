@@ -5,7 +5,6 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
@@ -40,9 +39,7 @@ public class VirtualBoxPacking {
 
 	protected void add(BoxItem original, int count) {
 		int index = entries.size();
-		// A BoxItem copy alone rebinds the original Box's back-reference.
-		Box copy = original.getBox().copy();
-		items.add(new BoxItem(copy, count, -1, index));
+		items.add(new BoxItem(original.getBox(), count, -1, index));
 		entries.add(new Entry(original, null));
 	}
 

@@ -164,7 +164,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 				decisive = violation;
 				continue;
 			}
-			List<BoxItemGroup> groups = copyGroups(boxItemGroups, groupOrder);
+			List<BoxItemGroup> groups = orderGroups(boxItemGroups, groupOrder);
 			DefaultBoxItemGroupPermutationRotationIterator iterator = DefaultBoxItemGroupPermutationRotationIterator.newBuilder()
 					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItemGroups(groups)
@@ -277,33 +277,21 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * does with the session's iterators.
 	 *
 	 * @param iterator the iterator for the groups in the order
-	 * @param groupOrder the order of the remaining groups (see {@link #copyGroups(List, int[])})
+	 * @param groupOrder the order of the remaining groups (see {@link #orderGroups(List, int[])})
 	 */
 	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
 
 	protected abstract IntermediatePackagerResultComparator getIntermediatePackagerResultComparator();
 
 	/**
-	 * Copies of the groups in an order, for an iterator of their own: building an iterator points the boxes' stack
-	 * values to the iterator's boxes, so iterators must not share them (results are calculated from them later).
+	 * @return the groups in an order, for an iterator (which copies their box items)
 	 */
-	protected static List<BoxItemGroup> copyGroups(List<BoxItemGroup> groups, int[] groupOrder) {
-		List<BoxItemGroup> copies = new ArrayList<>(groupOrder.length);
+	protected static List<BoxItemGroup> orderGroups(List<BoxItemGroup> groups, int[] groupOrder) {
+		List<BoxItemGroup> ordered = new ArrayList<>(groupOrder.length);
 		for (int k : groupOrder) {
-			BoxItemGroup group = groups.get(k);
-			List<BoxItem> items = new ArrayList<>(group.size());
-			for (BoxItem item : group.getItems()) {
-				Box box = item.getBox();
-				BoxStackValue[] stackValues = box.getStackValues();
-				List<BoxStackValue> stackValueCopies = new ArrayList<>(stackValues.length);
-				for (BoxStackValue stackValue : stackValues) {
-					stackValueCopies.add(stackValue.copy());
-				}
-				items.add(new BoxItem(new Box(box, stackValueCopies), item.getCount(), item.getLocalIndex(), item.getGlobalIndex()).withOrderingOf(item));
-			}
-			copies.add(new BoxItemGroup(group.getId(), items));
+			ordered.add(groups.get(k));
 		}
-		return copies;
+		return ordered;
 	}
 
 	/**

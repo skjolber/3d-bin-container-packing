@@ -311,7 +311,10 @@ public class BoxStackValue {
 		return new BoxStackValue(this);
 	}
 
-	public void setBox(Box box) {
+	/**
+	 * Set by the box's constructor: a stack value belongs to one box, and is not modified after.
+	 */
+	void setBox(Box box) {
 		this.box = box;
 	}
 

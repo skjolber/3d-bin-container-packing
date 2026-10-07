@@ -190,8 +190,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		private Placement createStackPlacement(Point point) {
 			BoxStackValue stackValue = new BoxStackValue(point.getDx(), point.getDy(), point.getDz(), null, -1);
 			
-			Box box = Box.newBuilder().withSize(point.getDx(), point.getDy(), point.getDz()).withWeight(0).build();
-			stackValue.setBox(box);
+			Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 			
 			return new Placement(stackValue, new DefaultPoint3D(point.getMinX(), point.getMinY(), point.getMinZ(), point.getMaxX(), point.getMaxY(), point.getMaxZ()));
 		}

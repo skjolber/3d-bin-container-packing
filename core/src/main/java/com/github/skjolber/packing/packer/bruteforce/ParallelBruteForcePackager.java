@@ -897,11 +897,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		@Override
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
-				// split the order's permutations between the threads; the work units need boxes of their own (see copyGroups)
+				// split the order's permutations between the threads
 				Container container = getContainerItem(containerIndex).getContainer();
 				ParallelBoxItemGroupPermutationRotationIteratorList units = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 						.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-						.withBoxItemGroups(copyGroups(boxItemGroups, groupOrder))
+						.withBoxItemGroups(orderGroups(boxItemGroups, groupOrder))
 						.withMaxLoadWeight(container.getMaxLoadWeight())
 						.withParallelizationCount(parallelizationCount)
 						.build();

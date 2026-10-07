@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.points2d;
 
+import java.util.Collections;
+
 import static com.github.skjolber.packing.points2d.assertj.SimplePoint2DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -27,8 +29,7 @@ public class DefaultPointCalculator2DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		BoxItem boxItem = new BoxItem(box, 1);
 		
