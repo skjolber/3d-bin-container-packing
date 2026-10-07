@@ -28,7 +28,7 @@ same physical container are valid, provide each orientation as a separate
 | Packager | Intended use |
 | --- | --- |
 | `PlainPackager` | General-purpose greedy packing with placement controls. |
-| `LargestAreaFitFirstPackager` | Fast level-based heuristic for ordinary packing workloads. |
+| `LargestAreaFitFirstPackager` | Fast level-based heuristic for ordinary packing workloads; a level is raised when a box is too tall for it and for a new level on top. |
 | `FastLargestAreaFitFirstPackager` | Faster, more restricted LAFF variant. |
 | `BruteForcePackager` | Exact search of box orders, rotations, and points for small inputs; can instead rank fitting points and try a configured number per placement step. |
 | `FastBruteForcePackager` | Brute-force ordering and rotation search with a faster point choice. |

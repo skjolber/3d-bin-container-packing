@@ -221,6 +221,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
+		// the current level: its floor, its first placement, and whether it was raised to the top of the container
+		int levelFloor = 0;
+		int levelStart = 0;
+		boolean levelRaised = false;
+
 		PlacementControls placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		PlacementControls firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 
@@ -245,6 +250,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					result = firstPlacementControls.getPlacement(0, end);
 				}
 				if(result == null) {
+					// no box fits a new level: raise the level below, so that a box taller than it can stand beside its boxes
+					if(!levelRaised && levelStart < stack.size()
+							&& setRaisedLevelPoints(pointCalculator, controlledContainerItem, container, levelFloor, stack.getPlacements(), levelStart, filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume())) {
+						levelRaised = true;
+						newLevel = false;
+						continue;
+					}
 					break;
 				}
 				
@@ -263,6 +275,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 				result.setPoint(pointIndex, result.getAbsoluteX(), result.getAbsoluteY(), result.getAbsoluteZ());
 				
+				levelFloor = levelOffset;
+				levelStart = stack.size();
+				levelRaised = false;
 				levelOffset = result.getAbsoluteEndZ() + 1;
 
 				newLevel = false;
@@ -288,9 +303,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						break;
 					}
 					
-					// remove boxes which are too big for the max new level
-					long maxArea = pointCalculator.getMaxArea();
-					long maxVolume = pointCalculator.getMaxVolume();
+					// remove boxes which are too big for the max new level (and for the level below, if it can be raised)
+					long maxArea = getMaxLevelArea(pointCalculator, container, levelRaised);
+					long maxVolume = getMaxLevelVolume(pointCalculator, container, levelRaised, levelFloor);
 					
 					for(int i = 0; i < filteredBoxItems.size(); i++) {
 						BoxItem boxItem = filteredBoxItems.get(i);
@@ -325,6 +340,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 			stack.add(result);
 			pointCalculator.add(result.getPointIndex(), result);
+			// a box in a raised level can be taller than the level
+			levelOffset = Math.max(levelOffset, result.getAbsoluteEndZ() + 1);
 			
 			remainingLoadWeight -= result.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
@@ -457,6 +474,11 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int levelOffset = 0;
 		boolean newLevel = true;
 
+		// the current level: its floor, its first placement, and whether it was raised to the top of the container
+		int levelFloor = 0;
+		int levelStart = 0;
+		boolean levelRaised = false;
+
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
@@ -478,6 +500,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			
 			int markLevelOffset = levelOffset;
 			boolean markNewLevel = newLevel;
+			int markLevelFloor = levelFloor;
+			int markLevelStart = levelStart;
+			boolean markLevelRaised = levelRaised;
 
 			boxItemControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
 			
@@ -496,6 +521,13 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					// get first box in new level
 					bestPoint = firstPlacementControls.getPlacement(boxItemStartIndex, boxItemGroup.size());
 					if(bestPoint == null) {
+						// no box fits a new level: raise the level below, so that a box taller than it can stand beside its boxes
+						if(!levelRaised && levelStart < stack.size()
+								&& setRaisedLevelPoints(pointCalculator, controlledContainerItem, container, levelFloor, stack.getPlacements(), levelStart, filteredBoxItems.getMinArea(), filteredBoxItems.getMinVolume())) {
+							levelRaised = true;
+							newLevel = false;
+							continue;
+						}
 						break;
 					}
 					
@@ -512,6 +544,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 					bestPoint.setPoint(pointIndex, bestPoint.getAbsoluteX(), bestPoint.getAbsoluteY(), bestPoint.getAbsoluteZ());
 
+					levelFloor = levelOffset;
+					levelStart = stack.size();
+					levelRaised = false;
 					levelOffset = bestPoint.getAbsoluteEndZ() + 1;
 
 					newLevel = false;
@@ -532,9 +567,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 							break;
 						}
 						
-						// remove groups which have boxes which are too big for the max level size
-						long maxArea = pointCalculator.getMaxArea();
-						long maxVolume = pointCalculator.getMaxVolume();
+						// remove groups which have boxes which are too big for the max level size (and for the level below, if it can be raised)
+						long maxArea = getMaxLevelArea(pointCalculator, container, levelRaised);
+						long maxVolume = getMaxLevelVolume(pointCalculator, container, levelRaised, levelFloor);
 						
 						for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 							BoxItemGroup g = filteredBoxItemGroups.get(i);
@@ -577,6 +612,8 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				
 				stack.add(bestPoint);
 				pointCalculator.add(bestPoint.getPointIndex(), bestPoint);
+				// a box in a raised level can be taller than the level
+				levelOffset = Math.max(levelOffset, bestPoint.getAbsoluteEndZ() + 1);
 				
 				remainingLoadWeight -= bestPoint.getBoxItem().getBox().getWeight();
 				remainingLoadVolume -= bestPoint.getBoxItem().getBox().getVolume();
@@ -675,6 +712,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				
 				levelOffset = markLevelOffset;
 				newLevel = markNewLevel;
+				levelFloor = markLevelFloor;
+				levelStart = markLevelStart;
+				levelRaised = markLevelRaised;
 
 				continue groups;
 			}
@@ -714,6 +754,61 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 		pointCalculator.clear();
 		return true;
+	}
+
+	/**
+	 * Raise a level to the top of the container: set the free points of the space from the level's floor up to the top
+	 * of the container, with the level's boxes in place. A box which is taller than the level, and which does not fit
+	 * a new level on top of it, can then stand beside the level's boxes.
+	 *
+	 * @param levelFloor the bottom of the level
+	 * @param placements the placements of the container
+	 * @param levelStart the index of the level's first placement
+	 * @param minArea the minimum area of the remaining boxes
+	 * @param minVolume the minimum volume of the remaining boxes
+	 * @return false if there is no free space
+	 */
+	protected static boolean setRaisedLevelPoints(PointCalculator pointCalculator, ContainerItem containerItem, Container container, int levelFloor, List<Placement> placements,
+			int levelStart, long minArea, long minVolume) {
+		// keep the points of the level's boxes while they are added again
+		pointCalculator.setMinimumAreaAndVolumeLimit(0, 0);
+		if(!setLevelPoints(pointCalculator, containerItem, container, levelFloor, container.getLoadDz() - 1)) {
+			return false;
+		}
+		for (int i = levelStart; i < placements.size(); i++) {
+			Placement placement = placements.get(i);
+			int pointIndex = findPointIndex(pointCalculator, placement);
+			if(pointIndex == -1) {
+				return false;
+			}
+			pointCalculator.add(pointIndex, placement);
+		}
+		pointCalculator.setMinimumAreaAndVolumeLimit(minArea, minVolume);
+		return !pointCalculator.isEmpty();
+	}
+
+	/**
+	 * @return the largest area of a box which can be placed in a new level, or in the level below raised to the top of
+	 *         the container
+	 */
+	protected static long getMaxLevelArea(PointCalculator pointCalculator, Container container, boolean levelRaised) {
+		long maxArea = pointCalculator.getMaxArea();
+		if(!levelRaised) {
+			maxArea = Math.max(maxArea, (long)container.getLoadDx() * container.getLoadDy());
+		}
+		return maxArea;
+	}
+
+	/**
+	 * @return the largest volume of a box which can be placed in a new level, or in the level below raised to the top
+	 *         of the container
+	 */
+	protected static long getMaxLevelVolume(PointCalculator pointCalculator, Container container, boolean levelRaised, int levelFloor) {
+		long maxVolume = pointCalculator.getMaxVolume();
+		if(!levelRaised) {
+			maxVolume = Math.max(maxVolume, (long)container.getLoadDx() * container.getLoadDy() * (container.getLoadDz() - levelFloor));
+		}
+		return maxVolume;
 	}
 
 	protected static int findPointIndex(PointCalculator pointCalculator, Placement placement) {

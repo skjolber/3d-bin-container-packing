@@ -315,7 +315,9 @@ The implementation is based on [this paper][2], and is not a traditional [bin pa
 
 The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
 
-When no more boxes fit in a level, the level is incremented and the process repeated. Boxes are rotated, containers not.
+When no more boxes fit in a level, the level is incremented and the process repeated. If no box fits the new level,
+the level below is raised to the top of the container instead, so that a box which is too tall for it can stand beside
+its boxes (for example when the boxes of the level cannot carry it). Boxes are rotated, containers not.
 
  * `LargestAreaFitFirstPackager` stacks in 3D within each level
  * `FastLargestAreaFitFirstPackager` stacks in 2D within each level
@@ -607,6 +609,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
+        * LAFF packagers raise a level to the top of the container when no box fits a new level on top of it: a box which is too tall for the level can stand beside its boxes, instead of waiting for the next container (or failing its group)
         * The brute-force packagers use one search for all box orders, with and without skipping. Fast brute force no longer discards free points which another rotation of a later box fits (with 3D rotations, it placed fewer boxes than it could)
         * `withSkipReversePermutations(..)` no longer applies when the insertion order matters (extraction orders, container access other than `ANY`, obstacles or initial points, load limits, full support): a permutation and its reverse do not pack equally well there
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers

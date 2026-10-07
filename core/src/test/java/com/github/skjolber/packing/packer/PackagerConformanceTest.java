@@ -106,9 +106,7 @@ public class PackagerConformanceTest {
 		EXPECTED.put("obstaclesGroups",            "S S S S S S S");
 		EXPECTED.put("obstaclesTwoContainerTypes", "S S S S S S S");
 		EXPECTED.put("loadLimits",                 "S S S S S S S");
-		// LAFF: a box taller than its level starts a new level, where it must rest on the boxes below (load limits);
-		// it is not placed when they cannot carry it, although it would fit beside them on the level's floor
-		EXPECTED.put("loadLimitsGroups",           "S G G S S S S");
+		EXPECTED.put("loadLimitsGroups",           "S S S S S S S");
 		EXPECTED.put("chronologicalLoadLimits",    "S S S S S S S");
 		EXPECTED.put("allowSkippingLoadLimits",    "S S S S S S S");
 	}

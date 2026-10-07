@@ -276,8 +276,12 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
+	/**
+	 * Issue 453: fast LAFF placed some of these boxes above the top of the container. They fit below the top when the
+	 * second level is raised for the tallest box (see {@link RaisedLevelTest}).
+	 */
 	@Test
-	void issue453BoxesShouldNotFit() {
+	void issue453BoxesFitBelowTheTopOfTheContainer() {
 		Container container = Container
 				.newBuilder()
 				.withId("1")
@@ -305,7 +309,14 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
 	
-			assertEquals(0, build.size());
+			PackagerResultAssert.assertThat(build).isSuccess().hasContainerCount(1).hasStackSize(0, 5).isStackedWithinConstraints();
+			for (Placement placement : build.get(0).getStack().getPlacements()) {
+				assertTrue(placement.getAbsoluteEndZ() < container.getLoadDz());
+			}
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
