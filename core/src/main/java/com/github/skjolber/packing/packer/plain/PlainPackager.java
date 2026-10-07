@@ -21,8 +21,6 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
@@ -52,8 +50,8 @@ import com.github.skjolber.packing.packer.PackagerInput;
  * Selects the box with the highest volume first, then places it into the point with the lowest volume.
  * <br>
  * <br>
- * Thread-safe implementation. Packing does not modify the box items and groups, and works on copies of the containers,
- * so the same input can be packed concurrently.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class PlainPackager extends AbstractControlPackager<Placement, PlainPackager.PlainResultBuilder> {
@@ -81,11 +79,11 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 		@Override
 		protected PlainBoxItemSession fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemSession(initialBoxItems, order, containers, containerCount, interrupt);
+			return new PlainBoxItemSession(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult pack(List<RemainingBoxItem> remainingBoxItems, ContainerItem containerItem,
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return PlainPackager.this.pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}
@@ -117,11 +115,11 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 		@Override
 		protected PlainBoxItemGroupSession fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemGroupSession(initialBoxItemGroups, order, containers, containerCount, interrupt);
+			return new PlainBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
-		protected IntermediatePackagerResult packGroup(List<RemainingBoxItemGroup> remainingBoxItemGroups, Order order,
+		protected IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order,
 				ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			return PlainPackager.this.packGroup(remainingBoxItemGroups, order, containerItem, interrupt, abortOnAnyBoxTooBig, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		}

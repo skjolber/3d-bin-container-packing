@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
  /**
  *
@@ -71,7 +71,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		}
 	}
 
-	protected List<RemainingBoxItem> boxItems;
+	protected List<BoxItem> boxItems;
 	
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
@@ -88,7 +88,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected void resetFromIterator() {
 		boxItems = new ArrayList<>();
 		for (int i = 0; i < stackableItems.length; i++) {
-			RemainingBoxItem boxItem = stackableItems[i];
+			BoxItem boxItem = stackableItems[i];
 			if(boxItem != null && !boxItem.isEmpty()) {
 				boxItems.add(boxItem.copy());
 			}
@@ -105,7 +105,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		System.arraycopy(iterator.getMinBoxVolume(), 0, minBoxVolume, 0, permutations.length);
 	}
 	
-	public RemainingBoxItem get(int index) {
+	public BoxItem get(int index) {
 		return boxItems.get(index);
 	}
 
@@ -139,7 +139,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	
 	@Override
 	public boolean decrement(int index, int count) {
-		RemainingBoxItem mutableBoxItem = boxItems.get(index);
+		BoxItem mutableBoxItem = boxItems.get(index);
 		
 		mutableBoxItem.decrement(count);
 		
@@ -232,15 +232,15 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	}
 
 	@Override
-	public RemainingBoxItem remove(int index) {
-		RemainingBoxItem boxItem = boxItems.get(index);
+	public BoxItem remove(int index) {
+		BoxItem boxItem = boxItems.get(index);
 		decrement(index, boxItem.getCount());
 		return boxItem;
 	}
 
 	public void removeEmpty() {
 		int remainingCount = 0;
-		for (RemainingBoxItem boxItem : boxItems) {
+		for (BoxItem boxItem : boxItems) {
 			remainingCount += boxItem.getCount();
 			boxItem.mark();
 		}
@@ -266,13 +266,13 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		this.permutations = permutations;
 		this.rotations = rotations;
 		
-		for (RemainingBoxItem boxItem : boxItems) {
+		for (BoxItem boxItem : boxItems) {
 			boxItem.reset();
 		}
 
 		boxItems = new ArrayList<>(stackableItems.length);
 		for (int i = 0; i < stackableItems.length; i++) {
-			RemainingBoxItem loadableItem = stackableItems[i];
+			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
 				boxItems.add(loadableItem.copy());
 			}
@@ -284,7 +284,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	}
 
 	@Override
-	public Iterator<RemainingBoxItem> iterator() {
+	public Iterator<BoxItem> iterator() {
 		return boxItems.listIterator();
 	}
 	

@@ -17,7 +17,6 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 class FastBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest {
@@ -31,7 +30,7 @@ class FastBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest 
 			BoxItemPermutationRotationIterator iterator = DefaultBoxItemPermutationRotationIterator.newBuilder()
 					.withLoadSize(10, 10, 10)
 					.withMaxLoadWeight(100)
-					.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(box))))
+					.withBoxItems(List.of(new BoxItem(box)))
 					.build();
 			FastPointCalculator3DStack pointCalculator = new FastPointCalculator3DStack(2);
 			pointCalculator.clearToSize(10, 10, 10);

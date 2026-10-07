@@ -46,6 +46,6 @@ public class GroupInsertionValidator {
 
 	private static Object getGroupKey(Placement placement) {
 		BoxItem boxItem = placement.getBoxItem();
-		return boxItem != null ? boxItem.getGroup() : null;
+		return boxItem != null ? boxItem.getGroupKey() : null;
 	}
 }

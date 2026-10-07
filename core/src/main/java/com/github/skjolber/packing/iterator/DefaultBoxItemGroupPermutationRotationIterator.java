@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
 	
@@ -30,7 +30,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 	}
 	
-	public DefaultBoxItemGroupPermutationRotationIterator(RemainingBoxItemGroup[] groupIndex, RemainingBoxItem[] boxIndex, BoxStackValue[][] stackValues, List<RemainingBoxItemGroup> excluded) {
+	public DefaultBoxItemGroupPermutationRotationIterator(BoxItemGroup[] groupIndex, BoxItem[] boxIndex, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded) {
 		super(groupIndex, boxIndex, stackValues, excluded);
 		
 		int count = getBoxCount();
@@ -63,7 +63,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	public void removePermutations(int count) {
 		// discard a number of items from the front
 		for(int i = 0; i < count; i++) {
-			RemainingBoxItem item = stackableItems[permutations[i]];
+			BoxItem item = stackableItems[permutations[i]];
 			
 			item.decrement();
 			
@@ -76,7 +76,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[i] == null) {
 				continue;
 			}
-			RemainingBoxItemGroup group = groupsMatrix[i];
+			BoxItemGroup group = groupsMatrix[i];
 			group.removeEmpty();
 			if(group.isEmpty()) {
 				groupsMatrix[i] = null;
@@ -103,7 +103,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			RemainingBoxItem value = stackableItems[j];
+			BoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[offset] = j;
@@ -173,7 +173,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			RemainingBoxItemGroup loadableItemGroup = groupsMatrix[g];
+			BoxItemGroup loadableItemGroup = groupsMatrix[g];
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.getBoxCount();
@@ -218,8 +218,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			// TODO system arraycopy?
 			int i = startIndex;
 			
-			for (RemainingBoxItem loadableItem : loadableItemGroup.getItems()) {
-				RemainingBoxItem indexedStackableItem = (RemainingBoxItem)loadableItem;
+			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
+				BoxItem indexedStackableItem = (BoxItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 					permutations[i] = indexedStackableItem.getLocalIndex();
 							
@@ -250,7 +250,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			RemainingBoxItemGroup loadableItemGroup = groupsMatrix[g];
+			BoxItemGroup loadableItemGroup = groupsMatrix[g];
 
 			// Find longest non-increasing suffix
 			int i = endIndex;
@@ -266,8 +266,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 				// TODO system arraycopy?
 				i = startIndex;
 				
-				for (RemainingBoxItem loadableItem : loadableItemGroup.getItems()) {
-					RemainingBoxItem indexedStackableItem = (RemainingBoxItem)loadableItem;
+				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
+					BoxItem indexedStackableItem = (BoxItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 						permutations[i] = indexedStackableItem.getLocalIndex();
 								
@@ -326,7 +326,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public RemainingBoxItem getPermutation(int index) {
+	public BoxItem getPermutation(int index) {
 		return stackableItems[permutations[index]];
 	}
 	

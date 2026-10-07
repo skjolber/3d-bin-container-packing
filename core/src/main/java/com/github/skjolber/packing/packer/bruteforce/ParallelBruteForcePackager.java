@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
@@ -27,8 +29,6 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -343,7 +343,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers, int containerCount,
+		protected ParallelSession(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount,
 				BruteForceWorker[] runnables, DefaultBoxItemPermutationRotationIterator[] iterators,
 				ParallelBoxItemPermutationRotationIteratorList[] parallelIterators, PackagerInterruptSupplier[] interrupts,
 				PackagerInterruptSupplier sourceInterrupt) {
@@ -604,7 +604,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private PackagerInterruptSupplier[] interrupts;
 		private final PackagerInterruptSupplier sourceInterrupt;
 
-		protected ParallelGroupSession(List<RemainingBoxItem> boxItems, List<RemainingBoxItemGroup> boxItemGroups, 
+		protected ParallelGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount, BruteForceWorker[] runnables,
 				DefaultBoxItemGroupPermutationRotationIterator[] iterators,
 				ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators,
@@ -655,7 +655,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param filterReverse whether to skip reverse permutations
 		 * @return the best result (holding whole groups), or null
 		 */
-		private BruteForceIntermediatePackagerResult packMultithreaded(int i, ParallelBoxItemGroupPermutationRotationIteratorList units, RemainingBoxItemGroup[] iteratorGroups, boolean wholeGroups,
+		private BruteForceIntermediatePackagerResult packMultithreaded(int i, ParallelBoxItemGroupPermutationRotationIteratorList units, BoxItemGroup[] iteratorGroups, boolean wholeGroups,
 				IntermediatePackagerResult currentBest, boolean filterReverse) throws PackagerInterruptedException {
 			LocalInterrupt localInterrupt = new LocalInterrupt();
 
@@ -817,7 +817,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			// the result with the most load volume so far, for pruning
 			AtomicReference<IntermediatePackagerResult> shared = new AtomicReference<>();
 			int boxCount = 0;
-			for (RemainingBoxItemGroup group : boxItemGroups) {
+			for (BoxItemGroup group : boxItemGroups) {
 				boxCount += group.getBoxCount();
 			}
 			int allBoxes = boxCount;
@@ -922,7 +922,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(isGroupOrderSearch()) {
 				return attemptGroupOrders(i, currentBest);
 			}
-			RemainingBoxItemGroup[] iteratorGroups = iterators[i].getBoxItemGroups();
+			BoxItemGroup[] iteratorGroups = iterators[i].getBoxItemGroups();
 			// when skipping, the first group may be skipped
 			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
@@ -1001,7 +1001,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					List<Integer> removedGroups = new ArrayList<>();
 					int wholeGroupBoxCount = 0;
 					for(int i = 0; i < boxItemGroups.size(); i++) {
-						RemainingBoxItemGroup boxItemGroup = boxItemGroups.get(i);
+						BoxItemGroup boxItemGroup = boxItemGroups.get(i);
 						
 						int groupBoxCount = boxItemGroup.getBoxCount();
 						if(size < wholeGroupBoxCount + groupBoxCount) {
@@ -1022,9 +1022,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					
 					List<Integer> p = new ArrayList<>();
 					for(Integer removedGroup: removedGroups) {
-						RemainingBoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+						BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
 	
-						for (RemainingBoxItem boxItem : boxItemGroup.getItems()) {
+						for (BoxItem boxItem : boxItemGroup.getItems()) {
 							for (int i = 0; i < boxItem.getCount(); i++) {
 								p.add(permutations[p.size()]);
 							}
@@ -1111,9 +1111,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		return executorService;
 	}
 
-	protected long getMinBoxItemVolume(List<RemainingBoxItem> stackables) {
+	protected long getMinBoxItemVolume(List<BoxItem> stackables) {
 		long minVolume = Integer.MAX_VALUE;
-		for (RemainingBoxItem stackableItem : stackables) {
+		for (BoxItem stackableItem : stackables) {
 			Box stackable = stackableItem.getBox();
 			if(stackable.getVolume() < minVolume) {
 				minVolume = stackable.getVolume();
@@ -1122,9 +1122,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		return minVolume;
 	}
 
-	protected long getMinBoxItemArea(List<RemainingBoxItem> stackables) {
+	protected long getMinBoxItemArea(List<BoxItem> stackables) {
 		long minArea = Integer.MAX_VALUE;
-		for (RemainingBoxItem stackableItem : stackables) {
+		for (BoxItem stackableItem : stackables) {
 			Box stackable = stackableItem.getBox();
 			if(stackable.getMinimumArea() < minArea) {
 				minArea = stackable.getMinimumArea();
@@ -1134,7 +1134,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected ParallelSession createBoxItemSession(List<RemainingBoxItem> items, List<ContainerItem> containerItems,
+	protected ParallelSession createBoxItemSession(List<BoxItem> items, List<ContainerItem> containerItems,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemPermutationRotationIteratorList[containerItems.size()];
@@ -1163,7 +1163,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 		
 		int count = 0;
-		for (RemainingBoxItem stackable : items) {
+		for (BoxItem stackable : items) {
 			count += stackable.getCount();
 		}
 
@@ -1194,7 +1194,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected ParallelGroupSession createBoxItemGroupSession(List<RemainingBoxItemGroup> itemGroups,
+	protected ParallelGroupSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups,
 			List<ContainerItem> containerItems, int containerCount, PackagerInterruptSupplier interrupt) {
 		
 		ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators = new ParallelBoxItemGroupPermutationRotationIteratorList[containerItems.size()];
@@ -1222,13 +1222,13 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
 		}
 		
-		List<RemainingBoxItem> items = new ArrayList<RemainingBoxItem>();
-		for (RemainingBoxItemGroup boxItemGroup : itemGroups) {
+		List<BoxItem> items = new ArrayList<BoxItem>();
+		for (BoxItemGroup boxItemGroup : itemGroups) {
 			items.addAll(boxItemGroup.getItems());
 		}
 		
 		int count = 0;
-		for (RemainingBoxItem boxItem : items) {
+		for (BoxItem boxItem : items) {
 			count += boxItem.getCount();
 		}
 

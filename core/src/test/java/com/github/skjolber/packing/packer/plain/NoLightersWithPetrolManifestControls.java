@@ -2,10 +2,10 @@ package com.github.skjolber.packing.packer.plain;
 
 import java.util.function.Predicate;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
@@ -44,7 +44,7 @@ public class NoLightersWithPetrolManifestControls implements ManifestControls {
 	}
 
 	@Override
-	public void accepted(RemainingBoxItem group) {
+	public void accepted(BoxItem group) {
 		// do nothing
 		
 		if(!lighter) {
@@ -66,9 +66,9 @@ public class NoLightersWithPetrolManifestControls implements ManifestControls {
 		}
 	}
 
-	private void remove(Predicate<RemainingBoxItem> test) {
+	private void remove(Predicate<BoxItem> test) {
 		for(int i = 0; i < items.size(); i++) {
-			RemainingBoxItem item = items.get(i);
+			BoxItem item = items.get(i);
 			
 			if(test.test(item)) {
 				items.remove(i);
@@ -77,11 +77,11 @@ public class NoLightersWithPetrolManifestControls implements ManifestControls {
 		}
 	}
 
-	private boolean isPetrol(RemainingBoxItem item) {
+	private boolean isPetrol(BoxItem item) {
 		return item.getBox().getId().startsWith("petrol-");
 	}
 
-	private boolean isLighter(RemainingBoxItem item) {
+	private boolean isLighter(BoxItem item) {
 		return item.getBox().getId().startsWith("lighter-");
 	}
 

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
@@ -8,7 +9,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
@@ -31,7 +31,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		// max volume and weight should already be accounted for by packager
 		
 		for (int i = offset; i < offset + length; i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
 			
@@ -41,7 +41,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -108,7 +108,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		// pick the points where an underlying placement exists.
 		
 		for (int i = offset; i < offset + length; i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
 
@@ -118,7 +118,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -191,7 +191,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		return result;
 	}
 
-	protected Placement createPlacement(RemainingBoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z) {
+	protected Placement createPlacement(BoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z) {
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(index, x, y, z);
@@ -199,7 +199,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		return placement;
 	}
 	
-	protected Placement createPlacement(RemainingBoxItem boxItem, BoxStackValue stackValue, Point point) {
+	protected Placement createPlacement(BoxItem boxItem, BoxStackValue stackValue, Point point) {
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);

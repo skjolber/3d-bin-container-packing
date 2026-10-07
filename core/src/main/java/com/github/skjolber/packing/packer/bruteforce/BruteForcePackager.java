@@ -6,6 +6,8 @@ import java.util.Objects;
 
 import org.eclipse.collections.api.iterator.IntIterator;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -16,8 +18,6 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
@@ -37,8 +37,8 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * Note: The brute force algorithm uses a recursive algorithm. It is not intended for more than 10 boxes.
  * <br>
  * <br>
- * Thread-safe implementation. Packing does not modify the box items and groups, and works on copies of the containers,
- * so the same input can be packed concurrently.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class BruteForcePackager extends AbstractBruteForcePackager {
@@ -438,7 +438,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected final PointCalculator3DStack pointCalculator;
 		
-		public BruteForceSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+		public BruteForceSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
@@ -489,7 +489,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected final PointCalculator3DStack pointCalculator;
 
-		public BruteForceGroupSession(List<RemainingBoxItem> boxItems, List<RemainingBoxItemGroup> boxItemGroups, 
+		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
@@ -533,7 +533,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(isGroupOrderSearch()) {
 				return attemptGroupOrders(i, best);
 			}
-			RemainingBoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
+			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
 			// when skipping, the first group may be skipped
 			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
@@ -569,7 +569,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected BruteForceGroupSession createBoxItemGroupSession(List<RemainingBoxItemGroup> itemGroups, List<ContainerItem> containers,
+	protected BruteForceGroupSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containers.size()];
 
@@ -585,15 +585,15 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 					.build();
 		}
 		
-		List<RemainingBoxItem> boxItems = new ArrayList<>();
-		for (RemainingBoxItemGroup boxItemGroup : itemGroups) {
+		List<BoxItem> boxItems = new ArrayList<>();
+		for (BoxItemGroup boxItemGroup : itemGroups) {
 			boxItems.addAll(boxItemGroup.getItems());
 		}
 		return new BruteForceGroupSession(boxItems, itemGroups, containers, containerCount, containerIterators, interrupt);
 	}
 
 	@Override
-	protected BruteForceSession createBoxItemSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+	protected BruteForceSession createBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 

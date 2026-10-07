@@ -101,6 +101,8 @@ class GridVirtualBoxLayoutGeneratorTest {
 				.withSize(1, 1, 1)
 				.withWeight(500_000_000)
 				.build(), 6);
+		original.setGlobalIndex(37);
+		original.setLocalIndex(12);
 		Container container = Container.newBuilder()
 				.withSize(2, 1, 1)
 				.withMaxLoadWeight(1_000_000_000)
@@ -115,6 +117,8 @@ class GridVirtualBoxLayoutGeneratorTest {
 			assertThat(p.getStackValue()).isSameAs(original.getBox().getStackValue(0));
 		});
 		assertThat(original.getCount()).isEqualTo(6);
+		assertThat(original.getGlobalIndex()).isEqualTo(37);
+		assertThat(original.getLocalIndex()).isEqualTo(12);
 		assertThat(generator.generate(original, 3, List.of(container), 8, () -> false)).isEmpty();
 		assertThatThrownBy(() -> generator.generate(original, 7, List.of(container), 8, () -> false)).isInstanceOf(IllegalArgumentException.class);
 	}

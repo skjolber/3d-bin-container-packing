@@ -7,12 +7,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
 
@@ -98,7 +98,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * @return eligible containers and their box-item fit records
 	 */
 	
-	public ContainerItemsResult getContainers(List<RemainingBoxItem> boxes) {
+	public ContainerItemsResult getContainers(List<BoxItem> boxes) {
 		return getContainers(boxes, containerCount);
 	}
 
@@ -110,11 +110,11 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * @param maxCount maximum number of containers for this query
 	 * @return eligible containers and their box-item fit records
 	 */
-	public ContainerItemsResult getContainers(List<RemainingBoxItem> boxes, int maxCount) {
+	public ContainerItemsResult getContainers(List<BoxItem> boxes, int maxCount) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int boxCount = 0;
-		for (RemainingBoxItem box : boxes) {
+		for (BoxItem box : boxes) {
 			// volume
 			totalVolume += box.getVolume();
 
@@ -174,7 +174,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		long minVolume = Long.MAX_VALUE;
 		long minWeight = Long.MAX_VALUE;
 
-		for (RemainingBoxItem box : boxes) {
+		for (BoxItem box : boxes) {
 			// volume
 			long boxVolume = box.getBox().getVolume();
 			if(boxVolume < minVolume) {
@@ -236,7 +236,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		return new ContainerItemsResult(result, fits, containerItems.size());
 	}
 
-	public ContainerItemsResult getGroupContainers(List<RemainingBoxItemGroup> groups) {
+	public ContainerItemsResult getGroupContainers(List<BoxItemGroup> groups) {
 		return getGroupContainers(groups, containerCount);
 	}
 
@@ -248,16 +248,16 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * @param maxCount maximum number of containers for this query
 	 * @return eligible containers and their group fit records
 	 */
-	public ContainerItemsResult getGroupContainers(List<RemainingBoxItemGroup> groups, int maxCount) {
+	public ContainerItemsResult getGroupContainers(List<BoxItemGroup> groups, int maxCount) {
 		long totalBoxVolume = 0;
 		long totalBoxWeight = 0;
 
 		long minGroupVolume = Long.MAX_VALUE;
 		long minGroupWeight = Long.MAX_VALUE;
 
-		for (RemainingBoxItemGroup group : groups) {
+		for (BoxItemGroup group : groups) {
 			// volume
-			for (RemainingBoxItem boxItem : group.getItems()) {
+			for (BoxItem boxItem : group.getItems()) {
 
 				long volume = boxItem.getVolume();
 				if(minGroupVolume > volume) {
@@ -379,12 +379,12 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * @param boxItems remaining box items from this packaging operation
 	 * @return {@code true} if every non-empty box item has an available container
 	 */
-	public boolean isFeasible(List<RemainingBoxItem> boxItems) {
+	public boolean isFeasible(List<BoxItem> boxItems) {
 		return isFeasible(boxItems, containerCount, null);
 	}
 
 	/** Check box-item feasibility using at most {@code maxCount} containers. */
-	public boolean isFeasible(List<RemainingBoxItem> boxItems, int maxCount) {
+	public boolean isFeasible(List<BoxItem> boxItems, int maxCount) {
 		return isFeasible(boxItems, maxCount, null);
 	}
 
@@ -392,11 +392,11 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * Check box-item feasibility using at most {@code maxCount} containers while
 	 * ignoring excluded container-item indexes.
 	 */
-	public boolean isFeasible(List<RemainingBoxItem> boxItems, int maxCount, boolean[] excluded) {
+	public boolean isFeasible(List<BoxItem> boxItems, int maxCount, boolean[] excluded) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int boxCount = 0;
-		for(RemainingBoxItem boxItem : boxItems) {
+		for(BoxItem boxItem : boxItems) {
 			if(boxItem.isEmpty()) {
 				continue;
 			}
@@ -407,7 +407,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		if(!hasCapacity(maxCount, boxCount, totalVolume, totalWeight, excluded)) {
 			return false;
 		}
-		for(RemainingBoxItem boxItem : boxItems) {
+		for(BoxItem boxItem : boxItems) {
 			if(boxItem.isEmpty()) {
 				continue;
 			}
@@ -435,12 +435,12 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * @param groups remaining groups from this packaging operation
 	 * @return {@code true} if every non-empty group has an available container
 	 */
-	public boolean isGroupFeasible(List<RemainingBoxItemGroup> groups) {
+	public boolean isGroupFeasible(List<BoxItemGroup> groups) {
 		return isGroupFeasible(groups, containerCount, null);
 	}
 
 	/** Check box-item-group feasibility using at most {@code maxCount} containers. */
-	public boolean isGroupFeasible(List<RemainingBoxItemGroup> groups, int maxCount) {
+	public boolean isGroupFeasible(List<BoxItemGroup> groups, int maxCount) {
 		return isGroupFeasible(groups, maxCount, null);
 	}
 
@@ -448,11 +448,11 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	 * Check box-item-group feasibility using at most {@code maxCount} containers
 	 * while ignoring excluded container-item indexes.
 	 */
-	public boolean isGroupFeasible(List<RemainingBoxItemGroup> groups, int maxCount, boolean[] excluded) {
+	public boolean isGroupFeasible(List<BoxItemGroup> groups, int maxCount, boolean[] excluded) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int groupCount = 0;
-		for(RemainingBoxItemGroup group : groups) {
+		for(BoxItemGroup group : groups) {
 			if(group.isEmpty()) {
 				continue;
 			}
@@ -463,7 +463,7 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		if(!hasCapacity(maxCount, groupCount, totalVolume, totalWeight, excluded)) {
 			return false;
 		}
-		for(RemainingBoxItemGroup group : groups) {
+		for(BoxItemGroup group : groups) {
 			if(group.isEmpty()) {
 				continue;
 			}
@@ -483,24 +483,24 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		return true;
 	}
 
-	private void recordBoxFits(List<RemainingBoxItem> boxes, int containerItemIndex, boolean[][] fits) {
+	private void recordBoxFits(List<BoxItem> boxes, int containerItemIndex, boolean[][] fits) {
 		for(int boxItemIndex = 0; boxItemIndex < boxes.size(); boxItemIndex++) {
 			fits[boxItemIndex][containerItemIndex] = canLoad(boxes.get(boxItemIndex), containerItemIndex);
 		}
 	}
 
-	private void recordGroupFits(List<RemainingBoxItemGroup> groups, int containerItemIndex, boolean[][] fits) {
+	private void recordGroupFits(List<BoxItemGroup> groups, int containerItemIndex, boolean[][] fits) {
 		for(int groupIndex = 0; groupIndex < groups.size(); groupIndex++) {
 			fits[groupIndex][containerItemIndex] = canLoad(groups.get(groupIndex), containerItemIndex);
 		}
 	}
 
-	public boolean canLoad(RemainingBoxItem boxItem, int containerItemIndex) {
+	public boolean canLoad(BoxItem boxItem, int containerItemIndex) {
 		return containerItems.get(containerItemIndex).getContainer().canLoad(boxItem.getBox());
 	}
 
-	public boolean canLoad(RemainingBoxItemGroup group, int containerItemIndex) {
-		return containerItems.get(containerItemIndex).getContainer().canLoad(group.getBoxItemGroup());
+	public boolean canLoad(BoxItemGroup group, int containerItemIndex) {
+		return containerItems.get(containerItemIndex).getContainer().canLoad(group);
 	}
 
 	private static boolean canLoadAll(boolean[][] fits, int containerItemIndex) {

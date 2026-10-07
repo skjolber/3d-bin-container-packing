@@ -13,8 +13,8 @@ class DefaultBoxItemSourceTest {
 
 	@Test
 	void usesLocalIndexAfterAnEarlierItemIsRemoved() {
-		RemainingBoxItem first = item("first");
-		RemainingBoxItem second = item("second");
+		BoxItem first = item("first");
+		BoxItem second = item("second");
 		DefaultBoxItemSource source = new DefaultBoxItemSource(List.of(first, second));
 
 		source.decrement(0, 1);
@@ -24,7 +24,7 @@ class DefaultBoxItemSourceTest {
 		assertEquals(0, source.size());
 	}
 
-	private static RemainingBoxItem item(String id) {
-		return new RemainingBoxItem(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build()));
+	private static BoxItem item(String id) {
+		return new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build());
 	}
 }

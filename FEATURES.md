@@ -182,9 +182,7 @@ on which, so results from any packager can be validated.
 - JMH benchmarks for packagers, iterators, point calculators, and container
   strategies.
 - Thread-safe packager instances; selected algorithms also offer explicit
-  parallel execution. Packing does not modify the box items and groups passed
-  in, so the same input can be packed again or concurrently, and result
-  placements refer to the given box items.
+  parallel execution.
 
 ## Not currently provided
 

@@ -5,18 +5,18 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 public class DefaultBoxItemSource implements BoxItemSource {
 
-	protected List<RemainingBoxItem> values;
+	protected List<BoxItem> values;
 
 	// minimum area and volume of the box items, recalculated after items are added or removed
 	private boolean minimumsValid;
 	private long minArea;
 	private long minVolume;
 	
-	public DefaultBoxItemSource(List<RemainingBoxItem> values) {
+	public DefaultBoxItemSource(List<BoxItem> values) {
 		this.values = new ArrayList<>(values);
 		
 		// update indexes
@@ -34,13 +34,13 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 
 	@Override
-	public RemainingBoxItem get(int index) {
+	public BoxItem get(int index) {
 		return values.get(index);
 	}
 
 	@Override
 	public boolean decrement(int index, int count) {
-		RemainingBoxItem boxItem = values.get(index);
+		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
 			minimumsValid = false;
@@ -54,8 +54,8 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 	
 	@Override
-	public RemainingBoxItem remove(int index) {
-		RemainingBoxItem remove = values.remove(index);
+	public BoxItem remove(int index) {
+		BoxItem remove = values.remove(index);
 		minimumsValid = false;
 		
 		// update indexes
@@ -66,7 +66,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		return remove;
 	}
 
-	public void setValues(List<RemainingBoxItem> values) {
+	public void setValues(List<BoxItem> values) {
 		this.values = values;
 		minimumsValid = false;
 	}
@@ -99,7 +99,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 
 	@Override
-	public Iterator<RemainingBoxItem> iterator() {
+	public Iterator<BoxItem> iterator() {
 		return values.listIterator();
 	}
 
@@ -109,7 +109,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		return null;
 	}
 
-	public void add(RemainingBoxItem boxItem) {
+	public void add(BoxItem boxItem) {
 		values.add(boxItem);
 		minimumsValid = false;
 	}

@@ -3,8 +3,8 @@ package com.github.skjolber.packing.iterator;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPermutationRotationIterator {
 
@@ -15,7 +15,7 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 	// parent iterator
 	private ParallelBoxItemPermutationRotationIteratorList iterator;
 
-	public ParallelBoxItemPermutationRotationIterator(RemainingBoxItem[] boxItems, BoxStackValue[][] stackValues, ParallelBoxItemPermutationRotationIteratorList iterator) {
+	public ParallelBoxItemPermutationRotationIterator(BoxItem[] boxItems, BoxStackValue[][] stackValues, ParallelBoxItemPermutationRotationIteratorList iterator) {
 		super(boxItems, stackValues, Collections.emptyList());
 
 		this.iterator = iterator;

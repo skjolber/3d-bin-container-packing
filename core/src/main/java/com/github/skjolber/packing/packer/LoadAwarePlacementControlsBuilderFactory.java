@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.packer;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilder;

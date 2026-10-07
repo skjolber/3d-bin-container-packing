@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 class BruteForcePackagerBoundsTest {
 
@@ -126,7 +125,7 @@ class BruteForcePackagerBoundsTest {
 		return DefaultBoxItemPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 10, 10)
 				.withMaxLoadWeight(100)
-				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items))
+				.withBoxItems(items)
 				.build();
 	}
 

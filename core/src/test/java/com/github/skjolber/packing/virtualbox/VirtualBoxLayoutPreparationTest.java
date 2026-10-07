@@ -75,7 +75,7 @@ class VirtualBoxLayoutPreparationTest {
 	}
 
 	@Test
-	void resolvesOrientationsOfTheDelegateItems() {
+	void resolvesCopydAndReindexedOrientations() {
 		BoxItem original = item(1, 1, 1, 2);
 		var horizontal = new VirtualBoxLayout(new VirtualBoxBounds(2, 1, 1), List.of(placement(original, 0, 0, 0), placement(original, 1, 0, 0)));
 		var vertical = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2), List.of(placement(original, 0, 0, 0), placement(original, 0, 0, 1)));
@@ -83,11 +83,9 @@ class VirtualBoxLayoutPreparationTest {
 		packing.add(item(2, 2, 2, 1));
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		BoxItem delegate = packing.getItems().get(1);
-		assertThat(packing.getLayout(delegate, delegate.getBox().getStackValue(0))).isSameAs(horizontal);
-		assertThat(packing.getLayout(delegate, delegate.getBox().getStackValue(1))).isSameAs(vertical);
-		// the delegate's results refer to the box items it was given
-		BoxItem copied = new BoxItem(delegate.getBox().copy(), 1);
-		assertThatThrownBy(() -> packing.getLayout(copied, copied.getBox().getStackValue(0))).isInstanceOf(IllegalStateException.class);
+		BoxItem copied = new BoxItem(delegate.getBox().copy(), 1, 73, delegate.getGlobalIndex());
+		assertThat(packing.getLayout(copied, copied.getBox().getStackValue(0))).isSameAs(horizontal);
+		assertThat(packing.getLayout(copied, copied.getBox().getStackValue(1))).isSameAs(vertical);
 		assertThat(packing.getLayout(packing.getItems().get(0), packing.getItems().get(0).getBox().getStackValue(0))).isNull();
 		assertThat(vertical.getPlacements().get(1).getAbsoluteZ()).isEqualTo(1);
 	}

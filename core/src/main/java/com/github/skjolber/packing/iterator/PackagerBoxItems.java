@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 public class PackagerBoxItems {
 
@@ -19,15 +19,15 @@ public class PackagerBoxItems {
 		}
 
 		@Override
-		public RemainingBoxItemGroup get(int index) {
+		public BoxItemGroup get(int index) {
 			return groups.get(index);
 		}
 
 		@Override
-		public RemainingBoxItemGroup remove(int groupIndex) {
+		public BoxItemGroup remove(int groupIndex) {
 			int startIndex = getFirstBoxItemIndexForGroup(groupIndex);
 			
-			RemainingBoxItemGroup group = groups.remove(groupIndex);
+			BoxItemGroup group = groups.remove(groupIndex);
 			
 			for(int i = 0; i < group.size(); i++) {
 				values.remove(startIndex);
@@ -36,7 +36,7 @@ public class PackagerBoxItems {
 			
 			int index = startIndex;
 			for(int i = groupIndex; i < groups.size(); i++) {
-				RemainingBoxItemGroup g = groups.get(i);
+				BoxItemGroup g = groups.get(i);
 				
 				for(int k = 0; k < g.size(); k++) {
 					boxToGroupIndexes[index + k] = i;
@@ -66,7 +66,7 @@ public class PackagerBoxItems {
 		}
 
 		@Override
-		public Iterator<RemainingBoxItemGroup> iterator() {
+		public Iterator<BoxItemGroup> iterator() {
 			return groups.listIterator();
 		}
 		
@@ -80,13 +80,13 @@ public class PackagerBoxItems {
 		}
 
 		@Override
-		public RemainingBoxItem get(int index) {
+		public BoxItem get(int index) {
 			return values.get(index);
 		}
 
 		@Override
 		public boolean decrement(int index, int count) {
-			RemainingBoxItem boxItem = values.get(index);
+			BoxItem boxItem = values.get(index);
 			if(!boxItem.decrement(count)) {
 				remove(index);
 			}
@@ -94,11 +94,11 @@ public class PackagerBoxItems {
 		}
 		
 		@Override
-		public RemainingBoxItem remove(int index) {
+		public BoxItem remove(int index) {
 			// also remove all boxes in the same group, and the box group itself.
 			int groupIndex = boxToGroupIndexes[index];
 			
-			RemainingBoxItem item = values.get(index);
+			BoxItem item = values.get(index);
 
 			filteredBoxItemGroups.remove(groupIndex);
 			
@@ -110,7 +110,7 @@ public class PackagerBoxItems {
 		}
 
 		@Override
-		public Iterator<RemainingBoxItem> iterator() {
+		public Iterator<BoxItem> iterator() {
 			return values.listIterator();
 		}
 		
@@ -121,8 +121,8 @@ public class PackagerBoxItems {
 
 	}
 	
-	protected List<RemainingBoxItem> values;
-	protected List<RemainingBoxItemGroup> groups;
+	protected List<BoxItem> values;
+	protected List<BoxItemGroup> groups;
 	
 	// 0,0,0,1,1,2,3,3,3 etc
 	protected int[] boxToGroupIndexes;
@@ -130,7 +130,7 @@ public class PackagerBoxItems {
 	protected InnerFilteredBoxItemGroup filteredBoxItemGroups = new InnerFilteredBoxItemGroup();
 	protected InnerFilteredBoxItems filteredBoxItems = new InnerFilteredBoxItems();
 	
-	public PackagerBoxItems(List<RemainingBoxItemGroup> groups) {
+	public PackagerBoxItems(List<BoxItemGroup> groups) {
 		setValues(new ArrayList<>(groups));
 	}
 	
@@ -152,10 +152,10 @@ public class PackagerBoxItems {
 	 * @return the index of the first box item of the group, or -1 if the group was removed. The index changes when
 	 *         groups before it are removed.
 	 */
-	public int getFirstBoxItemIndex(RemainingBoxItemGroup group) {
+	public int getFirstBoxItemIndex(BoxItemGroup group) {
 		int index = 0;
 		for(int i = 0; i < groups.size(); i++) {
-			RemainingBoxItemGroup g = groups.get(i);
+			BoxItemGroup g = groups.get(i);
 			if(g == group) {
 				return index;
 			}
@@ -172,12 +172,12 @@ public class PackagerBoxItems {
 		return index;
 	}
 
-	public void setValues(List<RemainingBoxItemGroup> groups) {
+	public void setValues(List<BoxItemGroup> groups) {
 		this.groups = groups;
 		
 		values = new ArrayList<>();
 		for(int i = 0; i < groups.size(); i++) {
-			RemainingBoxItemGroup group = groups.get(i);
+			BoxItemGroup group = groups.get(i);
 			
 			values.addAll(group.getItems());
 		}
@@ -185,7 +185,7 @@ public class PackagerBoxItems {
 		boxToGroupIndexes = new int[values.size()];
 		int index = 0;
 		for(int i = 0; i < groups.size(); i++) {
-			RemainingBoxItemGroup group = groups.get(i);
+			BoxItemGroup group = groups.get(i);
 			
 			for(int k = 0; k < group.size(); k++) {
 				boxToGroupIndexes[index + k] = i;
@@ -207,11 +207,11 @@ public class PackagerBoxItems {
 	public void decrement(int index) {
 		// potentially remove box item from group, 
 		// but do not remove group
-		RemainingBoxItem boxItem = values.get(index);
+		BoxItem boxItem = values.get(index);
 		boxItem.decrement();
 		
 		if(boxItem.isEmpty()) {
-			RemainingBoxItemGroup boxItemGroup = groups.get(boxToGroupIndexes[index]);
+			BoxItemGroup boxItemGroup = groups.get(boxToGroupIndexes[index]);
 			boxItemGroup.removeEmpty();
 			
 			values.remove(index);
@@ -258,11 +258,11 @@ public class PackagerBoxItems {
 		return filteredBoxItemGroups;
 	}
 
-	public boolean contains(RemainingBoxItemGroup boxItemGroup) {
+	public boolean contains(BoxItemGroup boxItemGroup) {
 		return groups.contains(boxItemGroup);
 	}
 
-	public void remove(RemainingBoxItemGroup boxItemGroup) {
+	public void remove(BoxItemGroup boxItemGroup) {
 		int index = groups.indexOf(boxItemGroup);
 		
 		filteredBoxItemGroups.remove(index);

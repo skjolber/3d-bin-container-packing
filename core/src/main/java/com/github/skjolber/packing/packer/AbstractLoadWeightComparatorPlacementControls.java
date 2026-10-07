@@ -4,6 +4,7 @@ import java.util.List;
 
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
@@ -11,7 +12,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
@@ -67,12 +67,12 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 		Placement result = null;
 
 		for (int i = offset; i < offset + length; i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			Box box = boxItem.getBox();
 
 			if (order == Order.NONE) {
 				if (result != null && boxItemComparator != null
-						&& boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
+						&& boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -133,7 +133,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	 * it would be selected. Same result as validating every candidate, as the comparator does not
 	 * read the supported area and ties keep the current best.
 	 */
-	protected Placement selectValidPlacement(Placement result, Point point3d, RemainingBoxItem boxItem, BoxStackValue stackValue) {
+	protected Placement selectValidPlacement(Placement result, Point point3d, BoxItem boxItem, BoxStackValue stackValue) {
 		Box box = boxItem.getBox();
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
@@ -181,12 +181,12 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 		Placement result = null;
 
 		for (int i = offset; i < offset + length; i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			Box box = boxItem.getBox();
 
 			if (order == Order.NONE) {
 				if (result != null && boxItemComparator != null
-						&& boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
+						&& boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}

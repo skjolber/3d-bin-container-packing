@@ -135,8 +135,8 @@ if(result.isSuccess()) {
 }
 ```
 
-The placements (`match.getStack().getPlacements()`) refer to the given box items (`placement.getBoxItem()`) and
-their boxes.
+The placements (`match.getStack().getPlacements()`) refer to copies of the input boxes; identify them by
+`placement.getStackValue().getBox().getId()`.
 
 Use a maximum number of containers:
 
@@ -151,8 +151,8 @@ PackagerResult result = packager
     .build();
 ```
 
-Note that all `packager` instances are thread-safe. Packing does not modify the box items and groups, and works on
-copies of the containers, so the same input can be packed again, also by several threads.
+Note that all `packager` instances are thread-safe. Packing works on copies of the input boxes and containers, so boxes
+can be shared between threads; it only assigns global indexes to box items which have none.
 
 ### Plain packager
 A simple packager
@@ -626,7 +626,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The boxes of a box item group are inserted together, without boxes of other groups between them (previously they could be interleaved with other groups' boxes, by height)
         * The plain and LAFF packagers search all boxes of a box item group (previously a group which did not start at the first remaining box item was searched partly or not at all, so groups were moved to further containers, or packing failed)
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
-        * Packing does not modify the box items and groups, and works on copies of the containers: result placements refer to the given box items (`Placement.getBoxItem()`), and the same input can be packed again, also by several threads
+        * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
         * The load and stability validators find which boxes rest on which from the placements' positions (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked)
         * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously the relief for the boxes below was assumed when the box was placed, but not recorded, and boxes could be overloaded)
@@ -643,7 +643,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Container strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerStrategy`, `ContainerStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
         * Configure a container strategy with the packager builders' `withContainerStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is removed
         * `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a result with less load volume than `best`; strategies which pass the best result so far must handle this
-        * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the containers. `DefaultControlsPackagerResultBuilder` is removed
+        * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
         * `clone()` methods renamed to `copy()` (they are copy constructors, not `Object.clone()`), including `Point.copy(maxX, maxY, maxZ)`; `ClonablePackagerInterruptSupplier` renamed to `CopyablePackagerInterruptSupplier`
         * Builder options which had no effect removed: `withPoints(..)` on the brute-force packager builders and `withFirstBoxItemGroupComparator(..)` on the LAFF builders
@@ -659,7 +659,6 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The OpenAPI modules removed (`open-api-model`, `open-api-client`, `open-api-server` and `open-api-test`)
         * Unused classes removed: `PermutationBoxItemValue`, `PermutationRotation` and `ListPlacementComparator`
         * A box's stack values belong to it alone: the `Box` constructor rejects stack values of another box (build with `BoxStackValue.copy()`, which belongs to no box), and `Box(Box, List<BoxStackValue>)` is removed. `LoadBoxBuilder` copies its stack values, so it can build several boxes, and gets `withWeight(..)`
-        * `BoxItem` and `BoxItemGroup` are the input only: the packing state (remaining count, local and global index, rollback marks, group index) is in `RemainingBoxItem` and `RemainingBoxItemGroup` (`com.github.skjolber.packing.api.packager`), which sessions, `BoxItemSource`, `BoxItemGroupSource`, `ManifestListener`, `PointControls`, container strategies (`PackagerSession.getRemainingBoxItems()`, `ContainerInventory`, cost calculators) and `Placement.getRemainingBoxItem()` use. A global index is the position of the box item in the input: `BoxItem.get/setGlobalIndex(..)`, the local index, `decrement(..)`, `mark()`/`reset()` and the `BoxItem` constructors with indexes are removed, as are `BoxItemGroup`'s index, copy constructor and counting methods. The box item comparators still compare `BoxItem`s and `BoxItemGroup`s. `VirtualBox.toBoxItem(int)` takes a count
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
         * The module descriptors export all public packages
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).

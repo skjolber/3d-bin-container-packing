@@ -3,10 +3,10 @@ package com.github.skjolber.packing.packer.strategy.bruteforce;
 import java.util.List;
 import java.util.Objects;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -75,7 +75,7 @@ public final class LowestCostControls implements Controls {
 	private long estimateMinimumCost(PackagerSession state) {
 		ContainerInventory containers = state.getContainerInventory();
 		int maxCount = state.getMaxContainerCount();
-		List<RemainingBoxItemGroup> groups = state.getRemainingBoxItemGroups();
+		List<BoxItemGroup> groups = state.getRemainingBoxItemGroups();
 		if(groups != null) {
 			return costCalculator.getGroupMinimumCost(containers, groups, maxCount);
 		}

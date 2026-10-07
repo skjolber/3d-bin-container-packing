@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 /**
  * Builder scaffold.
@@ -27,7 +27,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 	protected int dz = -1;
 	protected long volume = -1L;
 
-	protected List<RemainingBoxItemGroup> boxItemGroups;
+	protected List<BoxItemGroup> boxItemGroups;
 
 	public B withLoadSize(int dx, int dy, int dz) {
 		this.dx = dx;
@@ -45,7 +45,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 		return (B)this;
 	}
 
-	public B withBoxItemGroups(List<RemainingBoxItemGroup> stackableItems) {
+	public B withBoxItemGroups(List<BoxItemGroup> stackableItems) {
 		this.boxItemGroups = stackableItems;
 
 		return (B)this;
@@ -55,7 +55,7 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 	 * @return whether all of the group's boxes can be loaded into the container together, by volume and weight,
 	 *         and each box by its dimensions
 	 */
-	public boolean fitsInside(RemainingBoxItemGroup boxItemGroup) {
+	public boolean fitsInside(BoxItemGroup boxItemGroup) {
 		if(boxItemGroup.getVolume() > volume || boxItemGroup.getWeight() > maxLoadWeight) {
 			return false;
 		}
@@ -72,15 +72,15 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 	 * The groups and box items of an iterator, by index: copies of the groups which fit the container, with copies of
 	 * their box items (sharing their boxes), and the rotations of each box item which fit (stack values of its box).
 	 */
-	protected record BoxItemGroupMatrix(RemainingBoxItemGroup[] groups, RemainingBoxItem[] boxItems, BoxStackValue[][] stackValues, List<RemainingBoxItemGroup> excluded) {
+	protected record BoxItemGroupMatrix(BoxItemGroup[] groups, BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded) {
 	}
 
 	protected BoxItemGroupMatrix toMatrix() {
-		List<RemainingBoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
-		List<RemainingBoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
+		List<BoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
+		List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
 
 		int count = 0;
-		for (RemainingBoxItemGroup group : boxItemGroups) {
+		for (BoxItemGroup group : boxItemGroups) {
 			count += group.size();
 		}
 		BoxStackValue[][] stackValues = new BoxStackValue[count][];
@@ -88,19 +88,19 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 		// box item and box item groups indexes are unique and static
 		int offset = 0;
 		for (int i = 0; i < boxItemGroups.size(); i++) {
-			RemainingBoxItemGroup group = boxItemGroups.get(i);
+			BoxItemGroup group = boxItemGroups.get(i);
 			if(fitsInside(group)) {
-				List<RemainingBoxItem> loadableItems = new ArrayList<>(group.size());
+				List<BoxItem> loadableItems = new ArrayList<>(group.size());
 				for (int k = 0; k < group.size(); k++) {
-					RemainingBoxItem item = group.get(k);
+					BoxItem item = group.get(k);
 					Box box = item.getBox();
 
 					stackValues[offset] = AbstractBoxItemPermutationRotationIterator.getRotations(box, dx, dy, dz);
-					loadableItems.add(new RemainingBoxItem(item.getBoxItem(), item.getCount(), offset, item.getGlobalIndex()));
+					loadableItems.add(new BoxItem(box, item.getCount(), offset, item.getGlobalIndex()).withOrderingOf(item));
 
 					offset++;
 				}
-				included.add(new RemainingBoxItemGroup(group.getBoxItemGroup(), loadableItems, i));
+				included.add(new BoxItemGroup(group.getId(), loadableItems, i));
 			} else {
 				excluded.add(group);
 
@@ -108,13 +108,13 @@ public abstract class AbstractBoxItemGroupIteratorBuilder<B extends AbstractBoxI
 			}
 		}
 
-		RemainingBoxItemGroup[] groupIndex = new RemainingBoxItemGroup[boxItemGroups.size()];
-		RemainingBoxItem[] boxIndex = new RemainingBoxItem[offset];
+		BoxItemGroup[] groupIndex = new BoxItemGroup[boxItemGroups.size()];
+		BoxItem[] boxIndex = new BoxItem[offset];
 
-		for (RemainingBoxItemGroup loadableItemGroup : included) {
+		for (BoxItemGroup loadableItemGroup : included) {
 			groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
 			for (int k = 0; k < loadableItemGroup.size(); k++) {
-				RemainingBoxItem item = loadableItemGroup.get(k);
+				BoxItem item = loadableItemGroup.get(k);
 				boxIndex[item.getLocalIndex()] = item;
 			}
 		}

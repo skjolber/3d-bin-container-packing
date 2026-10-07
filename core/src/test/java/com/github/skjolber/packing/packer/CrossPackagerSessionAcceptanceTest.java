@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 class CrossPackagerSessionAcceptanceTest {
@@ -29,7 +28,7 @@ class CrossPackagerSessionAcceptanceTest {
 		TestSession receiver = new TestSession(receiverItem);
 
 		Stack stack = new Stack();
-		stack.add(new Placement(source.getRemainingBoxItems().get(0), sourceItem.getBox().getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(sourceItem, sourceItem.getBox().getStackValue(0), 0, 0, 0, 0));
 		receiver.accept(new DefaultIntermediatePackagerResult(source.getContainerItem(0), stack));
 
 		assertThat(receiver.countRemainingBoxes()).isZero();
@@ -64,15 +63,15 @@ class CrossPackagerSessionAcceptanceTest {
 	}
 
 	@Test
-	void globalIndexesArePositionsInTheInput() {
+	void rejectsDuplicateGlobalBoxItemIndexes() {
 		BoxItem first = new BoxItem(box("first"));
-		BoxItem second = new BoxItem(box("second"), 2);
+		BoxItem second = new BoxItem(box("second"));
+		first.setGlobalIndex(2);
+		second.setGlobalIndex(2);
 
-		List<RemainingBoxItem> remaining = AbstractPackagerSession.toRemainingBoxItems(List.of(first, second, first));
-
-		assertThat(remaining).extracting(RemainingBoxItem::getGlobalIndex).containsExactly(0, 1, 2);
-		assertThat(remaining).extracting(RemainingBoxItem::getCount).containsExactly(1, 2, 1);
-		assertThat(remaining.get(2).getBoxItem()).isSameAs(first);
+		assertThatThrownBy(() -> AbstractPackagerSession.initializeGlobalIndexes(List.of(first, second)))
+				.isInstanceOf(IllegalArgumentException.class)
+				.hasMessage("Duplicate box item global index 2");
 	}
 
 	private static Box box(String id) {
@@ -100,11 +99,11 @@ class CrossPackagerSessionAcceptanceTest {
 
 		@Override
 		protected TestSession fresh(List<ContainerItem> containers, int containerCount) {
-			return new TestSession(initialBoxItems.get(0), containers, containerCount);
+			return new TestSession(copyBoxItems(initialBoxItems).get(0), containers, containerCount);
 		}
 
 		@Override
-		protected IntermediatePackagerResult pack(List<RemainingBoxItem> remainingBoxItems, ContainerItem containerItem,
+		protected IntermediatePackagerResult pack(List<BoxItem> remainingBoxItems, ContainerItem containerItem,
 				PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) {
 			throw new UnsupportedOperationException();
 		}

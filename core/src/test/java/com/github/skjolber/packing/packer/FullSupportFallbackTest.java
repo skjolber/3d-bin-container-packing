@@ -84,7 +84,7 @@ public class FullSupportFallbackTest {
 		stack.add(below);
 		List<Point> points = new ArrayList<>();
 		points.add(point);
-		DefaultBoxItemSource items = new DefaultBoxItemSource(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(box))));
+		DefaultBoxItemSource items = new DefaultBoxItemSource(List.of(new BoxItem(box)));
 		TestControls controls = new TestControls(items, new DefaultPointControls(new DefaultPointSource(points)), stack);
 		return controls.fallback();
 	}

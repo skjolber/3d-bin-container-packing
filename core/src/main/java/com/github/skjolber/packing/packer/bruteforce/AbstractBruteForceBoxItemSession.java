@@ -4,13 +4,12 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
@@ -23,9 +22,8 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	// keep inventory over all of the iterators here
 	protected Box[] boxes;
 	protected int[] boxesRemaining;
-	protected RemainingBoxItem[] boxItems;
-	/** The box item (the input), initial count, local index and global index of each box item, for fresh sessions. */
-	protected final BoxItem[] initialBoxItems;
+	protected BoxItem[] boxItems;
+	/** The initial count, local index and global index of each box item, for fresh sessions. */
 	protected final int[] initialCounts;
 	protected final int[] initialLocalIndexes;
 	protected final int[] globalIndexes;
@@ -40,29 +38,27 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	 */
 	protected boolean reverseSymmetric = true;
 
-	public AbstractBruteForceBoxItemSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
-		this(boxItems, new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
-	protected AbstractBruteForceBoxItemSession(List<RemainingBoxItem> boxItems,
+	protected AbstractBruteForceBoxItemSession(List<BoxItem> boxItems,
 			ContainerItemsCalculator containerItemsCalculator) {
 		super(containerItemsCalculator);
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];
-		this.boxItems = new RemainingBoxItem[boxItems.size()];
-		this.initialBoxItems = new BoxItem[boxItems.size()];
+		this.boxItems = new BoxItem[boxItems.size()];
 		this.initialCounts = new int[boxItems.size()];
 		this.initialLocalIndexes = new int[boxItems.size()];
 		this.globalIndexes = new int[boxItems.size()];
 		
 		for(int i = 0; i < boxItems.size(); i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			this.boxItems[i] = boxItem;
 			this.boxes[i] = boxItem.getBox();
 			this.boxesRemaining[i] = boxItem.getCount();
-			this.initialBoxItems[i] = boxItem.getBoxItem();
 			this.initialCounts[i] = boxItem.getCount();
 			this.initialLocalIndexes[i] = boxItem.getLocalIndex();
 			this.globalIndexes[i] = boxItem.getGlobalIndex();
@@ -79,7 +75,6 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 
 	protected AbstractBruteForceBoxItemSession(AbstractBruteForceBoxItemSession source) {
 		super(source);
-		this.initialBoxItems = source.initialBoxItems;
 		this.initialCounts = source.initialCounts;
 		this.initialLocalIndexes = source.initialLocalIndexes;
 		this.globalIndexes = source.globalIndexes;
@@ -88,7 +83,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		this.reverseSymmetric = source.reverseSymmetric;
 		this.boxes = source.boxes.clone();
 		this.boxesRemaining = source.boxesRemaining.clone();
-		this.boxItems = new RemainingBoxItem[source.boxItems.length];
+		this.boxItems = new BoxItem[source.boxItems.length];
 		for(int i = 0; i < boxItems.length; i++) {
 			if(source.boxItems[i] != null) {
 				boxItems[i] = source.boxItems[i].copy();
@@ -135,11 +130,11 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		if(!isOrdered()) {
 			return Integer.MAX_VALUE;
 		}
-		RemainingBoxItem[] iteratorItems = iterator.getBoxItems();
+		BoxItem[] iteratorItems = iterator.getBoxItems();
 		int limit = 0;
 		int blockedPriority = Integer.MAX_VALUE;
 		for(int i = 0; i < boxItems.length; i++) {
-			RemainingBoxItem boxItem = boxItems[i];
+			BoxItem boxItem = boxItems[i];
 			if(boxItem == null) {
 				// packed
 				continue;
@@ -168,7 +163,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	 * @return the highest container priority which may be placed in the container
 	 */
 	protected int getMaxContainerPriority(BoxItemPermutationRotationIterator iterator) {
-		RemainingBoxItem[] iteratorItems = iterator.getBoxItems();
+		BoxItem[] iteratorItems = iterator.getBoxItems();
 		int maxContainerPriority = Integer.MAX_VALUE;
 		for(int i = 0; i < boxItems.length; i++) {
 			if(boxItems[i] != null && iteratorItems[i] == null) {
@@ -179,10 +174,10 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	}
 
 	/** @return copies of the box items at the start of the packaging operation */
-	protected List<RemainingBoxItem> copyInitialBoxItems() {
-		List<RemainingBoxItem> copies = new ArrayList<>(boxes.length);
+	protected List<BoxItem> copyInitialBoxItems() {
+		List<BoxItem> copies = new ArrayList<>(boxes.length);
 		for(int i = 0; i < boxes.length; i++) {
-			copies.add(new RemainingBoxItem(initialBoxItems[i], initialCounts[i], initialLocalIndexes[i], globalIndexes[i]));
+			copies.add(new BoxItem(boxes[i].copy(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]).withOrderingOf(boxItems[i]));
 		}
 		return copies;
 	}
@@ -208,25 +203,17 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected List<Integer> getLocalIndexes(Stack stack) {
 		List<Integer> indexes = new ArrayList<>(stack.size());
 		for(Placement placement : stack.getPlacements()) {
-			int localIndex = getLocalIndex(getGlobalIndex(placement));
+			BoxItem source = placement.getBoxItem();
+			int globalIndex = source.getGlobalIndex();
+			int localIndex = getLocalIndex(globalIndex);
 			indexes.add(localIndex);
 		}
 		return indexes;
 	}
 
-	@Override
-	protected int getInputIndex(BoxItem boxItem) {
-		for(int i = 0; i < initialBoxItems.length; i++) {
-			if(initialBoxItems[i] == boxItem) {
-				return globalIndexes[i];
-			}
-		}
-		return -1;
-	}
-
 	protected int getLocalIndex(int globalIndex) {
 		for(int i = 0; i < boxItems.length; i++) {
-			RemainingBoxItem boxItem = boxItems[i];
+			BoxItem boxItem = boxItems[i];
 			if(boxItem != null && boxItem.getGlobalIndex() == globalIndex) {
 				return i;
 			}
@@ -240,10 +227,10 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	}
 
 	@Override
-	public List<RemainingBoxItem> getRemainingBoxItems() {
-		List<RemainingBoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
+	public List<BoxItem> getRemainingBoxItems() {
+		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
 		for(int i = 0; i < boxItems.length; i++) {
-			RemainingBoxItem boxItem = boxItems[i];
+			BoxItem boxItem = boxItems[i];
 			if(boxItem != null && !boxItem.isEmpty()) {
 				remainingBoxItems.add(boxItem);
 			}
@@ -284,7 +271,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	}
 
 	@Override
-	public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
 		return null;
 	}
 

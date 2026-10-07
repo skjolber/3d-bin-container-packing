@@ -13,8 +13,6 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 public class InsertionSequencerTest {
 
@@ -161,16 +159,16 @@ public class InsertionSequencerTest {
 		assertThat(stack.getPlacements()).containsExactly(a, b);
 	}
 
-	private static Placement place(String id, int x, int z, RemainingBoxItemGroup group) {
+	private static Placement place(String id, int x, int z, BoxItemGroup group) {
 		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
-		RemainingBoxItem item = new RemainingBoxItem(new BoxItem(box));
+		BoxItem item = new BoxItem(box);
 		group.getItems().add(item);
 		item.setGroup(group);
 		return new Placement(item, box.getStackValue(0), 0, x, 0, z);
 	}
 
-	private static RemainingBoxItemGroup group(String id, int index) {
-		return new RemainingBoxItemGroup(new BoxItemGroup(id, new ArrayList<>()), new ArrayList<>(), index);
+	private static BoxItemGroup group(String id, int index) {
+		return new BoxItemGroup(id, new ArrayList<>(), index);
 	}
 
 	//
@@ -184,8 +182,8 @@ public class InsertionSequencerTest {
 	//
 	@Test
 	void boxesOfAGroupAreInsertedTogether() {
-		RemainingBoxItemGroup a = group("A", 0);
-		RemainingBoxItemGroup b = group("B", 1);
+		BoxItemGroup a = group("A", 0);
+		BoxItemGroup b = group("B", 1);
 		Placement a1 = place("A1", 0, 0, a);
 		Placement a2 = place("A2", 0, 1, a);
 		Placement b1 = place("B1", 1, 0, b);
@@ -213,8 +211,8 @@ public class InsertionSequencerTest {
 	//
 	@Test
 	void groupsWhichCannotBeInsertedTogetherAreInsertedByHeight() {
-		RemainingBoxItemGroup a = group("A", 0);
-		RemainingBoxItemGroup b = group("B", 1);
+		BoxItemGroup a = group("A", 0);
+		BoxItemGroup b = group("B", 1);
 		Placement a1 = place("A1", 0, 0, a);
 		Placement a2 = place("A2", 0, 2, a);
 		Placement b1 = place("B1", 0, 1, b);
@@ -222,6 +220,6 @@ public class InsertionSequencerTest {
 
 		assertThat(InsertionSequencer.sequence(stack, ContainerAccess.ANY)).isTrue();
 		assertThat(stack.getPlacements()).containsExactly(a1, b1, a2);
-		assertThat(List.of(a1, b1, a2)).extracting(p -> p.getRemainingBoxItem().getGroup().getId()).containsExactly("A", "B", "A");
+		assertThat(List.of(a1, b1, a2)).extracting(p -> p.getBoxItem().getGroup().getId()).containsExactly("A", "B", "A");
 	}
 }

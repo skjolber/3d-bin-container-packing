@@ -48,8 +48,7 @@ public class PackagerInput {
 	}
 
 	/**
-	 * @return the same input with copies of the container items, so that a session can change their counts. The box
-	 *         items and groups are not modified by packing, so they are not copied.
+	 * @return the same input with copies of the container items and boxes, so that a session can change their counts
 	 */
 	public PackagerInput withCopies() {
 		List<ContainerItem> containerItemCopies = new ArrayList<>(containerItems.size());
@@ -63,9 +62,9 @@ public class PackagerInput {
 			containerItemCopies.add(copy);
 		}
 		if(hasBoxItems()) {
-			return new PackagerInput(boxItems, null, containerItemCopies, maxContainerCount, order, insertionOrder);
+			return new PackagerInput(AbstractPackagerSession.copyBoxItems(boxItems), null, containerItemCopies, maxContainerCount, order, insertionOrder);
 		}
-		return new PackagerInput(null, boxItemGroups, containerItemCopies, maxContainerCount, order, insertionOrder);
+		return new PackagerInput(null, AbstractPackagerSession.copyBoxItemGroups(boxItemGroups), containerItemCopies, maxContainerCount, order, insertionOrder);
 	}
 
 	/** @return true if packing box items, false if packing box item groups */

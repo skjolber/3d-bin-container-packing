@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 public class PackagerBoxItemsTest {
 
@@ -34,7 +32,7 @@ public class PackagerBoxItemsTest {
 	/* Removing the last group leaves exactly the box items of the other groups. */
 	@Test
 	public void firstBoxItemIndexOfAGroupMovesWhenAPrecedingGroupIsRemoved() {
-		List<RemainingBoxItemGroup> groups = groups(2, 3, 1);
+		List<BoxItemGroup> groups = groups(2, 3, 1);
 		PackagerBoxItems items = new PackagerBoxItems(groups);
 		assertThat(items.getFirstBoxItemIndex(groups.get(2))).isEqualTo(5);
 
@@ -45,9 +43,9 @@ public class PackagerBoxItemsTest {
 	}
 	@Test
 	public void removingGroupRemovesItsBoxItems() {
-		List<RemainingBoxItemGroup> groups = groups(2, 5, 1);
+		List<BoxItemGroup> groups = groups(2, 5, 1);
 		PackagerBoxItems items = new PackagerBoxItems(groups);
-		RemainingBoxItemGroup removed = items.getFilteredBoxItemGroups().remove(2);
+		BoxItemGroup removed = items.getFilteredBoxItemGroups().remove(2);
 		assertThat(removed.getId()).isEqualTo("group-2");
 		assertThat(items.getFilteredBoxItems().size()).isEqualTo(7);
 		for(int i = 0; i < 7; i++) {
@@ -69,7 +67,7 @@ public class PackagerBoxItemsTest {
 		assertThat(items.boxToGroupIndexes).startsWith(0, 1, 1, 1, 2);
 	}
 
-	private static List<RemainingBoxItemGroup> groups(int... sizes) {
+	private static List<BoxItemGroup> groups(int... sizes) {
 		List<BoxItemGroup> groups = new ArrayList<>();
 		int box = 0;
 		for(int g = 0; g < sizes.length; g++) {
@@ -83,6 +81,6 @@ public class PackagerBoxItemsTest {
 			}
 			groups.add(new BoxItemGroup("group-" + g, items));
 		}
-		return AbstractPackagerSession.toRemainingBoxItemGroups(groups);
+		return groups;
 	}
 }

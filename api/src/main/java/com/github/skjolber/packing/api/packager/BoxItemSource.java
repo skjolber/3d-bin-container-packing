@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.packager;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * 
@@ -9,11 +9,11 @@ import com.github.skjolber.packing.api.packager.RemainingBoxItem;
  *
  * <p>All index arguments and the position returned by {@link #get(int)} are
  * local to this source. They can change when an item is removed. They are not
- * {@link RemainingBoxItem#getGlobalIndex() global box item indexes}.</p>
+ * {@link BoxItem#getGlobalIndex() global box item indexes}.</p>
  * 
  */
 
-public interface BoxItemSource extends Iterable<RemainingBoxItem> {
+public interface BoxItemSource extends Iterable<BoxItem> {
 	
 	int size();
 
@@ -24,7 +24,7 @@ public interface BoxItemSource extends Iterable<RemainingBoxItem> {
 	 *
 	 * @param localIndex current index in this source
 	 */
-	RemainingBoxItem get(int localIndex);
+	BoxItem get(int localIndex);
 
 	/**
 	 * Decrement the item at this source's current local index.
@@ -38,11 +38,11 @@ public interface BoxItemSource extends Iterable<RemainingBoxItem> {
 	 *
 	 * @param localIndex current index in this source
 	 */
-	RemainingBoxItem remove(int localIndex);
+	BoxItem remove(int localIndex);
 
 	default long getMinVolume() {
 		long minVolume = Integer.MAX_VALUE;
-		for(RemainingBoxItem boxItem : this) {
+		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getVolume() < minVolume) {
 				minVolume = box.getVolume();
@@ -53,7 +53,7 @@ public interface BoxItemSource extends Iterable<RemainingBoxItem> {
 	
 	default long getMinArea() {
 		long minArea = Integer.MAX_VALUE;
-		for(RemainingBoxItem boxItem : this) {
+		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getMinimumArea() < minArea) {
 				minArea = box.getMinimumArea();
@@ -64,7 +64,7 @@ public interface BoxItemSource extends Iterable<RemainingBoxItem> {
 	
 	default long getMaxVolume() {
 		long maxVolume = Integer.MIN_VALUE;
-		for(RemainingBoxItem boxItem : this) {
+		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getVolume() > maxVolume) {
 				maxVolume = box.getVolume();
@@ -75,7 +75,7 @@ public interface BoxItemSource extends Iterable<RemainingBoxItem> {
 	
 	default long getMaxArea() {
 		long maxArea = Integer.MIN_VALUE;
-		for(RemainingBoxItem boxItem : this) {
+		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getMinimumArea() > maxArea) {
 				maxArea = box.getMaximumArea();

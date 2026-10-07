@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.util.List;
 import java.util.Objects;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
@@ -110,11 +111,11 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 			}
 		}
 		if(checkExtraction) {
-			int order = candidate.getRemainingBoxItem().getExtractionOrder();
+			int order = candidate.getBoxItem().getExtractionOrder();
 			List<Placement> placements = stack.getPlacements();
 			for (int i = 0; i < placements.size(); i++) {
 				Placement placement = placements.get(i);
-				int placementOrder = placement.getRemainingBoxItem().getExtractionOrder();
+				int placementOrder = placement.getBoxItem().getExtractionOrder();
 				if(order < placementOrder) {
 					// the candidate is extracted first: the placement must be insertable before it
 					if(candidate.mustPrecede(placement, access)) {

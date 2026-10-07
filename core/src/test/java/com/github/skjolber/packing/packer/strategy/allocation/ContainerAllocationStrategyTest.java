@@ -16,12 +16,9 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.ContainerItemsCalculator;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
@@ -85,9 +82,9 @@ class ContainerAllocationStrategyTest {
 		ContainerItemsCalculator calculator = calculator(List.of(
 				new ContainerItem(small, 1), new ContainerItem(large, 1)), 2);
 		Box cube = box("cube", 1);
-		List<RemainingBoxItemGroup> groups = AbstractPackagerSession.toRemainingBoxItemGroups(List.of(
+		List<BoxItemGroup> groups = List.of(
 				new BoxItemGroup("pair", List.of(new BoxItem(cube, 2))),
-				new BoxItemGroup("single", List.of(new BoxItem(cube, 1)))));
+				new BoxItemGroup("single", List.of(new BoxItem(cube, 1))));
 		PlanningSession session = new PlanningSession(calculator, null, groups);
 
 		Allocation allocation = ContainerAllocationPlanner.plan(session, Objective.FEWEST_CONTAINERS,
@@ -109,7 +106,7 @@ class ContainerAllocationStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		int[] containerQueries = new int[1];
 		BranchSession session = new BranchSession(calculator,
-				AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(smallBox), new BoxItem(longBox))),
+				new ArrayList<>(List.of(new BoxItem(smallBox), new BoxItem(longBox))),
 				attempts, containerQueries);
 
 		ContainerResult result = new BruteForceContainerStrategy().pack(() -> false, session);
@@ -146,25 +143,25 @@ class ContainerAllocationStrategyTest {
 	private static class PlanningSession implements PackagerSession {
 
 		protected final ContainerItemsCalculator calculator;
-		protected final List<RemainingBoxItem> boxes;
-		protected final List<RemainingBoxItemGroup> groups;
+		protected final List<BoxItem> boxes;
+		protected final List<BoxItemGroup> groups;
 
-		private PlanningSession(ContainerItemsCalculator calculator, List<RemainingBoxItem> boxes,
-				List<RemainingBoxItemGroup> groups) {
+		private PlanningSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
+				List<BoxItemGroup> groups) {
 			this.calculator = calculator;
 			this.boxes = boxes;
 			this.groups = groups;
 		}
 
 		@Override public ContainerItemsCalculator getContainerInventory() { return calculator; }
-		@Override public List<RemainingBoxItem> getRemainingBoxItems() { return boxes; }
-		@Override public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() { return groups; }
+		@Override public List<BoxItem> getRemainingBoxItems() { return boxes; }
+		@Override public List<BoxItemGroup> getRemainingBoxItemGroups() { return groups; }
 		@Override public ContainerItem getContainerItem(int index) { return calculator.getContainerItem(index); }
 		@Override public int countRemainingBoxes() {
 			if(boxes != null) {
-				return boxes.stream().mapToInt(RemainingBoxItem::getCount).sum();
+				return boxes.stream().mapToInt(BoxItem::getCount).sum();
 			}
-			return groups.stream().mapToInt(RemainingBoxItemGroup::getBoxCount).sum();
+			return groups.stream().mapToInt(BoxItemGroup::getBoxCount).sum();
 		}
 		@Override public int countRemainingBoxItemGroups() { return groups == null ? -1 : groups.size(); }
 		@Override public int getMaxContainerCount() {
@@ -186,7 +183,7 @@ class ContainerAllocationStrategyTest {
 		private final List<Integer> attempts;
 		private final int[] containerQueries;
 
-		private BranchSession(ContainerItemsCalculator calculator, List<RemainingBoxItem> boxes,
+		private BranchSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
 				List<Integer> attempts, int[] containerQueries) {
 			super(calculator, boxes, null);
 			this.attempts = attempts;
@@ -224,8 +221,8 @@ class ContainerAllocationStrategyTest {
 
 		@Override
 		public PackagerSession fork() {
-			List<RemainingBoxItem> copies = new ArrayList<>(boxes.size());
-			for(RemainingBoxItem item : boxes) {
+			List<BoxItem> copies = new ArrayList<>(boxes.size());
+			for(BoxItem item : boxes) {
 				copies.add(item.copy());
 			}
 			return new BranchSession(calculator.copy(), copies, attempts, containerQueries);

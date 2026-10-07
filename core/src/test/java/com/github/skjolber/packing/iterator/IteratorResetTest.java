@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 /**
  * After iterating all permutations and rotations, reset() goes back to the first permutation and rotations, so that
@@ -58,7 +57,7 @@ public class IteratorResetTest {
 	public void boxItemIteratorIteratesAgainAfterReset() {
 		DefaultBoxItemPermutationRotationIterator iterator = DefaultBoxItemPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 10, 1)
-				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(boxItems("a", "b", "c")))
+				.withBoxItems(boxItems("a", "b", "c"))
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -70,7 +69,7 @@ public class IteratorResetTest {
 	public void boxItemGroupIteratorIteratesAgainAfterReset() {
 		DefaultBoxItemGroupPermutationRotationIterator iterator = DefaultBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 10, 1)
-				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups()))
+				.withBoxItemGroups(groups())
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -82,7 +81,7 @@ public class IteratorResetTest {
 	public void parallelWorkUnitsIterateAgainAfterReset() {
 		ParallelBoxItemPermutationRotationIteratorList list = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(10, 10, 1)
-				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(boxItems("a", "b", "c")))
+				.withBoxItems(boxItems("a", "b", "c"))
 				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();
@@ -103,7 +102,7 @@ public class IteratorResetTest {
 	public void parallelGroupWorkUnitsIterateAgainAfterReset() {
 		ParallelBoxItemGroupPermutationRotationIteratorList list = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
 				.withLoadSize(10, 10, 1)
-				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups()))
+				.withBoxItemGroups(groups())
 				.withMaxLoadWeight(100)
 				.withParallelizationCount(2)
 				.build();

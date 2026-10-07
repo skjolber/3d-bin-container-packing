@@ -56,6 +56,23 @@ public class ContainerTypePerBoxTest {
 		}
 	}
 
+	@Test
+	public void plainPackagerUsesBothContainerTypesWithSparseGlobalIndexes() {
+		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			BoxItem longItem = new BoxItem(Box.newBuilder().withId("long").withSize(2, 1, 1).withWeight(1).build(), 1);
+			longItem.setGlobalIndex(Integer.MAX_VALUE - 1);
+			BoxItem cube = new BoxItem(Box.newBuilder().withId("cube").withSize(1, 1, 1).withWeight(1).build(), 1);
+			cube.setGlobalIndex(7);
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(containers())
+					.withBoxItems(longItem, cube)
+					.withMaxContainerCount(2)
+					.build();
+
+			assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("big", "small");
+		}
+	}
+
 	private static List<ContainerItem> containers() {
 		return List.of(
 				new ContainerItem(Container.newBuilder().withId("big").withSize(2, 1, 1).withMaxLoadWeight(10).build(), 1),

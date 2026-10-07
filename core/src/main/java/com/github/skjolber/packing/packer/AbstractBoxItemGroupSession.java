@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -16,13 +17,11 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSession implements PackagerSession {
 
-	protected List<RemainingBoxItemGroup> remainingBoxItemGroups;
+	protected List<BoxItemGroup> remainingBoxItemGroups;
 	protected final List<BoxItemGroup> initialBoxItemGroups;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final Order order;
@@ -34,23 +33,22 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	
 	public AbstractBoxItemGroupSession(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
-		this(toRemainingBoxItemGroups(boxItemGroups), boxItemGroups, containers, containerCount, order, interrupt);
-	}
-
-	private AbstractBoxItemGroupSession(List<RemainingBoxItemGroup> remainingBoxItemGroups, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
-			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
-		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, remainingBoxItemGroups));
-		// the session packs the groups without modifying them (see AbstractPackager#createSession)
+		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
+		// the session owns the groups (see AbstractPackager#createSession) and packs copies of them
 		this.initialBoxItemGroups = boxItemGroups;
-		this.remainingBoxItemGroups = copyBoxItemGroups(remainingBoxItemGroups);
-		for (int i = 0; i < this.remainingBoxItemGroups.size(); i++) {
-			RemainingBoxItemGroup group = this.remainingBoxItemGroups.get(i);
-			group.setIndex(i);
-			group.mark();
+		
+		List<BoxItemGroup> groupCopies = new LinkedList<>();
+		for (BoxItemGroup boxItemGroup : boxItemGroups) {
+			BoxItemGroup copy = boxItemGroup.copy();
+			copy.setIndex(groupCopies.size());
+			groupCopies.add(copy);
+			copy.mark();
 		}
+
+		this.remainingBoxItemGroups = groupCopies;
 		this.order = order;
 		this.interrupt = interrupt;
-
+		
 		boolean maxLoadWeight = false;
 		boolean maxLoadPressure = false;
 		boolean maxLoadBoxCount = false;
@@ -79,7 +77,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		super(source);
 		this.initialBoxItemGroups = source.initialBoxItemGroups;
 		this.remainingBoxItemGroups = copyBoxItemGroups(source.remainingBoxItemGroups);
-		for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
 			group.mark();
 		}
 		this.interrupt = source.interrupt;
@@ -98,7 +96,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		try {
 			return packGroup(remainingBoxItemGroups, order, packagerContainerItems.getContainerItem(index), interrupt, abortOnAnyBoxTooBig);
 		} finally {
-			for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
+			for(BoxItemGroup group : remainingBoxItemGroups) {
 				group.reset();
 			}
 		}				
@@ -114,13 +112,13 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		Stack stack = container.getStack();
 
 		for (Placement stackPlacement : stack.getPlacements()) {
-			RemainingBoxItem boxItem = findRemainingBoxItem(getGlobalIndex(stackPlacement));
+			BoxItem boxItem = findRemainingBoxItem(stackPlacement.getBoxItem().getGlobalIndex());
 			boxItem.decrementResetCount();
 			boxItem.reset();
 		}
 
-		List<RemainingBoxItemGroup> remainingBoxItems = new ArrayList<>(this.remainingBoxItemGroups.size());
-		for (RemainingBoxItemGroup boxItem : this.remainingBoxItemGroups) {
+		List<BoxItemGroup> remainingBoxItems = new ArrayList<>(this.remainingBoxItemGroups.size());
+		for (BoxItemGroup boxItem : this.remainingBoxItemGroups) {
 			if(!boxItem.isEmpty()) {
 				remainingBoxItems.add(boxItem);
 			}
@@ -137,13 +135,13 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	private void checkWholeGroups(Stack stack) {
 		Map<Integer, Integer> countByGlobalIndex = new HashMap<>(stack.size() * 2);
 		for (Placement placement : stack.getPlacements()) {
-			countByGlobalIndex.merge(getGlobalIndex(placement), 1, Integer::sum);
+			countByGlobalIndex.merge(placement.getBoxItem().getGlobalIndex(), 1, Integer::sum);
 		}
 		int matched = 0;
-		for (RemainingBoxItemGroup group : remainingBoxItemGroups) {
+		for (BoxItemGroup group : remainingBoxItemGroups) {
 			boolean present = false;
 			boolean complete = true;
-			for (RemainingBoxItem boxItem : group.getItems()) {
+			for (BoxItem boxItem : group.getItems()) {
 				Integer count = countByGlobalIndex.get(boxItem.getGlobalIndex());
 				if(count != null) {
 					present = true;
@@ -162,9 +160,9 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		}
 	}
 
-	private RemainingBoxItem findRemainingBoxItem(int globalIndex) {
-		for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
-			for(RemainingBoxItem boxItem : group.getItems()) {
+	private BoxItem findRemainingBoxItem(int globalIndex) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
+			for(BoxItem boxItem : group.getItems()) {
 				if(boxItem.getGlobalIndex() == globalIndex) {
 					return boxItem;
 				}
@@ -174,24 +172,19 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	}
 
 	@Override
-	protected int getInputIndex(BoxItem boxItem) {
-		return getGroupInputIndex(initialBoxItemGroups, boxItem);
-	}
-
-	@Override
 	public List<Integer> getContainers() {
 		return packagerContainerItems.getGroupContainers(remainingBoxItemGroups).getContainerIndexes();
 	}
 
 	@Override
-	public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
 		return remainingBoxItemGroups;
 	}
 
 	@Override
 	public int countRemainingBoxes() {
 		int count = 0;
-		for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
 			count += group.getBoxCount();
 		}
 		return count;
@@ -200,7 +193,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	@Override
 	public long getRemainingVolume() {
 		long volume = 0L;
-		for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
 			volume = Math.addExact(volume, group.getVolume());
 		}
 		return volume;
@@ -209,7 +202,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	@Override
 	public long getRemainingWeight() {
 		long weight = 0L;
-		for(RemainingBoxItemGroup group : remainingBoxItemGroups) {
+		for(BoxItemGroup group : remainingBoxItemGroups) {
 			weight = Math.addExact(weight, group.getWeight());
 		}
 		return weight;
@@ -222,7 +215,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 
 
 	@Override
-	public List<RemainingBoxItem> getRemainingBoxItems() {
+	public List<BoxItem> getRemainingBoxItems() {
 		return null;
 	}
 
@@ -231,6 +224,6 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		return remainingBoxItemGroups.size();
 	}
 
-	protected abstract IntermediatePackagerResult packGroup(List<RemainingBoxItemGroup> remainingBoxItemGroups, Order order, ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
+	protected abstract IntermediatePackagerResult packGroup(List<BoxItemGroup> remainingBoxItemGroups, Order order, ContainerItem containerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException;
 
 }

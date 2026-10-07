@@ -9,14 +9,13 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 class IteratorForkTest {
 
 	@Test
 	void defaultBoxIteratorForkKeepsItsOwnInventoryAndPermutation() {
 		DefaultBoxItemPermutationRotationIterator source = DefaultBoxItemPermutationRotationIterator.newBuilder()
-				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items())).build();
+				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItems(items()).build();
 		source.nextPermutation();
 		DefaultBoxItemPermutationRotationIterator fork = source.fork();
 
@@ -29,7 +28,7 @@ class IteratorForkTest {
 	@Test
 	void parallelBoxIteratorForkKeepsItsOwnWorkUnits() {
 		ParallelBoxItemPermutationRotationIteratorList source = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items()))
+				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItems(items())
 				.withParallelizationCount(2).build();
 		ParallelBoxItemPermutationRotationIteratorList fork = source.fork();
 
@@ -41,14 +40,14 @@ class IteratorForkTest {
 	@Test
 	void groupIteratorForksKeepTheirOwnGroups() {
 		DefaultBoxItemGroupPermutationRotationIterator source = DefaultBoxItemGroupPermutationRotationIterator.newBuilder()
-				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups())).build();
+				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItemGroups(groups()).build();
 		DefaultBoxItemGroupPermutationRotationIterator fork = source.fork();
 		fork.removeGroups(List.of(0));
 		assertThat(fork.getBoxItemGroups()[0]).isNull();
 		assertThat(source.getBoxItemGroups()[0]).isNotNull();
 
 		ParallelBoxItemGroupPermutationRotationIteratorList parallel = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups()))
+				.withLoadSize(4, 1, 1).withMaxLoadWeight(4).withBoxItemGroups(groups())
 				.withParallelizationCount(2).build();
 		ParallelBoxItemGroupPermutationRotationIteratorList parallelFork = parallel.fork();
 		parallelFork.removeGroups(List.of(0));

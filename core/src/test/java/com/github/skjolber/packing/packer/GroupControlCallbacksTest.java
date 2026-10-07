@@ -14,7 +14,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.point.AbstractPointControlsBuilder;
@@ -43,17 +42,17 @@ public class GroupControlCallbacksTest {
 		}
 
 		@Override
-		public void attempt(RemainingBoxItemGroup group, int offset, int length) {
+		public void attempt(BoxItemGroup group, int offset, int length) {
 			events.add("manifest attempt " + group.getId());
 		}
 
 		@Override
-		public void attemptSuccess(RemainingBoxItemGroup group) {
+		public void attemptSuccess(BoxItemGroup group) {
 			events.add("manifest success " + group.getId());
 		}
 
 		@Override
-		public void attemptFailure(RemainingBoxItemGroup group) {
+		public void attemptFailure(BoxItemGroup group) {
 			events.add("manifest failure " + group.getId());
 		}
 	}
@@ -68,17 +67,17 @@ public class GroupControlCallbacksTest {
 		}
 
 		@Override
-		public void attempt(RemainingBoxItemGroup group, int offset, int length) {
+		public void attempt(BoxItemGroup group, int offset, int length) {
 			events.add("point attempt " + group.getId());
 		}
 
 		@Override
-		public void attemptSuccess(RemainingBoxItemGroup group) {
+		public void attemptSuccess(BoxItemGroup group) {
 			events.add("point success " + group.getId());
 		}
 
 		@Override
-		public void attemptFailure(RemainingBoxItemGroup group) {
+		public void attemptFailure(BoxItemGroup group) {
 			events.add("point failure " + group.getId());
 		}
 	}

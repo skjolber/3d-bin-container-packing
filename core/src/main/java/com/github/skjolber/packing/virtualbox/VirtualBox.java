@@ -1,12 +1,12 @@
 package com.github.skjolber.packing.virtualbox;
 
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Alternative filled layouts of exactly the same original inventory. A packing
@@ -92,21 +92,21 @@ public class VirtualBox {
 	}
 
 	/** Create operation-local inventory. Stack-value indexes identify layouts, including after copying. */
-	public BoxItem toBoxItem() {
-		return toBoxItem(1);
+	public BoxItem toBoxItem(int globalIndex) {
+		return toBoxItem(globalIndex, 1);
 	}
 
 	/**
 	 * Create operation-local inventory for {@code count} interchangeable copies of this virtual box.
 	 * A counted item lets permutation searches treat equal blocks as identical boxes.
 	 */
-	public BoxItem toBoxItem(int count) {
+	public BoxItem toBoxItem(int globalIndex, int count) {
 		BoxStackValue[] values = new BoxStackValue[layouts.size()];
 		for(int i = 0; i < values.length; i++) {
 			var bounds = layouts.get(i).getBoundingBox();
 			values[i] = BoxStackValue.newBuilder().withDimensions(bounds.dx(), bounds.dy(), bounds.dz()).withIndex(i).build();
 		}
 		Box box = new Box(null, "Virtual box", layouts.get(0).getBoundingBox().getVolume(), weight, values, Map.of());
-		return new BoxItem(box, count);
+		return new BoxItem(box, count, -1, globalIndex);
 	}
 }

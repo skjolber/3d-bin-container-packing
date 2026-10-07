@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.laff;
 
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -18,8 +20,8 @@ import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFacto
  * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
  * <br>
  * <br>
- * Thread-safe implementation. Packing does not modify the box items and groups, and works on copies of the containers,
- * so the same input can be packed concurrently.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPackager {

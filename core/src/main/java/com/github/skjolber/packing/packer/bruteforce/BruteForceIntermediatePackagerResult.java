@@ -6,12 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -69,7 +69,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 		if(state != null) {
 			int[] permutations = state.getPermutations();
-			RemainingBoxItem[] boxItems = iterator.getBoxItems();
+			BoxItem[] boxItems = iterator.getBoxItems();
 			for(int i = 0; i < points.size(); i++) {
 				Box box = boxItems[permutations[i]].getBox();
 			
@@ -104,7 +104,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		}
 
 		int[] permutations = state.getPermutations();
-		RemainingBoxItem[] boxItems = iterator.getBoxItems();
+		BoxItem[] boxItems = iterator.getBoxItems();
 		
 		List<BoxStackValue> list = iterator.get(state, points.size());
 		
@@ -112,7 +112,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			Placement stackPlacement = placements[i];
 
 			BoxStackValue value = list.get(i);
-			RemainingBoxItem boxItem = boxItems[permutations[i]];
+			BoxItem boxItem = boxItems[permutations[i]];
 			if(boxItem.getLocalIndex() != permutations[i]) {
 				throw new IllegalStateException("Expected box item " + permutations[i] + ", got " + boxItem.getLocalIndex());
 			}

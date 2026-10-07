@@ -17,7 +17,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -49,7 +48,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 	@BeforeEach
 	public void setup() {
 		boxItems = new DefaultBoxItemSource();
-		boxItems.setValues(new ArrayList<RemainingBoxItem>());
+		boxItems.setValues(new ArrayList<BoxItem>());
 
 		pointCalculator = new DefaultPointCalculator3D(false, 10);
 		pointCalculator.clearToSize(10, 10, 10);
@@ -95,7 +94,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		stack.add(wholeButtom);
 
 		Box tooHeavy = Box.newBuilder().withSize(10, 10, 1).withWeight(6).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
+		boxItems.add(new BoxItem(tooHeavy));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -122,7 +121,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		stack.add(wholeButtom);
 
 		Box light = Box.newBuilder().withSize(10, 10, 1).withWeight(1).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(light)));
+		boxItems.add(new BoxItem(light));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -162,7 +161,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		wholeButtom.addLoad(overhangPlacement, 4, overhang.getWeight());
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).withWeight(1).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(tooLowMaxLoadLimit)));
+		boxItems.add(new BoxItem(tooLowMaxLoadLimit));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -200,7 +199,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		buttomPlacement.addLoad(overhangPlacement, 4, overhang.getWeight());
 
 		Box highLimit = Box.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(300).withWeight(1).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(highLimit)));
+		boxItems.add(new BoxItem(highLimit));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -242,14 +241,14 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		wholeButtom.addLoad(wholeLevel2Placement, 100, wholeLevel2.getWeight());
 
 		Box tooHeavy = Box.newBuilder().withSize(1, 1, 1).withWeight(2).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
+		boxItems.add(new BoxItem(tooHeavy));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
 
 		Box notTooHeavy = Box.newBuilder().withSize(1, 1, 1).withWeight(1).build();
 		boxItems.remove(0);
-		boxItems.add(new RemainingBoxItem(new BoxItem(notTooHeavy)));
+		boxItems.add(new BoxItem(notTooHeavy));
 
 		placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -299,7 +298,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		cornerPlacement.addLoad(overhangPlacement, 4, overhangBox.getWeight());
 
 		Box candidate = Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1000).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(candidate)));
+		boxItems.add(new BoxItem(candidate));
 
 		// only available point is below the overhanging box, which then rests on the new box and the corner box
 		// (in the result, the new box is inserted before the overhanging box): the bottom box carries 102
@@ -330,7 +329,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		stack.add(bottomPlacement);
 
 		Box tooHeavy = Box.newBuilder().withSize(10, 10, 1).withWeight(101).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
+		boxItems.add(new BoxItem(tooHeavy));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -358,7 +357,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		stack.add(bottomPlacement);
 
 		Box withinPressure = Box.newBuilder().withSize(10, 10, 1).withWeight(100).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(withinPressure)));
+		boxItems.add(new BoxItem(withinPressure));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -396,7 +395,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		bottomPlacement.addLoad(level2, 100, level2Box.getWeight());
 
 		Box newBox = Box.newBuilder().withSize(10, 10, 1).withWeight(0).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(newBox)));
+		boxItems.add(new BoxItem(newBox));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -432,7 +431,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		bottomPlacement.addLoad(level2, 100, level2Box.getWeight());
 
 		Box newBox = Box.newBuilder().withSize(10, 10, 1).withWeight(0).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(newBox)));
+		boxItems.add(new BoxItem(newBox));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -482,7 +481,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 
 		// Different Box object → not identical
 		Box boxB = Box.newBuilder().withSize(10, 10, 1).withWeight(0).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(boxB)));
+		boxItems.add(new BoxItem(boxB));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -512,7 +511,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 		stack.add(bottomPlacement);
 
 		// Same Box object → identical type
-		boxItems.add(new RemainingBoxItem(new BoxItem(boxA)));
+		boxItems.add(new BoxItem(boxA));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -542,7 +541,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControlsTest {
 
 		// Same Box type but weight exceeds maxLoadWeight
 		Box boxHeavyA = Box.newBuilder().withSize(10, 10, 1).withWeight(10).build();
-		boxItems.add(new RemainingBoxItem(new BoxItem(boxHeavyA)));
+		boxItems.add(new BoxItem(boxHeavyA));
 
 		Placement placement = ctrl.getPlacement(0, boxItems.size());
 		assertNull(placement);

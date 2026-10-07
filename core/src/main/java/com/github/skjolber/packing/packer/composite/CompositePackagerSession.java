@@ -2,14 +2,14 @@ package com.github.skjolber.packing.packer.composite;
 
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
@@ -213,12 +213,12 @@ public class CompositePackagerSession implements PackagerSession {
 	}
 
 	@Override
-	public List<RemainingBoxItem> getRemainingBoxItems() {
+	public List<BoxItem> getRemainingBoxItems() {
 		return primary().getRemainingBoxItems();
 	}
 
 	@Override
-	public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
 		return primary().getRemainingBoxItemGroups();
 	}
 

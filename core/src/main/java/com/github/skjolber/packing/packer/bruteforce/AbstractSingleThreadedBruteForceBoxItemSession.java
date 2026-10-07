@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
@@ -10,7 +11,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
@@ -24,7 +24,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 	protected final boolean load;
 	protected final PackagerInterruptSupplier interrupt;
 
-	public AbstractSingleThreadedBruteForceBoxItemSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+	public AbstractSingleThreadedBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, containers, containerCount);
 		this.interrupt = interrupt;
@@ -37,7 +37,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemSession extends Abs
 		
 		int count = 0;
 		for(int i = 0; i < boxItems.size(); i++) {
-			RemainingBoxItem stackableItem = boxItems.get(i);
+			BoxItem stackableItem = boxItems.get(i);
 			count += stackableItem.getCount();
 		}
 		

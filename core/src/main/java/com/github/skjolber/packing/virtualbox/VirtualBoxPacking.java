@@ -30,8 +30,7 @@ public class VirtualBoxPacking {
 	protected VirtualBoxPacking() {
 	}
 
-	/** By delegate box item: the delegate's results refer to the box items it was given */
-	protected final Map<BoxItem, Entry> entries = new IdentityHashMap<>();
+	protected final List<Entry> entries = new ArrayList<>();
 	protected final List<BoxItem> items = new ArrayList<>();
 
 	protected void add(BoxItem original) {
@@ -39,9 +38,9 @@ public class VirtualBoxPacking {
 	}
 
 	protected void add(BoxItem original, int count) {
-		BoxItem item = new BoxItem(original.getBox(), count);
-		items.add(item);
-		entries.put(item, new Entry(original, null));
+		int index = entries.size();
+		items.add(new BoxItem(original.getBox(), count, -1, index));
+		entries.add(new Entry(original, null));
 	}
 
 	protected void add(VirtualBox virtualBox) {
@@ -50,9 +49,8 @@ public class VirtualBoxPacking {
 
 	/** Equal blocks share one counted delegate item; each placement expands to the same layouts. */
 	protected void add(VirtualBox virtualBox, int count) {
-		BoxItem item = virtualBox.toBoxItem(count);
-		items.add(item);
-		entries.put(item, new Entry(null, virtualBox));
+		items.add(virtualBox.toBoxItem(entries.size(), count));
+		entries.add(new Entry(null, virtualBox));
 	}
 
 	protected List<BoxItem> getItems() {
@@ -61,13 +59,16 @@ public class VirtualBoxPacking {
 
 	/**
 	 * Resolve a delegate's orientation to a shared, prepared layout, or null for an
-	 * ordinary item. Finish constructing this mapping before sharing it with
+	 * ordinary item. Uses operation-global indexes and therefore survives copying
+	 * and local reindexing. Finish constructing this mapping before sharing it with
 	 * workers; neither the mapping nor its layouts may be modified during packing.
-	 *
-	 * @param item a box item given to the delegate (see {@link #getItems()})
 	 */
 	public VirtualBoxLayout getLayout(BoxItem item, BoxStackValue value) {
-		VirtualBox virtualBox = getEntry(item).virtualBox();
+		int globalIndex = item.getGlobalIndex();
+		if(globalIndex < 0 || globalIndex >= entries.size()) {
+			throw new IllegalStateException("Delegate did not preserve operation-global box item indexes");
+		}
+		VirtualBox virtualBox = entries.get(globalIndex).virtualBox();
 		if(virtualBox == null) {
 			return null;
 		}
@@ -83,16 +84,8 @@ public class VirtualBoxPacking {
 		return layout;
 	}
 
-	protected Entry getEntry(BoxItem item) {
-		Entry entry = entries.get(item);
-		if(entry == null) {
-			throw new IllegalStateException("Delegate result refers to an unknown box item");
-		}
-		return entry;
-	}
-
 	protected boolean hasVirtualBoxes() {
-		for(Entry entry : entries.values()) {
+		for(Entry entry : entries) {
 			if(entry.virtualBox() != null) {
 				return true;
 			}
@@ -118,7 +111,7 @@ public class VirtualBoxPacking {
 				BoxStackValue value = placement.getStackValue();
 				VirtualBoxLayout layout = getLayout(placement.getBoxItem(), value);
 				if(layout == null) {
-					Entry entry = getEntry(placement.getBoxItem());
+					Entry entry = entries.get(placement.getBoxItem().getGlobalIndex());
 					BoxStackValue originalValue = findOriginal(entry.original(), value);
 					append(expanded, remaining, entry.original(), originalValue,
 							placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());

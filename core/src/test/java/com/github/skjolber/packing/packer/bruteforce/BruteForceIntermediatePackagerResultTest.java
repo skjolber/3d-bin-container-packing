@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 class BruteForceIntermediatePackagerResultTest {
@@ -136,7 +135,7 @@ class BruteForceIntermediatePackagerResultTest {
 		return DefaultBoxItemPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 10, 10)
 				.withMaxLoadWeight(1000)
-				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items))
+				.withBoxItems(items)
 				.build();
 	}
 

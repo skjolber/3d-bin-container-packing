@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
@@ -52,19 +52,19 @@ public final class ContainerAllocationPlanner {
 	private static final class Unit {
 		private final long volume;
 		private final long weight;
-		private final RemainingBoxItem boxItem;
-		private final RemainingBoxItemGroup group;
+		private final BoxItem boxItem;
+		private final BoxItemGroup group;
 		private boolean[] fits;
 		private int fitCount;
 
-		private Unit(RemainingBoxItem boxItem) {
+		private Unit(BoxItem boxItem) {
 			this.volume = boxItem.getBox().getVolume();
 			this.weight = boxItem.getBox().getWeight();
 			this.boxItem = boxItem;
 			this.group = null;
 		}
 
-		private Unit(RemainingBoxItemGroup group) {
+		private Unit(BoxItemGroup group) {
 			this.volume = group.getVolume();
 			this.weight = group.getWeight();
 			this.boxItem = null;
@@ -163,7 +163,7 @@ public final class ContainerAllocationPlanner {
 			PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		ContainerInventory calculator = session.getContainerInventory();
 		int maxCount = session.getMaxContainerCount();
-		List<RemainingBoxItemGroup> groups = session.getRemainingBoxItemGroups();
+		List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
 		List<Unit> units;
 		if(groups != null) {
 			if(!calculator.isGroupFeasible(groups, maxCount, excluded)) {
@@ -171,7 +171,7 @@ public final class ContainerAllocationPlanner {
 			}
 			units = groupUnits(groups);
 		} else {
-			List<RemainingBoxItem> items = session.getRemainingBoxItems();
+			List<BoxItem> items = session.getRemainingBoxItems();
 			if(items == null) {
 				return null;
 			}
@@ -192,7 +192,7 @@ public final class ContainerAllocationPlanner {
 			throws PackagerInterruptedException {
 		ContainerInventory calculator = session.getContainerInventory();
 		int maxCount = session.getMaxContainerCount();
-		List<RemainingBoxItemGroup> groups = session.getRemainingBoxItemGroups();
+		List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
 		List<Unit> units;
 		if(groups != null && !groups.isEmpty()) {
 			if(!calculator.isGroupFeasible(groups, maxCount)) {
@@ -200,7 +200,7 @@ public final class ContainerAllocationPlanner {
 			}
 			units = groupUnits(groups);
 		} else {
-			List<RemainingBoxItem> items = session.getRemainingBoxItems();
+			List<BoxItem> items = session.getRemainingBoxItems();
 			if(items == null || items.isEmpty()) {
 				return true;
 			}
@@ -212,13 +212,13 @@ public final class ContainerAllocationPlanner {
 		return plan(calculator, units, maxCount, Objective.FEASIBLE, null, interrupt) != null;
 	}
 
-	private static List<Unit> boxUnits(List<RemainingBoxItem> items) {
+	private static List<Unit> boxUnits(List<BoxItem> items) {
 		int count = 0;
-		for(RemainingBoxItem item : items) {
+		for(BoxItem item : items) {
 			count += item.getCount();
 		}
 		List<Unit> units = new ArrayList<>(count);
-		for(RemainingBoxItem item : items) {
+		for(BoxItem item : items) {
 			Unit unit = new Unit(item);
 			for(int i = 0; i < item.getCount(); i++) {
 				units.add(unit);
@@ -227,9 +227,9 @@ public final class ContainerAllocationPlanner {
 		return units;
 	}
 
-	private static List<Unit> groupUnits(List<RemainingBoxItemGroup> groups) {
+	private static List<Unit> groupUnits(List<BoxItemGroup> groups) {
 		List<Unit> units = new ArrayList<>(groups.size());
-		for(RemainingBoxItemGroup group : groups) {
+		for(BoxItemGroup group : groups) {
 			units.add(new Unit(group));
 		}
 		return units;

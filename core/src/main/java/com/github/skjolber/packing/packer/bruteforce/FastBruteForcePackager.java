@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -17,8 +19,6 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
@@ -35,8 +35,8 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * So it does not try all possible placements (as i not all points)-
  * <br>
  * <br>
- * Thread-safe implementation. Packing does not modify the box items and groups, and works on copies of the containers,
- * so the same input can be packed concurrently.
+ * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
+ * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
  */
 
 public class FastBruteForcePackager extends AbstractBruteForcePackager {
@@ -150,7 +150,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+		public FastBruteForceSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 				int containerCount, BoxItemPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
@@ -197,7 +197,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 
-		public FastBruteForceGroupSession(List<RemainingBoxItem> boxItems, List<RemainingBoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
+		public FastBruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
 			super(boxItems, boxItemGroups, containers, containerCount, containerIterators, interrupt, hasLoadLimits(boxItems));
 			
@@ -240,7 +240,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(isGroupOrderSearch()) {
 				return attemptGroupOrders(i, best);
 			}
-			RemainingBoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
+			BoxItemGroup[] iteratorGroups = containerIterators[i].getBoxItemGroups();
 			// when skipping, the first group may be skipped
 			if(order != Order.CHRONOLOGICAL_ALLOW_SKIPPING && !canLoadNextGroup(iteratorGroups)) {
 				return null;
@@ -261,7 +261,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	@Override
-	protected FastBruteForceGroupSession createBoxItemGroupSession(List<RemainingBoxItemGroup> itemGroups,
+	protected FastBruteForceGroupSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups,
 			List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 		DefaultBoxItemGroupPermutationRotationIterator[] containerIterators = new DefaultBoxItemGroupPermutationRotationIterator[containers.size()];
 
@@ -277,15 +277,15 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					.build();
 		}
 		
-		List<RemainingBoxItem> boxItems = new ArrayList<>();
-		for (RemainingBoxItemGroup boxItemGroup : itemGroups) {
+		List<BoxItem> boxItems = new ArrayList<>();
+		for (BoxItemGroup boxItemGroup : itemGroups) {
 			boxItems.addAll(boxItemGroup.getItems());
 		}
 		return new FastBruteForceGroupSession(boxItems, itemGroups, containers, containerCount, containerIterators, interrupt);
 	}
 
 	@Override
-	protected FastBruteForceSession createBoxItemSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers,
+	protected FastBruteForceSession createBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt) {
 		BoxItemPermutationRotationIterator[] containerIterators = new DefaultBoxItemPermutationRotationIterator[containers.size()];
 
@@ -548,7 +548,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		long[] remainingVolumes = frames.remainingVolumes;
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
-		RemainingBoxItem[] items = frames.items;
+		BoxItem[] items = frames.items;
 		BoxStackValue[][] stackValues = frames.stackValues;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;
@@ -759,7 +759,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @return the best position (by the point comparator) where the box is fully supported, insertable and, with load
 	 *         limits, carried by the boxes below; or -1 if none
 	 */
-	protected int getBestFullySupported(FullSupportCandidates candidates, RemainingBoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int best = -1;
 		for(int i = 0; i < candidates.size(); i++) {
@@ -793,7 +793,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @param insertAfterCount the number of boxes placed before the box, which it must be insertable after
 	 * @return the best point (by the point comparator) where the box fits and is insertable, or -1 if none
 	 */
-	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, RemainingBoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {
@@ -820,7 +820,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/**
 	 * As {@link #getBestPoint}, for boxes with load limits: the boxes below must carry the box at the point.
 	 */
-	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, RemainingBoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {

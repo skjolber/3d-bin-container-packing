@@ -103,13 +103,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 0);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 0);
@@ -140,14 +140,14 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
 		assertEquals(containers.get(1), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
@@ -171,12 +171,12 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 0);
 
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		assertEquals(containers.size(), 0);
 	}
 	
@@ -197,12 +197,12 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 0);
 
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		assertEquals(containers.size(), 0);
 	}
 	
@@ -228,13 +228,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 	}
@@ -262,13 +262,13 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 1);
 		assertEquals(containers.get(0), 1);
 		
 		calculator = create(items, 10);
-		containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 0);
@@ -290,7 +290,7 @@ public class ContainerItemsCalculatorTest {
 		products.add(new BoxItem(Box.newBuilder().withDescription("B").withSize(4, 2, 1).withRotate3D().withWeight(1).build(), 1));
 		products.add(new BoxItem(Box.newBuilder().withDescription("C").withSize(6, 2, 1).withRotate3D().withWeight(1).build(), 1));
 
-		List<Integer> indexes = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(products)).getContainerIndexes();
+		List<Integer> indexes = calculator.getContainers(products).getContainerIndexes();
 		assertEquals(2, indexes.size());
 		
 		ContainerItem first = calculator.getContainerItem(indexes.get(0));
@@ -303,7 +303,7 @@ public class ContainerItemsCalculatorTest {
 		
 		List<BoxItem> products2 = products.subList(0, 2);
 		
-		List<Integer> indexes2 = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(products2)).getContainerIndexes();
+		List<Integer> indexes2 = calculator.getContainers(products2).getContainerIndexes();
 		assertEquals(0, indexes2.size());
 	}
 	
@@ -334,7 +334,7 @@ public class ContainerItemsCalculatorTest {
 		List<BoxItem> boxes = new ArrayList<>();
 		boxes.add(boxItem);
 		
-		List<Integer> containers = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(boxes)).getContainerIndexes();
+		List<Integer> containers = calculator.getContainers(boxes).getContainerIndexes();
 		
 		assertEquals(containers.size(), 2);
 		assertEquals(containers.get(0), 1);
@@ -366,13 +366,13 @@ public class ContainerItemsCalculatorTest {
 
 		ContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
 		ContainerItemsCostCalculator exact = new ExactContainerItemsCostCalculator();
-		assertEquals(5, estimate.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 3));
-		assertEquals(5, exact.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 3));
-		assertEquals(Long.MAX_VALUE, estimate.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 2));
-		assertEquals(Long.MAX_VALUE, exact.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 2));
+		assertEquals(5, estimate.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(5, exact.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(Long.MAX_VALUE, estimate.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(Long.MAX_VALUE, exact.getMinimumCost(calculator, List.of(boxes), 2));
 		calculator.getContainerItem(0).decrement();
-		assertEquals(7, estimate.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 3));
-		assertEquals(7, exact.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 3));
+		assertEquals(7, estimate.getMinimumCost(calculator, List.of(boxes), 3));
+		assertEquals(7, exact.getMinimumCost(calculator, List.of(boxes), 3));
 	}
 
 	@Test
@@ -388,10 +388,10 @@ public class ContainerItemsCalculatorTest {
 
 		ContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
 		ContainerItemsCostCalculator exact = new ExactContainerItemsCostCalculator();
-		assertEquals(2, estimate.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 2));
-		assertEquals(4, exact.getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(boxes)), 2));
-		assertEquals(2, estimate.getGroupMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItemGroups(List.of(group)), 2));
-		assertEquals(5, exact.getGroupMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItemGroups(List.of(group)), 2));
+		assertEquals(2, estimate.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(4, exact.getMinimumCost(calculator, List.of(boxes), 2));
+		assertEquals(2, estimate.getGroupMinimumCost(calculator, List.of(group), 2));
+		assertEquals(5, exact.getGroupMinimumCost(calculator, List.of(group), 2));
 	}
 
 	@Test
@@ -404,8 +404,8 @@ public class ContainerItemsCalculatorTest {
 				.build());
 		BoxItem box = new BoxItem(Box.newBuilder().withSize(2, 2, 1).withWeight(1).build(), 1);
 
-		assertEquals(1, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(box)), 1));
-		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(box)), 1));
+		assertEquals(1, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
+		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
 	}
 
 	@Test
@@ -417,8 +417,8 @@ public class ContainerItemsCalculatorTest {
 				.build());
 		BoxItem box = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build(), 1);
 
-		assertEquals(0, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(box)), 1));
-		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, AbstractPackagerSession.toRemainingBoxItems(List.of(box)), 1));
+		assertEquals(0, new EstimatingContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
+		assertEquals(5, new ExactContainerItemsCostCalculator().getMinimumCost(calculator, List.of(box), 1));
 	}
 
 

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
@@ -8,7 +9,6 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
@@ -30,7 +30,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 		// max volume and weight should already be accounted for by packager
 		
 		for (int i = offset; i < offset + length; i++) {
-			RemainingBoxItem boxItem = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
 			
@@ -40,7 +40,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
 					continue;
 				}
 			}
@@ -81,7 +81,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 		return result;
 	}
 	
-	protected Placement createPlacement(Point point3d, RemainingBoxItem boxItem, BoxStackValue stackValue) {
+	protected Placement createPlacement(Point point3d, BoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point3d);

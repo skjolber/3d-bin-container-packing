@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
@@ -13,13 +14,11 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
-import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 public abstract class AbstractBoxItemSession extends AbstractPackagerSession implements PackagerSession {
 
-	protected List<RemainingBoxItem> remainingBoxItems;
+	protected List<BoxItem> remainingBoxItems;
 	protected final List<BoxItem> initialBoxItems;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final Order order;
@@ -30,15 +29,19 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 	protected final boolean maxLoadIdenticalBoxCount;
 
 	public AbstractBoxItemSession(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
-		this(toRemainingBoxItems(boxItems), boxItems, order, containers, containerCount, interrupt);
-	}
-
-	private AbstractBoxItemSession(List<RemainingBoxItem> remainingBoxItems, List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
-		super(remainingBoxItems, containers, containerCount);
-		// the session packs the box items without modifying them (see AbstractPackager#createSession)
+		super(initializeGlobalIndexes(boxItems), containers, containerCount);
+		// the session owns the box items (see AbstractPackager#createSession) and packs copies of them
 		this.initialBoxItems = boxItems;
+		
 		this.order = order;
-
+		
+		List<BoxItem> boxCopies = new ArrayList<>(boxItems.size());
+		for (BoxItem item : boxItems) {
+			BoxItem copy = item.copy();
+			copy.setLocalIndex(boxCopies.size());
+			boxCopies.add(copy);
+		}
+		
 		boolean maxLoadWeight = false;
 		boolean maxLoadPressure = false;
 		boolean maxLoadBoxCount = false;
@@ -59,7 +62,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		this.maxLoadBoxCount = maxLoadBoxCount;
 		this.maxLoadIdenticalBoxCount = maxLoadIdenticalBoxCount;
 		
-		this.remainingBoxItems = remainingBoxItems;
+		this.remainingBoxItems = boxCopies;
 		this.interrupt = interrupt;
 	}
 
@@ -84,7 +87,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 			ContainerItem containerItem = packagerContainerItems.getContainerItem(index);
 			return pack(remainingBoxItems, containerItem, interrupt, order, abortOnAnyBoxTooBig);
 		} finally {
-			for(RemainingBoxItem boxItem : remainingBoxItems) {
+			for(BoxItem boxItem : remainingBoxItems) {
 				boxItem.reset();
 			}
 		}				
@@ -102,13 +105,13 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		Stack stack = container.getStack();
 
 		for (Placement stackPlacement : stack.getPlacements()) {
-			RemainingBoxItem boxItem = findRemainingBoxItem(getGlobalIndex(stackPlacement));
+			BoxItem boxItem = findRemainingBoxItem(stackPlacement.getBoxItem().getGlobalIndex());
 			boxItem.decrementResetCount();
 			boxItem.reset();
 		}
 		
-		List<RemainingBoxItem> remainingBoxItems = new ArrayList<>(this.remainingBoxItems.size());
-		for (RemainingBoxItem boxItem : this.remainingBoxItems) {
+		List<BoxItem> remainingBoxItems = new ArrayList<>(this.remainingBoxItems.size());
+		for (BoxItem boxItem : this.remainingBoxItems) {
 			if(!boxItem.isEmpty()) {
 				remainingBoxItems.add(boxItem);
 			}
@@ -118,8 +121,8 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		return container;
 	}
 
-	private RemainingBoxItem findRemainingBoxItem(int globalIndex) {
-		for(RemainingBoxItem boxItem : remainingBoxItems) {
+	private BoxItem findRemainingBoxItem(int globalIndex) {
+		for(BoxItem boxItem : remainingBoxItems) {
 			if(boxItem.getGlobalIndex() == globalIndex) {
 				return boxItem;
 			}
@@ -128,24 +131,19 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 	}
 
 	@Override
-	protected int getInputIndex(BoxItem boxItem) {
-		return getInputIndex(initialBoxItems, boxItem);
-	}
-
-	@Override
 	public List<Integer> getContainers() {
 		return packagerContainerItems.getContainers(remainingBoxItems).getContainerIndexes();
 	}
 
 	@Override
-	public List<RemainingBoxItem> getRemainingBoxItems() {
+	public List<BoxItem> getRemainingBoxItems() {
 		return remainingBoxItems;
 	}
 
 	@Override
 	public int countRemainingBoxes() {
 		int count = 0;
-		for(RemainingBoxItem boxItem : remainingBoxItems) {
+		for(BoxItem boxItem : remainingBoxItems) {
 			count += boxItem.getCount();
 		}
 		return count;
@@ -154,7 +152,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 	@Override
 	public long getRemainingVolume() {
 		long volume = 0L;
-		for(RemainingBoxItem boxItem : remainingBoxItems) {
+		for(BoxItem boxItem : remainingBoxItems) {
 			volume = Math.addExact(volume, boxItem.getVolume());
 		}
 		return volume;
@@ -163,7 +161,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 	@Override
 	public long getRemainingWeight() {
 		long weight = 0L;
-		for(RemainingBoxItem boxItem : remainingBoxItems) {
+		for(BoxItem boxItem : remainingBoxItems) {
 			weight = Math.addExact(weight, boxItem.getWeight());
 		}
 		return weight;
@@ -175,12 +173,12 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 	}
 
 	@Override
-	public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
 		return null;
 	}
 
 	protected abstract IntermediatePackagerResult pack(
-			List<RemainingBoxItem> remainingBoxItems, ContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
+			List<BoxItem> remainingBoxItems, ContainerItem containerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig
 			) throws PackagerInterruptedException;
 
 	

@@ -7,12 +7,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * Reorders the placements of a packed container into a possible insertion order (see {@link ContainerAccess}):
@@ -24,7 +24,7 @@ import com.github.skjolber.packing.api.packager.RemainingBoxItem;
  * access restrictions, or from the top, the placements are ordered by height (in linear time when already ordered,
  * otherwise n log n); through a door, by a stable topological sort, which keeps the order of the search wherever the
  * rules allow (quadratic in the number of placements). Boxes with different extraction orders (see
- * {@code RemainingBoxItem.withExtractionOrder(int)}) are inserted in descending extraction order, so that the boxes extracted
+ * {@code BoxItem.withExtractionOrder(int)}) are inserted in descending extraction order, so that the boxes extracted
  * first are inserted last, and the boxes of each box item group are inserted together, if possible (otherwise the
  * groups are interleaved).
  */
@@ -67,11 +67,11 @@ public final class InsertionSequencer {
 		boolean groups = false;
 		boolean extractionOrders = false;
 		if(!placements.isEmpty()) {
-			RemainingBoxItem first = placements.get(0).getRemainingBoxItem();
+			BoxItem first = placements.get(0).getBoxItem();
 			Object group = first != null ? first.getGroupKey() : null;
 			int order = first != null ? first.getExtractionOrder() : 0;
 			for (int i = 1; i < placements.size(); i++) {
-				RemainingBoxItem boxItem = placements.get(i).getRemainingBoxItem();
+				BoxItem boxItem = placements.get(i).getBoxItem();
 				if(!groups && !Objects.equals(boxItem != null ? boxItem.getGroupKey() : null, group)) {
 					groups = true;
 				}
@@ -104,15 +104,15 @@ public final class InsertionSequencer {
 	}
 
 	private static int getExtractionOrder(Placement placement) {
-		RemainingBoxItem boxItem = placement.getRemainingBoxItem();
+		BoxItem boxItem = placement.getBoxItem();
 		return boxItem != null ? boxItem.getExtractionOrder() : 0;
 	}
 
 	/**
-	 * @return the key of the placement's box item group, see {@link RemainingBoxItem#getGroupKey()}
+	 * @return the key of the placement's box item group, see {@link BoxItem#getGroupKey()}
 	 */
 	public static Object getGroupKey(Placement placement) {
-		RemainingBoxItem boxItem = placement.getRemainingBoxItem();
+		BoxItem boxItem = placement.getBoxItem();
 		return boxItem != null ? boxItem.getGroupKey() : null;
 	}
 
