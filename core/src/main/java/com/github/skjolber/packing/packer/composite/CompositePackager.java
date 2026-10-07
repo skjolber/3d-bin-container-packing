@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.composite;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,6 +12,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -75,7 +75,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 
 		protected final List<AbstractPackager<?>> baselinePackagers = new ArrayList<>();
 		protected final List<Stage> stages = new ArrayList<>();
-		protected Comparator<IntermediatePackagerResult> comparator;
+		protected IntermediatePackagerResultComparator comparator;
 		protected PackagerResultComparator packagerResultComparator;
 		protected ContainerStrategyFactory containerStrategyFactory;
 
@@ -121,7 +121,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		 * @param comparator for selecting the best result for each container
 		 * @return this builder
 		 */
-		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = Objects.requireNonNull(comparator);
 			return this;
 		}
@@ -178,7 +178,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 	protected final List<AbstractPackager<?>> baselinePackagers;
 	protected final List<Stage> stages;
 
-	protected CompositePackager(Comparator<IntermediatePackagerResult> comparator, PackagerResultComparator packagerResultComparator,
+	protected CompositePackager(IntermediatePackagerResultComparator comparator, PackagerResultComparator packagerResultComparator,
 			List<AbstractPackager<?>> baselinePackagers, List<Stage> stages) {
 		super(comparator);
 		this.packagerResultComparator = packagerResultComparator;

@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -27,7 +26,9 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.CopyablePackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -64,12 +65,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		protected int threads = -1;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
-		protected Comparator<IntermediatePackagerResult> comparator;
+		protected IntermediatePackagerResultComparator comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
 		protected ContainerStrategyFactory containerStrategyFactory;
 
-		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected boolean requireFullSupport;
 
 		/**
@@ -85,7 +86,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
-		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -97,7 +98,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(BoxItemGroupComparator comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -213,12 +214,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	final AtomicInteger groupOrderSplits = new AtomicInteger();
 
 	public ParallelBruteForcePackager(ExecutorService executorService, int parallelizationCount,
-			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
+			IntermediatePackagerResultComparator comparator, BruteForcePointIteratorFilter pointFilter) {
 		this(executorService, parallelizationCount, comparator, pointFilter, false);
 	}
 
 	public ParallelBruteForcePackager(ExecutorService executorService, int parallelizationCount, 
-			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
+			IntermediatePackagerResultComparator comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
 		super(comparator);
 
 		this.parallelizationCount = parallelizationCount;
@@ -912,7 +913,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator() {
+		protected IntermediatePackagerResultComparator getIntermediatePackagerResultComparator() {
 			return intermediatePackagerResultComparator;
 		}
 

@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
@@ -109,7 +110,7 @@ class PlacementControlsTestSupport {
 		return new LargestAreaPlacementComparator();
 	}
 
-	static Comparator<BoxItem> boxItemComparator() {
+	static BoxItemComparator boxItemComparator() {
 		return LargestAreaBoxItemComparator.getInstance();
 	}
 

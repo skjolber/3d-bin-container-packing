@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -37,16 +36,16 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	public static final int ARGUMENT_1_IS_BETTER = 1;
 	public static final int ARGUMENT_2_IS_BETTER = -1;
 
-	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
+	protected final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 	/** Whether results with less load volume always compare worse, see {@link IntermediatePackagerResultComparator#prefersHigherLoadVolume()} */
 	protected final boolean prefersHigherLoadVolume;
 	private volatile ContainerStrategyFactory containerStrategyFactory;
 	
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
 
-	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
+	public AbstractPackager(IntermediatePackagerResultComparator comparator) {
 		this.intermediatePackagerResultComparator = comparator;
-		this.prefersHigherLoadVolume = comparator instanceof IntermediatePackagerResultComparator c && c.prefersHigherLoadVolume();
+		this.prefersHigherLoadVolume = comparator != null && comparator.prefersHigherLoadVolume();
 		this.containerStrategyFactory = new DefaultContainerStrategyFactory(comparator,
 				this::createEmptyIntermediatePackagerResult);
 	}

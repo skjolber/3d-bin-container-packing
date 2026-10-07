@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.plain;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -16,9 +15,12 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
@@ -151,8 +153,8 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		protected boolean requireFullSupport;
 		protected boolean calculateSupport;
 		
-		protected Comparator<IntermediatePackagerResult> packagerResultComparator;
-		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected IntermediatePackagerResultComparator packagerResultComparator;
+		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
 		protected ContainerStrategyFactory containerStrategyFactory;
 		
@@ -167,12 +169,12 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		}
 
 		
-		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(BoxItemGroupComparator comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
 		
-		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.packagerResultComparator = comparator;
 			return this;
 		}
@@ -201,7 +203,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			
 			boolean requireFullSupport = b.requireFullSupport;
 			boolean calculateSupport = b.calculateSupport;
-			Comparator<BoxItem> boxItemComparator = b.boxItemComparator;
+			BoxItemComparator boxItemComparator = b.boxItemComparator;
 			
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
@@ -220,7 +222,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 
 			private boolean requireFullSupport;
 			private boolean calculateSupport;
-			private Comparator<BoxItem> boxItemComparator;
+			private BoxItemComparator boxItemComparator;
 			private PlacementComparatorFactory comparatorFactory;
 			
 			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
@@ -234,7 +236,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			}
 			
 
-			public PlacementControlsBuilderFactoryBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+			public PlacementControlsBuilderFactoryBuilder withBoxItemComparator(BoxItemComparator boxItemComparator) {
 				this.boxItemComparator = boxItemComparator;
 				return this;
 			}
@@ -300,9 +302,9 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 	}
 
 	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
-	protected Comparator<BoxItemGroup> boxItemGroupComparator;
+	protected BoxItemGroupComparator boxItemGroupComparator;
 
-	public PlainPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory) {
+	public PlainPackager(IntermediatePackagerResultComparator comparator, BoxItemGroupComparator boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 		super(comparator);
 
 		this.placementControlsBuilderFactory = placementControlsBuilderFactory;

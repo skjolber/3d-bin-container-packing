@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -22,9 +23,9 @@ import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 /** Plans and executes container packing using the lowest observed cost. */
 public class LowestCostContainerPackingStrategy implements ContainerStrategy {
 
-	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
+	private final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 
-	public LowestCostContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator) {
+	public LowestCostContainerPackingStrategy(IntermediatePackagerResultComparator comparator) {
 		this.intermediatePackagerResultComparator = comparator;
 	}
 

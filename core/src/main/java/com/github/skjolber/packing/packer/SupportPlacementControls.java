@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer;
 
 import java.util.List;
 
-import java.util.Comparator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -11,6 +10,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -33,7 +33,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 
 	public SupportPlacementControls(BoxItemSource boxItems, PointControls pointControls,
 			PointCalculator pointCalculator, Container container, Stack stack, Order order,
-			PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator) {
+			PlacementComparator placementComparator, BoxItemComparator boxItemComparator) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		this.skipBySupport = placementComparator != null && placementComparator.prefersHigherSupportedArea();
 	}

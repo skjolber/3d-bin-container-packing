@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.strategy.ordered;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -12,6 +11,7 @@ import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -28,16 +28,16 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
 public class ParallelContainerPackingStrategy implements ContainerStrategy {
 
 	private final ExecutorService executorService;
-	private final Comparator<IntermediatePackagerResult> comparator;
+	private final IntermediatePackagerResultComparator comparator;
 	private final boolean allocationFeasibilityCheck;
 
 	public ParallelContainerPackingStrategy(ExecutorService executorService,
-			Comparator<IntermediatePackagerResult> comparator) {
+			IntermediatePackagerResultComparator comparator) {
 		this(executorService, comparator, true);
 	}
 
 	private ParallelContainerPackingStrategy(ExecutorService executorService,
-			Comparator<IntermediatePackagerResult> comparator, boolean allocationFeasibilityCheck) {
+			IntermediatePackagerResultComparator comparator, boolean allocationFeasibilityCheck) {
 		this.executorService = executorService;
 		this.comparator = comparator;
 		this.allocationFeasibilityCheck = allocationFeasibilityCheck;

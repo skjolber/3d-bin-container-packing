@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.composite;
 
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -10,6 +9,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
@@ -40,7 +40,7 @@ public class CompositePackagerSession implements PackagerSession {
 	protected final boolean[] active;
 	protected final PackagerInterruptSupplier interrupt;
 	protected final List<PackagerInterruptSupplier> stageInterrupts;
-	protected final Comparator<IntermediatePackagerResult> comparator;
+	protected final IntermediatePackagerResultComparator comparator;
 	protected final boolean hints;
 	protected final IntermediatePackagerResult emptyResult;
 
@@ -53,12 +53,12 @@ public class CompositePackagerSession implements PackagerSession {
 	 * @param emptyResult result when no packager packs any box
 	 */
 	public CompositePackagerSession(PackagerSession[] sessions, PackagerInterruptSupplier interrupt, List<PackagerInterruptSupplier> stageInterrupts,
-			Comparator<IntermediatePackagerResult> comparator, boolean hints, IntermediatePackagerResult emptyResult) {
+			IntermediatePackagerResultComparator comparator, boolean hints, IntermediatePackagerResult emptyResult) {
 		this(sessions, newActive(sessions), interrupt, stageInterrupts, comparator, hints, emptyResult);
 	}
 
 	protected CompositePackagerSession(PackagerSession[] sessions, boolean[] active, PackagerInterruptSupplier interrupt, List<PackagerInterruptSupplier> stageInterrupts,
-			Comparator<IntermediatePackagerResult> comparator, boolean hints, IntermediatePackagerResult emptyResult) {
+			IntermediatePackagerResultComparator comparator, boolean hints, IntermediatePackagerResult emptyResult) {
 		this.sessions = sessions;
 		this.active = active;
 		this.interrupt = interrupt;

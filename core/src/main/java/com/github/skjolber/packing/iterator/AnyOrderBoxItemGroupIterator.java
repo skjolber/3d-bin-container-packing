@@ -1,9 +1,8 @@
 package com.github.skjolber.packing.iterator;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
@@ -17,9 +16,9 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 		protected BoxItemGroupSource filteredBoxItemGroups;
 		protected Container container;
 		protected PointCalculator pointCalculator;
-		protected Comparator<BoxItemGroup> comparator;
+		protected BoxItemGroupComparator comparator;
 		
-		public Builder withComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withComparator(BoxItemGroupComparator comparator) {
 			this.comparator = comparator;
 			return this;
 		}
@@ -59,13 +58,13 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	protected final BoxItemGroupSource filteredBoxItemGroups;
 	protected final Container container;
 	protected final PointCalculator pointCalculator;
-	protected final Comparator<BoxItemGroup> comparator;
+	protected final BoxItemGroupComparator comparator;
 	
 	protected int next = -1;
 	protected boolean dirty = true;
 	
 	public AnyOrderBoxItemGroupIterator(BoxItemGroupSource filteredBoxItemGroups, Container container,
-			PointCalculator pointCalculator, Comparator<BoxItemGroup> comparator) {
+			PointCalculator pointCalculator, BoxItemGroupComparator comparator) {
 		this.filteredBoxItemGroups = filteredBoxItemGroups;
 		this.container = container;
 		this.pointCalculator = pointCalculator;

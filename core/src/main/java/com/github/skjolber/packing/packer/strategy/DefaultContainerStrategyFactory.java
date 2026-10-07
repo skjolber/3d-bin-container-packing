@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.strategy;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -9,6 +8,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
@@ -26,7 +26,7 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	private final OrderedContainerPackingStrategy orderedWithoutAllocationFeasibilityCheck;
 	private final LowestCostContainerPackingStrategy lowestCost;
 
-	public DefaultContainerStrategyFactory(Comparator<IntermediatePackagerResult> comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier) {
+	public DefaultContainerStrategyFactory(IntermediatePackagerResultComparator comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier) {
 		this(new OrderedContainerPackingStrategy(comparator, emptyResultSupplier), new LowestCostContainerPackingStrategy(comparator));
 	}
 

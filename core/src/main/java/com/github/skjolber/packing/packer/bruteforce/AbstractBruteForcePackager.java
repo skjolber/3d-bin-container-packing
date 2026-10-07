@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.eclipse.collections.api.iterator.IntIterator;
@@ -19,6 +18,8 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
@@ -71,9 +72,9 @@ import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
 
 	/** Picks the order of box item groups with equal container priority and extraction order, see {@link #sortGroups(List)} */
-	protected Comparator<BoxItemGroup> boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
+	protected BoxItemGroupComparator boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 
-	protected void setBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
+	protected void setBoxItemGroupComparator(BoxItemGroupComparator boxItemGroupComparator) {
 		this.boxItemGroupComparator = boxItemGroupComparator;
 	}
 
@@ -87,7 +88,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/** Skip the group orders which cannot give a better result (see {@link AbstractBruteForceBoxItemGroupSession#attemptGroupOrders}); tests turn this off */
 	boolean skipGroupOrders = true;
 
-	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
+	public AbstractBruteForcePackager(IntermediatePackagerResultComparator comparator) {
 		super(comparator);
 	}
 	
@@ -657,7 +658,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 */
 	protected static class SkippingBest {
 
-		private final Comparator<IntermediatePackagerResult> comparator;
+		private final IntermediatePackagerResultComparator comparator;
 		/** results with less load volume always compare worse: only search where the load volume can be enough */
 		private final boolean volumeBound;
 		/** the load volume of the best result so far (of other attempts) */
@@ -671,7 +672,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		/** the number of boxes of the best arrangement */
 		protected int count;
 
-		protected SkippingBest(Comparator<IntermediatePackagerResult> comparator, boolean volumeBound, long minLoadVolume, Placement[] placements, int placementCount,
+		protected SkippingBest(IntermediatePackagerResultComparator comparator, boolean volumeBound, long minLoadVolume, Placement[] placements, int placementCount,
 				BruteForceIntermediatePackagerResult best, BruteForceIntermediatePackagerResult candidate) {
 			this.comparator = comparator;
 			this.volumeBound = volumeBound;

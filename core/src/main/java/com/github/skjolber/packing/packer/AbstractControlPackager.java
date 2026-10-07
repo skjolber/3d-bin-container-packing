@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
@@ -19,6 +18,7 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
@@ -42,7 +42,7 @@ import com.github.skjolber.packing.iterator.PackagerBoxItems;
  */
 public abstract class AbstractControlPackager<I extends Placement, B extends PackagerResultBuilder> extends AbstractPackager<B> {
 
-	public AbstractControlPackager(Comparator<IntermediatePackagerResult> comparator) {
+	public AbstractControlPackager(IntermediatePackagerResultComparator comparator) {
 		super(comparator);
 	}
 

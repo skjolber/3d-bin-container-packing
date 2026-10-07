@@ -1,11 +1,10 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -20,7 +19,7 @@ public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparat
 
 	public WeightLoadAwarePlacementControls(BoxItemSource boxItems,
 			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
-			Order order, PlacementComparator placementComparator, Comparator<BoxItem> boxItemComparator,
+			Order order, PlacementComparator placementComparator, BoxItemComparator boxItemComparator,
 			boolean fullSupport) {
 		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator,
 				boxItemComparator, fullSupport);

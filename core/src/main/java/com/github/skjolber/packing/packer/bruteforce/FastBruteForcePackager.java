@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -17,7 +16,9 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
@@ -72,16 +73,16 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	public static class Builder {
 
-		protected Comparator<IntermediatePackagerResult> comparator;
+		protected IntermediatePackagerResultComparator comparator;
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		protected ContainerStrategyFactory containerStrategyFactory;
 		
-		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
 			return this;
 		}
 
-		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected boolean requireFullSupport;
 
 		/**
@@ -104,7 +105,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(BoxItemGroupComparator comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -227,7 +228,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator() {
+		protected IntermediatePackagerResultComparator getIntermediatePackagerResultComparator() {
 			return intermediatePackagerResultComparator;
 		}
 
@@ -305,7 +306,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;
 
-	public FastBruteForcePackager(Comparator<IntermediatePackagerResult> comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
+	public FastBruteForcePackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		super(comparator);
 		this.fastPointComparator = pointComparator;
 	}

@@ -1,11 +1,10 @@
 package com.github.skjolber.packing.comparator;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 
-public class VolumeThenWeightBoxItemComparator implements Comparator<BoxItem> {
+public class VolumeThenWeightBoxItemComparator implements BoxItemComparator {
 
 	protected static final VolumeThenWeightBoxItemComparator INSTANCE = new VolumeThenWeightBoxItemComparator();
 	

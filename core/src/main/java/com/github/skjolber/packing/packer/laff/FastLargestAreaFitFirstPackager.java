@@ -1,11 +1,11 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
@@ -73,8 +73,8 @@ public class FastLargestAreaFitFirstPackager extends AbstractLargestAreaFitFirst
 	}
 
 	public FastLargestAreaFitFirstPackager(
-			Comparator<IntermediatePackagerResult> comparator,
-			Comparator<BoxItemGroup> boxItemGroupComparator,
+			IntermediatePackagerResultComparator comparator,
+			BoxItemGroupComparator boxItemGroupComparator,
 			PlacementControlsBuilderFactory placementControlsBuilderFactory,
 			PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
 		super(comparator, 

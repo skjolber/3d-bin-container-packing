@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.laff;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
@@ -17,10 +16,12 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
@@ -144,9 +145,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
 	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
 	
-	protected Comparator<BoxItemGroup> boxItemGroupComparator;
+	protected BoxItemGroupComparator boxItemGroupComparator;
 	
-	public AbstractLargestAreaFitFirstPackager(Comparator<IntermediatePackagerResult> comparator, Comparator<BoxItemGroup> boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
+	public AbstractLargestAreaFitFirstPackager(IntermediatePackagerResultComparator comparator, BoxItemGroupComparator boxItemGroupComparator, PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
 		super(comparator);
 
 		this.firstPlacementControlsBuilderFactory = firstPlacementControlsBuilderFactory;

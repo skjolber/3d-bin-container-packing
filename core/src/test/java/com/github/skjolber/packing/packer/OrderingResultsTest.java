@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -21,6 +20,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
@@ -436,7 +436,7 @@ public class OrderingResultsTest {
 	//
 	@Test
 	public void bruteForceSkippingChoosesByTheResultComparator() {
-		Comparator<IntermediatePackagerResult> mostBoxes = (a, b) -> {
+		IntermediatePackagerResultComparator mostBoxes = (a, b) -> {
 			int sizes = Integer.compare(size(a), size(b));
 			return sizes != 0 ? sizes : Long.compare(a.getLoadVolume(), b.getLoadVolume());
 		};

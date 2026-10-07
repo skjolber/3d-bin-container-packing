@@ -1,13 +1,13 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorAttribute;
@@ -49,7 +49,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 	 */
 	protected PlacementComparatorFactory comparatorBuilderFactory;
 
-	protected Comparator<BoxItem> boxItemComparator;
+	protected BoxItemComparator boxItemComparator;
 
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
@@ -72,7 +72,7 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 		return this;
 	}
 
-	public LoadAwarePlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+	public LoadAwarePlacementControlsBuilder withBoxItemComparator(BoxItemComparator boxItemComparator) {
 		this.boxItemComparator = boxItemComparator;
 		return this;
 	}

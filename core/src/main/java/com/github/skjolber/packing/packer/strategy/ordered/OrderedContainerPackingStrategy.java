@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.strategy.ordered;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -25,29 +24,29 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession session, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
 	}
 
-	private final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
+	private final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 	private final Supplier<IntermediatePackagerResult> emptyResultSupplier;
 	private final SingleContainerPacker singleContainerPacker;
 	private final boolean allocationFeasibilityCheck;
 	/** Whether to pass the best result to attempts, see {@link PackagerSession#attempt(int, IntermediatePackagerResult, boolean)} */
 	private final boolean bestResultHints;
 
-	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator,
+	public OrderedContainerPackingStrategy(IntermediatePackagerResultComparator comparator,
 			Supplier<IntermediatePackagerResult> emptyResultSupplier) {
 		this(comparator, emptyResultSupplier, null, true);
 	}
 
-	public OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker) {
+	public OrderedContainerPackingStrategy(IntermediatePackagerResultComparator comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker) {
 		this(comparator, emptyResultSupplier, singleContainerPacker, true);
 	}
 
-	private OrderedContainerPackingStrategy(Comparator<IntermediatePackagerResult> comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker, boolean allocationFeasibilityCheck) {
+	private OrderedContainerPackingStrategy(IntermediatePackagerResultComparator comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier, SingleContainerPacker singleContainerPacker, boolean allocationFeasibilityCheck) {
 		this.intermediatePackagerResultComparator = comparator;
 		this.emptyResultSupplier = emptyResultSupplier;
 		this.singleContainerPacker = singleContainerPacker == null ? this::packSingle : singleContainerPacker;
 		this.allocationFeasibilityCheck = allocationFeasibilityCheck;
 		// a session may drop results with less load volume than the best result
-		this.bestResultHints = comparator instanceof IntermediatePackagerResultComparator c && c.prefersHigherLoadVolume();
+		this.bestResultHints = comparator != null && comparator.prefersHigherLoadVolume();
 	}
 
 	/**

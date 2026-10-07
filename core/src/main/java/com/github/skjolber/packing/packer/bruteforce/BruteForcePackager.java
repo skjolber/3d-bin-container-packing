@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +15,9 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
@@ -356,17 +357,17 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	public static class Builder {
 
-		protected Comparator<IntermediatePackagerResult> comparator;
+		protected IntermediatePackagerResultComparator comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
 		protected ContainerStrategyFactory containerStrategyFactory;
 		
-		public Builder withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
 			return this;
 		}
 		
-		protected Comparator<BoxItemGroup> boxItemGroupComparator;
+		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected boolean requireFullSupport;
 
 		/**
@@ -389,7 +390,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		 * @param comparator box item group comparator
 		 * @return this builder
 		 */
-		public Builder withBoxItemGroupComparator(Comparator<BoxItemGroup> comparator) {
+		public Builder withBoxItemGroupComparator(BoxItemGroupComparator comparator) {
 			this.boxItemGroupComparator = comparator;
 			return this;
 		}
@@ -520,7 +521,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator() {
+		protected IntermediatePackagerResultComparator getIntermediatePackagerResultComparator() {
 			return intermediatePackagerResultComparator;
 		}
 
@@ -557,11 +558,11 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, boolean filterReversePermutations) {
+	public BruteForcePackager(IntermediatePackagerResultComparator comparator, boolean filterReversePermutations) {
 		this(comparator, null, filterReversePermutations);
 	}
 
-	public BruteForcePackager(Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
+	public BruteForcePackager(IntermediatePackagerResultComparator comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
 		super(comparator);
 		this.pointFilter = pointFilter;
 		this.filterReversePermutations = filterReversePermutations;

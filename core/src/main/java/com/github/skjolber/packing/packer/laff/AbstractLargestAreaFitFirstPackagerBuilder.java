@@ -1,11 +1,12 @@
 package com.github.skjolber.packing.packer.laff;
 
-import java.util.Comparator;
 import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
 
@@ -15,9 +16,9 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 	protected boolean requireFullSupport;
 	protected boolean calculateSupport;
 
-	protected Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
+	protected IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 	
-	protected Comparator<BoxItemGroup> boxItemGroupComparator;
+	protected BoxItemGroupComparator boxItemGroupComparator;
 
 	protected PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory;
 	protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
@@ -47,13 +48,13 @@ public abstract class AbstractLargestAreaFitFirstPackagerBuilder<B extends Abstr
 		return (B)this;
 	}
 
-	public B withIntermediatePackagerResultComparator(Comparator<IntermediatePackagerResult> comparator) {
+	public B withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 		this.intermediatePackagerResultComparator = comparator;
 		return (B)this;
 	}
 	
 
-	public B withBoxItemGroupComparator(Comparator<BoxItemGroup> boxItemGroupComparator) {
+	public B withBoxItemGroupComparator(BoxItemGroupComparator boxItemGroupComparator) {
 		this.boxItemGroupComparator = boxItemGroupComparator;
 		return (B)this;
 	}

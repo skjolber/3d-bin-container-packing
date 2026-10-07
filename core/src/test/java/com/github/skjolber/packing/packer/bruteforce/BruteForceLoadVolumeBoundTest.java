@@ -6,7 +6,6 @@ import static com.github.skjolber.packing.packer.PackagerGoldenMasterTest.packSu
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
@@ -18,6 +17,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.PackagerInput;
@@ -135,7 +135,7 @@ public class BruteForceLoadVolumeBoundTest {
 	}
 
 	/** The same comparison, without declaring that load volume is compared first. */
-	private static Comparator<IntermediatePackagerResult> withoutLoadVolumeBound(Comparator<IntermediatePackagerResult> comparator) {
+	private static IntermediatePackagerResultComparator withoutLoadVolumeBound(IntermediatePackagerResultComparator comparator) {
 		return (a, b) -> comparator.compare(a, b);
 	}
 }

@@ -1,12 +1,11 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
@@ -17,7 +16,7 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected PlacementComparator placementComparator;
-	protected Comparator<BoxItem> boxItemComparator;
+	protected BoxItemComparator boxItemComparator;
 
 	protected BoxItemSource boxItems;
 	
@@ -73,7 +72,7 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		return this;
 	}
 
-	public ComparatorPlacementControlsBuilder withBoxItemComparator(Comparator<BoxItem> boxItemComparator) {
+	public ComparatorPlacementControlsBuilder withBoxItemComparator(BoxItemComparator boxItemComparator) {
 		this.boxItemComparator = boxItemComparator;
 		return this;
 	}

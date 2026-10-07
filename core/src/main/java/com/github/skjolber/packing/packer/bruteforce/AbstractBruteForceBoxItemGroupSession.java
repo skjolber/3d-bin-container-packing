@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +17,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -281,7 +281,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 */
 	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
 
-	protected abstract Comparator<IntermediatePackagerResult> getIntermediatePackagerResultComparator();
+	protected abstract IntermediatePackagerResultComparator getIntermediatePackagerResultComparator();
 
 	/**
 	 * Copies of the groups in an order, for an iterator of their own: building an iterator points the boxes' stack

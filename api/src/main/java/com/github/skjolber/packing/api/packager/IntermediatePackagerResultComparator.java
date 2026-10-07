@@ -1,9 +1,10 @@
 package com.github.skjolber.packing.api.packager;
 
-import java.util.Comparator;
-
-
-public interface IntermediatePackagerResultComparator extends Comparator<IntermediatePackagerResult> {
+/**
+ * Compares the results of packing a container, to choose the best.
+ */
+@FunctionalInterface
+public interface IntermediatePackagerResultComparator {
 
 	static final int ARGUMENT_1_IS_BETTER = 1;
 	static final int ARGUMENT_2_IS_BETTER = -1;
@@ -16,7 +17,6 @@ public interface IntermediatePackagerResultComparator extends Comparator<Interme
 	 * Return 0 otherwise.
 	 */
 
-	@Override
 	int compare(IntermediatePackagerResult o1, IntermediatePackagerResult o2);
 
 	/**

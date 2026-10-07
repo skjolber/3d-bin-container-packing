@@ -62,8 +62,8 @@ module. A comparator which does not read the supported area should return false
 from `usesSupportedArea()`, and one which never prefers less support should
 return true from `prefersHigherSupportedArea()`: the controls then skip load
 validation and support calculation for candidates which cannot be selected.
-Results of packing attempts are compared with a
-`Comparator<IntermediatePackagerResult>`, also in `api`. Support-aware and load-aware implementations in
+Results of packing attempts are compared with an
+`IntermediatePackagerResultComparator`, also in `api`. Support-aware and load-aware implementations in
 `com.github.skjolber.packing.packer` are examples for physical constraints.
 Replacing the default controls does not automatically retain their checks:
 implement the requested constraints or reject unsupported configurations in

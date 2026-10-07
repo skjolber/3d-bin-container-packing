@@ -4,7 +4,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,6 +14,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
@@ -32,7 +32,7 @@ public class WeightLoadAwarePlacementControlsTest {
 	private Stack stack;
 	private Order order = Order.NONE;
 	private PlacementComparator placementComparator;
-	private Comparator<BoxItem> boxItemComparator;
+	private BoxItemComparator boxItemComparator;
 	private boolean fullSupport = false;
 	private WeightLoadAwarePlacementControls weightLoadAwarePlacementControls;
 	
