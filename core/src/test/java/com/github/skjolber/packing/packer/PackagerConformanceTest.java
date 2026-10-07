@@ -2,6 +2,10 @@ package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,10 +13,10 @@ import java.util.Map;
 import java.util.Random;
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -26,6 +30,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
@@ -35,14 +40,17 @@ import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePa
 import com.github.skjolber.packing.packer.composite.CompositePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
+import com.github.skjolber.packing.packer.plain.MaxFireHazardBoxItemGroupsPerContainerManifestControls;
+import com.github.skjolber.packing.packer.plain.MaxFireHazardBoxItemPerContainerManifestControls;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.validator.DefaultValidator;
 import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
+import com.github.skjolber.packing.validator.stability.FullySupportedStabilityValidator;
 
 /**
  * Every packager either packs each input feature correctly, or rejects the input: no packager silently ignores a
  * feature. Each cell (scenario, packager) has an expected status; a known gap must still fail, so that the table is
- * updated when a gap is closed.
+ * updated when a gap is closed. The expected table is the feature support table of FEATURES.md.
  */
 public class PackagerConformanceTest {
 
@@ -60,6 +68,17 @@ public class PackagerConformanceTest {
 		Status(String code) {
 			this.code = code;
 		}
+
+		static String describe(String code) {
+			switch (code) {
+				case "S":
+					return "✓";
+				case "R":
+					return "rejected";
+				default:
+					return "known gap";
+			}
+		}
 	}
 
 	private static final int SEEDS = 6;
@@ -67,19 +86,45 @@ public class PackagerConformanceTest {
 	/** enough containers for every scenario, so that a packager which does not pack all boxes has a gap */
 	private static final int CONTAINERS = 8;
 
-	private static final Map<String, Supplier<AbstractPackager<?>>> PACKAGERS = new LinkedHashMap<>();
+	/** the packagers, configured for a scenario (full support) */
+	private static final Map<String, Function<Spec, AbstractPackager<?>>> PACKAGERS = new LinkedHashMap<>();
+
+	/** column titles of the feature support table */
+	private static final Map<String, String> PACKAGER_TITLES = new LinkedHashMap<>();
 
 	static {
-		PACKAGERS.put("plain", () -> PlainPackager.newBuilder().build());
-		PACKAGERS.put("laff", () -> LargestAreaFitFirstPackager.newBuilder().build());
-		PACKAGERS.put("fastLaff", () -> FastLargestAreaFitFirstPackager.newBuilder().build());
-		PACKAGERS.put("bruteForce", () -> BruteForcePackager.newBuilder().build());
-		PACKAGERS.put("fastBruteForce", () -> FastBruteForcePackager.newBuilder().build());
-		PACKAGERS.put("parallelBruteForce", () -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
-		PACKAGERS.put("composite", () -> CompositePackager.newBuilder()
-				.withPackager(PlainPackager.newBuilder().build())
-				.withPackager(FastBruteForcePackager.newBuilder().build(), 1000)
+		PACKAGERS.put("plain", spec -> PlainPackager.newBuilder()
+				.withRequireFullSupport(spec.fullSupport)
 				.build());
+		PACKAGERS.put("laff", spec -> LargestAreaFitFirstPackager.newBuilder()
+				.withRequireFullSupport(spec.fullSupport)
+				.build());
+		PACKAGERS.put("fastLaff", spec -> FastLargestAreaFitFirstPackager.newBuilder()
+				.withRequireFullSupport(spec.fullSupport)
+				.build());
+		PACKAGERS.put("bruteForce", spec -> BruteForcePackager.newBuilder()
+				.withRequireFullSupport(spec.fullSupport)
+				.build());
+		PACKAGERS.put("fastBruteForce", spec -> FastBruteForcePackager.newBuilder()
+				.withRequireFullSupport(spec.fullSupport)
+				.build());
+		PACKAGERS.put("parallelBruteForce", spec -> ParallelBoxItemBruteForcePackager.newBuilder()
+				.withThreads(2)
+				.withParallelizationCount(2)
+				.withRequireFullSupport(spec.fullSupport)
+				.build());
+		PACKAGERS.put("composite", spec -> CompositePackager.newBuilder()
+				.withPackager(PlainPackager.newBuilder().withRequireFullSupport(spec.fullSupport).build())
+				.withPackager(FastBruteForcePackager.newBuilder().withRequireFullSupport(spec.fullSupport).build(), 1000)
+				.build());
+
+		PACKAGER_TITLES.put("plain", "Plain");
+		PACKAGER_TITLES.put("laff", "LAFF");
+		PACKAGER_TITLES.put("fastLaff", "Fast LAFF");
+		PACKAGER_TITLES.put("bruteForce", "Brute force");
+		PACKAGER_TITLES.put("fastBruteForce", "Fast brute force");
+		PACKAGER_TITLES.put("parallelBruteForce", "Parallel brute force");
+		PACKAGER_TITLES.put("composite", "Composite");
 	}
 
 	/**
@@ -109,6 +154,41 @@ public class PackagerConformanceTest {
 		EXPECTED.put("loadLimitsGroups",           "S S S S S S S");
 		EXPECTED.put("chronologicalLoadLimits",    "S S S S S S S");
 		EXPECTED.put("allowSkippingLoadLimits",    "S S S S S S S");
+		EXPECTED.put("fullSupport",                "S S S S S S S");
+		// LAFF: a box which is taller than its level goes into a new level on top, where it may only be fully supported
+		// by the level's boxes; a group fails when a later box needs the floor beside them (seed 4)
+		EXPECTED.put("fullSupportGroups",          "S G G S S S S");
+		EXPECTED.put("manifestControls",           "S S S R R R S");
+		EXPECTED.put("manifestControlsGroups",     "S S S R R R S");
+	}
+
+	/** row titles of the feature support table */
+	private static final Map<String, String> SCENARIO_TITLES = new LinkedHashMap<>();
+
+	static {
+		SCENARIO_TITLES.put("boxItems", "Box items");
+		SCENARIO_TITLES.put("groups", "Box item groups");
+		SCENARIO_TITLES.put("chronological", "Box item order (`CHRONOLOGICAL`)");
+		SCENARIO_TITLES.put("chronologicalGroups", "Box item order, groups");
+		SCENARIO_TITLES.put("allowSkipping", "Box item order with skipping (`CHRONOLOGICAL_ALLOW_SKIPPING`)");
+		SCENARIO_TITLES.put("allowSkippingGroups", "Box item order with skipping, groups");
+		SCENARIO_TITLES.put("containerPriorities", "Container priorities");
+		SCENARIO_TITLES.put("containerPrioritiesGroups", "Container priorities, groups");
+		SCENARIO_TITLES.put("extractionOrder", "Extraction order");
+		SCENARIO_TITLES.put("extractionOrderGroups", "Extraction order, groups");
+		SCENARIO_TITLES.put("frontAccess", "Container access through a door (`FRONT`)");
+		SCENARIO_TITLES.put("frontAccessGroups", "Container access through a door, groups");
+		SCENARIO_TITLES.put("obstacles", "Obstacles");
+		SCENARIO_TITLES.put("obstaclesGroups", "Obstacles, groups");
+		SCENARIO_TITLES.put("obstaclesTwoContainerTypes", "Obstacles in one of two container types");
+		SCENARIO_TITLES.put("loadLimits", "Box load limits");
+		SCENARIO_TITLES.put("loadLimitsGroups", "Box load limits, groups");
+		SCENARIO_TITLES.put("chronologicalLoadLimits", "Box load limits, box item order");
+		SCENARIO_TITLES.put("allowSkippingLoadLimits", "Box load limits, box item order with skipping");
+		SCENARIO_TITLES.put("fullSupport", "Full support (`withRequireFullSupport`)");
+		SCENARIO_TITLES.put("fullSupportGroups", "Full support, groups");
+		SCENARIO_TITLES.put("manifestControls", "Custom manifest controls");
+		SCENARIO_TITLES.put("manifestControlsGroups", "Custom manifest controls, groups");
 	}
 
 	/** An input */
@@ -122,6 +202,10 @@ public class PackagerConformanceTest {
 		/** a second, smaller container type without obstacles */
 		boolean secondContainerType;
 		boolean load;
+		/** the packager requires full support */
+		boolean fullSupport;
+		/** every second box is a fire hazard, and a manifest control allows one fire hazard (box or group) per container */
+		boolean fireHazards;
 	}
 
 	private static final Map<String, Function<Random, Spec>> SCENARIOS = new LinkedHashMap<>();
@@ -184,9 +268,14 @@ public class PackagerConformanceTest {
 		SCENARIOS.put("loadLimitsGroups", random -> groups(random, true));
 		SCENARIOS.put("chronologicalLoadLimits", random -> withOrder(items(random, true), Order.CHRONOLOGICAL));
 		SCENARIOS.put("allowSkippingLoadLimits", random -> withOrder(items(random, true), Order.CHRONOLOGICAL_ALLOW_SKIPPING));
+		SCENARIOS.put("fullSupport", random -> withFullSupport(items(random)));
+		// more boxes, so that some are stacked
+		SCENARIOS.put("fullSupportGroups", random -> withFullSupport(groups(random, false, false, 2, 2)));
+		SCENARIOS.put("manifestControls", random -> items(random, false, true));
+		SCENARIOS.put("manifestControlsGroups", random -> groups(random, false, true));
 	}
 
-	private static Box box(Random random, int index, boolean load) {
+	private static Box box(Random random, int index, boolean load, boolean fireHazard) {
 		Box.Builder builder = Box.newBuilder()
 				.withId("b" + index)
 				.withSize(1 + random.nextInt(3), 1 + random.nextInt(3), 1 + random.nextInt(2))
@@ -196,6 +285,9 @@ public class PackagerConformanceTest {
 			// carries at most a little weight
 			builder.withMaxLoadWeight(random.nextInt(3));
 		}
+		if(fireHazard) {
+			builder.withProperty(MaxFireHazardBoxItemPerContainerManifestControls.KEY, Boolean.TRUE);
+		}
 		return builder.build();
 	}
 
@@ -204,12 +296,17 @@ public class PackagerConformanceTest {
 	}
 
 	private static Spec items(Random random, boolean load) {
+		return items(random, load, false);
+	}
+
+	private static Spec items(Random random, boolean load, boolean fireHazards) {
 		Spec spec = new Spec();
 		spec.load = load;
+		spec.fireHazards = fireHazards;
 		spec.boxItems = new ArrayList<>();
 		int count = 4 + random.nextInt(3);
 		for (int i = 0; i < count; i++) {
-			spec.boxItems.add(new BoxItem(box(random, i, load), 1));
+			spec.boxItems.add(new BoxItem(box(random, i, load, fireHazards && i % 2 == 0), 1));
 		}
 		return spec;
 	}
@@ -219,16 +316,30 @@ public class PackagerConformanceTest {
 	}
 
 	private static Spec groups(Random random, boolean load) {
+		return groups(random, load, false);
+	}
+
+	private static Spec groups(Random random, boolean load, boolean fireHazards) {
+		return groups(random, load, fireHazards, 2, 1);
+	}
+
+	/**
+	 * @param minGroups the minimum number of groups (at most one more)
+	 * @param minBoxes the minimum number of boxes per group (at most one more)
+	 */
+	private static Spec groups(Random random, boolean load, boolean fireHazards, int minGroups, int minBoxes) {
 		Spec spec = new Spec();
 		spec.load = load;
+		spec.fireHazards = fireHazards;
 		spec.groups = new ArrayList<>();
 		int index = 0;
-		int groupCount = 2 + random.nextInt(2);
+		int groupCount = minGroups + random.nextInt(2);
 		for (int g = 0; g < groupCount; g++) {
 			List<BoxItem> boxItems = new ArrayList<>();
-			int count = 1 + random.nextInt(2);
+			int count = minBoxes + random.nextInt(2);
 			for (int i = 0; i < count; i++) {
-				boxItems.add(new BoxItem(box(random, index++, load), 1));
+				boxItems.add(new BoxItem(box(random, index, load, fireHazards && index % 2 == 0), 1));
+				index++;
 			}
 			spec.groups.add(new BoxItemGroup("g" + g, boxItems));
 		}
@@ -238,6 +349,18 @@ public class PackagerConformanceTest {
 	private static Spec withOrder(Spec spec, Order order) {
 		spec.order = order;
 		return spec;
+	}
+
+	private static Spec withFullSupport(Spec spec) {
+		spec.fullSupport = true;
+		return spec;
+	}
+
+	private static ManifestControlsBuilderFactory manifestControls(Spec spec) {
+		if(spec.groups != null) {
+			return MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1);
+		}
+		return MaxFireHazardBoxItemPerContainerManifestControls.newFactory(1);
 	}
 
 	private static Spec withObstacle(Spec spec) {
@@ -251,12 +374,24 @@ public class PackagerConformanceTest {
 		if(spec.secondContainerType) {
 			builder.withContainer(Container.newBuilder().withId("small").withSize(3, 3, 2).withMaxLoadWeight(100).withAccess(spec.access).build(), CONTAINERS);
 		}
-		return builder.build();
+		List<ContainerItem> containerItems = builder.build();
+		if(spec.fireHazards) {
+			for (ContainerItem containerItem : containerItems) {
+				containerItem.setBoxItemControlsBuilderFactory(manifestControls(spec));
+			}
+		}
+		return containerItems;
 	}
 
 	private static PackagerResult pack(AbstractPackager<?> packager, Spec spec, List<ContainerItem> containerItems) {
 		var builder = packager.newResultBuilder();
-		if(spec.obstacles.isEmpty()) {
+		if(spec.fireHazards) {
+			for (ContainerItem containerItem : containerItems) {
+				builder.withContainerItem(b -> b
+						.withContainerItem(containerItem)
+						.withBoxItemControlsBuilderFactory(manifestControls(spec)));
+			}
+		} else if(spec.obstacles.isEmpty()) {
 			builder.withContainerItems(containerItems);
 		} else {
 			ContainerItem withObstacles = containerItems.get(0);
@@ -318,6 +453,18 @@ public class PackagerConformanceTest {
 					}
 				}
 			}
+			if(spec.fullSupport) {
+				List<ValidatorResultReason> reasons = new ArrayList<>();
+				if(!new FullySupportedStabilityValidator().isValid(placements, reasons)) {
+					return "full support: " + reasons.get(0).getMessage();
+				}
+			}
+			if(spec.fireHazards) {
+				int fireHazards = countFireHazards(spec, placements);
+				if(fireHazards > 1) {
+					return fireHazards + " fire hazards in a container";
+				}
+			}
 			if(spec.load) {
 				LoadValidator loadValidator = new DefaultLoadValidatorBuilder()
 						.withPlacements(placements)
@@ -330,6 +477,31 @@ public class PackagerConformanceTest {
 			}
 		}
 		return null;
+	}
+
+	/**
+	 * @return the number of fire hazard boxes, or with groups the number of groups with a fire hazard box
+	 */
+	private static int countFireHazards(Spec spec, List<Placement> placements) {
+		List<String> groups = new ArrayList<>();
+		int count = 0;
+		for (Placement placement : placements) {
+			Box box = placement.getStackValue().getBox();
+			Boolean fireHazard = box.getProperty(MaxFireHazardBoxItemPerContainerManifestControls.KEY);
+			if(fireHazard == null || !fireHazard) {
+				continue;
+			}
+			if(spec.groups == null) {
+				count++;
+			} else {
+				String group = box.getBoxItem().getGroup().getId();
+				if(!groups.contains(group)) {
+					groups.add(group);
+					count++;
+				}
+			}
+		}
+		return count;
 	}
 
 	private static final Map<String, Map<String, String>> ACTUAL = new TreeMap<>();
@@ -349,26 +521,28 @@ public class PackagerConformanceTest {
 	public void conforms(String scenario, String packagerName) throws Exception {
 		Status status = Status.SUPPORTED;
 		String detail = null;
-		try (DefaultValidator validator = new DefaultValidator(); AbstractPackager<?> packager = PACKAGERS.get(packagerName).get()) {
+		try (DefaultValidator validator = new DefaultValidator()) {
 			for (long seed = 0; seed < SEEDS && status == Status.SUPPORTED; seed++) {
 				Spec spec = SCENARIOS.get(scenario).apply(new Random(seed));
 				List<ContainerItem> containerItems = containerItems(spec);
-				String reason = packager.getUnsupportedReason(new PackagerInput(spec.boxItems, spec.groups, containerItems, CONTAINERS, spec.order));
-				if(reason != null) {
-					status = Status.REJECTED;
-					detail = reason;
-					break;
-				}
-				try {
-					PackagerResult result = pack(packager, spec, containerItems);
-					String failure = validate(validator, spec, containerItems, result);
-					if(failure != null) {
-						status = Status.GAP;
-						detail = "seed " + seed + ": " + failure;
+				try (AbstractPackager<?> packager = PACKAGERS.get(packagerName).apply(spec)) {
+					String reason = packager.getUnsupportedReason(new PackagerInput(spec.boxItems, spec.groups, containerItems, CONTAINERS, spec.order));
+					if(reason != null) {
+						status = Status.REJECTED;
+						detail = reason;
+						break;
 					}
-				} catch (RuntimeException e) {
-					status = Status.GAP;
-					detail = "seed " + seed + ": " + e;
+					try {
+						PackagerResult result = pack(packager, spec, containerItems);
+						String failure = validate(validator, spec, containerItems, result);
+						if(failure != null) {
+							status = Status.GAP;
+							detail = "seed " + seed + ": " + failure;
+						}
+					} catch (RuntimeException e) {
+						status = Status.GAP;
+						detail = "seed " + seed + ": " + e;
+					}
 				}
 			}
 		}
@@ -382,6 +556,46 @@ public class PackagerConformanceTest {
 			String expectedCode = expected.split("\\s+")[names.indexOf(packagerName)];
 			assertThat(status.code).as("%s %s: %s", scenario, packagerName, detail).isEqualTo(expectedCode);
 		}
+	}
+
+	private static final String TABLE_START = "<!-- feature support table: generated from PackagerConformanceTest -->";
+
+	private static final String TABLE_END = "<!-- end of feature support table -->";
+
+	/**
+	 * @return the expected table as markdown, one row per scenario and one column per packager
+	 */
+	static String getFeatureSupportTable() {
+		StringBuilder builder = new StringBuilder("| Feature |");
+		StringBuilder separator = new StringBuilder("| --- |");
+		for (String title : PACKAGER_TITLES.values()) {
+			builder.append(' ').append(title).append(" |");
+			separator.append(" --- |");
+		}
+		builder.append('\n').append(separator).append('\n');
+		for (Map.Entry<String, String> entry : EXPECTED.entrySet()) {
+			builder.append("| ").append(SCENARIO_TITLES.get(entry.getKey())).append(" |");
+			for (String code : entry.getValue().split("\\s+")) {
+				builder.append(' ').append(Status.describe(code)).append(" |");
+			}
+			builder.append('\n');
+		}
+		return builder.toString();
+	}
+
+	/**
+	 * The feature support table of FEATURES.md is the expected table of this test (which every cell checks).
+	 */
+	@Test
+	public void featuresTableIsUpToDate() throws IOException {
+		assertThat(SCENARIO_TITLES.keySet()).containsExactlyElementsOf(SCENARIOS.keySet());
+		assertThat(EXPECTED.keySet()).containsExactlyElementsOf(SCENARIOS.keySet());
+
+		String features = new String(Files.readAllBytes(Paths.get("..", "FEATURES.md")), StandardCharsets.UTF_8).replace("\r\n", "\n");
+		String table = getFeatureSupportTable();
+		assertThat(features)
+				.as("FEATURES.md table, replace with%n%s%n%s%s", TABLE_START, table, TABLE_END)
+				.contains(TABLE_START + "\n" + table + TABLE_END);
 	}
 
 	@AfterAll

@@ -43,6 +43,47 @@ limits or full support). Without a box item order, they try every order of the b
 item groups for each container. They are exponential in the number of groups and
 of independently ordered boxes; use an interrupt deadline for production requests.
 
+### Feature support
+
+Every packager either packs an input feature, or rejects the input (`getUnsupportedReason(..)`, and the result
+builders throw) instead of ignoring it. The table is generated from `PackagerConformanceTest`, which packs random
+inputs for each feature with each packager and validates the results:
+
+<!-- feature support table: generated from PackagerConformanceTest -->
+| Feature | Plain | LAFF | Fast LAFF | Brute force | Fast brute force | Parallel brute force | Composite |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Box items | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box item groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box item order (`CHRONOLOGICAL`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box item order, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box item order with skipping (`CHRONOLOGICAL_ALLOW_SKIPPING`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box item order with skipping, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Container priorities | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Container priorities, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Extraction order | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Extraction order, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Container access through a door (`FRONT`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Container access through a door, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Obstacles | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Obstacles, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Obstacles in one of two container types | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box load limits | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box load limits, groups | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box load limits, box item order | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Box load limits, box item order with skipping | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Full support (`withRequireFullSupport`) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Full support, groups | ✓ | known gap | known gap | ✓ | ✓ | ✓ | ✓ |
+| Custom manifest controls | ✓ | ✓ | ✓ | rejected | rejected | rejected | ✓ |
+| Custom manifest controls, groups | ✓ | ✓ | ✓ | rejected | rejected | rejected | ✓ |
+<!-- end of feature support table -->
+
+Known gap: with full support, the LAFF packagers place a box which is taller than its level in a new level on top,
+where only the level's boxes can support it; a group fails when a later box of it needs the floor beside them.
+
+The composite packager in the table has a plain stage and a fast brute-force stage; it skips stages which reject
+the input. Calculated support (`withCalculateSupport(..)`) and custom placement controls
+(`withPlacementControlsBuilderFactory(..)`) are builder options of the plain and LAFF packagers only.
+
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
 filled factor grids for repeated items, container-sized grid blocks for counts
 which do not fit as one grid (respecting available containers and costs), equal
@@ -107,6 +148,8 @@ not prove a globally minimum-cost packing for arbitrary inputs.
 Controls are extension points, not guarantees that every packager implements
 every policy. Select a packager and controls combination that supports the
 constraint being enforced, then validate the result when correctness matters.
+The brute-force packagers reject manifest and point controls (see
+[Feature support](#feature-support)).
 
 See [Writing your own placement controls](DEVELOPER.md#writing-your-own-placement-controls)
 for implementation guidance and factory wiring.

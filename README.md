@@ -18,8 +18,8 @@ with
     
 Bugs, feature suggestions and help requests can be filed with the [issue-tracker].
 
-See [FEATURES.md](FEATURES.md) for a capability overview, including known
-limitations and non-goals.
+See [FEATURES.md](FEATURES.md) for a capability overview, including which packager supports which
+feature (generated from the conformance tests), known limitations and non-goals.
 
 ## Build from source
 
@@ -331,7 +331,7 @@ This algorithm selects the box with the biggest volume, fitting it where it is b
 This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
 
  * `BruteForcePackager` attempts all box orders, rotations and placement positions.
- * `FastLargestAreaFitFirstPackager` selects all box orders and rotations, selecting the most appropriate placement position.
+ * `FastBruteForcePackager` attempts all box orders and rotations, placing each box at the best free point for its rotation.
 
 The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
 
@@ -346,7 +346,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
    * two or more sides have the same length
    * rotations which mutated at a previously unreachable index
  
-There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
+There is also a parallel version `ParallelBoxItemBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
 
 Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
 
