@@ -207,7 +207,7 @@ public class BoxStackValue {
 		this.volume = other.volume;
 		this.index = other.index;
 
-		this.box = other.box;
+		// a copy belongs to no box until a box is built with it
 		this.maxLoadWeight = other.maxLoadWeight;
 		this.maxLoadPressure = other.maxLoadPressure;
 		this.maxLoadBoxCount = other.maxLoadBoxCount;
@@ -307,6 +307,9 @@ public class BoxStackValue {
 		return "BoxStackValue[" + surfaces + " " + dx + "x" + dy + "x" + dz + "]";
 	}
 
+	/**
+	 * @return a copy which belongs to no box, for building another box with
+	 */
 	public BoxStackValue copy() {
 		return new BoxStackValue(this);
 	}

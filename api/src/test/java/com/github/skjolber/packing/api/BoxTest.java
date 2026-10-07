@@ -5,6 +5,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.util.Collections;
+
 import org.junit.jupiter.api.Test;
 
 public class BoxTest {
@@ -71,6 +73,33 @@ public class BoxTest {
 		BoxStackValue[] stackValues = box.getStackValues();
 		assertEquals(stackValues.length, 2);
 		assertUniqueValues(stackValues);
+	}
+
+	/**
+	 * A stack value belongs to one box: building another box with it would make the first box's stack value refer to
+	 * the other box. A copy belongs to no box.
+	 */
+	@Test
+	public void stackValueBelongsToOneBox() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
+		BoxStackValue stackValue = box.getStackValue(0);
+
+		assertThrows(IllegalArgumentException.class, () -> new Box("other", null, 6, 1, new BoxStackValue[] { stackValue }, Collections.emptyMap()));
+		assertSame(box, stackValue.getBox());
+
+		BoxStackValue copy = stackValue.copy();
+		Box other = new Box("other", null, 6, 1, new BoxStackValue[] { copy }, Collections.emptyMap());
+		assertSame(other, copy.getBox());
+		assertSame(box, stackValue.getBox());
+	}
+
+	@Test
+	public void loadBoxBuilderBuildsBoxesWithStackValuesOfTheirOwn() {
+		Box.LoadBoxBuilder builder = new Box.LoadBoxBuilder().withRotation(r -> r.withDimensions(1, 2, 3)).withWeight(1);
+		Box first = builder.build();
+		Box second = builder.build();
+		assertSame(first, first.getStackValue(0).getBox());
+		assertSame(second, second.getStackValue(0).getBox());
 	}
 
 	private void assertUniqueValues(BoxStackValue[] stackValues) {

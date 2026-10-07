@@ -23,6 +23,11 @@ public class Box {
 
 		protected Map<String, Object> properties;
 		
+		public T withWeight(int weight) {
+			this.weight = weight;
+			return (T)this;
+		}
+
 		public T withId(String id) {
 			this.id = id;
 			return (T)this;
@@ -120,7 +125,12 @@ public class Box {
 				}
 			}
 
-			return new Box(id, description, volume, weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), properties);
+			// copies, so that the builder can build more boxes
+			BoxStackValue[] copies = new BoxStackValue[stackValues.size()];
+			for(int i = 0; i < copies.length; i++) {
+				copies[i] = stackValues.get(i).copy();
+			}
+			return new Box(id, description, volume, weight, copies, properties);
 		}
 	}
 
@@ -439,12 +449,6 @@ public class Box {
 			return list.toArray(newStackValueArray(list.size()));
 		}
 
-		public Builder withWeight(int weight) {
-			this.weight = weight;
-
-			return this;
-		}
-
 		/**
 		 * Sets the same maximum load weight for all orientations.
 		 *
@@ -554,8 +558,18 @@ public class Box {
 	protected boolean maxLoadBoxCount;
 	protected boolean loadIdenticalBoxOnly;
 
+	/**
+	 * @param stackValues the rotations of the box: stack values which belong to no other box (see
+	 *        {@link BoxStackValue#copy()})
+	 * @throws IllegalArgumentException if a stack value belongs to another box
+	 */
 	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues,
 			Map<String, Object> properties) {
+		for (BoxStackValue boxStackValue : stackValues) {
+			if(boxStackValue.getBox() != null) {
+				throw new IllegalArgumentException("Stack value " + boxStackValue + " belongs to another box");
+			}
+		}
 		this.id = id;
 		this.description = description;
 
@@ -610,11 +624,6 @@ public class Box {
 				break;
 			}
 		}
-	}
-
-	public Box(Box box, List<BoxStackValue> stackValues) {
-		this(box.id, box.description, box.volume, box.weight,
-				stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties);
 	}
 
 	public String getDescription() {
