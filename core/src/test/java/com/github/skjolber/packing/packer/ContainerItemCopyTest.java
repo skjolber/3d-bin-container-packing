@@ -26,14 +26,14 @@ class ContainerItemCopyTest {
 		PointControlsBuilderFactory pointControls = () -> null;
 		List<Point> initialPoints = List.of(new DefaultPoint3D(0, 0, 0, 9, 9, 9));
 		FixedContainerCostCalculator costCalculator = new FixedContainerCostCalculator(10, 1_000, "cost", 0);
-		source.setBoxItemControlsBuilderFactory(manifestControls);
+		source.setManifestControlsBuilderFactory(manifestControls);
 		source.setPointControlsBuilderFactory(pointControls);
 		source.setInitialPoints(initialPoints);
 		source.setCostCalculator(costCalculator);
 
 		ContainerItem result = new ContainerItem(source);
 
-		assertThat(result.getBoxItemControlsBuilderFactory()).isSameAs(manifestControls);
+		assertThat(result.getManifestControlsBuilderFactory()).isSameAs(manifestControls);
 		assertThat(result.getPointControlsBuilderFactory()).isSameAs(pointControls);
 		assertThat(result.getInitialPoints()).isSameAs(initialPoints);
 		assertThat(result.getCostCalculator()).isSameAs(costCalculator);

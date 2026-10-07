@@ -235,11 +235,11 @@ public class ContainerItem {
 		return pointControlsBuilderFactory;
 	}
 	
-	public void setBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory factory) {
+	public void setManifestControlsBuilderFactory(ManifestControlsBuilderFactory factory) {
 		this.manifestControlsBuilderFactory = factory;
 	}
 	
-	public ManifestControlsBuilderFactory getBoxItemControlsBuilderFactory() {
+	public ManifestControlsBuilderFactory getManifestControlsBuilderFactory() {
 		return manifestControlsBuilderFactory;
 	}
 
@@ -247,12 +247,12 @@ public class ContainerItem {
 		return pointControlsBuilderFactory != null;
 	}
 	
-	public boolean hasBoxItemControlsBuilderFactory() {
+	public boolean hasManifestControlsBuilderFactory() {
 		return manifestControlsBuilderFactory != null;
 	}	
 	
 	public boolean hasControls() {
-		return hasPointControlsBuilderFactory() || hasBoxItemControlsBuilderFactory();
+		return hasPointControlsBuilderFactory() || hasManifestControlsBuilderFactory();
 	}
 	
 	public boolean hasInitialPoints() {

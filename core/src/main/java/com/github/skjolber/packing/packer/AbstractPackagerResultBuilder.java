@@ -98,14 +98,14 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 	public static class DefaultContainerItemBuilder implements ContainerItemBuilder {
 
 		protected ContainerItem containerItem;
-		protected ManifestControlsBuilderFactory boxItemControlsBuilderFactory;
+		protected ManifestControlsBuilderFactory manifestControlsBuilderFactory;
 		protected PointControlsBuilderFactory pointControlsBuilderFactory;
 		protected List<Point> points;
 		protected List<Point> obstacles;
 		protected ContainerCostCalculator costCalculator;
 
-		public ContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
-			this.boxItemControlsBuilderFactory = supplier;
+		public ContainerItemBuilder withManifestControlsBuilderFactory(ManifestControlsBuilderFactory supplier) {
+			this.manifestControlsBuilderFactory = supplier;
 			return this;
 		}
 
@@ -157,7 +157,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				packContainerItem.setInitialPoints(points);
 			}
 
-			packContainerItem.setBoxItemControlsBuilderFactory(boxItemControlsBuilderFactory);
+			packContainerItem.setManifestControlsBuilderFactory(manifestControlsBuilderFactory);
 			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
 			if(costCalculator != null) {
 				packContainerItem.setCostCalculator(costCalculator);
@@ -212,7 +212,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 			if (controlContainerItem.hasPointControlsBuilderFactory()) {
 				return true;
 			}
-			if (controlContainerItem.hasBoxItemControlsBuilderFactory()) {
+			if (controlContainerItem.hasManifestControlsBuilderFactory()) {
 				return true;
 			}
 		}

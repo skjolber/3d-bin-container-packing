@@ -13,7 +13,7 @@ public interface PackagerResultBuilder {
 
 	public static interface ContainerItemBuilder {
 
-		ContainerItemBuilder withBoxItemControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
+		ContainerItemBuilder withManifestControlsBuilderFactory(ManifestControlsBuilderFactory supplier);
 
 		ContainerItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
 

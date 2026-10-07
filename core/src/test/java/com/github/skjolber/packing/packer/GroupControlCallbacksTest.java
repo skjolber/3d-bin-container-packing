@@ -121,7 +121,7 @@ public class GroupControlCallbacksTest {
 		packager.newResultBuilder()
 				.withContainerItem(b -> b
 						.withContainerItem(new ContainerItem(container, 2))
-						.withBoxItemControlsBuilderFactory(() -> new ManifestRecorderBuilder(events))
+						.withManifestControlsBuilderFactory(() -> new ManifestRecorderBuilder(events))
 						.withPointControlsBuilderFactory(() -> new PointRecorderBuilder(events)))
 				.withBoxItemGroups(groups)
 				.withMaxContainerCount(2)

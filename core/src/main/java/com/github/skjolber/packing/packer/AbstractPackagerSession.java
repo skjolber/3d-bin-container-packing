@@ -146,8 +146,8 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 			}
 		}
 		
-		if(containerItem.getBoxItemControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getBoxItemControlsBuilderFactory(), peek.getBoxItemControlsBuilderFactory())) {
+		if(containerItem.getManifestControlsBuilderFactory() != null) {
+			if(!Objects.equals(containerItem.getManifestControlsBuilderFactory(), peek.getManifestControlsBuilderFactory())) {
 				return null;
 			}
 		}

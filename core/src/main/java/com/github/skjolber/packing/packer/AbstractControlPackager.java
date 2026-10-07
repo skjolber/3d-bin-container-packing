@@ -64,7 +64,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			pointCalculator.clear();
 		}
 
-		ManifestControls manifestControls = createBoxItemControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getBoxItemControlsBuilderFactory());
+		ManifestControls manifestControls = createManifestControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getManifestControlsBuilderFactory());
 
 		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
 		if(pointControlsBuilderFactory == null) {
@@ -366,13 +366,13 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return new Stack();
 	}
 
-	protected ManifestControls createBoxItemControls(Container container, Stack stack, BoxItemSource boxItemSource,
+	protected ManifestControls createManifestControls(Container container, Stack stack, BoxItemSource boxItemSource,
 			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
 				
 		if(manifestControlsBuilderFactory == null) {
 			return new DefaultManifestControls(boxItemSource);
 		}
-		return manifestControlsBuilderFactory.createBoxItemControlsBuilder()
+		return manifestControlsBuilderFactory.createManifestControlsBuilder()
 				.withContainer(container)
 				.withStack(stack)
 				.withBoxItems(boxItemSource)
@@ -418,7 +418,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlContainerItem.getBoxItemControlsBuilderFactory());
+		ManifestControls manifestControls = createManifestControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlContainerItem.getManifestControlsBuilderFactory());
 
 		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
 		if(pointControlsBuilderFactory == null) {
@@ -453,8 +453,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			}
 			
 			if(!removedBoxItemGroups.isEmpty()) {
-				if(boxItemControls != null) {
-					boxItemControls.filteredGroups(removedBoxItemGroups);
+				if(manifestControls != null) {
+					manifestControls.filteredGroups(removedBoxItemGroups);
 				}
 				if(pointControls != null) {
 					pointControls.filteredGroups(removedBoxItemGroups);
@@ -492,7 +492,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			pointCalculator.mark();
 			int markStackSize = stack.size();
 			
-			boxItemControls.attempt(boxItemGroup, boxItemStartIndex, boxItemGroup.size());
+			manifestControls.attempt(boxItemGroup, boxItemStartIndex, boxItemGroup.size());
 			
 			while(!boxItemGroup.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -518,7 +518,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				// decrement box item without deleting the whole group
 				packagerBoxItems.decrement(placement.getBoxItem().getLocalIndex());
 
-				boxItemControls.accepted(placement.getBoxItem());
+				manifestControls.accepted(placement.getBoxItem());
 				pointControls.accepted(placement.getBoxItem());
 				placementControls.accepted(placement);
 
@@ -550,7 +550,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					}
 
 					if(!removedBoxItemGroups.isEmpty()) {
-						boxItemControls.filteredGroups(removedBoxItemGroups);
+						manifestControls.filteredGroups(removedBoxItemGroups);
 						pointControls.filteredGroups(removedBoxItemGroups);
 						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 						removedBoxItemGroups.clear();
@@ -594,7 +594,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 							}				
 						}
 						if(!removedBoxItemGroups.isEmpty()) {
-							boxItemControls.filteredGroups(removedBoxItemGroups);
+							manifestControls.filteredGroups(removedBoxItemGroups);
 							pointControls.filteredGroups(removedBoxItemGroups);
 							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
@@ -628,7 +628,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					for(Placement p : removedBoxPlacements) {
 						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
 					}
-					boxItemControls.undo(removedBoxItems);
+					manifestControls.undo(removedBoxItems);
 					pointControls.undo(removedBoxItems);
 					
 					removedBoxItems.clear();
@@ -636,7 +636,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					placementControls.undo(removedBoxPlacements);
 				}
 				
-				boxItemControls.attemptFailure(boxItemGroup);
+				manifestControls.attemptFailure(boxItemGroup);
 				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
@@ -664,7 +664,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			
 			// successfully stacked group
 			boxItemGroup.reset();
-			boxItemControls.attemptSuccess(boxItemGroup);
+			manifestControls.attemptSuccess(boxItemGroup);
 			pointControls.attemptSuccess(boxItemGroup);
 		}
 		

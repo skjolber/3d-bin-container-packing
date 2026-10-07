@@ -377,7 +377,7 @@ public class PackagerConformanceTest {
 		List<ContainerItem> containerItems = builder.build();
 		if(spec.fireHazards) {
 			for (ContainerItem containerItem : containerItems) {
-				containerItem.setBoxItemControlsBuilderFactory(manifestControls(spec));
+				containerItem.setManifestControlsBuilderFactory(manifestControls(spec));
 			}
 		}
 		return containerItems;
@@ -389,7 +389,7 @@ public class PackagerConformanceTest {
 			for (ContainerItem containerItem : containerItems) {
 				builder.withContainerItem(b -> b
 						.withContainerItem(containerItem)
-						.withBoxItemControlsBuilderFactory(manifestControls(spec)));
+						.withManifestControlsBuilderFactory(manifestControls(spec)));
 			}
 		} else if(spec.obstacles.isEmpty()) {
 			builder.withContainerItems(containerItems);

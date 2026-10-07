@@ -393,7 +393,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoLightersWithPetrolManifestControls.newFactory());
+				b.withManifestControlsBuilderFactory(NoLightersWithPetrolManifestControls.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
@@ -435,7 +435,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult build = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(NoLighterWithPetrolManifestControls.newFactory());
+				b.withManifestControlsBuilderFactory(NoLighterWithPetrolManifestControls.newFactory());
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
@@ -491,7 +491,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder()
 				.withContainerItem( b -> {
 					b.withContainerItem(new ContainerItem(container, 5));
-					b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemPerContainerManifestControls.newFactory(1));
+					b.withManifestControlsBuilderFactory(MaxFireHazardBoxItemPerContainerManifestControls.newFactory(1));
 				})
 				.withMaxContainerCount(5)
 				.withBoxItems(products)
@@ -550,7 +550,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			
 			PackagerResult result = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 5));
-				b.withBoxItemControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1));
+				b.withManifestControlsBuilderFactory(MaxFireHazardBoxItemGroupsPerContainerManifestControls.newFactory(1));
 			})
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(copyGroups(groups))

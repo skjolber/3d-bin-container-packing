@@ -175,7 +175,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			pointCalculator.clear();
 		}
 
-		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, null, controlledContainerItem.getBoxItemControlsBuilderFactory());
+		ManifestControls manifestControls = createManifestControls(container, stack, filteredBoxItems, pointCalculator, null, controlledContainerItem.getManifestControlsBuilderFactory());
 
 		PointControlsBuilderFactory pointControlsBuilderFactory = controlledContainerItem.getPointControlsBuilderFactory();
 		if(pointControlsBuilderFactory == null) {
@@ -206,7 +206,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		}
 		
 		if(!removed.isEmpty()) {
-			boxItemControls.declined(removed);
+			manifestControls.declined(removed);
 			pointControls.declined(removed);
 			maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 			
@@ -328,7 +328,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 					
 					if(!removed.isEmpty()) {
-						boxItemControls.declined(removed);
+						manifestControls.declined(removed);
 						pointControls.declined(removed);
 						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 						
@@ -347,7 +347,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			remainingLoadVolume -= result.getBoxItem().getBox().getVolume();
 			
 			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(filteredBoxItems, result.getBoxItem(), removed)) {
-				boxItemControls.declined(removed);
+				manifestControls.declined(removed);
 				pointControls.declined(removed);
 				maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 
@@ -355,7 +355,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 			filteredBoxItems.decrement(result.getBoxItem().getLocalIndex(), 1);
 
-			boxItemControls.accepted(result.getBoxItem());
+			manifestControls.accepted(result.getBoxItem());
 			pointControls.accepted(result.getBoxItem());
 			
 			placementControls.accepted(result);
@@ -384,7 +384,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				}
 				
 				if(!removed.isEmpty()) {
-					boxItemControls.declined(removed);
+					manifestControls.declined(removed);
 					pointControls.declined(removed);
 					maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 					
@@ -425,7 +425,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlledContainerItem.getBoxItemControlsBuilderFactory());
+		ManifestControls manifestControls = createManifestControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlledContainerItem.getManifestControlsBuilderFactory());
 
 		PointControlsBuilderFactory pointControlsBuilderFactory = controlledContainerItem.getPointControlsBuilderFactory();
 		if(pointControlsBuilderFactory == null) {
@@ -460,7 +460,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			}
 			
 			if(!removedBoxItemGroups.isEmpty()) {
-				boxItemControls.filteredGroups(removedBoxItemGroups);
+				manifestControls.filteredGroups(removedBoxItemGroups);
 				pointControls.filteredGroups(removedBoxItemGroups);
 				maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 				removedBoxItemGroups.clear();
@@ -504,7 +504,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			int markLevelStart = levelStart;
 			boolean markLevelRaised = levelRaised;
 
-			boxItemControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
+			manifestControls.attempt(boxItemGroup, packagerBoxItems.getFirstBoxItemIndex(boxItemGroup), boxItemGroup.size());
 			
 			while(!boxItemGroup.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -600,7 +600,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						}
 						
 						if(!removedBoxItemGroups.isEmpty()) {
-							boxItemControls.filteredGroups(removedBoxItemGroups);
+							manifestControls.filteredGroups(removedBoxItemGroups);
 							pointControls.filteredGroups(removedBoxItemGroups);
 							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
@@ -621,7 +621,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				// decrement box item without deleting the whole group
 				packagerBoxItems.decrement(bestPoint.getBoxItem().getLocalIndex());
 
-				boxItemControls.accepted(bestPoint.getBoxItem());
+				manifestControls.accepted(bestPoint.getBoxItem());
 				pointControls.accepted(bestPoint.getBoxItem());
 				
 				placementControls.accepted(bestPoint);
@@ -652,7 +652,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					}
 					
 					if(!removedBoxItemGroups.isEmpty()) {
-						boxItemControls.filteredGroups(removedBoxItemGroups);
+						manifestControls.filteredGroups(removedBoxItemGroups);
 						pointControls.filteredGroups(removedBoxItemGroups);
 						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 						removedBoxItemGroups.clear();
@@ -687,7 +687,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
 					}
 
-					boxItemControls.undo(removedBoxItems);
+					manifestControls.undo(removedBoxItems);
 					pointControls.undo(removedBoxItems);
 					
 					placementControls.undo(removedBoxPlacements);
@@ -696,7 +696,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 					removedBoxItems.clear();
 				}
 				
-				boxItemControls.attemptFailure(boxItemGroup);
+				manifestControls.attemptFailure(boxItemGroup);
 				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
@@ -726,7 +726,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			// successfully stacked group
 			boxItemGroup.reset();
 			
-			boxItemControls.attemptSuccess(boxItemGroup);
+			manifestControls.attemptSuccess(boxItemGroup);
 			pointControls.attemptSuccess(boxItemGroup);
 		}
 		
