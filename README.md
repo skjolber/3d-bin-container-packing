@@ -649,6 +649,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The result comparator option is `withIntermediatePackagerResultComparator(..)` on all packager builders: renamed from `withPackagerResultComparator(..)` (plain) and `withComparator(..)` (brute force). The brute-force builder classes are named `Builder`, like the others (were `BruteForcePackagerBuilder`, `FastBruteForcePackagerBuilder` and `ParallelBruteForcePackagerBuilder`)
         * `LoadBruteForcePackager`, `LoadFastBruteForcePackager` and `LoadParallelBoxItemBruteForcePackager` removed: `BruteForcePackager`, `FastBruteForcePackager` and `ParallelBoxItemBruteForcePackager` enforce box load limits when the boxes have them
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
+        * The OpenAPI modules removed (`open-api-model`, `open-api-client`, `open-api-server` and `open-api-test`)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
         * The module descriptors export all public packages
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).

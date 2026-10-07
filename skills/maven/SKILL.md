@@ -1,6 +1,6 @@
 ---
 name: maven
-description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, spotbugs, owasp), regenerating OpenAPI sources, building the JMH benchmark JAR, or releasing to Maven Central.'
+description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, spotbugs, owasp), building the JMH benchmark JAR, or releasing to Maven Central.'
 ---
 
 # Maven Multi-Module Build
@@ -16,10 +16,6 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 | `core` | Packager algorithm implementations |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |
-| `open-api/open-api-model` | Generated Jackson model |
-| `open-api/open-api-server` | Generated Spring server stubs |
-| `open-api/open-api-client` | Generated Apache HttpClient 5 stubs |
-| `open-api/open-api-test` | Shared open-api test utilities |
 | `visualizer/api` | Visualizer JSON contract types |
 | `visualizer/algorithm` | Algorithm state capture |
 | `visualizer/packaging` | Packing result → JSON conversion |
@@ -65,16 +61,6 @@ mvn spotless:apply          # auto-fix formatting
 mvn package -pl jmh -am -DskipTests
 java -jar jmh/target/benchmarks.jar
 ```
-
-### OpenAPI Generator — regenerate model/server/client
-```bash
-# All three at once
-mvn generate-sources -pl open-api/open-api-model,open-api/open-api-server,open-api/open-api-client
-
-# Individual module
-mvn generate-sources -pl open-api/open-api-model
-```
-Source of truth is `open-api/3d-api.yaml`. Never hand-edit generated sources.
 
 ### PiTest — mutation testing
 ```bash

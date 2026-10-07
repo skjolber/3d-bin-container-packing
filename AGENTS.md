@@ -8,11 +8,11 @@
 | `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`), permutation iterators (`iterator`), container strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
-| `open-api/*`, `visualizer/*` | Generated API model/server/client and visualizer applications |
+| `visualizer/*` | Visualizer applications |
 
 Documentation: `README.md` (usage), `FEATURES.md` (feature summary), `DEVELOPER.md`
 (writing controls), `skills/maven/SKILL.md` (detailed Maven usage: modules, plugins,
-OpenAPI, JMH, releases). When changing user-visible behaviour or defaults, update the
+JMH, releases). When changing user-visible behaviour or defaults, update the
 matching `README.md` and `FEATURES.md` sections in the same change.
 
 # Source code
