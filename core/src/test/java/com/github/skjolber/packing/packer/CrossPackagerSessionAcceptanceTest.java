@@ -28,7 +28,7 @@ class CrossPackagerSessionAcceptanceTest {
 		TestSession receiver = new TestSession(receiverItem);
 
 		Stack stack = new Stack();
-		stack.add(new Placement(sourceItem.getBox().getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(sourceItem, sourceItem.getBox().getStackValue(0), 0, 0, 0, 0));
 		receiver.accept(new DefaultIntermediatePackagerResult(source.getContainerItem(0), stack));
 
 		assertThat(receiver.countRemainingBoxes()).isZero();
@@ -44,7 +44,7 @@ class CrossPackagerSessionAcceptanceTest {
 		TestSession fork = (TestSession) session.fork();
 
 		Stack stack = new Stack();
-		stack.add(new Placement(item.getBox().getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(item, item.getBox().getStackValue(0), 0, 0, 0, 0));
 		fresh.accept(new DefaultIntermediatePackagerResult(fresh.getContainerItem(0), stack));
 		fork.accept(new DefaultIntermediatePackagerResult(fork.getContainerItem(0), stack));
 

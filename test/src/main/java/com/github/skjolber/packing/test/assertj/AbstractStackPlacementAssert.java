@@ -364,8 +364,8 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 	
 	public SELF hasBoxItemGroupId(String id) {
 		isNotNull();
-		if(!Objects.equals(id, actual.getStackValue().getBox().getBoxItem().getGroup().getId())) {
-			failWithMessage("Expected group name " + id+ ", not " + actual.getStackValue().getBox().getBoxItem().getGroup().getId());
+		if(!Objects.equals(id, actual.getBoxItem().getGroup().getId())) {
+			failWithMessage("Expected group name " + id+ ", not " + actual.getBoxItem().getGroup().getId());
 		}
 		return myself;
 	}

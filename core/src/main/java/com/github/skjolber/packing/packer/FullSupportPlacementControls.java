@@ -59,7 +59,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 					}
 					
 					if(point3d.getMinZ() == 0 || point3d.isSupportedXYPlane(stackValue)) {
-						Placement placementResult = createPlacement(stackValue, point3d);
+						Placement placementResult = createPlacement(boxItem, stackValue, point3d);
 						if(placementResult == null) {
 							continue;
 						}
@@ -68,7 +68,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 					} else {
 						// a valid candidate is fully supported: compare it first, and check the
 						// support only if it would be selected
-						Placement placementResult = createPlacement(stackValue, point3d);
+						Placement placementResult = createPlacement(boxItem, stackValue, point3d);
 						if(placementResult == null) {
 							continue;
 						}
@@ -173,7 +173,7 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 							continue;
 						}
 						
-						Placement placement = createPlacement(stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
+						Placement placement = createPlacement(boxItem, stackValue, point3d.getIndex(), x, y, point3d.getMinZ());
 						
 						result = selectPlacement(result, placement);
 					}
@@ -191,17 +191,17 @@ public class FullSupportPlacementControls extends AbstractComparatorPlacementCon
 		return result;
 	}
 
-	protected Placement createPlacement(BoxStackValue stackValue, int index, int x, int y, int z) {
+	protected Placement createPlacement(BoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z) {
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(index, x, y, z);
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;
 	}
 	
-	protected Placement createPlacement(BoxStackValue stackValue, Point point) {
+	protected Placement createPlacement(BoxItem boxItem, BoxStackValue stackValue, Point point) {
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;

@@ -220,6 +220,11 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
 	}
 
+	@Override
+	public BoxItem getBoxItem(int index) {
+		return stackableItems[permutations[index]];
+	}
+
 
 	
 }

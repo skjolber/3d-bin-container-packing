@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 
 import org.eclipse.collections.api.iterator.IntIterator;
 
@@ -46,6 +47,7 @@ final class BruteForceSearchFrames {
 	final long[] minAreas;
 	/** The box of the level */
 	final Box[] boxes;
+	final BoxItem[] items;
 
 	BruteForceSearchFrames(int levels) {
 		this.unplaced = new boolean[levels + 1];
@@ -58,6 +60,7 @@ final class BruteForceSearchFrames {
 		this.remainingVolumes = new long[levels + 1];
 		this.minAreas = new long[levels + 1];
 		this.boxes = new Box[levels + 1];
+		this.items = new BoxItem[levels + 1];
 		this.nextPointIndexes = new int[levels];
 		this.pointCounts = new int[levels];
 		this.pointIterators = new IntIterator[levels];

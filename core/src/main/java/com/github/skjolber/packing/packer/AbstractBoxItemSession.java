@@ -105,7 +105,7 @@ public abstract class AbstractBoxItemSession extends AbstractPackagerSession imp
 		Stack stack = container.getStack();
 
 		for (Placement stackPlacement : stack.getPlacements()) {
-			BoxItem boxItem = findRemainingBoxItem(((BoxItem) stackPlacement.getStackValue().getBox().getBoxItem()).getGlobalIndex());
+			BoxItem boxItem = findRemainingBoxItem(stackPlacement.getBoxItem().getGlobalIndex());
 			boxItem.decrementResetCount();
 			boxItem.reset();
 		}

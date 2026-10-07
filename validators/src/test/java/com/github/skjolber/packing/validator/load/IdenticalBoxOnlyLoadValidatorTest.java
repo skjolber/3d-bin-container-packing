@@ -54,7 +54,7 @@ public class IdenticalBoxOnlyLoadValidatorTest {
 	}
 
 	private static Placement makePlacement(BoxItem item, int x, int y, int z) {
-		return new Placement(item.getBox().getStackValues()[0], 0, x, y, z);
+		return new Placement(item, item.getBox().getStackValues()[0], 0, x, y, z);
 	}
 
 	// -----------------------------------------------------------------------

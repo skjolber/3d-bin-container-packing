@@ -626,7 +626,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(!removedBoxPlacements.isEmpty()) {
 					List<BoxItem> removedBoxItems = new ArrayList<>();
 					for(Placement p : removedBoxPlacements) {
-						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
+						removedBoxItems.add(p.getBoxItem());
 					}
 					manifestControls.undo(removedBoxItems);
 					pointControls.undo(removedBoxItems);

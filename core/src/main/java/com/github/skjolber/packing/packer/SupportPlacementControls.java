@@ -72,11 +72,11 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 					}
 					
 					if(result != null && skipBySupport) {
-						result = selectPlacementIfSupported(result, point3d, stackValue);
+						result = selectPlacementIfSupported(result, point3d, boxItem, stackValue);
 						continue;
 					}
 
-					Placement placementResult = createPlacement(point3d, stackValue);
+					Placement placementResult = createPlacement(point3d, boxItem, stackValue);
 					if(placementResult == null) {
 						continue;
 					}
@@ -101,9 +101,9 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 	 * be selected. Same result as calculating the support of every candidate, as the comparator never
 	 * prefers less support.
 	 */
-	private Placement selectPlacementIfSupported(Placement result, Point point, BoxStackValue stackValue) {
+	private Placement selectPlacementIfSupported(Placement result, Point point, BoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);
 		placement.setSupportedArea(stackValue.getArea());
 		if(placementComparator.compare(result, placement) >= 0) {
@@ -116,9 +116,9 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		return selectPlacement(result, placement);
 	}
 
-	protected Placement createPlacement(Point point, BoxStackValue stackValue) {
+	protected Placement createPlacement(Point point, BoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);
 		if(point.getMinZ() == 0 || point.isSupportedXYPlane(stackValue)) {
 			placement.setSupportedArea(stackValue.getArea());

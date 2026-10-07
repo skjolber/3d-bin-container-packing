@@ -21,7 +21,7 @@ public class VolumeWeightAreaMinZPlacementComparator implements PlacementCompara
 		if(result != 0) {
 			return result;
 		}
-		result = Long.compare(o1.getBoxItem().getBox().getWeight(), o2.getBoxItem().getBox().getWeight());
+		result = Long.compare(o1.getBox().getWeight(), o2.getBox().getWeight());
 		if(result != 0) {
 			return result;
 		}

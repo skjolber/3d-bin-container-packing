@@ -110,7 +110,7 @@ public class BruteForceBoxItemGroupsTest {
 		PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(new ContainerItem(container, 3)), 3, Order.NONE), () -> false);
 
 		Stack stack = new Stack();
-		stack.add(new Placement(groups.get(1).get(0).getBox().getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(groups.get(1).get(0), groups.get(1).get(0).getBox().getStackValue(0), 0, 0, 0, 0));
 		session.accept(new DefaultIntermediatePackagerResult(session.getContainerItem(0), stack));
 		assertThat(session.countRemainingBoxItemGroups()).isEqualTo(2);
 

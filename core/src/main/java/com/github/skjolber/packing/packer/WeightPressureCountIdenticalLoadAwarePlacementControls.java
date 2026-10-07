@@ -79,7 +79,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 					// identical-only stack values fall back to other positions when the point fails,
 					// and those could be selected, so they are always validated
 					if(validateSelectedOnly && !stackValue.isLoadIdenticalBoxOnly()) {
-						result = selectValidPlacement(result, point3d, stackValue, box);
+						result = selectValidPlacement(result, point3d, boxItem, stackValue);
 						continue;
 					}
 
@@ -91,6 +91,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 						// the corners of existing placements in the same z-plane
 						Placement p = util.findPlacementAtPointSupporters(point3d, stackValue, placementComparator);
 						if (p != null) {
+							p.setBoxItem(boxItem);
 							result = selectPlacement(result, p);
 						}
 					}
@@ -100,7 +101,7 @@ public class WeightPressureCountIdenticalLoadAwarePlacementControls extends Abst
 					}
 
 					Placement placement = acquirePlacement();
-					placement.setStackValue(stackValue);
+					placement.setStackValue(boxItem, stackValue);
 					placement.setPoint(point3d);
 					placement.setSupportedArea(supportedArea);
 					result = selectPlacement(result, placement);

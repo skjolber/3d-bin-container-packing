@@ -12,6 +12,8 @@ public class Placement implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected BoxStackValue stackValue;
+	/** The box item of the placed box, or null (for example the boundary placements of point calculators) */
+	protected BoxItem boxItem;
 	protected int x;
 	protected int y;
 	protected int z;
@@ -44,8 +46,17 @@ public class Placement implements Serializable {
 		this(stackValue, index, x, y, z, true);
 	}
 
+	public Placement(BoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z) {
+		this(boxItem, stackValue, index, x, y, z, true);
+	}
+
 	public Placement(BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
+		this(null, stackValue, index, x, y, z, load);
+	}
+
+	public Placement(BoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
 		super();
+		this.boxItem = boxItem;
 		this.stackValue = stackValue;
 		this.pointIndex = index;
 		
@@ -61,8 +72,16 @@ public class Placement implements Serializable {
 		this(stackValue, point, true);
 	}
 
+	public Placement(BoxItem boxItem, BoxStackValue stackValue, Point point) {
+		this(boxItem, stackValue, point, true);
+	}
+
 	public Placement(BoxStackValue stackValue, Point point, boolean load) {
 		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
+	}
+
+	public Placement(BoxItem boxItem, BoxStackValue stackValue, Point point, boolean load) {
+		this(boxItem, stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
 	}
 
 	public Placement() {
@@ -86,6 +105,19 @@ public class Placement implements Serializable {
 
 	public void setStackValue(BoxStackValue stackValue) {
 		this.stackValue = stackValue;
+	}
+
+	/**
+	 * @param boxItem the box item of the placed box
+	 * @param stackValue the rotation of the box
+	 */
+	public void setStackValue(BoxItem boxItem, BoxStackValue stackValue) {
+		this.boxItem = boxItem;
+		this.stackValue = stackValue;
+	}
+
+	public void setBoxItem(BoxItem boxItem) {
+		this.boxItem = boxItem;
 	}
 
 	public boolean intersects(Placement placement) {
@@ -332,7 +364,7 @@ public class Placement implements Serializable {
 	}
 
 	public BoxItem getBoxItem() {
-		return stackValue.getBox().getBoxItem();
+		return boxItem;
 	}
 	
 	public Box getBox() {

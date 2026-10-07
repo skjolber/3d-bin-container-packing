@@ -685,7 +685,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 				if(!removedBoxPlacements.isEmpty()) {
 					List<BoxItem> removedBoxItems = new ArrayList<>();
 					for(Placement p : removedBoxPlacements) {
-						removedBoxItems.add(p.getStackValue().getBox().getBoxItem());
+						removedBoxItems.add(p.getBoxItem());
 					}
 
 					manifestControls.undo(removedBoxItems);

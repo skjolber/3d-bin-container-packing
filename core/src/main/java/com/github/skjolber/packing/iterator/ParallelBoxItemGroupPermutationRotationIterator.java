@@ -434,6 +434,11 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		return super.getStackValue(PADDING + index);
 	}
 
+	@Override
+	public BoxItem getBoxItem(int index) {
+		return super.getBoxItem(PADDING + index);
+	}
+
 	protected void initiatePermutations() {
 		int count = 0;
 		for (int j = 0; j < stackableItems.length; j++) {

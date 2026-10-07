@@ -203,7 +203,7 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 	protected List<Integer> getLocalIndexes(Stack stack) {
 		List<Integer> indexes = new ArrayList<>(stack.size());
 		for(Placement placement : stack.getPlacements()) {
-			BoxItem source = (BoxItem) placement.getStackValue().getBox().getBoxItem();
+			BoxItem source = placement.getBoxItem();
 			int globalIndex = source.getGlobalIndex();
 			int localIndex = getLocalIndex(globalIndex);
 			indexes.add(localIndex);

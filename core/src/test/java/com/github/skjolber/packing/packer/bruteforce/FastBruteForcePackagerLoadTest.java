@@ -40,7 +40,7 @@ class FastBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest 
 			pointCalculator.clear();
 			CountingLoadPlacementUtility utility = new CountingLoadPlacementUtility();
 
-			int pointIndex = packager.getBestPointWithLoad(pointCalculator, iterator.getStackValue(0), new Stack(), 0, container, false, false, utility,
+			int pointIndex = packager.getBestPointWithLoad(pointCalculator, iterator.getBoxItem(0), iterator.getStackValue(0), new Stack(), 0, container, false, false, utility,
 					(stackValue, bestPoint, candidatePoint) -> 0);
 
 			assertThat(pointIndex).isEqualTo(0);

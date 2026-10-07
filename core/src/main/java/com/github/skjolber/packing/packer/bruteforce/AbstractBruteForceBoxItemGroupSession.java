@@ -481,7 +481,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	protected AcceptedGroups getAcceptedGroups(Stack stack) {
 		Map<Integer, Integer> countByGlobalIndex = new HashMap<>(stack.size() * 2);
 		for(Placement placement : stack.getPlacements()) {
-			BoxItem source = (BoxItem) placement.getStackValue().getBox().getBoxItem();
+			BoxItem source = placement.getBoxItem();
 			int globalIndex = source.getGlobalIndex();
 			getLocalIndex(globalIndex); // validates that this session owns the item
 			countByGlobalIndex.merge(globalIndex, 1, Integer::sum);

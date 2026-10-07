@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
@@ -65,6 +66,7 @@ public class RecursiveBruteForceSearch {
 		private final int[] rotations;
 
 		private final Box[] boxes;
+		private final BoxItem[] items;
 		private final long[] minAreas;
 		private final long[] remainingVolumes;
 		private final int[] placedPermutations;
@@ -91,6 +93,7 @@ public class RecursiveBruteForceSearch {
 			this.rotations = rotations;
 
 			this.boxes = new Box[length];
+			this.items = new BoxItem[length];
 			this.minAreas = new long[length + 1];
 			this.remainingVolumes = new long[length + 1];
 			this.placedPermutations = new int[length];
@@ -98,6 +101,7 @@ public class RecursiveBruteForceSearch {
 			long minArea = Long.MAX_VALUE;
 			for (int i = length - 1; i >= 0; i--) {
 				boxes[i] = iterator.getStackValue(i).getBox();
+				items[i] = iterator.getBoxItem(i);
 				minArea = Math.min(minArea, boxes[i].getMinimumArea());
 				minAreas[i] = minArea;
 				remainingVolumes[i] = remainingVolumes[i + 1] + boxes[i].getVolume();
@@ -130,7 +134,7 @@ public class RecursiveBruteForceSearch {
 				return;
 			}
 			Box box = boxes[level];
-			boolean placeable = skipping == null || (box.getBoxItem().getContainerPriority() <= maxContainerPriority
+			boolean placeable = skipping == null || (items[level].getContainerPriority() <= maxContainerPriority
 					&& box.getWeight() <= freeLoadWeight && placedVolume + box.getVolume() <= container.getMaxLoadVolume());
 			if(placeable) {
 				pointCalculator.push();
@@ -173,7 +177,7 @@ public class RecursiveBruteForceSearch {
 						if(checkObstacles && !AbstractBruteForcePackager.isInsertable(point, stackValue, container.getObstacles(), access)) {
 							continue;
 						}
-						if(checkExtraction && !AbstractBruteForcePackager.isExtractable(point, stackValue, stack, access)) {
+						if(checkExtraction && !AbstractBruteForcePackager.isExtractable(point, items[level], stackValue, stack, access)) {
 							continue;
 						}
 						long supportedArea = 0L;
@@ -188,7 +192,7 @@ public class RecursiveBruteForceSearch {
 						int pointIndex = candidates != null ? candidates.getPointIndex(candidate) : candidate;
 
 						Placement placement = placements[placedCount];
-						placement.setStackValue(stackValue);
+						placement.setStackValue(items[level], stackValue);
 						placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
 						if(utility != null) {
 							placement.clearLoad();
@@ -207,7 +211,7 @@ public class RecursiveBruteForceSearch {
 								pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(level + 1));
 							}
 						}
-						placedPermutations[placedCount] = box.getBoxItem().getLocalIndex();
+						placedPermutations[placedCount] = items[level].getLocalIndex();
 						placedRotations[placedCount] = rotation;
 
 						search(level + 1, placedCount + 1, placedVolume + box.getVolume(), freeLoadWeight - box.getWeight(), maxContainerPriority);
@@ -237,7 +241,7 @@ public class RecursiveBruteForceSearch {
 			if(skipEnd == -1) {
 				return;
 			}
-			search(skipEnd, placedCount, placedVolume, freeLoadWeight, Math.min(maxContainerPriority, box.getBoxItem().getContainerPriority()));
+			search(skipEnd, placedCount, placedVolume, freeLoadWeight, Math.min(maxContainerPriority, items[level].getContainerPriority()));
 		}
 	}
 }

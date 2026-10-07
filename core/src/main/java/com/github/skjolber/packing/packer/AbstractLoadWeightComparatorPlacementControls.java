@@ -91,7 +91,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 					}
 
 					if(validateSelectedOnly) {
-						result = selectValidPlacement(result, point3d, stackValue, box);
+						result = selectValidPlacement(result, point3d, boxItem, stackValue);
 						continue;
 					}
 
@@ -102,7 +102,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 					}
 
 					Placement placement = acquirePlacement();
-					placement.setStackValue(stackValue);
+					placement.setStackValue(boxItem, stackValue);
 					placement.setPoint(point3d);
 					placement.setSupportedArea(supportedArea);
 					result = selectPlacement(result, placement);
@@ -133,9 +133,10 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	 * it would be selected. Same result as validating every candidate, as the comparator does not
 	 * read the supported area and ties keep the current best.
 	 */
-	protected Placement selectValidPlacement(Placement result, Point point3d, BoxStackValue stackValue, Box box) {
+	protected Placement selectValidPlacement(Placement result, Point point3d, BoxItem boxItem, BoxStackValue stackValue) {
+		Box box = boxItem.getBox();
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point3d);
 		if(result != null && placementComparator.compare(result, placement) >= 0) {
 			recyclePlacement(placement);
@@ -208,6 +209,7 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 					if (placement == null) {
 						continue;
 					}
+					placement.setBoxItem(boxItem);
 					result = selectPlacement(result, placement);
 				}
 			}

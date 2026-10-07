@@ -933,7 +933,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 */
 	protected static boolean hasExtractionOrders(BoxItemPermutationRotationIterator iterator) {
 		for (int i = 1; i < iterator.length(); i++) {
-			if(iterator.getStackValue(i).getBox().getBoxItem().getExtractionOrder() != iterator.getStackValue(0).getBox().getBoxItem().getExtractionOrder()) {
+			if(iterator.getBoxItem(i).getExtractionOrder() != iterator.getBoxItem(0).getExtractionOrder()) {
 				return true;
 			}
 		}
@@ -945,8 +945,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 *         is not prevented by them: a box extracted earlier must not have a box extracted later resting on it, or
 	 *         in its path (see {@link ContainerAccess})
 	 */
-	protected static boolean isExtractable(Point point, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
-		int order = stackValue.getBox().getBoxItem().getExtractionOrder();
+	protected static boolean isExtractable(Point point, BoxItem boxItem, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
+		int order = boxItem.getExtractionOrder();
 		int x = point.getMinX();
 		int y = point.getMinY();
 		int z = point.getMinZ();
@@ -1016,6 +1016,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		long[] remainingVolumes = frames.remainingVolumes;
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
+		BoxItem[] items = frames.items;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;
 		List<Placement> obstacles = container.getObstacles();
@@ -1029,6 +1030,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		for (int i = length - 1; i >= 0; i--) {
 			Box box = iterator.getStackValue(i).getBox();
 			boxes[i] = box;
+			items[i] = iterator.getBoxItem(i);
 			if(box.getMinimumArea() < minArea) {
 				minArea = box.getMinimumArea();
 			}
@@ -1085,7 +1087,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 				Box box = boxes[level];
 				// without skipping, the boxes up to the max packable count fit by volume and weight
-				unplaced[level] = skipping != null && !(box.getBoxItem().getContainerPriority() <= maxContainerPriorities[level]
+				unplaced[level] = skipping != null && !(items[level].getContainerPriority() <= maxContainerPriorities[level]
 						&& box.getWeight() <= freeLoadWeights[level]
 						&& placedVolume + box.getVolume() <= maxLoadVolume);
 				if(!unplaced[level]) {
@@ -1093,7 +1095,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					pointCalculator.push();
 					BoxStackValue stackValue = box.getStackValues()[0];
 					rotationIndexes[level] = 0;
-					placements[placedCount].setStackValue(stackValue);
+					placements[placedCount].setStackValue(items[level], stackValue);
 					startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
 				}
 			} else if(!unplaced[level]) {
@@ -1149,7 +1151,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 						}
 						rotationIndexes[level] = rotationIndex;
 						stackValue = stackValues[rotationIndex];
-						placement.setStackValue(stackValue);
+						placement.setStackValue(items[level], stackValue);
 						startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
 						continue;
 					}
@@ -1160,7 +1162,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					if(checkObstacles && !isInsertable(candidatePoint, stackValue, obstacles, access)) {
 						continue;
 					}
-					if(checkExtraction && !isExtractable(candidatePoint, stackValue, stack, access)) {
+					if(checkExtraction && !isExtractable(candidatePoint, items[level], stackValue, stack, access)) {
 						continue;
 					}
 					if(utility != null) {
@@ -1199,7 +1201,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
 						}
 					}
-					placedPermutations[placedCount] = boxes[level].getBoxItem().getLocalIndex();
+					placedPermutations[placedCount] = items[level].getLocalIndex();
 					placedRotations[placedCount] = rotationIndexes[level];
 					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
 							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
@@ -1233,7 +1235,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 				continue;
 			}
-			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxes[level].getBoxItem().getContainerPriority());
+			int skippedContainerPriority = Math.min(maxContainerPriorities[level], items[level].getContainerPriority());
 			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
 					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
 			level = skipEnd;

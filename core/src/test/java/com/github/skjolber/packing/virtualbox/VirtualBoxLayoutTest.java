@@ -25,8 +25,8 @@ class VirtualBoxLayoutTest {
 	void retainsPhysicalPlacementsWithoutMutatingThemDuringPreparation() {
 		BoxItem item = item(1, 1, 1, 2);
 		BoxStackValue value = item.getBox().getStackValue(0);
-		Placement lower = new Placement(value, -1, 0, 0, 0, false);
-		Placement upper = new Placement(value, -1, 0, 0, 1, false);
+		Placement lower = new Placement(item, value, -1, 0, 0, 0, false);
+		Placement upper = new Placement(item, value, -1, 0, 0, 1, false);
 		List<Placement> placements = new ArrayList<>(List.of(lower, upper));
 		VirtualBoxLayout layout = new VirtualBoxLayout(new VirtualBoxBounds(1, 1, 2), placements);
 		assertThat(layout.getPlacements()).isSameAs(placements);

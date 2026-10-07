@@ -36,7 +36,7 @@ public class LargestAreaPlacementComparator implements PlacementComparator {
 			return compare;
 		}
 		
-		compare = Long.compare(o1.getBoxItem().getBox().getWeight(), o2.getBoxItem().getBox().getWeight());
+		compare = Long.compare(o1.getBox().getWeight(), o2.getBox().getWeight());
 		if(compare != 0) {
 			return compare;
 		}

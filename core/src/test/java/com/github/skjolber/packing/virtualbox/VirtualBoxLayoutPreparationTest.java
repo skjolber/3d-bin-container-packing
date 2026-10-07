@@ -84,14 +84,14 @@ class VirtualBoxLayoutPreparationTest {
 		packing.add(VirtualBox.of(List.of(horizontal, vertical)));
 		BoxItem delegate = packing.getItems().get(1);
 		BoxItem copied = new BoxItem(delegate.getBox().copy(), 1, 73, delegate.getGlobalIndex());
-		assertThat(packing.getLayout(copied.getBox().getStackValue(0))).isSameAs(horizontal);
-		assertThat(packing.getLayout(copied.getBox().getStackValue(1))).isSameAs(vertical);
-		assertThat(packing.getLayout(packing.getItems().get(0).getBox().getStackValue(0))).isNull();
+		assertThat(packing.getLayout(copied, copied.getBox().getStackValue(0))).isSameAs(horizontal);
+		assertThat(packing.getLayout(copied, copied.getBox().getStackValue(1))).isSameAs(vertical);
+		assertThat(packing.getLayout(packing.getItems().get(0), packing.getItems().get(0).getBox().getStackValue(0))).isNull();
 		assertThat(vertical.getPlacements().get(1).getAbsoluteZ()).isEqualTo(1);
 	}
 
 	protected static Placement placement(BoxItem item, int x, int y, int z) {
-		return new Placement(item.getBox().getStackValue(0), -1, x, y, z, false);
+		return new Placement(item, item.getBox().getStackValue(0), -1, x, y, z, false);
 	}
 
 	/* A generated grid is already valid; preparation must not redo the general geometry sweep. */

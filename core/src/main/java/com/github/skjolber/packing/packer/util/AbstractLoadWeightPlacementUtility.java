@@ -652,7 +652,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 
 		Placement placement = acquirePlacement();
-		placement.setStackValue(sv);
+		// the caller sets the box item
+		placement.setStackValue(null, sv);
 		placement.setPoint(point);
 		placement.setSupportedArea(supportedArea);
 		return placement;
@@ -841,7 +842,8 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		// the caller sets the box item
+		placement.setStackValue(null, stackValue);
 		placement.setPoint(point3d.getIndex(), x, y, point3d.getMinZ());
 		placement.setSupportedArea(stackValue.getArea());
 		return placement;

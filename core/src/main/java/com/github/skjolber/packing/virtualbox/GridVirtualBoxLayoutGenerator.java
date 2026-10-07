@@ -44,6 +44,7 @@ import com.github.skjolber.packing.api.Placement;
 public class GridVirtualBoxLayoutGenerator {
 	/** Generated geometry is valid by construction; do not repeat arbitrary-layout overlap checks. */
 	protected static class GridLayout extends VirtualBoxLayout {
+		protected final BoxItem item;
 		protected final BoxStackValue value;
 		protected final int columns;
 		protected final int rows;
@@ -53,6 +54,7 @@ public class GridVirtualBoxLayoutGenerator {
 
 		protected GridLayout(Grid grid) {
 			super(grid.bounds, null);
+			item = grid.item;
 			value = grid.value;
 			columns = grid.columns;
 			rows = grid.rows;
@@ -71,7 +73,7 @@ public class GridVirtualBoxLayoutGenerator {
 						for(int z = 0; z < layers; z++) {
 							for(int y = 0; y < rows; y++) {
 								for(int x = 0; x < columns; x++) {
-									result.add(new Placement(value, -1, x * value.getDx(), y * value.getDy(), z * value.getDz(), false));
+									result.add(new Placement(item, value, -1, x * value.getDx(), y * value.getDy(), z * value.getDz(), false));
 								}
 							}
 						}
@@ -90,14 +92,16 @@ public class GridVirtualBoxLayoutGenerator {
 
 	protected static class Grid {
 		protected final VirtualBoxBounds bounds;
+		protected final BoxItem item;
 		protected final BoxStackValue value;
 		protected final int columns;
 		protected final int rows;
 		protected final int layers;
 		protected final int matchingAxes;
 
-		protected Grid(VirtualBoxBounds bounds, BoxStackValue value, int columns, int rows, int layers, int matchingAxes) {
+		protected Grid(VirtualBoxBounds bounds, BoxItem item, BoxStackValue value, int columns, int rows, int layers, int matchingAxes) {
 			this.bounds = bounds;
+			this.item = item;
 			this.value = value;
 			this.columns = columns;
 			this.rows = rows;
@@ -235,7 +239,7 @@ public class GridVirtualBoxLayoutGenerator {
 					if(containsBounds(best, bounds)) {
 						continue;
 					}
-					Grid candidate = new Grid(bounds, value, x, y, z, matches);
+					Grid candidate = new Grid(bounds, item, value, x, y, z, matches);
 					for(int i = 0; i < containers.size(); i++) {
 						int containerMatch = containerMatches[i];
 						if(containerMatch >= 0 && (covering[i] == null || containerMatch > coveringMatches[i]

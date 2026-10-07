@@ -243,8 +243,8 @@ public class FastBruteForcePackagerSkippingTest {
 						BoxStackValue stackValue = stackValues[rotation];
 						boolean checkObstacles = !container.getObstacles().isEmpty();
 						boolean checkExtraction = hasExtractionOrders(iterator);
-						int pointIndex = utility == null ? getBestPoint(pointCalculator, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, pointComparator)
-								: getBestPointWithLoad(pointCalculator, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, utility, pointComparator);
+						int pointIndex = utility == null ? getBestPoint(pointCalculator, boxItem, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, pointComparator)
+								: getBestPointWithLoad(pointCalculator, boxItem, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, utility, pointComparator);
 						if(pointIndex == -1) {
 							continue;
 						}

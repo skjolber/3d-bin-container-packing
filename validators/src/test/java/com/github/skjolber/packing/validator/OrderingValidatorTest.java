@@ -26,8 +26,8 @@ public class OrderingValidatorTest {
 
 	private static Placement place(String id, int x, int z, int containerPriority, int extractionOrder) {
 		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
-		new BoxItem(box).withContainerPriority(containerPriority).withExtractionOrder(extractionOrder);
-		return new Placement(box.getStackValue(0), 0, x, 0, z);
+		BoxItem item = new BoxItem(box).withContainerPriority(containerPriority).withExtractionOrder(extractionOrder);
+		return new Placement(item, box.getStackValue(0), 0, x, 0, z);
 	}
 
 	private static Container container(ContainerAccess access, Placement... placements) {
@@ -102,7 +102,7 @@ public class OrderingValidatorTest {
 		BoxItem item = new BoxItem(box);
 		group.getItems().add(item);
 		item.setGroup(group);
-		return new Placement(box.getStackValue(0), 0, x, 0, 0);
+		return new Placement(item, box.getStackValue(0), 0, x, 0, 0);
 	}
 
 	//

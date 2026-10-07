@@ -66,8 +66,8 @@ public class VirtualBoxPacking {
 	 * and local reindexing. Finish constructing this mapping before sharing it with
 	 * workers; neither the mapping nor its layouts may be modified during packing.
 	 */
-	public VirtualBoxLayout getLayout(BoxStackValue value) {
-		int globalIndex = value.getBox().getBoxItem().getGlobalIndex();
+	public VirtualBoxLayout getLayout(BoxItem item, BoxStackValue value) {
+		int globalIndex = item.getGlobalIndex();
 		if(globalIndex < 0 || globalIndex >= entries.size()) {
 			throw new IllegalStateException("Delegate did not preserve operation-global box item indexes");
 		}
@@ -112,9 +112,9 @@ public class VirtualBoxPacking {
 			Container expanded = container.copy();
 			for(Placement placement : container.getStack().getPlacements()) {
 				BoxStackValue value = placement.getStackValue();
-				VirtualBoxLayout layout = getLayout(value);
+				VirtualBoxLayout layout = getLayout(placement.getBoxItem(), value);
 				if(layout == null) {
-					Entry entry = entries.get(value.getBox().getBoxItem().getGlobalIndex());
+					Entry entry = entries.get(placement.getBoxItem().getGlobalIndex());
 					BoxStackValue originalValue = findOriginal(entry.original(), value);
 					append(expanded, remaining, entry.original(), originalValue,
 							placement.getAbsoluteX(), placement.getAbsoluteY(), placement.getAbsoluteZ());
@@ -161,7 +161,7 @@ public class VirtualBoxPacking {
 			throw new IllegalStateException("Expanded placement outside container");
 		}
 		remaining.put(item, count - 1);
-		Placement placement = new Placement(value, -1, (int) x, (int) y, (int) z, false);
+		Placement placement = new Placement(item, value, -1, (int) x, (int) y, (int) z, false);
 		placement.setIndex(container.getStack().size());
 		container.getStack().add(placement);
 	}

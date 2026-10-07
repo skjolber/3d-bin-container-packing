@@ -69,10 +69,10 @@ public class SupportGraphValidatorsTest {
 		BoxItem identical = new BoxItem(Box.newBuilder().withId("X").withSize(10, 10, 1).withWeight(1).withMaxLoadIdenticalBoxCount(-1).build());
 		BoxItem other = new BoxItem(Box.newBuilder().withId("other").withSize(10, 10, 1).withWeight(1).build());
 
-		Placement bottom = new Placement(identical.getBox().getStackValue(0), 0, 5, 0, 0);
-		Placement left = new Placement(identical.getBox().getStackValue(0), 0, 0, 0, 1);
-		Placement right = new Placement(identical.getBox().getStackValue(0), 0, 10, 0, 1);
-		Placement top = new Placement(other.getBox().getStackValue(0), 0, 5, 0, 2);
+		Placement bottom = new Placement(identical, identical.getBox().getStackValue(0), 0, 5, 0, 0);
+		Placement left = new Placement(identical, identical.getBox().getStackValue(0), 0, 0, 0, 1);
+		Placement right = new Placement(identical, identical.getBox().getStackValue(0), 0, 10, 0, 1);
+		Placement top = new Placement(other, other.getBox().getStackValue(0), 0, 5, 0, 2);
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 		new IdenticalBoxOnlyLoadValidator().isValid(List.of(bottom, left, right, top), reasons);
@@ -93,7 +93,7 @@ public class SupportGraphValidatorsTest {
 				.withMaxLoadPressure(1_000_000)
 				.withMaxLoadBoxCount(1_000)
 				.build();
-		new BoxItem(box);
+		BoxItem item = new BoxItem(box);
 		List<Placement> placements = new ArrayList<>();
 		Placement[] previous = null;
 		for(int row = 0; row < rows; row++) {
@@ -102,7 +102,7 @@ public class SupportGraphValidatorsTest {
 			Placement[] current = new Placement[count];
 			for(int i = 0; i < count; i++) {
 				int x = shifted ? Math.max(0, 2 * i - 1) : 2 * i;
-				current[i] = new Placement(box.getStackValue(0), 0, x, 0, row);
+				current[i] = new Placement(item, box.getStackValue(0), 0, x, 0, row);
 				placements.add(current[i]);
 			}
 			if(previous != null) {

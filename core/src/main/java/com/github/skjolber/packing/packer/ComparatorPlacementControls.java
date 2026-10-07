@@ -60,7 +60,7 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 						continue;
 					}
 					
-					Placement placementResult = createPlacement(point3d, stackValue);
+					Placement placementResult = createPlacement(point3d, boxItem, stackValue);
 					if(placementResult == null) {
 						continue;
 					}
@@ -81,9 +81,9 @@ public class ComparatorPlacementControls extends AbstractComparatorPlacementCont
 		return result;
 	}
 	
-	protected Placement createPlacement(Point point3d, BoxStackValue stackValue) {
+	protected Placement createPlacement(Point point3d, BoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
-		placement.setStackValue(stackValue);
+		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point3d);
 		return placement;
 	}

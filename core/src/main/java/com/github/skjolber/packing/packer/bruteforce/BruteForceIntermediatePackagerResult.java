@@ -104,6 +104,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		}
 
 		int[] permutations = state.getPermutations();
+		BoxItem[] boxItems = iterator.getBoxItems();
 		
 		List<BoxStackValue> list = iterator.get(state, points.size());
 		
@@ -111,12 +112,12 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 			Placement stackPlacement = placements[i];
 
 			BoxStackValue value = list.get(i);
-			
-			if(value.getBox().getBoxItem().getLocalIndex() != permutations[i]) {
-				throw new RuntimeException();
+			BoxItem boxItem = boxItems[permutations[i]];
+			if(boxItem.getLocalIndex() != permutations[i]) {
+				throw new IllegalStateException("Expected box item " + permutations[i] + ", got " + boxItem.getLocalIndex());
 			}
 			
-			stackPlacement.setStackValue(value);
+			stackPlacement.setStackValue(boxItem, value);
 
 			Point point3d = points.get(i);
 			stackPlacement.setPoint(point3d);

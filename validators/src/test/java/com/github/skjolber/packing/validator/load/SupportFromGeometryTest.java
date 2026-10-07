@@ -41,8 +41,8 @@ public class SupportFromGeometryTest {
 		List<Placement> placements = new ArrayList<>();
 		for (int i = 0; i < 3; i++) {
 			Box box = builder.withId(Integer.toString(i + 1)).build();
-			new BoxItem(box);
-			placements.add(new Placement(box.getStackValue(0), 0, 0, 0, i));
+			BoxItem item = new BoxItem(box);
+			placements.add(new Placement(item, box.getStackValue(0), 0, 0, 0, i));
 		}
 		return placements;
 	}

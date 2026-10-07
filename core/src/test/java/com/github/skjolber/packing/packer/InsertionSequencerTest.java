@@ -23,8 +23,8 @@ public class InsertionSequencerTest {
 
 	private static Placement place(String id, int x, int z, int extractionOrder) {
 		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
-		new BoxItem(box).withExtractionOrder(extractionOrder);
-		return new Placement(box.getStackValue(0), 0, x, 0, z);
+		BoxItem item = new BoxItem(box).withExtractionOrder(extractionOrder);
+		return new Placement(item, box.getStackValue(0), 0, x, 0, z);
 	}
 
 	private static Stack stack(Placement... placements) {
@@ -164,7 +164,7 @@ public class InsertionSequencerTest {
 		BoxItem item = new BoxItem(box);
 		group.getItems().add(item);
 		item.setGroup(group);
-		return new Placement(box.getStackValue(0), 0, x, 0, z);
+		return new Placement(item, box.getStackValue(0), 0, x, 0, z);
 	}
 
 	private static BoxItemGroup group(String id, int index) {

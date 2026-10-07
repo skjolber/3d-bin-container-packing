@@ -77,8 +77,8 @@ class ComparatorPlacementControlsTest {
 		}
 
 		@Override
-		protected Placement createPlacement(Point point, BoxStackValue stackValue) {
-			Placement placement = super.createPlacement(point, stackValue);
+		protected Placement createPlacement(Point point, BoxItem boxItem, BoxStackValue stackValue) {
+			Placement placement = super.createPlacement(point, boxItem, stackValue);
 			candidateCount++;
 			candidates.add(placement);
 			return placement;

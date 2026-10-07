@@ -112,7 +112,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 		Stack stack = container.getStack();
 
 		for (Placement stackPlacement : stack.getPlacements()) {
-			BoxItem boxItem = findRemainingBoxItem(((BoxItem) stackPlacement.getStackValue().getBox().getBoxItem()).getGlobalIndex());
+			BoxItem boxItem = findRemainingBoxItem(stackPlacement.getBoxItem().getGlobalIndex());
 			boxItem.decrementResetCount();
 			boxItem.reset();
 		}
@@ -135,7 +135,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	private void checkWholeGroups(Stack stack) {
 		Map<Integer, Integer> countByGlobalIndex = new HashMap<>(stack.size() * 2);
 		for (Placement placement : stack.getPlacements()) {
-			countByGlobalIndex.merge(((BoxItem) placement.getStackValue().getBox().getBoxItem()).getGlobalIndex(), 1, Integer::sum);
+			countByGlobalIndex.merge(placement.getBoxItem().getGlobalIndex(), 1, Integer::sum);
 		}
 		int matched = 0;
 		for (BoxItemGroup group : remainingBoxItemGroups) {

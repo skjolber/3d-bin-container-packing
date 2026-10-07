@@ -159,10 +159,10 @@ class PlacementControlsTestSupport {
 			super(null, null, null, container(dx, dy, dz), stack, Order.NONE, null, null);
 		}
 
-		/** Delegates to the protected {@code createPlacement(Point, BoxStackValue)}. */
+		/** Delegates to the protected {@code createPlacement(Point, BoxItem, BoxStackValue)}. */
 		Placement testCreatePlacement(com.github.skjolber.packing.api.point.Point point,
 				com.github.skjolber.packing.api.BoxStackValue stackValue) {
-			return createPlacement(point, stackValue);
+			return createPlacement(point, null, stackValue);
 		}
 	}
 

@@ -126,8 +126,9 @@ class GridVirtualBoxLayoutGeneratorTest {
 	/* Placements are created once, on first access; unused alternatives allocate none. */
 	@Test
 	void placementsAreCreatedLazilyAndOnce() {
-		var value = item(1, 1, 1, 100).getBox().getStackValue(0);
-		var grid = new GridVirtualBoxLayoutGenerator.Grid(new VirtualBoxBounds(10, 10, 1), value, 10, 10, 1, 3);
+		var item = item(1, 1, 1, 100);
+		var value = item.getBox().getStackValue(0);
+		var grid = new GridVirtualBoxLayoutGenerator.Grid(new VirtualBoxBounds(10, 10, 1), item, value, 10, 10, 1, 3);
 		var layout = (GridVirtualBoxLayoutGenerator.GridLayout) GridVirtualBoxLayoutGenerator.materialize(List.of(grid)).get(0);
 		assertThat(layout.gridPlacements).isNull();
 		assertThat(layout.getPlacements()).hasSize(100);

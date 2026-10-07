@@ -57,8 +57,8 @@ public class PackagerResultAssertTest {
 	//
 	private PackagerResult sideBySide(int xOfB) {
 		Stack stack = new Stack();
-		stack.add(new Placement(a.getBox().getStackValue(0), 0, 0, 0, 0));
-		stack.add(new Placement(b.getBox().getStackValue(0), 0, xOfB, 0, 0));
+		stack.add(new Placement(a, a.getBox().getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(b, b.getBox().getStackValue(0), 0, xOfB, 0, 0));
 		Container container = Container.newBuilder().withId("container").withSize(2, 1, 1).withMaxLoadWeight(10).withStack(stack).build();
 		return new PackagerResult(List.of(container), 0L, false, -1);
 	}

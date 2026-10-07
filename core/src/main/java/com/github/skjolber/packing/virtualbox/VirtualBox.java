@@ -40,7 +40,7 @@ public class VirtualBox {
 					grids = false;
 					break;
 				}
-				if(grid.value.getBox().getBoxItem() != first.value.getBox().getBoxItem() || grid.count != first.count) {
+				if(grid.item != first.item || grid.count != first.count) {
 					throw new IllegalArgumentException("Layouts must contain the same original inventory");
 				}
 				grid.prepare();

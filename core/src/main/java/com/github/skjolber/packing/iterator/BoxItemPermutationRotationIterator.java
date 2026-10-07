@@ -58,6 +58,12 @@ public interface BoxItemPermutationRotationIterator {
 	BoxStackValue getStackValue(int index);
 
 	/**
+	 * @param index position in the current permutation
+	 * @return the box item at the position
+	 */
+	BoxItem getBoxItem(int index);
+
+	/**
 	 * Get current state
 	 * 
 	 * @return current state

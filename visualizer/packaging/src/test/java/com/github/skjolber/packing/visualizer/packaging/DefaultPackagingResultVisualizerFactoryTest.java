@@ -51,14 +51,14 @@ class DefaultPackagingResultVisualizerFactoryTest {
 		Box a = Box.newBuilder().withId("A").withDescription("base").withSize(1, 1, 1).withWeight(2).withMaxLoadWeight(maxLoadWeightOfA).build();
 		Box b = Box.newBuilder().withId("B").withSize(1, 1, 1).withWeight(3).withMaxLoadBoxCount(1).build();
 		Box c = Box.newBuilder().withId("C").withSize(2, 1, 1).withWeight(4).build();
-		new BoxItem(a);
-		new BoxItem(b);
-		new BoxItem(c);
+		BoxItem itemA = new BoxItem(a);
+		BoxItem itemB = new BoxItem(b);
+		BoxItem itemC = new BoxItem(c);
 
 		Stack stack = new Stack();
-		stack.add(new Placement(a.getStackValue(0), 0, 0, 0, 0));
-		stack.add(new Placement(b.getStackValue(0), 0, 1, 0, 0));
-		stack.add(new Placement(c.getStackValue(0), 0, 0, 0, 1));
+		stack.add(new Placement(itemA, a.getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(itemB, b.getStackValue(0), 0, 1, 0, 0));
+		stack.add(new Placement(itemC, c.getStackValue(0), 0, 0, 0, 1));
 		return Container.newBuilder()
 				.withId("container")
 				.withDescription("sample")
@@ -87,13 +87,13 @@ class DefaultPackagingResultVisualizerFactoryTest {
 	void assignsStableKeysToBoxItems() {
 		Box firstBox = Box.newBuilder().withId("same-label").withSize(1, 1, 1).withWeight(1).build();
 		Box secondBox = Box.newBuilder().withId("same-label").withSize(1, 1, 1).withWeight(1).build();
-		new BoxItem(firstBox, 2);
-		new BoxItem(secondBox);
+		BoxItem first = new BoxItem(firstBox, 2);
+		BoxItem second = new BoxItem(secondBox);
 
 		Stack stack = new Stack();
-		stack.add(new Placement(firstBox.getStackValue(0), 0, 0, 0, 0));
-		stack.add(new Placement(firstBox.getStackValue(0), 0, 1, 0, 0));
-		stack.add(new Placement(secondBox.getStackValue(0), 0, 2, 0, 0));
+		stack.add(new Placement(first, firstBox.getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(first, firstBox.getStackValue(0), 0, 1, 0, 0));
+		stack.add(new Placement(second, secondBox.getStackValue(0), 0, 2, 0, 0));
 		Container container = Container.newBuilder()
 				.withSize(3, 1, 1)
 				.withMaxLoadWeight(10)

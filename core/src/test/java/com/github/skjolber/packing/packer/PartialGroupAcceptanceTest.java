@@ -59,7 +59,7 @@ public class PartialGroupAcceptanceTest {
 			PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(new ContainerItem(container, 2)), 2, Order.NONE), () -> false);
 
 			Stack stack = new Stack();
-			stack.add(new Placement(boxItems.get(0).getBox().getStackValue(0), 0, 0, 0, 0));
+			stack.add(new Placement(boxItems.get(0), boxItems.get(0).getBox().getStackValue(0), 0, 0, 0, 0));
 			assertThatThrownBy(() -> session.accept(new DefaultIntermediatePackagerResult(session.getContainerItem(0), stack)))
 					.isInstanceOf(IllegalArgumentException.class);
 

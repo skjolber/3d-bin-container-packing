@@ -548,6 +548,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		long[] remainingVolumes = frames.remainingVolumes;
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
+		BoxItem[] items = frames.items;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;
 		long maxLoadVolume = container.getMaxLoadVolume();
@@ -560,6 +561,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		for (int i = length - 1; i >= 0; i--) {
 			Box box = iterator.getStackValue(i).getBox();
 			boxes[i] = box;
+			items[i] = iterator.getBoxItem(i);
 			if(box.getMinimumArea() < minArea) {
 				minArea = box.getMinimumArea();
 			}
@@ -616,7 +618,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				}
 				Box box = boxes[level];
 				// without skipping, the boxes up to the max packable count fit by volume and weight
-				unplaced[level] = skipping != null && !(box.getBoxItem().getContainerPriority() <= maxContainerPriorities[level]
+				unplaced[level] = skipping != null && !(items[level].getContainerPriority() <= maxContainerPriorities[level]
 						&& box.getWeight() <= freeLoadWeights[level]
 						&& placedVolume + box.getVolume() <= maxLoadVolume);
 				rotationIndexes[level] = 0;
@@ -663,16 +665,16 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					rotationIndexes[level]++;
 					if(candidates != null) {
 						candidates.populate(pointCalculator, null, stack.getPlacements(), stackValue);
-						int candidate = getBestFullySupported(candidates, stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, utility, pointComparator);
+						int candidate = getBestFullySupported(candidates, items[level], stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, utility, pointComparator);
 						if(candidate != -1) {
 							pointIndex = candidates.getPointIndex(candidate);
 							point = candidates.getPoint(candidate);
 						}
 					} else {
 						if(utility == null) {
-							pointIndex = getBestPoint(pointCalculator, stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, pointComparator);
+							pointIndex = getBestPoint(pointCalculator, items[level], stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, pointComparator);
 						} else {
-							pointIndex = getBestPointWithLoad(pointCalculator, stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, utility, pointComparator);
+							pointIndex = getBestPointWithLoad(pointCalculator, items[level], stackValue, stack, insertAfterCount, container, checkObstacles, checkExtraction, utility, pointComparator);
 						}
 						if(pointIndex != -1) {
 							point = pointCalculator.get(pointIndex);
@@ -690,7 +692,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 						placement.setIndex(stack.size());
 						placement.setSupportedArea(utility.getSupportedAreaAtPoint(point, stackValue, false));
 					}
-					placement.setStackValue(stackValue);
+					placement.setStackValue(items[level], stackValue);
 					placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
 					pointCalculator.add(pointIndex, placement, point);
 					stack.add(placement);
@@ -705,7 +707,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
 						}
 					}
-					placedPermutations[placedCount] = boxes[level].getBoxItem().getLocalIndex();
+					placedPermutations[placedCount] = items[level].getLocalIndex();
 					placedRotations[placedCount] = rotationIndexes[level] - 1;
 					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
 							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
@@ -740,7 +742,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				}
 				continue;
 			}
-			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxes[level].getBoxItem().getContainerPriority());
+			int skippedContainerPriority = Math.min(maxContainerPriorities[level], items[level].getContainerPriority());
 			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
 					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
 			level = skipEnd;
@@ -753,7 +755,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @return the best position (by the point comparator) where the box is fully supported, insertable and, with load
 	 *         limits, carried by the boxes below; or -1 if none
 	 */
-	protected int getBestFullySupported(FullSupportCandidates candidates, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int best = -1;
 		for(int i = 0; i < candidates.size(); i++) {
@@ -764,7 +766,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
 				continue;
 			}
-			if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+			if(checkExtraction && !isExtractable(point, boxItem, stackValue, stack, container.getAccess())) {
 				continue;
 			}
 			if(best != -1 && pointComparator.compare(stackValue, candidates.getPoint(best), point) <= 0) {
@@ -787,7 +789,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @param insertAfterCount the number of boxes placed before the box, which it must be insertable after
 	 * @return the best point (by the point comparator) where the box fits and is insertable, or -1 if none
 	 */
-	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {
@@ -798,7 +800,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
 				continue;
 			}
-			if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+			if(checkExtraction && !isExtractable(point, boxItem, stackValue, stack, container.getAccess())) {
 				continue;
 			}
 			if(insertAfterCount > 0 && !isInsertableAfter(point, stackValue, stack, insertAfterCount, container.getAccess())) {
@@ -814,7 +816,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/**
 	 * As {@link #getBestPoint}, for boxes with load limits: the boxes below must carry the box at the point.
 	 */
-	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {
@@ -825,7 +827,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(checkObstacles && !isInsertable(point, stackValue, container.getObstacles(), container.getAccess())) {
 				continue;
 			}
-			if(checkExtraction && !isExtractable(point, stackValue, stack, container.getAccess())) {
+			if(checkExtraction && !isExtractable(point, boxItem, stackValue, stack, container.getAccess())) {
 				continue;
 			}
 			if(insertAfterCount > 0 && !isInsertableAfter(point, stackValue, stack, insertAfterCount, container.getAccess())) {

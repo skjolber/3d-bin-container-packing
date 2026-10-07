@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
 
 /**
  * Per-level state of the fast brute-force search ({@link FastBruteForcePackager#searchOrder}), kept in arrays
@@ -33,6 +34,7 @@ final class FastSearchFrames {
 	final long[] minAreas;
 	/** The box of the level */
 	final Box[] boxes;
+	final BoxItem[] items;
 
 	FastSearchFrames(int levels) {
 		this.unplaced = new boolean[levels + 1];
@@ -47,5 +49,6 @@ final class FastSearchFrames {
 		this.remainingVolumes = new long[levels + 1];
 		this.minAreas = new long[levels + 1];
 		this.boxes = new Box[levels + 1];
+		this.items = new BoxItem[levels + 1];
 	}
 }

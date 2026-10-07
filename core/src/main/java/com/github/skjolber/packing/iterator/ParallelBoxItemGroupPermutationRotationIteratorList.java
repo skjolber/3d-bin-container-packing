@@ -269,6 +269,11 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 	@Override
+	public BoxItem getBoxItem(int index) {
+		return workUnits[workUnitIndex].getBoxItem(index);
+	}
+
+	@Override
 	public PermutationRotationState getState() {
 		return workUnits[workUnitIndex].getState();
 	}

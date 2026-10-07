@@ -22,7 +22,7 @@ import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
  * Unit tests for {@link SupportPlacementControls}.
  *
  * <p>Focuses on the {@code supportedArea} value written by
- * {@code createPlacement(Point, BoxStackValue)}.  Three regimes are covered:
+ * {@code createPlacement(Point, BoxItem, BoxStackValue)}.  Three regimes are covered:
  * <ul>
  *   <li>Floor placement ({@code point.minZ == 0}) → full support</li>
  *   <li>XY-plane-supported point (box below fully covers footprint) → full support</li>
