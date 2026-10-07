@@ -416,6 +416,64 @@ public class BruteForceBoxItemGroupsTest {
 		}
 	}
 
+	/**
+	 * A best result so far (the hint) prunes the orders which cannot load more; a pruned order says nothing about its
+	 * first group, so the orders which begin with it are still searched. Container with room for 5 unit cubes, groups
+	 * b (a 4 x 1 box), c (3 cubes) and a (2 cubes), largest first, and a hint of volume 4:
+	 *
+	 * <pre>
+	 *   b, c, a:   [b b b b .]   volume 4
+	 *   b, a, c:   [b b b b .]   volume 4
+	 *   c, b, a:   [c c c . .]   b does not fit after c: at most volume 3, pruned
+	 *   c, a, b:   [c c c a a]   volume 5, the best order
+	 *   a, b, c:   [a a . . .]   at most volume 2, pruned
+	 *   a, c, b:   [a a c c c]   volume 5
+	 * </pre>
+	 */
+	@Test
+	public void skippingGroupOrdersWithAHintGivesTheSameResults() throws Exception {
+		List<java.util.function.Supplier<AbstractBruteForcePackager>> packagers = List.of(
+				() -> BruteForcePackager.newBuilder().build(),
+				() -> FastBruteForcePackager.newBuilder().build(),
+				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+		for (java.util.function.Supplier<AbstractBruteForcePackager> supplier : packagers) {
+			try (AbstractBruteForcePackager skipping = supplier.get(); AbstractBruteForcePackager everyOrder = supplier.get()) {
+				everyOrder.skipGroupOrders = false;
+				String expected = packWithHint(everyOrder);
+				assertThat(expected).isEqualTo("c0@0 c1@1 c2@2 a0@3 a1@4");
+				assertThat(packWithHint(skipping)).as(skipping.getClass().getSimpleName()).isEqualTo(expected);
+			}
+		}
+	}
+
+	/** @return the placements (box id and x) of the first container */
+	private static String packWithHint(AbstractPackager<?> packager) throws PackagerInterruptedException {
+		Container container = Container.newBuilder().withId("row").withSize(5, 1, 1).withMaxLoadWeight(100).build();
+
+		// the hint: a result of volume 4
+		PackagerSession hintSession = packager.createSession(new PackagerInput(null, List.of(createGroup("h", 4, 1)), List.of(new ContainerItem(container, 1)), 1, Order.NONE), () -> false);
+		IntermediatePackagerResult hint = hintSession.attempt(0, null, false);
+		assertThat(hint.getLoadVolume()).isEqualTo(4);
+
+		List<BoxItemGroup> groups = List.of(createGroup("a", 2, 1), createGroup("b", 1, 4), createGroup("c", 3, 1));
+		PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(new ContainerItem(container, 3)), 3, Order.NONE), () -> false);
+		IntermediatePackagerResult result = session.attempt(0, hint, false);
+		StringBuilder builder = new StringBuilder();
+		for (Placement placement : result.getStack().getPlacements()) {
+			builder.append(placement.getStackValue().getBox().getId()).append('@').append(placement.getAbsoluteX()).append(' ');
+		}
+		return builder.toString().trim();
+	}
+
+	/** @return a group of boxes of length dx (1 x 1 cross section) */
+	private static BoxItemGroup createGroup(String id, int count, int dx) {
+		List<BoxItem> boxItems = new ArrayList<>();
+		for (int i = 0; i < count; i++) {
+			boxItems.add(new BoxItem(Box.newBuilder().withId(id + i).withSize(dx, 1, 1).withWeight(1).build(), 1));
+		}
+		return new BoxItemGroup(id, boxItems);
+	}
+
 	/** @return the placements of each container (box id and position) */
 	private static List<String> packGroupOrders(AbstractPackager<?> packager, long seed, boolean priorities) {
 		java.util.Random random = new java.util.Random(seed);

@@ -1,9 +1,11 @@
 package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -83,6 +85,11 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * other order is better.
 	 * <br>
 	 * <br>
+	 * Each order is searched with the best result so far (of this attempt, or {@code best}), so that the permutations
+	 * which cannot load more are pruned. An order without a result may only have been pruned: it says nothing about its
+	 * groups, so only that order is skipped.
+	 * <br>
+	 * <br>
 	 * With container priorities, the groups of a priority come after the groups of the lower priorities in each order:
 	 * the remaining groups are sorted by priority, and only the groups of the same priority change places.
 	 *
@@ -91,12 +98,62 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * @return the best result, or null if no group fits the container
 	 */
 	protected BruteForceIntermediatePackagerResult attemptGroupOrders(int containerIndex, IntermediatePackagerResult best) throws PackagerInterruptedException {
+		return searchGroupOrders(containerIndex, getFirstGroupOrder(new int[0]), 0, best, null, this::packGroupOrder);
+	}
+
+	/**
+	 * Packs the boxes of an order of the groups (see {@link AbstractBruteForceBoxItemGroupSession#packGroupOrder}).
+	 */
+	@FunctionalInterface
+	protected interface GroupOrderPacker {
+
+		BruteForceIntermediatePackagerResult pack(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
+	}
+
+	/**
+	 * @param prefix the first groups
+	 * @return the first order which begins with the groups: the prefix, then the other groups in ascending order
+	 */
+	protected int[] getFirstGroupOrder(int[] prefix) {
+		int[] groupOrder = Arrays.copyOf(prefix, boxItemGroups.size());
+		int position = prefix.length;
+		for (int k = 0; k < groupOrder.length; k++) {
+			if(!contains(prefix, k)) {
+				groupOrder[position++] = k;
+			}
+		}
+		return groupOrder;
+	}
+
+	private static boolean contains(int[] values, int value) {
+		for (int v : values) {
+			if(v == value) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Search the orders of the groups which begin with the same groups, as {@link #attemptGroupOrders} does with all
+	 * orders: searches of different prefixes can run concurrently, and give the same result as one search of all orders
+	 * when the best results of the prefixes are compared in the order of the prefixes (lexicographically), the first
+	 * of equal results winning.
+	 *
+	 * @param containerIndex the container
+	 * @param groupOrder the first order (see {@link #getFirstGroupOrder(int[])}); changed by the search
+	 * @param prefixLength the number of groups which every searched order begins with, or 0 for all orders
+	 * @param best the best result so far, or null
+	 * @param shared the best result of the searches which run concurrently (the most load volume), which this search
+	 *        updates, or null
+	 * @param packer packs the boxes of an order
+	 * @return the best result, or null if no group fits the container
+	 */
+	protected BruteForceIntermediatePackagerResult searchGroupOrders(int containerIndex, int[] groupOrder, int prefixLength, IntermediatePackagerResult best,
+			AtomicReference<IntermediatePackagerResult> shared, GroupOrderPacker packer) throws PackagerInterruptedException {
 		Container container = packagerContainerItems.getContainerItem(containerIndex).getContainer();
 
-		int[] groupOrder = new int[boxItemGroups.size()];
-		for (int k = 0; k < groupOrder.length; k++) {
-			groupOrder[k] = k;
-		}
+		int[] prefix = Arrays.copyOf(groupOrder, prefixLength);
 		BruteForceIntermediatePackagerResult bestResult = null;
 		// the position of the first group which the last result did not hold completely
 		int decisive = 0;
@@ -119,13 +176,20 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 				decisive = 0;
 				continue;
 			}
-			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packGroupOrder(containerIndex, iterator, groupOrder, best), iteratorGroups);
+			IntermediatePackagerResult hint = getHint(shared != null ? getHint(best, shared.get()) : best, bestResult);
+			BruteForceIntermediatePackagerResult packed = packer.pack(containerIndex, iterator, groupOrder, hint);
+			boolean pruned = (packed == null || packed.isEmpty()) && hint != null && !hint.isEmpty();
+			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packed, iteratorGroups);
 			int size = result != null ? result.getSize() : 0;
 			if(size > 0 && (bestResult == null || getIntermediatePackagerResultComparator().compare(bestResult, result) < 0)) {
 				result.setAnyRemaining(true);
 				bestResult = result;
+				if(shared != null) {
+					share(shared, result);
+				}
 			}
-			if(!skipGroupOrders) {
+			if(!skipGroupOrders || pruned) {
+				// the next order
 				decisive = groupOrder.length - 1;
 				continue;
 			}
@@ -134,15 +198,54 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 				// all groups fit: no order is better
 				break;
 			}
-		} while(nextGroupOrder(groupOrder, decisive));
+			// the orders which differ before the decisive group begin with other groups than the prefix
+		} while(decisive >= prefixLength && nextGroupOrder(groupOrder, decisive) && startsWith(groupOrder, prefix));
 		return bestResult;
+	}
+
+	private static boolean startsWith(int[] groupOrder, int[] prefix) {
+		for (int k = 0; k < prefix.length; k++) {
+			if(groupOrder[k] != prefix[k]) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Share a result with searches which run concurrently, if it loads more than the shared result.
+	 */
+	private static void share(AtomicReference<IntermediatePackagerResult> shared, BruteForceIntermediatePackagerResult result) {
+		IntermediatePackagerResult current;
+		do {
+			current = shared.get();
+			if(current != null && current.getLoadVolume() >= result.getLoadVolume()) {
+				return;
+			}
+		} while(!shared.compareAndSet(current, result));
+	}
+
+	/**
+	 * @param best the best result of the operation so far, or null
+	 * @param bestResult the best result of this attempt so far, or null
+	 * @return the one with the most load volume, or null: the packagers prune the permutations which cannot load more
+	 *         (when the result comparator prefers more load volume)
+	 */
+	protected static IntermediatePackagerResult getHint(IntermediatePackagerResult best, IntermediatePackagerResult bestResult) {
+		if(bestResult == null || bestResult.isEmpty()) {
+			return best;
+		}
+		if(best == null || best.isEmpty() || bestResult.getLoadVolume() > best.getLoadVolume()) {
+			return bestResult;
+		}
+		return best;
 	}
 
 	/**
 	 * @return the first position in the order where a group has a lower container priority than the group before it, or
 	 *         -1 if none
 	 */
-	private int getContainerPriorityViolation(int[] groupOrder) {
+	protected int getContainerPriorityViolation(int[] groupOrder) {
 		for (int k = 1; k < groupOrder.length; k++) {
 			if(boxItemGroups.get(groupOrder[k]).getContainerPriority() < boxItemGroups.get(groupOrder[k - 1]).getContainerPriority()) {
 				return k;
