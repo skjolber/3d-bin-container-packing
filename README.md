@@ -191,8 +191,9 @@ best arrangement by the result comparator. Without a box item order (`Order.NONE
 searched this way; with a box item order (`Order.CHRONOLOGICAL`), only that order, each box insertable after the boxes
 before it. With skipping (`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), each box (or box item group) can also be skipped, and
 waits for a later container. With container priorities, they only permute the boxes within each priority. The parallel
-packagers search a box item order or container priorities on one thread, as the permutations cannot be split between
-threads (except box item groups with container priorities, which are still split).
+packager searches a box item order, or box items with container priorities, on one thread, as the permutations cannot
+be split between threads. For box item groups without a box item order, it splits the orders of the groups between its
+threads (or, for a few groups with many boxes, the permutations of each order), with the same result as on one thread.
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
 
@@ -443,7 +444,8 @@ containers lowest container priority first, then the groups which are extracted 
 (`withBoxItemGroupComparator(..)`). The brute-force packagers pack groups in an order, permuting the boxes within each
 group, and a container holds the first groups which fit; they try every order of the remaining groups for each
 container (groups of the same container priority change places), skipping the orders which cannot give a better result.
-This is exponential in the number of groups; use a deadline.
+Each order is searched with the best result so far, so that the permutations which cannot load more are pruned. This is
+exponential in the number of groups; use a deadline.
 Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
 (`ExtractionOrderValidator`, `ContainerPriorityValidator`).
 
@@ -602,6 +604,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Virtual-box preprocessing
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation
+     * The parallel brute-force packager splits the orders of box item groups between its threads
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity
      * Behaviour changes:
         * The max load weight of a box limits the total weight resting on it, through all levels and paths of the support graph (previously only direct loads were counted)

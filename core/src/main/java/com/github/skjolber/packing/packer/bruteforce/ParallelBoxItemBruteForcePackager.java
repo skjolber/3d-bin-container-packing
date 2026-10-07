@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +12,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -38,9 +41,12 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteFor
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
- * 
- * Note on parallelization: The permutations are split into different tasks. Rotations + point placements is not.
- *
+ * Brute-force packager which searches on several threads.
+ * <br>
+ * <br>
+ * Note on parallelization: the permutations of the boxes are split into different tasks, and for box item groups
+ * without a box item order, the orders of the groups (by their first groups). The rotations and point placements of a
+ * permutation are not split.
  */
 
 public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackager {
@@ -202,6 +208,9 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	private final ExecutorService executorService;
 	protected final BruteForcePointIteratorFilter pointFilter;
 	protected final boolean filterReversePermutations;
+
+	/** The number of attempts which split the orders of the box item groups between the threads (for tests) */
+	final AtomicInteger groupOrderSplits = new AtomicInteger();
 
 	public ParallelBoxItemBruteForcePackager(ExecutorService executorService, int parallelizationCount,
 			Comparator<IntermediatePackagerResult> comparator, BruteForcePointIteratorFilter pointFilter) {
@@ -728,6 +737,160 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					future.cancel(true);
 				}
 			}
+		}
+
+		/**
+		 * Search the orders of the groups on the threads. With few orders of groups with many permutations, the orders are
+		 * searched one at a time, and the permutations of each are split between the threads (see
+		 * {@link #packGroupOrder}). Otherwise the orders are split into work units by their first groups (prefixes),
+		 * which the threads take in turn; each unit is searched
+		 * like {@link #attemptGroupOrders} searches all orders on one thread (see {@link #searchGroupOrders}). The
+		 * threads share the best result so far, for pruning, and the units after a unit with a result which holds all
+		 * groups stop. The units' results are compared in the order of the units, the first of equal results winning, so
+		 * the result is the same as on one thread.
+		 */
+		@Override
+		protected BruteForceIntermediatePackagerResult attemptGroupOrders(int containerIndex, IntermediatePackagerResult best) throws PackagerInterruptedException {
+			if(isFewGroupOrders(boxItemGroups.size()) && iterators[containerIndex].countPermutations() > 2L * parallelizationCount) {
+				return super.attemptGroupOrders(containerIndex, best);
+			}
+			groupOrderSplits.incrementAndGet();
+			int prefixLength = getGroupOrderPrefixLength(boxItemGroups.size());
+			return searchGroupOrdersMultithreaded(containerIndex, getGroupOrderPrefixes(prefixLength), prefixLength, best);
+		}
+
+		/**
+		 * @return true if the orders of the groups are too few to split into enough units for the threads to share (a
+		 *         quarter of the parallelization count)
+		 */
+		private boolean isFewGroupOrders(int groupCount) {
+			long orders = 1;
+			for (int k = 2; k <= groupCount; k++) {
+				orders *= k;
+				if(orders * 4 >= parallelizationCount) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+		/**
+		 * @return the shortest prefix length which splits the orders into enough units for the threads to share (a
+		 *         quarter of the parallelization count), at most one less than the number of groups
+		 */
+		private int getGroupOrderPrefixLength(int groupCount) {
+			long units = 1;
+			for (int k = 1; k < groupCount; k++) {
+				units *= groupCount - k + 1;
+				if(units * 4 >= parallelizationCount) {
+					return k;
+				}
+			}
+			return groupCount - 1;
+		}
+
+		/**
+		 * @return the prefixes of the orders, lexicographically; without the prefixes of orders which only break the
+		 *         container priorities
+		 */
+		private List<int[]> getGroupOrderPrefixes(int prefixLength) {
+			List<int[]> prefixes = new ArrayList<>();
+			int[] groupOrder = getFirstGroupOrder(new int[0]);
+			do {
+				// the first order with the prefix: the other groups in ascending order, so in ascending container priority
+				if(getContainerPriorityViolation(groupOrder) == -1) {
+					prefixes.add(Arrays.copyOf(groupOrder, prefixLength));
+				}
+			} while(nextGroupOrder(groupOrder, prefixLength - 1));
+			return prefixes;
+		}
+
+		private BruteForceIntermediatePackagerResult searchGroupOrdersMultithreaded(int containerIndex, List<int[]> prefixes, int prefixLength, IntermediatePackagerResult best)
+				throws PackagerInterruptedException {
+			int units = prefixes.size();
+			BruteForceIntermediatePackagerResult[] results = new BruteForceIntermediatePackagerResult[units];
+			// the next unit to search
+			AtomicInteger next = new AtomicInteger();
+			// the first unit with a result which holds all groups: the units after it cannot give a better result
+			AtomicInteger complete = new AtomicInteger(Integer.MAX_VALUE);
+			// the result with the most load volume so far, for pruning
+			AtomicReference<IntermediatePackagerResult> shared = new AtomicReference<>();
+			int boxCount = 0;
+			for (BoxItemGroup group : boxItemGroups) {
+				boxCount += group.getBoxCount();
+			}
+			int allBoxes = boxCount;
+			ContainerItem containerItem = getContainerItem(containerIndex);
+			LocalInterrupt localInterrupt = new LocalInterrupt();
+
+			// one per attempt, see packMultithreaded
+			ExecutorCompletionService<Void> executorCompletionService = new ExecutorCompletionService<>(executorService);
+			int tasks = Math.min(units, runnables.length);
+			List<Future<Void>> futures = new ArrayList<>(tasks);
+			for (int j = 0; j < tasks; j++) {
+				BruteForceWorker worker = runnables[j];
+				// each worker has its own copy of the interrupt
+				PackagerInterruptSupplier interrupt = interrupts[j];
+				futures.add(executorCompletionService.submit(() -> {
+					for (int unit = next.getAndIncrement(); unit < units && unit < complete.get(); unit = next.getAndIncrement()) {
+						int u = unit;
+						PackagerInterruptSupplier unitInterrupt = () -> localInterrupt.interrupted || complete.get() < u || interrupt.getAsBoolean();
+						try {
+							BruteForceIntermediatePackagerResult result = searchGroupOrders(containerIndex, getFirstGroupOrder(prefixes.get(u)), prefixLength, best, shared,
+									(index, iterator, groupOrder, hint) -> {
+										if(unitInterrupt.getAsBoolean()) {
+											throw new PackagerInterruptedException();
+										}
+										return ParallelBoxItemBruteForcePackager.this.pack(worker.pointCalculator, worker.placements, worker.placementCount, containerItem, index, iterator,
+												unitInterrupt, pointFilter, hint);
+									});
+							results[u] = result;
+							if(result != null && result.getSize() == allBoxes) {
+								complete.accumulateAndGet(u, Math::min);
+							}
+						} catch (PackagerInterruptedException e) {
+							if(localInterrupt.interrupted || complete.get() >= u) {
+								throw e;
+							}
+							// stopped: a unit before this one holds all groups
+						}
+					}
+					return null;
+				}));
+			}
+			try {
+				for (int j = 0; j < futures.size(); j++) {
+					try {
+						executorCompletionService.take().get();
+					} catch (ExecutionException e) {
+						localInterrupt.interrupted = true;
+						Throwable cause = e.getCause();
+						if(cause instanceof PackagerInterruptedException) {
+							throw (PackagerInterruptedException)cause;
+						}
+						throw new PackagerException(cause);
+					} catch (InterruptedException e) {
+						localInterrupt.interrupted = true;
+						throw new PackagerInterruptedException();
+					}
+				}
+			} finally {
+				for (Future<Void> future : futures) {
+					future.cancel(true);
+				}
+			}
+			// was the search interrupted?
+			if(sourceInterrupt.getAsBoolean()) {
+				throw new PackagerInterruptedException();
+			}
+			// the first of the best results, in the order of the units (as on one thread)
+			BruteForceIntermediatePackagerResult bestResult = null;
+			for (BruteForceIntermediatePackagerResult result : results) {
+				if(result != null && (bestResult == null || intermediatePackagerResultComparator.compare(bestResult, result) < 0)) {
+					bestResult = result;
+				}
+			}
+			return bestResult;
 		}
 
 		@Override
