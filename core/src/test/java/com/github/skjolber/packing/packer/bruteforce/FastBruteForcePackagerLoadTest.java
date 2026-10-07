@@ -40,14 +40,12 @@ class FastBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest 
 			pointCalculator.clear();
 			CountingLoadPlacementUtility utility = new CountingLoadPlacementUtility();
 
-			int count = packager.packStackPlacement(pointCalculator, new Placement[] {new Placement()},
-					iterator, new Stack(), container, 0, () -> false, 0, 100, utility,
+			int pointIndex = packager.getBestPointWithLoad(pointCalculator, iterator.getStackValue(0), new Stack(), 0, container, false, false, utility,
 					(stackValue, bestPoint, candidatePoint) -> 0);
 
-			assertThat(count).isEqualTo(1);
-			// The selected point is validated once while ranking and once when the
-			// utility cache is primed for adding its load. The inferior point is skipped.
-			assertThat(utility.validationCount).isEqualTo(2);
+			assertThat(pointIndex).isEqualTo(0);
+			// The selected point is validated while ranking; the inferior point is skipped.
+			assertThat(utility.validationCount).isEqualTo(1);
 		} finally {
 			packager.close();
 		}

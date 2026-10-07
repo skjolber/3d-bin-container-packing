@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
@@ -69,8 +70,8 @@ public class PackagerGoldenMasterTest {
 	};
 	private static final long[] EXPECTED_BRUTE_FORCE = {
 		-7633541546413779901L, 5409039543547643048L, 3136616822457889421L, -2044062733234777270L,
-		5330130213954713715L, -2358077914062050043L, 9015769085271897720L, -5934595884552817430L,
-		-2765747327543961870L, 3663375559547421731L, -7362082114236403302L, 1453686011565233354L,
+		5330130213954713715L, -2499405689873661412L, 9015769085271897720L, -5934595884552817430L,
+		-2765747327543961870L, -3649500522981729288L, -7362082114236403302L, 1453686011565233354L,
 	};
 	private static final long[] EXPECTED_FAST_BRUTE_FORCE = {
 		-1560624090259993544L, 5413079662647782823L, -4516682763885846808L, -7262719745320755856L,
@@ -223,41 +224,41 @@ public class PackagerGoldenMasterTest {
 	 */
 
 	private static final long[] EXPECTED_BRUTE_FORCE_POINT_FILTER = {
-		-7633541546413779901L, -5315426022851283044L, -4516682763885846808L, 8957428069069225933L,
-		8728185113305420136L, -2358077914062050043L, 1839652993381982561L, -7810854047523803376L,
-		-372242133089036785L, 3663375559547421731L, -8521740760356600005L, -473978201621490708L,
+		-1560624090259993544L, -5315426022851283044L, -4516682763885846808L, 8957428069069225933L,
+		8728185113305420136L, -2499405689873661412L, 1839652993381982561L, -7810854047523803376L,
+		-372242133089036785L, -3649500522981729288L, -8521740760356600005L, -473978201621490708L,
 	};
 
 	// groups: re-recorded when the boxes of each group were inserted together (success and boxes per container are
 	// unchanged)
 	private static final long[] EXPECTED_BRUTE_FORCE_GROUPS = {
 		-7633541546413779901L, 3062443499703504866L, -6849935058887294042L, 6039731106805676818L,
-		-1979579537131764317L, -2358077914062050043L, 6883066524153419992L, 8273988785113105942L,
+		-1979579537131764317L, -3173352483694848412L, 6883066524153419992L, 8273988785113105942L,
 		8120754702179614920L, 230581014246122943L, 3702842859561631751L, -7095617953370009160L,
 	};
 
 	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_WEIGHT = {
 		-1560624090259993544L, 5409039543547643048L, -99884376588914189L, -2044062733234777270L,
-		-1732625102963685305L, -2358077914062050043L, -4576250406293102926L, -1239025572799048789L,
-		-2765747327543961870L, 3663375559547421731L, -7362082114236403302L, 1453686011565233354L,
+		-1732625102963685305L, -2499405689873661412L, -4576250406293102926L, -1239025572799048789L,
+		-2765747327543961870L, -3649500522981729288L, -7362082114236403302L, 1453686011565233354L,
 	};
 
 	private static final long[] EXPECTED_LOAD_BRUTE_FORCE = {
 		-1560624090259993544L, 5409039543603977829L, -6268159047462828399L, -1408850810824656495L,
-		-1732625102963685305L, 9049185741530308401L, 1273006024687245378L, 5891486491182146729L,
-		-2765747327543961870L, 3663375559547421731L, 8903866090484190208L, -8280268140199339607L,
+		-1732625102963685305L, -2499405689873661412L, 1273006024687245378L, 5891486491182146729L,
+		-2765747327543961870L, 3091347839163898648L, 8903866090484190208L, -8280268140199339607L,
 	};
 
 	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_IDENTICAL = {
 		-1560624090258174402L, 5413079661044550367L, -6268159047462828399L, 4933539009470205692L,
-		-1732625102963685305L, -2354905164612236164L, 1273006024687245378L, 3415264359693250815L,
+		-1732625102963685305L, -2499405689873661412L, 1273006024687245378L, 3415264359693250815L,
 		1917409172158508868L, -3649500522981729288L, 8903866090486960771L, -8280268140199339607L,
 	};
 
 	private static final long[] EXPECTED_LOAD_BRUTE_FORCE_POINT_FILTER = {
 		-1560624090259993544L, -5315426022794948263L, -4516682763660507684L, 8957428069069225933L,
-		-5044198348180103722L, 9049185741530308401L, 1941286900968525406L, -7810854047523803376L,
-		-372242133089036785L, 3663375559547421731L, 8903866090484190208L, -473978201621490708L,
+		-5044198348180103722L, -2499405689873661412L, 1941286900968525406L, -7810854047523803376L,
+		-372242133089036785L, 3091347839163898648L, 8903866090484190208L, -473978201621490708L,
 	};
 
 	private static final long[] EXPECTED_PARALLEL_BRUTE_FORCE = {
@@ -361,13 +362,20 @@ public class PackagerGoldenMasterTest {
 	 *        that boxes are otherwise the same as without load limits
 	 */
 	public static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load) {
+		return pack(packager, seed, maxBoxes, maxCount, groups, load, Order.NONE);
+	}
+
+	/**
+	 * @param order the box item order
+	 */
+	public static long pack(Packager<?> packager, long seed, int maxBoxes, int maxCount, boolean groups, int load, Order order) {
 		Random random = new Random(seed);
 		List<BoxItem> items = createItems(random, new Random(seed * 31 + 7), maxBoxes, maxCount, load);
 		List<ContainerItem> containers = createContainers(random);
 
 		PackagerResult result;
 		try {
-			result = build(packager, items, containers, groups);
+			result = build(packager, items, containers, groups, order);
 		} catch(RuntimeException e) {
 			// a crash is recorded as an outcome, so that new crashes and behavior changes are both detected
 			return 3L * 31 + e.getClass().getName().hashCode();
@@ -398,7 +406,7 @@ public class PackagerGoldenMasterTest {
 		List<BoxItem> items = createItems(random, new Random(seed * 31 + 7), maxBoxes, maxCount, load);
 		List<ContainerItem> containers = createContainers(random);
 
-		PackagerResult result = build(packager, items, containers, groups);
+		PackagerResult result = build(packager, items, containers, groups, Order.NONE);
 		long hash = result.isSuccess() ? 1 : 2;
 		for(int c = 0; c < result.size(); c++) {
 			Container packed = result.get(c);
@@ -451,7 +459,7 @@ public class PackagerGoldenMasterTest {
 				.build();
 	}
 
-	private static PackagerResult build(Packager<?> packager, List<BoxItem> items, List<ContainerItem> containers, boolean groups) {
+	private static PackagerResult build(Packager<?> packager, List<BoxItem> items, List<ContainerItem> containers, boolean groups, Order order) {
 		if(groups) {
 			List<BoxItemGroup> boxItemGroups = new ArrayList<>();
 			for(int i = 0; i < items.size(); i += 2) {
@@ -461,12 +469,14 @@ public class PackagerGoldenMasterTest {
 					.withContainerItems(containers)
 					.withBoxItemGroups(boxItemGroups)
 					.withMaxContainerCount(4)
+					.withOrder(order)
 					.build();
 		}
 		return packager.newResultBuilder()
 				.withContainerItems(containers)
 				.withBoxItems(items)
 				.withMaxContainerCount(4)
+				.withOrder(order)
 				.build();
 	}
 }

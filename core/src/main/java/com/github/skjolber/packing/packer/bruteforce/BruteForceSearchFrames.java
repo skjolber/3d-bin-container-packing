@@ -1,10 +1,12 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import com.github.skjolber.packing.api.Box;
+
 import org.eclipse.collections.api.iterator.IntIterator;
 
 /**
- * Per-level state of the brute-force placement search ({@link AbstractBruteForcePackager#search}), kept
- * in arrays instead of on the thread's stack. Level {@code i} places box {@code i} of the permutation.
+ * Per-level state of the brute-force placement search ({@link AbstractBruteForcePackager#searchOrder}), kept
+ * in arrays instead of on the thread's stack. Level {@code i} is box {@code i} of the order.
  * Reused between searches by the same {@link PointCalculator3DStack}.
  */
 final class BruteForceSearchFrames {
@@ -24,7 +26,38 @@ final class BruteForceSearchFrames {
 	/** The positions where the box at the level is fully supported, when full support is required (created on first use). */
 	private final FullSupportCandidates[] fullSupportCandidates;
 
+	/** Whether the box of the level is not placed (see {@link AbstractBruteForcePackager#searchOrder}) */
+	final boolean[] unplaced;
+	/** The level which entered the level */
+	final int[] parents;
+	/** The number of boxes placed before the level */
+	final int[] placedCounts;
+	/** The volume of the boxes placed before the level */
+	final long[] placedVolumes;
+	/** The highest container priority which may be placed at the level */
+	final int[] maxContainerPriorities;
+	/** The box (index in the iterator's box items) of each placement */
+	final int[] placedPermutations;
+	/** The rotation of each placement */
+	final int[] placedRotations;
+	/** The volume of the boxes from the level on */
+	final long[] remainingVolumes;
+	/** The smallest area of the boxes from the level on, in any rotation */
+	final long[] minAreas;
+	/** The box of the level */
+	final Box[] boxes;
+
 	BruteForceSearchFrames(int levels) {
+		this.unplaced = new boolean[levels + 1];
+		this.parents = new int[levels + 1];
+		this.placedCounts = new int[levels + 1];
+		this.placedVolumes = new long[levels + 1];
+		this.maxContainerPriorities = new int[levels + 1];
+		this.placedPermutations = new int[levels + 1];
+		this.placedRotations = new int[levels + 1];
+		this.remainingVolumes = new long[levels + 1];
+		this.minAreas = new long[levels + 1];
+		this.boxes = new Box[levels + 1];
 		this.nextPointIndexes = new int[levels];
 		this.pointCounts = new int[levels];
 		this.pointIterators = new IntIterator[levels];

@@ -174,9 +174,13 @@ public class FastBruteForcePackagerSkippingTest {
 		}
 
 		@Override
-		protected void searchInOrderSkipping(FastPointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, long[] minAreas,
-				int[] skipEnds, int maxContainerPriority, BoxItemPermutationRotationIterator iterator, Stack stack, Container container, PackagerInterruptSupplier interrupt,
-				LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator, SkippingBest best) throws PackagerInterruptedException {
+		protected void searchInOrderSkipping(FastPointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
+				Container container, PackagerInterruptSupplier interrupt, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator,
+				int[] skipEnds, int maxContainerPriority, SkippingBest best) throws PackagerInterruptedException {
+			int[] permutations = iterator.getPermutations();
+			BoxItem[] boxItems = iterator.getBoxItems();
+			long[] minAreas = getMinAreas(boxItems, permutations);
+			pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
 			new Search(pointCalculator, placements, boxItems, permutations, minAreas, skipEnds, iterator, stack, container, interrupt, utility, pointComparator, best)
 					.search(0, 0, 0L, container.getMaxLoadWeight(), maxContainerPriority);
 		}
@@ -237,8 +241,10 @@ public class FastBruteForcePackagerSkippingTest {
 					BoxStackValue[] stackValues = box.getStackValues();
 					for (int rotation = 0; rotation < stackValues.length; rotation++) {
 						BoxStackValue stackValue = stackValues[rotation];
-						int pointIndex = utility == null ? getBestPoint(pointCalculator, stackValue, stack, placedCount, container, iterator, pointComparator)
-								: getBestPointWithLoad(pointCalculator, stackValue, stack, placedCount, container, iterator, utility, pointComparator);
+						boolean checkObstacles = !container.getObstacles().isEmpty();
+						boolean checkExtraction = hasExtractionOrders(iterator);
+						int pointIndex = utility == null ? getBestPoint(pointCalculator, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, pointComparator)
+								: getBestPointWithLoad(pointCalculator, stackValue, stack, placedCount, container, checkObstacles, checkExtraction, utility, pointComparator);
 						if(pointIndex == -1) {
 							continue;
 						}

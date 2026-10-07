@@ -45,18 +45,17 @@ import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
  * <br>
  * <br>
  * For one container, {@link #pack(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, IntermediatePackagerResult)}
- * runs three nested searches:
- * <ol>
- * <li>every permutation (order) of the boxes,</li>
- * <li>for each permutation, every combination of rotations, and</li>
- * <li>for each permutation and rotation, every placement of the boxes in that order at the free (extreme) points,
- * see {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess)}.</li>
- * </ol>
- * Boxes are always placed in permutation order, so a result is a prefix of a permutation: the longest prefix which could be placed.
- * This allows skipping work which cannot change the outcome:
+ * searches every permutation (order) of the boxes, and for each permutation every placement of the boxes in that
+ * order: each box in each rotation at each free (extreme) point (see {@link #searchOrder}). The same search packs a box
+ * item order ({@link Order#CHRONOLOGICAL}: the one permutation) and, when boxes may be skipped
+ * ({@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}), also tries skipping each box.
+ * <br>
+ * <br>
+ * Without skipping, boxes are placed in permutation order, so a result is a prefix of a permutation: the longest prefix
+ * which could be placed. This allows skipping work which cannot change the outcome:
  * <ul>
- * <li>if the first {@code n} boxes were placed, rotating box {@code n + 1} or later cannot place more boxes,
- * and neither can reordering them, so the iterators skip ahead to a change at index {@code n} or lower,</li>
+ * <li>if the first {@code n} boxes were placed, reordering box {@code n + 1} or later cannot place more boxes,
+ * so the iterator skips ahead to a change at index {@code n} or lower,</li>
  * <li>a prefix cannot be longer than the boxes which fit by volume and weight ({@link #getMaxPackableCount(BoxItemPermutationRotationIterator, long, long)}),
  * so the search stops once that many are placed, and</li>
  * <li>when the comparator prefers higher load volume, permutations (and containers) whose maximum load volume does not exceed
@@ -88,8 +87,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/** Skip the group orders which cannot give a better result (see {@link AbstractBruteForceBoxItemGroupSession#attemptGroupOrders}); tests turn this off */
 	boolean skipGroupOrders = true;
 
-
-
 	public AbstractBruteForcePackager(Comparator<IntermediatePackagerResult> comparator) {
 		super(comparator);
 	}
@@ -108,7 +105,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			return packager.pack(validate(packager), deadline, interrupt);
 		}
 	}
-
 
 	@Override
 	public String getUnsupportedReason(PackagerInput input) {
@@ -408,7 +404,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
 			return bestResult;
 		}
-		// outer loop: permutations
+		// box item groups: the boxes of earlier groups; the permutations keep the groups' positions
+		int[] insertAfterCounts = getInsertAfterCounts(iterator);
+		int[] prefixRotations = new int[iterator.length()];
+		boolean checkExtraction = hasExtractionOrders(iterator);
+		// permutations
 		do {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
@@ -424,43 +424,27 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				continue;
 			}
 
-			// inner loop: rotations of the current permutation
-			do {
-				// the box with the smallest area; free points with less area cannot hold any of the boxes
-				int minStackableAreaIndex = iterator.getMinStackableAreaIndex(0);
-
-				// place the boxes in permutation order, returns the points of the longest prefix placed
-
-				List<Point> points = packStackPlacement(pointCalculator, stackPlacements, iterator, stack, holder, interrupt,
-						minStackableAreaIndex, containerItem.getInitialPoints(), utility, pointFilter, maxPackableCount);
-				stack.clear();
-				
-				if(points.size() > bestPermutationResult.getSize()) {
-					bestPermutationResult.setStateFromReusablePoints(points, iterator.getState(), stackPlacements, stackPlacementCount);
-					if(points.size() == iterator.length()) {
-						// best possible result for this container
-						return bestPermutationResult;
-					}
+			// search the permutation as a box order: the rotations and positions of the longest prefix
+			pointCalculator.resetBest();
+			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+			if(containerItem.getInitialPoints() != null) {
+				pointCalculator.setPoints(containerItem.getInitialPoints());
+				pointCalculator.clear();
+			}
+			if(utility != null) {
+				utility.initialize(iterator.length());
+			}
+			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointFilter, requireFullSupport, checkExtraction, insertAfterCounts, maxPackableCount,
+					null, Integer.MAX_VALUE, null, prefixRotations);
+			stack.clear();
+			List<Point> points = pointCalculator.getBestPoints();
+			if(!points.isEmpty()) {
+				bestPermutationResult.setStateFromReusablePoints(points, getState(iterator, prefixRotations, points.size()), stackPlacements, stackPlacementCount);
+				if(points.size() == iterator.length()) {
+					// best possible result for this container
+					return bestPermutationResult;
 				}
-				if(points.size() >= maxPackableCount) {
-					// Capacity makes a longer prefix impossible for every rotation
-					// of this permutation.
-					break;
-				}
-
-				// search for the next rotation which actually
-				// has a chance of affecting the result.
-				// i.e. if we have four boxes, and two boxes could be placed with the
-				// current rotations, and the new rotation only changes the rotation of box 4,
-				// then we know that attempting to stack again will not work
-
-				int rotationIndex = iterator.nextRotation(points.size());
-
-				if(rotationIndex == -1) {
-					// no more rotations, continue to next permutation
-					break;
-				}
-			} while (true);
+			}
 
 			// the first bestPermutationResult.getSize() boxes were placed, but the next could not be:
 			// skip permutations which keep the same boxes up to and including that index
@@ -489,9 +473,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 	/**
 	 * Pack the boxes in the iterator's order (a box item order) into one container: the longest prefix of the order
-	 * which can be placed. There is a single permutation, so the search tries the rotations of each box itself (see
-	 * {@link #searchInOrder}), instead of searching again for each combination of rotations, and each box must be
-	 * insertable after the boxes before it.
+	 * which can be placed (see {@link #searchOrder}), where each box must be insertable after the boxes before it.
 	 *
 	 * @param best the best result so far, or null; see {@link #pack(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, IntermediatePackagerResult)}
 	 * @param limit the number of leading boxes which may be placed (see
@@ -540,25 +522,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(placements.length == 0 || maxPackableCount == 0) {
 			return Collections.emptyList();
 		}
-		BoxItem[] boxItems = iterator.getBoxItems();
-		long[] minAreas = getMinAreas(boxItems, permutations);
-
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(points != null) {
 			pointCalculator.setPoints(points);
 			pointCalculator.clear();
 		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
 		if(utility != null) {
 			utility.initialize(iterator.length());
 		}
-		if(requireFullSupport) {
-			searchInOrderFullSupport(pointCalculator, placements, boxItems, permutations, rotations, minAreas, iterator, stack, container.getMaxLoadWeight(), interrupt,
-					maxPackableCount, utility, pointFilter, container.getObstacles(), container.getAccess());
-		} else {
-			searchInOrder(pointCalculator, placements, boxItems, permutations, rotations, minAreas, iterator, stack, container.getMaxLoadWeight(), interrupt,
-					maxPackableCount, utility, pointFilter, container.getObstacles(), container.getAccess());
-		}
+		searchOrder(pointCalculator, placements, iterator, stack, container, interrupt, utility, pointFilter, requireFullSupport, hasExtractionOrders(iterator), null, maxPackableCount,
+				null, Integer.MAX_VALUE, null, rotations);
 		return pointCalculator.getBestPoints();
 	}
 
@@ -593,368 +566,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
-	 * Depth-first search for the longest prefix of a box item order which can be placed. As
-	 * {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess)},
-	 * but each level tries each rotation of its box at each candidate point (the order is fixed, so there is no other
-	 * permutation to search), and a box must be insertable after the boxes before it.
-	 *
-	 * @param rotations the rotations of the boxes of the best arrangement, set by the search
-	 * @param minAreas for each level, the smallest area of the remaining boxes in any rotation
-	 */
-	protected static void searchInOrder(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, int[] rotations,
-			long[] minAreas, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, PackagerInterruptSupplier interrupt,
-			int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, List<Placement> obstacles, ContainerAccess access)
-			throws PackagerInterruptedException {
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextPointIndexes = frames.nextPointIndexes;
-		int[] pointCounts = frames.pointCounts;
-		IntIterator[] pointIterators = frames.pointIterators;
-		int[] freeLoadWeights = frames.freeLoadWeights;
-		int[] rotationIndexes = frames.rotationIndexes;
-
-		freeLoadWeights[0] = maxLoadWeight;
-
-		// the current level, i.e. the index of the box being placed
-		int level = 0;
-		// true when entering the level from the previous level, false when coming back from the next level
-		boolean descend = true;
-		while(true) {
-			Placement placement = placements[level];
-			BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-			if(descend) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount || stackValues[0].getBox().getWeight() > freeLoadWeights[level]) {
-					// nothing to do at this level, continue at the previous level
-					if(level == 0) {
-						return;
-					}
-					level--;
-					descend = false;
-					continue;
-				}
-				// the boxes of levels 0 .. level - 1 are placed; keep them if the longest arrangement so far
-				updateBest(pointCalculator, rotationIndexes, rotations, level);
-				// save the free points, so that each candidate of this level starts from them (see redo())
-				pointCalculator.push();
-				rotationIndexes[level] = 0;
-				placement.setStackValue(stackValues[0]);
-				if(pointFilter == null) {
-					pointCounts[level] = pointCalculator.size();
-					nextPointIndexes[level] = 0;
-				} else {
-					pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValues[0]);
-				}
-			} else {
-				// back from the next level: remove this level's placement
-				if(utility != null) {
-					placement.removeSupporteesAbove();
-					for(PlacementLoad placementLoad : placement.getSupporters()) {
-						placementLoad.getPlacement().removeLastSupportee();
-					}
-					placement.clearLoad();
-				}
-				stack.remove(stack.size() - 1);
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-					// a longest possible arrangement was found below: unwind without trying more candidates
-					pointCalculator.pop();
-					if(level == 0) {
-						return;
-					}
-					level--;
-					continue;
-				}
-				// restore the free points to before this level's placement
-				pointCalculator.redo();
-			}
-
-			// find the next candidate for this level's box: a rotation and a point which fits it, where the box can be
-			// inserted after the boxes before it and, with load constraints, is supported without overloading the boxes below
-			int pointIndex = -1;
-			long supportedArea = 0L;
-			BoxStackValue stackValue = placement.getStackValue();
-			while(true) {
-				int candidate;
-				if(pointFilter == null) {
-					int k = nextPointIndexes[level];
-					int count = pointCounts[level];
-					while(k < count && !pointCalculator.get(k).fits3D(stackValue)) {
-						k++;
-					}
-					if(k < count) {
-						nextPointIndexes[level] = k + 1;
-						candidate = k;
-					} else {
-						candidate = -1;
-					}
-				} else {
-					IntIterator pointIterator = pointIterators[level];
-					candidate = pointIterator.hasNext() ? pointIterator.next() : -1;
-				}
-				if(candidate == -1) {
-					// no more points for this rotation: the next rotation, from the first point
-					int rotationIndex = rotationIndexes[level] + 1;
-					if(rotationIndex == stackValues.length) {
-						break;
-					}
-					rotationIndexes[level] = rotationIndex;
-					stackValue = stackValues[rotationIndex];
-					placement.setStackValue(stackValue);
-					if(pointFilter == null) {
-						nextPointIndexes[level] = 0;
-					} else {
-						pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValue);
-					}
-					continue;
-				}
-				SimplePoint3D point = pointCalculator.get(candidate);
-				if(level > 0 && !isInsertableAfter(point, stackValue, stack, level, access)) {
-					// a box which is inserted before it rests on the box at this point, or is in its path
-					continue;
-				}
-				if(checkObstacles && !isInsertable(point, stackValue, obstacles, access)) {
-					continue;
-				}
-				if(checkExtraction && !isExtractable(point, stackValue, stack, access)) {
-					continue;
-				}
-				if(utility != null) {
-					// -1 if the boxes below cannot carry the box at this point
-					utility.populatePointSupporters(point);
-					utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-					supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-					if(supportedArea == -1L) {
-						continue;
-					}
-				}
-				pointIndex = candidate;
-				break;
-			}
-			if(pointIndex == -1) {
-				// no more candidates at this level
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// place the box; add(..) replaces the free points with those around the new placement
-			placement.setPoint(pointCalculator.get(pointIndex));
-			if(utility != null) {
-				// results link the loads of the placements they build their stack from (see
-				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-				placement.clearLoad();
-				placement.setIndex(stack.size());
-				placement.setSupportedArea(supportedArea);
-			}
-			pointCalculator.add(pointIndex, placement);
-			if(level + 1 >= maxPackableCount) {
-				// all packable boxes are placed: record the arrangement, which ends the search (see the checks above)
-				updateBest(pointCalculator, rotationIndexes, rotations, level + 1);
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// descend to the next box
-			stack.add(placement);
-			if(utility != null) {
-				utility.addSupportersLoad(placement);
-			}
-			int nextLevel = level + 1;
-			if(minAreas[nextLevel] != minAreas[level]) {
-				pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
-			} else {
-				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-			}
-			// the load weight left for the remaining boxes
-			freeLoadWeights[nextLevel] = freeLoadWeights[level] - stackValue.getBox().getWeight();
-			level = nextLevel;
-			descend = true;
-		}
-	}
-
-	/**
-	 * As {@link #searchInOrder(PointCalculator3DStack, Placement[], BoxItem[], int[], int[], long[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess)},
-	 * with full support required: each level tries each rotation of its box at the positions where it rests completely
-	 * on the floor or on the boxes below (see {@link FullSupportCandidates}), instead of at each free point.
-	 */
-	protected static void searchInOrderFullSupport(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, int[] rotations,
-			long[] minAreas, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, PackagerInterruptSupplier interrupt,
-			int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, List<Placement> obstacles, ContainerAccess access)
-			throws PackagerInterruptedException {
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextCandidates = frames.nextPointIndexes;
-		int[] freeLoadWeights = frames.freeLoadWeights;
-		int[] rotationIndexes = frames.rotationIndexes;
-
-		freeLoadWeights[0] = maxLoadWeight;
-
-		// the current level, i.e. the index of the box being placed
-		int level = 0;
-		// true when entering the level from the previous level, false when coming back from the next level
-		boolean descend = true;
-		while(true) {
-			Placement placement = placements[level];
-			BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-			FullSupportCandidates candidates = frames.getFullSupportCandidates(level);
-			if(descend) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount || stackValues[0].getBox().getWeight() > freeLoadWeights[level]) {
-					// nothing to do at this level, continue at the previous level
-					if(level == 0) {
-						return;
-					}
-					level--;
-					descend = false;
-					continue;
-				}
-				// the boxes of levels 0 .. level - 1 are placed; keep them if the longest arrangement so far
-				updateBest(pointCalculator, rotationIndexes, rotations, level);
-				// save the free points, so that each candidate of this level starts from them (see redo())
-				pointCalculator.push();
-				rotationIndexes[level] = 0;
-				placement.setStackValue(stackValues[0]);
-				candidates.populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValues[0]), stack.getPlacements(), stackValues[0]);
-				nextCandidates[level] = 0;
-			} else {
-				// back from the next level: remove this level's placement
-				if(utility != null) {
-					placement.removeSupporteesAbove();
-					for(PlacementLoad placementLoad : placement.getSupporters()) {
-						placementLoad.getPlacement().removeLastSupportee();
-					}
-					placement.clearLoad();
-				}
-				stack.remove(stack.size() - 1);
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-					// a longest possible arrangement was found below: unwind without trying more candidates
-					pointCalculator.pop();
-					if(level == 0) {
-						return;
-					}
-					level--;
-					continue;
-				}
-				// restore the free points to before this level's placement
-				pointCalculator.redo();
-			}
-
-			// find the next candidate for this level's box: a rotation and a position where it is fully supported, where
-			// the box can be inserted after the boxes before it and, with load constraints, is carried by the boxes below
-			int candidate = -1;
-			long supportedArea = 0L;
-			BoxStackValue stackValue = placement.getStackValue();
-			while(true) {
-				if(nextCandidates[level] == candidates.size()) {
-					// no more positions for this rotation: the next rotation
-					int rotationIndex = rotationIndexes[level] + 1;
-					if(rotationIndex == stackValues.length) {
-						break;
-					}
-					rotationIndexes[level] = rotationIndex;
-					stackValue = stackValues[rotationIndex];
-					placement.setStackValue(stackValue);
-					candidates.populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
-					nextCandidates[level] = 0;
-					continue;
-				}
-				int next = nextCandidates[level]++;
-				SimplePoint3D point = candidates.getPoint(next);
-				if(level > 0 && !isInsertableAfter(point, stackValue, stack, level, access)) {
-					// a box which is inserted before it rests on the box at this position, or is in its path
-					continue;
-				}
-				if(checkObstacles && !isInsertable(point, stackValue, obstacles, access)) {
-					continue;
-				}
-				if(checkExtraction && !isExtractable(point, stackValue, stack, access)) {
-					continue;
-				}
-				if(utility != null) {
-					// -1 if the boxes below cannot carry the box at this position
-					utility.populatePointSupporters(point);
-					utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-					supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-					if(supportedArea == -1L) {
-						continue;
-					}
-				}
-				candidate = next;
-				break;
-			}
-			if(candidate == -1) {
-				// no more candidates at this level
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// place the box; add(..) replaces the free points with those around the new placement
-			SimplePoint3D point = candidates.getPoint(candidate);
-			int pointIndex = candidates.getPointIndex(candidate);
-			placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
-			if(utility != null) {
-				// results link the loads of the placements they build their stack from (see
-				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-				placement.clearLoad();
-				placement.setIndex(stack.size());
-				placement.setSupportedArea(supportedArea);
-			}
-			pointCalculator.add(pointIndex, placement, point);
-			if(level + 1 >= maxPackableCount) {
-				// all packable boxes are placed: record the arrangement, which ends the search (see the checks above)
-				updateBest(pointCalculator, rotationIndexes, rotations, level + 1);
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// descend to the next box
-			stack.add(placement);
-			if(utility != null) {
-				utility.addSupportersLoad(placement);
-			}
-			int nextLevel = level + 1;
-			if(minAreas[nextLevel] != minAreas[level]) {
-				pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
-			} else {
-				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-			}
-			// the load weight left for the remaining boxes
-			freeLoadWeights[nextLevel] = freeLoadWeights[level] - stackValue.getBox().getWeight();
-			level = nextLevel;
-			descend = true;
-		}
-	}
-
-	/**
 	 * Pack the boxes in the iterator's order (a box item order, {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}) into one
 	 * container: any box may be skipped (it waits for a later container), and the boxes which are placed are in the order,
-	 * each insertable after the boxes before it. The search (see {@link #searchInOrderSkipping}) tries each rotation of each
-	 * box at each point, and skipping it; the best arrangement is chosen by the result comparator, as in the other searches.
+	 * each insertable after the boxes before it. The search (see {@link #searchOrder}) tries each rotation of each box at
+	 * each point, and skipping it; the best arrangement is chosen by the result comparator.
 	 *
 	 * @param skipEnds for each box, the box to continue with when skipping it, or -1 if it cannot be skipped (box item
 	 *        groups are skipped whole), or null if each box can be skipped
@@ -979,27 +594,17 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			return result;
 		}
 
-		int[] permutations = iterator.getPermutations();
-		BoxItem[] boxItems = iterator.getBoxItems();
-		long[] minAreas = getMinAreas(boxItems, permutations);
-
 		pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
 		if(containerItem.getInitialPoints() != null) {
 			pointCalculator.setPoints(containerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
 		if(utility != null) {
 			utility.initialize(length);
 		}
 		SkippingBest arrangements = newSkippingBest(result, best, stackPlacements, stackPlacementCount);
-		if(requireFullSupport) {
-			searchInOrderSkippingFullSupport(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder.getMaxLoadWeight(),
-					holder.getMaxLoadVolume(), interrupt, utility, pointFilter, holder.getObstacles(), holder.getAccess(), arrangements);
-		} else {
-			searchInOrderSkipping(pointCalculator, stackPlacements, boxItems, permutations, minAreas, skipEnds, maxContainerPriority, iterator, stack, holder.getMaxLoadWeight(), holder.getMaxLoadVolume(), interrupt,
-					utility, pointFilter, holder.getObstacles(), holder.getAccess(), arrangements);
-		}
+		searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointFilter, requireFullSupport, hasExtractionOrders(iterator), null, length,
+				skipEnds, maxContainerPriority, arrangements, null);
 		stack.clear();
 		BruteForceIntermediatePackagerResult packed = arrangements.best;
 		packed.markDirty();
@@ -1018,7 +623,36 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
-	 * The best arrangement found by the searches which skip boxes (see {@link #searchInOrderSkipping}): the best by the
+	 * The best arrangement found by the searches which do not skip boxes: the arrangements are the prefixes of the box
+	 * order, and the longest is the best.
+	 */
+	protected static class PrefixBest {
+
+		/** the number of boxes of the best arrangement */
+		protected int count;
+		/** the points of the placed boxes */
+		protected List<Point> points = Collections.emptyList();
+		/** the rotation of each placement */
+		protected final int[] rotations;
+
+		protected PrefixBest(int length) {
+			this.rotations = new int[length];
+		}
+
+		protected void reset() {
+			count = 0;
+			points = Collections.emptyList();
+		}
+
+		protected void offer(List<Point> points, int[] rotations, int count) {
+			this.points = points;
+			this.count = count;
+			System.arraycopy(rotations, 0, this.rotations, 0, count);
+		}
+	}
+
+	/**
+	 * The best arrangement found by the searches which skip boxes (see {@link #searchOrder}): the best by the
 	 * result comparator, as for the other searches.
 	 */
 	protected static class SkippingBest {
@@ -1075,455 +709,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 	}
 
-	/**
-	 * Depth-first search over a box item order where boxes may be skipped. As {@link #searchInOrder}, each level
-	 * tries each rotation of its box at each candidate point, where the box is insertable after the boxes placed before
-	 * it; then the level also tries skipping its box. Levels are boxes, while the point calculator stack has a level for
-	 * each placed box.
-	 *
-	 * @param skipEnds for each level, the level to continue with when skipping it, -1 if it cannot be skipped, or null
-	 *        for the next level
-	 * @param maxContainerPriority the highest container priority which may be placed
-	 * @param best the best arrangement: the most volume, then the most boxes
-	 */
-	protected static void searchInOrderSkipping(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, long[] minAreas,
-			int[] skipEnds, int maxContainerPriority, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, long maxLoadVolume, PackagerInterruptSupplier interrupt,
-			LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, List<Placement> obstacles, ContainerAccess access, SkippingBest best)
-			throws PackagerInterruptedException {
-		int length = permutations.length;
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextPointIndexes = frames.nextPointIndexes;
-		int[] pointCounts = frames.pointCounts;
-		IntIterator[] pointIterators = frames.pointIterators;
-		int[] rotationIndexes = frames.rotationIndexes;
-
-		// for each level: how it continues, how it was reached, and the state when entering it
-		boolean[] skipping = new boolean[length + 1];
-		int[] parents = new int[length + 1];
-		int[] placedCounts = new int[length + 1];
-		long[] placedVolumes = new long[length + 1];
-		int[] freeLoadWeights = new int[length + 1];
-		int[] maxContainerPriorities = new int[length + 1];
-		int[] placedPermutations = new int[length];
-		int[] placedRotations = new int[length];
-
-		// the volume of the boxes from each level on, as a bound
-		long[] remainingVolumes = new long[length + 1];
-		for (int i = length - 1; i >= 0; i--) {
-			remainingVolumes[i] = remainingVolumes[i + 1] + boxItems[permutations[i]].getBox().getVolume();
-		}
-
-		int level = 0;
-		parents[0] = -1;
-		freeLoadWeights[0] = maxLoadWeight;
-		maxContainerPriorities[0] = maxContainerPriority;
-		boolean descend = true;
-		while(true) {
-			if(descend) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
-				int placedCount = placedCounts[level];
-				long placedVolume = placedVolumes[level];
-				if(level == length) {
-					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
-						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
-					}
-					level = parents[level];
-					descend = false;
-					continue;
-				}
-				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
-					// cannot beat the best arrangement
-					level = parents[level];
-					descend = false;
-					if(level == -1) {
-						return;
-					}
-					continue;
-				}
-				BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-				BoxItem boxItem = boxItems[permutations[level]];
-				skipping[level] = !(boxItem.getContainerPriority() <= maxContainerPriorities[level]
-						&& stackValues[0].getBox().getWeight() <= freeLoadWeights[level]
-						&& placedVolume + stackValues[0].getBox().getVolume() <= maxLoadVolume);
-				if(!skipping[level]) {
-					// save the free points, so that each candidate of this level starts from them (see redo())
-					pointCalculator.push();
-					rotationIndexes[level] = 0;
-					placements[placedCount].setStackValue(stackValues[0]);
-					if(pointFilter == null) {
-						pointCounts[level] = pointCalculator.size();
-						nextPointIndexes[level] = 0;
-					} else {
-						pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValues[0]);
-					}
-				}
-			} else if(!skipping[level]) {
-				// back from the next level: remove this level's placement
-				Placement placement = placements[placedCounts[level]];
-				if(utility != null) {
-					placement.removeSupporteesAbove();
-					for(PlacementLoad placementLoad : placement.getSupporters()) {
-						placementLoad.getPlacement().removeLastSupportee();
-					}
-					placement.clearLoad();
-				}
-				stack.remove(stack.size() - 1);
-				if(best.count == length) {
-					// the best arrangement places all boxes: unwind without trying more candidates
-					pointCalculator.pop();
-					level = parents[level];
-					if(level == -1) {
-						return;
-					}
-					continue;
-				}
-				// restore the free points to before this level's placement
-				pointCalculator.redo();
-			} else {
-				// back from skipping this level's box
-				level = parents[level];
-				if(level == -1) {
-					return;
-				}
-				continue;
-			}
-
-			int placedCount = placedCounts[level];
-			if(!skipping[level]) {
-				// find the next candidate for this level's box: a rotation and a point which fits it, where the box can be
-				// inserted after the boxes placed before it and, with load constraints, is supported without overloading
-				Placement placement = placements[placedCount];
-				BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-				BoxStackValue stackValue = placement.getStackValue();
-				int pointIndex = -1;
-				long supportedArea = 0L;
-				while(true) {
-					int candidate;
-					if(pointFilter == null) {
-						int k = nextPointIndexes[level];
-						int count = pointCounts[level];
-						while(k < count && !pointCalculator.get(k).fits3D(stackValue)) {
-							k++;
-						}
-						if(k < count) {
-							nextPointIndexes[level] = k + 1;
-							candidate = k;
-						} else {
-							candidate = -1;
-						}
-					} else {
-						IntIterator pointIterator = pointIterators[level];
-						candidate = pointIterator.hasNext() ? pointIterator.next() : -1;
-					}
-					if(candidate == -1) {
-						// no more points for this rotation: the next rotation, from the first point
-						int rotationIndex = rotationIndexes[level] + 1;
-						if(rotationIndex == stackValues.length) {
-							break;
-						}
-						rotationIndexes[level] = rotationIndex;
-						stackValue = stackValues[rotationIndex];
-						placement.setStackValue(stackValue);
-						if(pointFilter == null) {
-							nextPointIndexes[level] = 0;
-						} else {
-							pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValue);
-						}
-						continue;
-					}
-					SimplePoint3D point = pointCalculator.get(candidate);
-					if(placedCount > 0 && !isInsertableAfter(point, stackValue, stack, placedCount, access)) {
-						continue;
-					}
-					if(checkObstacles && !isInsertable(point, stackValue, obstacles, access)) {
-						continue;
-					}
-					if(checkExtraction && !isExtractable(point, stackValue, stack, access)) {
-						continue;
-					}
-					if(utility != null) {
-						utility.populatePointSupporters(point);
-						utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-						supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-						if(supportedArea == -1L) {
-							continue;
-						}
-					}
-					pointIndex = candidate;
-					break;
-				}
-				if(pointIndex != -1) {
-					// place the box and continue with the next level
-					placement.setPoint(pointCalculator.get(pointIndex));
-					if(utility != null) {
-						// results link the loads of the placements they build their stack from (see
-						// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-						placement.clearLoad();
-						placement.setIndex(stack.size());
-						placement.setSupportedArea(supportedArea);
-					}
-					pointCalculator.add(pointIndex, placement);
-					stack.add(placement);
-					if(utility != null) {
-						utility.addSupportersLoad(placement);
-					}
-					int nextLevel = level + 1;
-					if(nextLevel < length) {
-						if(minAreas[nextLevel] != minAreas[level]) {
-							pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
-						} else {
-							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-						}
-					}
-					placedPermutations[placedCount] = permutations[level];
-					placedRotations[placedCount] = rotationIndexes[level];
-					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
-							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
-					level = nextLevel;
-					descend = true;
-					continue;
-				}
-				// no more candidates: undo this level's push, then try skipping its box
-				pointCalculator.pop();
-				skipping[level] = true;
-			}
-
-			// skip this level's box: it waits for a later container, and so do the boxes of a higher container priority
-			int skipEnd = skipEnds != null ? skipEnds[level] : level + 1;
-			if(skipEnd == -1) {
-				// cannot skip here (inside a box item group)
-				level = parents[level];
-				descend = false;
-				if(level == -1) {
-					return;
-				}
-				continue;
-			}
-			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxItems[permutations[level]].getContainerPriority());
-			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
-					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
-			level = skipEnd;
-			descend = true;
-		}
-	}
-
-	/**
-	 * As {@link #searchInOrderSkipping(PointCalculator3DStack, Placement[], BoxItem[], int[], long[], int[], int, BoxItemPermutationRotationIterator, Stack, int, long, PackagerInterruptSupplier, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess, SkippingBest)},
-	 * with full support required: each level tries each rotation of its box at the positions where it rests completely
-	 * on the floor or on the boxes below (see {@link FullSupportCandidates}), instead of at each free point; then the
-	 * level also tries skipping its box.
-	 */
-	protected static void searchInOrderSkippingFullSupport(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, long[] minAreas,
-			int[] skipEnds, int maxContainerPriority, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight, long maxLoadVolume, PackagerInterruptSupplier interrupt,
-			LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, List<Placement> obstacles, ContainerAccess access, SkippingBest best)
-			throws PackagerInterruptedException {
-		int length = permutations.length;
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextCandidates = frames.nextPointIndexes;
-		int[] rotationIndexes = frames.rotationIndexes;
-
-		// for each level: how it continues, how it was reached, and the state when entering it
-		boolean[] skipping = new boolean[length + 1];
-		int[] parents = new int[length + 1];
-		int[] placedCounts = new int[length + 1];
-		long[] placedVolumes = new long[length + 1];
-		int[] freeLoadWeights = new int[length + 1];
-		int[] maxContainerPriorities = new int[length + 1];
-		int[] placedPermutations = new int[length];
-		int[] placedRotations = new int[length];
-
-		// the volume of the boxes from each level on, as a bound
-		long[] remainingVolumes = new long[length + 1];
-		for (int i = length - 1; i >= 0; i--) {
-			remainingVolumes[i] = remainingVolumes[i + 1] + boxItems[permutations[i]].getBox().getVolume();
-		}
-
-		int level = 0;
-		parents[0] = -1;
-		freeLoadWeights[0] = maxLoadWeight;
-		maxContainerPriorities[0] = maxContainerPriority;
-		boolean descend = true;
-		while(true) {
-			if(descend) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
-				int placedCount = placedCounts[level];
-				long placedVolume = placedVolumes[level];
-				if(level == length) {
-					// every box is placed or skipped: keep the arrangement if the best so far
-					if(placedCount > 0 && best.canBeBetter(placedVolume)) {
-						best.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
-					}
-					level = parents[level];
-					descend = false;
-					continue;
-				}
-				if(!best.canBeBetter(placedVolume + remainingVolumes[level])) {
-					// cannot beat the best arrangement
-					level = parents[level];
-					descend = false;
-					if(level == -1) {
-						return;
-					}
-					continue;
-				}
-				BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-				BoxItem boxItem = boxItems[permutations[level]];
-				skipping[level] = !(boxItem.getContainerPriority() <= maxContainerPriorities[level]
-						&& stackValues[0].getBox().getWeight() <= freeLoadWeights[level]
-						&& placedVolume + stackValues[0].getBox().getVolume() <= maxLoadVolume);
-				if(!skipping[level]) {
-					// save the free points, so that each candidate of this level starts from them (see redo())
-					pointCalculator.push();
-					rotationIndexes[level] = 0;
-					placements[placedCount].setStackValue(stackValues[0]);
-					frames.getFullSupportCandidates(level).populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValues[0]), stack.getPlacements(), stackValues[0]);
-					nextCandidates[level] = 0;
-				}
-			} else if(!skipping[level]) {
-				// back from the next level: remove this level's placement
-				Placement placement = placements[placedCounts[level]];
-				if(utility != null) {
-					placement.removeSupporteesAbove();
-					for(PlacementLoad placementLoad : placement.getSupporters()) {
-						placementLoad.getPlacement().removeLastSupportee();
-					}
-					placement.clearLoad();
-				}
-				stack.remove(stack.size() - 1);
-				if(best.count == length) {
-					// the best arrangement places all boxes: unwind without trying more candidates
-					pointCalculator.pop();
-					level = parents[level];
-					if(level == -1) {
-						return;
-					}
-					continue;
-				}
-				// restore the free points to before this level's placement
-				pointCalculator.redo();
-			} else {
-				// back from skipping this level's box
-				level = parents[level];
-				if(level == -1) {
-					return;
-				}
-				continue;
-			}
-
-			int placedCount = placedCounts[level];
-			if(!skipping[level]) {
-				// find the next candidate for this level's box: a rotation and a position where it is fully supported, where
-				// the box can be inserted after the boxes placed before it and, with load constraints, is carried by the
-				// boxes below
-				Placement placement = placements[placedCount];
-				BoxStackValue[] stackValues = boxItems[permutations[level]].getBox().getStackValues();
-				FullSupportCandidates candidates = frames.getFullSupportCandidates(level);
-				BoxStackValue stackValue = placement.getStackValue();
-				int candidate = -1;
-				long supportedArea = 0L;
-				while(true) {
-					if(nextCandidates[level] == candidates.size()) {
-						// no more positions for this rotation: the next rotation
-						int rotationIndex = rotationIndexes[level] + 1;
-						if(rotationIndex == stackValues.length) {
-							break;
-						}
-						rotationIndexes[level] = rotationIndex;
-						stackValue = stackValues[rotationIndex];
-						placement.setStackValue(stackValue);
-						candidates.populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
-						nextCandidates[level] = 0;
-						continue;
-					}
-					int next = nextCandidates[level]++;
-					SimplePoint3D point = candidates.getPoint(next);
-					if(placedCount > 0 && !isInsertableAfter(point, stackValue, stack, placedCount, access)) {
-						continue;
-					}
-					if(checkObstacles && !isInsertable(point, stackValue, obstacles, access)) {
-						continue;
-					}
-					if(checkExtraction && !isExtractable(point, stackValue, stack, access)) {
-						continue;
-					}
-					if(utility != null) {
-						utility.populatePointSupporters(point);
-						utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-						supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-						if(supportedArea == -1L) {
-							continue;
-						}
-					}
-					candidate = next;
-					break;
-				}
-				if(candidate != -1) {
-					// place the box and continue with the next level
-					SimplePoint3D point = candidates.getPoint(candidate);
-					int pointIndex = candidates.getPointIndex(candidate);
-					placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
-					if(utility != null) {
-						// results link the loads of the placements they build their stack from (see
-						// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-						placement.clearLoad();
-						placement.setIndex(stack.size());
-						placement.setSupportedArea(supportedArea);
-					}
-					pointCalculator.add(pointIndex, placement, point);
-					stack.add(placement);
-					if(utility != null) {
-						utility.addSupportersLoad(placement);
-					}
-					int nextLevel = level + 1;
-					if(nextLevel < length) {
-						if(minAreas[nextLevel] != minAreas[level]) {
-							pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
-						} else {
-							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-						}
-					}
-					placedPermutations[placedCount] = permutations[level];
-					placedRotations[placedCount] = rotationIndexes[level];
-					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
-							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
-					level = nextLevel;
-					descend = true;
-					continue;
-				}
-				// no more candidates: undo this level's push, then try skipping its box
-				pointCalculator.pop();
-				skipping[level] = true;
-			}
-
-			// skip this level's box: it waits for a later container, and so do the boxes of a higher container priority
-			int skipEnd = skipEnds != null ? skipEnds[level] : level + 1;
-			if(skipEnd == -1) {
-				// cannot skip here (inside a box item group)
-				level = parents[level];
-				descend = false;
-				if(level == -1) {
-					return;
-				}
-				continue;
-			}
-			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxItems[permutations[level]].getContainerPriority());
-			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
-					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
-			level = skipEnd;
-			descend = true;
-		}
-	}
-
-	/** Enter a level of {@link #searchInOrderSkipping}: how it was reached, and the state when entering it */
+	/** Enter a level of {@link #searchOrder}: how it was reached, and the state when entering it */
 	protected static void enter(int level, int parent, int placedCount, long placedVolume, int freeLoadWeight, int maxContainerPriority,
 			int[] parents, int[] placedCounts, long[] placedVolumes, int[] freeLoadWeights, int[] maxContainerPriorities) {
 		parents[level] = parent;
@@ -1561,13 +747,32 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new WeightPressureCountIdenticalLoadAwarePlacementUtility(stack);
 	}
 
+	/**
+	 * Pack the boxes of the iterator's permutation, in that order, into a container: the longest prefix which can be
+	 * placed (see {@link #searchOrder}).
+	 *
+	 * @param points the container's initial free points, or null
+	 * @return the points of the placed boxes (a copy)
+	 */
 	public List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
-			Container container,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points, LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter)
+			Container container, PackagerInterruptSupplier interrupt, List<Point> points, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter)
 			throws PackagerInterruptedException {
+		pointCalculator.resetBest();
 		int maxPackableCount = placements.length == 0 ? 0 : getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight());
-		return preservePoints(packStackPlacement(pointCalculator, placements, iterator, stack, container, interrupt,
-				minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount));
+		if(maxPackableCount == 0) {
+			return Collections.emptyList();
+		}
+		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
+		if(points != null) {
+			pointCalculator.setPoints(points);
+			pointCalculator.clear();
+		}
+		if(utility != null) {
+			utility.initialize(iterator.length());
+		}
+		searchOrder(pointCalculator, placements, iterator, stack, container, interrupt, utility, pointFilter, requireFullSupport, hasExtractionOrders(iterator), getInsertAfterCounts(iterator),
+				maxPackableCount, null, Integer.MAX_VALUE, null, new int[iterator.length()]);
+		return preservePoints(pointCalculator.getBestPoints());
 	}
 
 	protected static List<Point> preservePoints(List<Point> points) {
@@ -1579,89 +784,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			result.add(points.get(i));
 		}
 		return result;
-	}
-
-	protected List<Point> packStackPlacement(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
-			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
-			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
-		if(requireFullSupport) {
-			return packStackPlacementFullSupport(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount);
-		}
-		if(loadPlacementUtility != null) {
-			return packStackPlacementWithLoad(pointCalculator, placements, iterator, stack, container, interrupt, minStackableAreaIndex, points, loadPlacementUtility, pointFilter, maxPackableCount);
-		}
-		pointCalculator.resetBest();
-		if(placements.length == 0) {
-			return Collections.emptyList();
-		}
-
-		// pack as many items as possible from placementIndex
-		int maxLoadWeight = container.getMaxLoadWeight();
-		if(maxPackableCount == 0) {
-			return Collections.emptyList();
-		}
-
-		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
-			pointCalculator.clear();
-		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-		search(pointCalculator, placements, iterator, stack, maxLoadWeight, interrupt, minStackableAreaIndex, maxPackableCount, null, pointFilter, container.getObstacles(), container.getAccess());
-		return pointCalculator.getBestPoints();
-	}
-
-	/**
-	 * As {@link #packStackPlacement(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, Container, PackagerInterruptSupplier, int, List, LoadPlacementUtility, BruteForcePointIteratorFilter, int)},
-	 * for boxes with load limits: the search tracks the loads of the placed boxes, and places a box only where the boxes
-	 * below can carry it.
-	 */
-	protected List<Point> packStackPlacementWithLoad(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
-			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
-			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
-		pointCalculator.resetBest();
-		if(placements.length == 0 || maxPackableCount == 0) {
-			return Collections.emptyList();
-		}
-
-		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
-			pointCalculator.clear();
-		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-
-		loadPlacementUtility.initialize(iterator.length());
-		search(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, pointFilter, container.getObstacles(), container.getAccess());
-		return pointCalculator.getBestPoints();
-	}
-
-	/**
-	 * As {@link #packStackPlacement(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, Container, PackagerInterruptSupplier, int, List, LoadPlacementUtility, BruteForcePointIteratorFilter, int)},
-	 * with full support required: the search places a box only where it rests completely on the floor or on the boxes
-	 * below (see {@link #searchFullSupport}). With load limits, the boxes below must also carry it.
-	 */
-	protected List<Point> packStackPlacementFullSupport(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack,
-			Container container, PackagerInterruptSupplier interrupt, int minStackableAreaIndex, List<Point> points,
-			LoadPlacementUtility loadPlacementUtility, BruteForcePointIteratorFilter pointFilter, int maxPackableCount) throws PackagerInterruptedException {
-		pointCalculator.resetBest();
-		if(placements.length == 0 || maxPackableCount == 0) {
-			return Collections.emptyList();
-		}
-
-		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
-		if(points != null) {
-			pointCalculator.setPoints(points);
-			pointCalculator.clear();
-		}
-		pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(minStackableAreaIndex).getArea(), iterator.getMinBoxVolume(0));
-
-		if(loadPlacementUtility != null) {
-			loadPlacementUtility.initialize(iterator.length());
-		}
-		searchFullSupport(pointCalculator, placements, iterator, stack, container.getMaxLoadWeight(), interrupt, minStackableAreaIndex, maxPackableCount, loadPlacementUtility, pointFilter,
-				container.getObstacles(), container.getAccess());
-		return pointCalculator.getBestPoints();
 	}
 
 	/**
@@ -1847,56 +969,135 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return true;
 	}
 
-	protected static void search(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter,
-			List<Placement> obstacles, ContainerAccess access)
-			throws PackagerInterruptedException {
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] insertAfterCounts = getInsertAfterCounts(iterator);
+	/**
+	 * Depth-first search over the boxes of the iterator's permutation, in order: each box is tried in each of its
+	 * rotations at each candidate point (all points, or the point filter's), and, when skipping, skipped. The same search
+	 * packs a box item order ({@link Order#CHRONOLOGICAL}, and with skipping {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING})
+	 * and each permutation of the boxes ({@link Order#NONE}).
+	 * <br>
+	 * <br>
+	 * Without skipping, an arrangement ends at the first box which cannot be placed: the arrangements are the prefixes of
+	 * the order, and the longest is the best (see {@link PointCalculator3DStack#getBestPoints()}). With skipping, the
+	 * best arrangement is chosen by the result comparator.
+	 * <br>
+	 * <br>
+	 * A position is valid where the box fits a free point, is insertable after the boxes placed before it (see
+	 * {@code insertAfterCounts}), is not blocked by obstacles, keeps the extraction order and, with load limits, is
+	 * carried by the boxes below; with full support required, the positions are where the box is fully supported (see
+	 * {@link FullSupportCandidates}). Levels are boxes, while the point calculator stack has a level for each placed box.
+	 *
+	 * @param insertAfterCounts null if each box must be insertable after all the boxes placed before it (a box item
+	 *        order), empty if not, otherwise for each level the number of boxes placed before it which it must be
+	 *        insertable after (box item groups)
+	 * @param maxPackableCount without skipping, the number of leading boxes which may be placed
+	 * @param skipEnds with skipping: for each level, the level to continue with when skipping it, -1 if it cannot be
+	 *        skipped, or null for the next level
+	 * @param maxContainerPriority the highest container priority which may be placed
+	 * @param skipping the best arrangement, when skipping, otherwise null
+	 * @param rotations without skipping, the rotations of the boxes of the best arrangement, set by the search
+	 */
+	protected void searchOrder(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, Container container,
+			PackagerInterruptSupplier interrupt, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction,
+			int[] insertAfterCounts, int maxPackableCount, int[] skipEnds, int maxContainerPriority, SkippingBest skipping, int[] rotations) throws PackagerInterruptedException {
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
 		int[] nextPointIndexes = frames.nextPointIndexes;
 		int[] pointCounts = frames.pointCounts;
 		IntIterator[] pointIterators = frames.pointIterators;
-		int[] minStackableAreaIndexes = frames.minStackableAreaIndexes;
+		int[] rotationIndexes = frames.rotationIndexes;
 		int[] freeLoadWeights = frames.freeLoadWeights;
+		boolean[] unplaced = frames.unplaced;
+		int[] parents = frames.parents;
+		int[] placedCounts = frames.placedCounts;
+		long[] placedVolumes = frames.placedVolumes;
+		int[] maxContainerPriorities = frames.maxContainerPriorities;
+		int[] placedPermutations = frames.placedPermutations;
+		int[] placedRotations = frames.placedRotations;
+		long[] remainingVolumes = frames.remainingVolumes;
+		long[] minAreas = frames.minAreas;
+		Box[] boxes = frames.boxes;
 
-		minStackableAreaIndexes[0] = minStackableAreaIndex;
-		freeLoadWeights[0] = maxLoadWeight;
+		int length = skipping != null ? iterator.length() : maxPackableCount;
+		List<Placement> obstacles = container.getObstacles();
+		ContainerAccess access = container.getAccess();
+		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
+		long maxLoadVolume = container.getMaxLoadVolume();
 
-		// the current level, i.e. the index of the box being placed
+		// the box of each level, the smallest area of the boxes from each level on (in any rotation), and with skipping
+		// (as a bound) their volume
+		long minArea = Long.MAX_VALUE;
+		for (int i = length - 1; i >= 0; i--) {
+			Box box = iterator.getStackValue(i).getBox();
+			boxes[i] = box;
+			if(box.getMinimumArea() < minArea) {
+				minArea = box.getMinimumArea();
+			}
+			minAreas[i] = minArea;
+		}
+		if(skipping != null) {
+			long remainingVolume = 0L;
+			remainingVolumes[length] = 0L;
+			for (int i = length - 1; i >= 0; i--) {
+				remainingVolume += boxes[i].getVolume();
+				remainingVolumes[i] = remainingVolume;
+			}
+		}
+		if(length == 0) {
+			return;
+		}
+		pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
+
 		int level = 0;
-		// true when entering the level from the previous level, false when coming back from the next level
+		parents[0] = -1;
+		placedCounts[0] = 0;
+		placedVolumes[0] = 0L;
+		freeLoadWeights[0] = container.getMaxLoadWeight();
+		maxContainerPriorities[0] = maxContainerPriority;
 		boolean descend = true;
 		while(true) {
-			Placement placement = placements[level];
 			if(descend) {
 				if(interrupt.getAsBoolean()) {
 					throw new PackagerInterruptedException();
 				}
-				BoxStackValue stackValue;
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount || (stackValue = iterator.getStackValue(level)).getBox().getWeight() > freeLoadWeights[level]) {
-					// nothing to do at this level, continue at the previous level
-					if(level == 0) {
-						return;
+				int placedCount = placedCounts[level];
+				long placedVolume = placedVolumes[level];
+				if(skipping == null) {
+					// the boxes placed so far: keep them if the longest arrangement so far
+					updateBest(pointCalculator, placedRotations, rotations, placedCount);
+				}
+				if(level == length) {
+					if(skipping != null && placedCount > 0 && skipping.canBeBetter(placedVolume)) {
+						// every box is placed or skipped: keep the arrangement if the best so far
+						skipping.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 					}
-					level--;
+					level = parents[level];
 					descend = false;
 					continue;
 				}
-				placement.setStackValue(stackValue);
-				// the boxes of levels 0 .. level - 1 are placed; keep them if the longest arrangement so far
-				pointCalculator.updateBest();
-				// save the free points, so that each candidate point of this level starts from them (see redo())
-				pointCalculator.push();
-				if(pointFilter == null) {
-					pointCounts[level] = pointCalculator.size();
-					nextPointIndexes[level] = 0;
-				} else {
-					pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValue);
+				if(skipping != null && !skipping.canBeBetter(placedVolume + remainingVolumes[level])) {
+					// cannot beat the best arrangement
+					level = parents[level];
+					descend = false;
+					if(level == -1) {
+						return;
+					}
+					continue;
 				}
-			} else {
+				Box box = boxes[level];
+				// without skipping, the boxes up to the max packable count fit by volume and weight
+				unplaced[level] = skipping != null && !(box.getBoxItem().getContainerPriority() <= maxContainerPriorities[level]
+						&& box.getWeight() <= freeLoadWeights[level]
+						&& placedVolume + box.getVolume() <= maxLoadVolume);
+				if(!unplaced[level]) {
+					// save the free points, so that each candidate of this level starts from them (see redo())
+					pointCalculator.push();
+					BoxStackValue stackValue = box.getStackValues()[0];
+					rotationIndexes[level] = 0;
+					placements[placedCount].setStackValue(stackValue);
+					startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
+				}
+			} else if(!unplaced[level]) {
 				// back from the next level: remove this level's placement
+				Placement placement = placements[placedCounts[level]];
 				if(utility != null) {
 					placement.removeSupporteesAbove();
 					for(PlacementLoad placementLoad : placement.getSupporters()) {
@@ -1905,284 +1106,192 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					placement.clearLoad();
 				}
 				stack.remove(stack.size() - 1);
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-					// a longest possible arrangement was found below: unwind without trying more points
+				if(skipping != null ? skipping.count == length : pointCalculator.getBestStackIndex() >= length) {
+					// the best arrangement places all boxes: unwind without trying more candidates
 					pointCalculator.pop();
-					if(level == 0) {
+					level = parents[level];
+					if(level == -1) {
 						return;
 					}
-					level--;
 					continue;
 				}
 				// restore the free points to before this level's placement
 				pointCalculator.redo();
+			} else {
+				// back from skipping this level's box
+				level = parents[level];
+				if(level == -1) {
+					return;
+				}
+				continue;
 			}
 
-			// find the next candidate point for this level's box: a point which fits the box
-			// (all points, or the point filter's points) and, with load constraints, where the box is supported
-			// without overloading the boxes below
-			BoxStackValue stackValue = placement.getStackValue();
-			int pointIndex = -1;
-			long supportedArea = 0L;
-			while(true) {
-				int candidate;
-				if(pointFilter == null) {
-					int k = nextPointIndexes[level];
-					int count = pointCounts[level];
-					while(k < count && !pointCalculator.get(k).fits3D(stackValue)) {
-						k++;
-					}
-					if(k == count) {
-						break;
-					}
-					nextPointIndexes[level] = k + 1;
-					candidate = k;
-				} else {
-					IntIterator pointIterator = pointIterators[level];
-					if(!pointIterator.hasNext()) {
-						break;
-					}
-					candidate = pointIterator.next();
-				}
-				if(checkObstacles && !isInsertable(pointCalculator.get(candidate), stackValue, obstacles, access)) {
-					// an obstacle rests on the box at this point, or is in its path
-					continue;
-				}
-				if(checkExtraction && !isExtractable(pointCalculator.get(candidate), stackValue, stack, access)) {
-					continue;
-				}
-				if(insertAfterCounts.length != 0 && insertAfterCounts[level] > 0 && !isInsertableAfter(pointCalculator.get(candidate), stackValue, stack, insertAfterCounts[level], access)) {
-					// a box which is inserted before it (earlier in the order, or of an earlier group) rests on the
-					// box at this point, or is in its path
-					continue;
-				}
-				if(utility != null) {
-					// -1 if the boxes below cannot carry the box at this point
-					SimplePoint3D point = pointCalculator.get(candidate);
-					utility.populatePointSupporters(point);
-					utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-					supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-					if(supportedArea == -1L) {
+			int placedCount = placedCounts[level];
+			if(!unplaced[level]) {
+				// find the next candidate for this level's box: a rotation and a position where the box can be inserted
+				// after the boxes placed before it and, with load constraints, is carried by the boxes below
+				Placement placement = placements[placedCount];
+				BoxStackValue[] stackValues = boxes[level].getStackValues();
+				BoxStackValue stackValue = placement.getStackValue();
+				int insertAfterCount = insertAfterCounts == null ? placedCount : insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
+				FullSupportCandidates candidates = fullSupport ? frames.getFullSupportCandidates(level) : null;
+				int pointIndex = -1;
+				SimplePoint3D point = null;
+				long supportedArea = 0L;
+				while(true) {
+					int candidate = nextCandidate(pointCalculator, pointFilter, candidates, frames, level, stackValue);
+					if(candidate == -1) {
+						// no more positions for this rotation: the next rotation
+						int rotationIndex = rotationIndexes[level] + 1;
+						if(rotationIndex == stackValues.length) {
+							break;
+						}
+						rotationIndexes[level] = rotationIndex;
+						stackValue = stackValues[rotationIndex];
+						placement.setStackValue(stackValue);
+						startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
 						continue;
 					}
+					SimplePoint3D candidatePoint = candidates != null ? candidates.getPoint(candidate) : pointCalculator.get(candidate);
+					if(insertAfterCount > 0 && !isInsertableAfter(candidatePoint, stackValue, stack, insertAfterCount, access)) {
+						continue;
+					}
+					if(checkObstacles && !isInsertable(candidatePoint, stackValue, obstacles, access)) {
+						continue;
+					}
+					if(checkExtraction && !isExtractable(candidatePoint, stackValue, stack, access)) {
+						continue;
+					}
+					if(utility != null) {
+						// -1 if the boxes below cannot carry the box at this position
+						utility.populatePointSupporters(candidatePoint);
+						utility.populatePointSupportees(candidatePoint, stackValue.getDz(), stackValue.getDz());
+						supportedArea = utility.getSupportedAreaAtPoint(candidatePoint, stackValue, false);
+						if(supportedArea == -1L) {
+							continue;
+						}
+					}
+					pointIndex = candidates != null ? candidates.getPointIndex(candidate) : candidate;
+					point = candidatePoint;
+					break;
 				}
-				pointIndex = candidate;
-				break;
-			}
-			if(pointIndex == -1) {
-				// no more points at this level
+				if(pointIndex != -1) {
+					// place the box and continue with the next level
+					placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
+					if(utility != null) {
+						// results link the loads of the placements they build their stack from (see
+						// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
+						placement.clearLoad();
+						placement.setIndex(stack.size());
+						placement.setSupportedArea(supportedArea);
+					}
+					pointCalculator.add(pointIndex, placement, point);
+					stack.add(placement);
+					if(utility != null) {
+						utility.addSupportersLoad(placement);
+					}
+					int nextLevel = level + 1;
+					if(nextLevel < length) {
+						if(minAreas[nextLevel] != minAreas[level]) {
+							pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));
+						} else {
+							pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
+						}
+					}
+					placedPermutations[placedCount] = boxes[level].getBoxItem().getLocalIndex();
+					placedRotations[placedCount] = rotationIndexes[level];
+					enter(nextLevel, level, placedCount + 1, placedVolumes[level] + stackValue.getBox().getVolume(), freeLoadWeights[level] - stackValue.getBox().getWeight(),
+							maxContainerPriorities[level], parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
+					level = nextLevel;
+					descend = true;
+					continue;
+				}
+				// no more candidates: undo this level's push
 				pointCalculator.pop();
-				if(level == 0) {
+				unplaced[level] = true;
+			}
+
+			if(skipping == null) {
+				// without skipping, the arrangement ends at this box
+				level = parents[level];
+				descend = false;
+				if(level == -1) {
 					return;
 				}
-				level--;
-				descend = false;
 				continue;
 			}
 
-			// place the box; add(..) replaces the free points with those around the new placement
-			placement.setPoint(pointCalculator.get(pointIndex));
-			if(utility != null) {
-				// results link the loads of the placements they build their stack from (see
-				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-				placement.clearLoad();
-				placement.setIndex(stack.size());
-				placement.setSupportedArea(supportedArea);
-			}
-			pointCalculator.add(pointIndex, placement);
-			if(level + 1 >= maxPackableCount) {
-				// all packable boxes are placed: record the arrangement, which ends the search (see the checks above)
-				pointCalculator.updateBest();
-				pointCalculator.pop();
-				if(level == 0) {
+			// skip this level's box: it waits for a later container, and so do the boxes of a higher container priority
+			int skipEnd = skipEnds != null ? skipEnds[level] : level + 1;
+			if(skipEnd == -1) {
+				// cannot skip here (inside a box item group)
+				level = parents[level];
+				descend = false;
+				if(level == -1) {
 					return;
 				}
-				level--;
-				descend = false;
 				continue;
 			}
-
-			// descend to the next box
-			stack.add(placement);
-			if(utility != null) {
-				utility.addSupportersLoad(placement);
-			}
-			int nextLevel = level + 1;
-			// the minimum area changes only when the smallest remaining box was the one just placed;
-			// the minimum volume of the remaining boxes is cached per index by the iterator
-			int levelMinStackableAreaIndex = minStackableAreaIndexes[level];
-			if(level == levelMinStackableAreaIndex) {
-				int nextMinStackableAreaIndex = iterator.getMinStackableAreaIndex(nextLevel);
-				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(nextMinStackableAreaIndex).getArea(), iterator.getMinBoxVolume(nextLevel));
-				minStackableAreaIndexes[nextLevel] = nextMinStackableAreaIndex;
-			} else {
-				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-				minStackableAreaIndexes[nextLevel] = levelMinStackableAreaIndex;
-			}
-			// the load weight left for the remaining boxes
-			freeLoadWeights[nextLevel] = freeLoadWeights[level] - stackValue.getBox().getWeight();
-			level = nextLevel;
+			int skippedContainerPriority = Math.min(maxContainerPriorities[level], boxes[level].getBoxItem().getContainerPriority());
+			enter(skipEnd, level, placedCount, placedVolumes[level], freeLoadWeights[level], skippedContainerPriority,
+					parents, placedCounts, placedVolumes, freeLoadWeights, maxContainerPriorities);
+			level = skipEnd;
 			descend = true;
 		}
 	}
 
-	/**
-	 * As {@link #search(PointCalculator3DStack, Placement[], BoxItemPermutationRotationIterator, Stack, int, PackagerInterruptSupplier, int, int, LoadPlacementUtility, BruteForcePointIteratorFilter, List, ContainerAccess)},
-	 * with full support required: each level tries its box at the positions where it rests completely on the floor or on
-	 * the boxes below (see {@link FullSupportCandidates}), instead of at each free point.
-	 */
-	protected static void searchFullSupport(PointCalculator3DStack pointCalculator, Placement[] placements, BoxItemPermutationRotationIterator iterator, Stack stack, int maxLoadWeight,
-			PackagerInterruptSupplier interrupt, int minStackableAreaIndex, int maxPackableCount, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter,
-			List<Placement> obstacles, ContainerAccess access)
-			throws PackagerInterruptedException {
-		boolean checkObstacles = obstacles != null && !obstacles.isEmpty();
-		boolean checkExtraction = hasExtractionOrders(iterator);
-		int[] insertAfterCounts = getInsertAfterCounts(iterator);
-		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextCandidates = frames.nextPointIndexes;
-		int[] minStackableAreaIndexes = frames.minStackableAreaIndexes;
-		int[] freeLoadWeights = frames.freeLoadWeights;
-
-		minStackableAreaIndexes[0] = minStackableAreaIndex;
-		freeLoadWeights[0] = maxLoadWeight;
-
-		// the current level, i.e. the index of the box being placed
-		int level = 0;
-		// true when entering the level from the previous level, false when coming back from the next level
-		boolean descend = true;
-		while(true) {
-			Placement placement = placements[level];
-			FullSupportCandidates candidates = frames.getFullSupportCandidates(level);
-			if(descend) {
-				if(interrupt.getAsBoolean()) {
-					throw new PackagerInterruptedException();
-				}
-				BoxStackValue stackValue;
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount || (stackValue = iterator.getStackValue(level)).getBox().getWeight() > freeLoadWeights[level]) {
-					// nothing to do at this level, continue at the previous level
-					if(level == 0) {
-						return;
-					}
-					level--;
-					descend = false;
-					continue;
-				}
-				placement.setStackValue(stackValue);
-				// the boxes of levels 0 .. level - 1 are placed; keep them if the longest arrangement so far
-				pointCalculator.updateBest();
-				// save the free points, so that each candidate position of this level starts from them (see redo())
-				pointCalculator.push();
-				candidates.populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
-				nextCandidates[level] = 0;
-			} else {
-				// back from the next level: remove this level's placement
-				if(utility != null) {
-					placement.removeSupporteesAbove();
-					for(PlacementLoad placementLoad : placement.getSupporters()) {
-						placementLoad.getPlacement().removeLastSupportee();
-					}
-					placement.clearLoad();
-				}
-				stack.remove(stack.size() - 1);
-				if(pointCalculator.getBestStackIndex() >= maxPackableCount) {
-					// a longest possible arrangement was found below: unwind without trying more positions
-					pointCalculator.pop();
-					if(level == 0) {
-						return;
-					}
-					level--;
-					continue;
-				}
-				// restore the free points to before this level's placement
-				pointCalculator.redo();
-			}
-
-			// find the next position for this level's box where it is fully supported, insertable and, with load
-			// constraints, carried by the boxes below
-			BoxStackValue stackValue = placement.getStackValue();
-			int candidate = -1;
-			long supportedArea = 0L;
-			while(nextCandidates[level] < candidates.size()) {
-				int next = nextCandidates[level]++;
-				SimplePoint3D point = candidates.getPoint(next);
-				if(checkObstacles && !isInsertable(point, stackValue, obstacles, access)) {
-					// an obstacle rests on the box at this position, or is in its path
-					continue;
-				}
-				if(checkExtraction && !isExtractable(point, stackValue, stack, access)) {
-					continue;
-				}
-				if(insertAfterCounts.length != 0 && insertAfterCounts[level] > 0 && !isInsertableAfter(point, stackValue, stack, insertAfterCounts[level], access)) {
-					// a box which is inserted before it (of an earlier group) rests on the box at this position, or is in its path
-					continue;
-				}
-				if(utility != null) {
-					// -1 if the boxes below cannot carry the box at this position
-					utility.populatePointSupporters(point);
-					utility.populatePointSupportees(point, stackValue.getDz(), stackValue.getDz());
-					supportedArea = utility.getSupportedAreaAtPoint(point, stackValue, false);
-					if(supportedArea == -1L) {
-						continue;
-					}
-				}
-				candidate = next;
-				break;
-			}
-			if(candidate == -1) {
-				// no more positions at this level
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// place the box; add(..) replaces the free points with those around the new placement
-			SimplePoint3D point = candidates.getPoint(candidate);
-			int pointIndex = candidates.getPointIndex(candidate);
-			placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
-			if(utility != null) {
-				// results link the loads of the placements they build their stack from (see
-				// BruteForceIntermediatePackagerResult#calculateStack), and searches reuse the placements
-				placement.clearLoad();
-				placement.setIndex(stack.size());
-				placement.setSupportedArea(supportedArea);
-			}
-			pointCalculator.add(pointIndex, placement, point);
-			if(level + 1 >= maxPackableCount) {
-				// all packable boxes are placed: record the arrangement, which ends the search (see the checks above)
-				pointCalculator.updateBest();
-				pointCalculator.pop();
-				if(level == 0) {
-					return;
-				}
-				level--;
-				descend = false;
-				continue;
-			}
-
-			// descend to the next box
-			stack.add(placement);
-			if(utility != null) {
-				utility.addSupportersLoad(placement);
-			}
-			int nextLevel = level + 1;
-			int levelMinStackableAreaIndex = minStackableAreaIndexes[level];
-			if(level == levelMinStackableAreaIndex) {
-				int nextMinStackableAreaIndex = iterator.getMinStackableAreaIndex(nextLevel);
-				pointCalculator.setMinimumAreaAndVolumeLimit(iterator.getStackValue(nextMinStackableAreaIndex).getArea(), iterator.getMinBoxVolume(nextLevel));
-				minStackableAreaIndexes[nextLevel] = nextMinStackableAreaIndex;
-			} else {
-				pointCalculator.setMinimumVolumeLimit(iterator.getMinBoxVolume(nextLevel));
-				minStackableAreaIndexes[nextLevel] = levelMinStackableAreaIndex;
-			}
-			// the load weight left for the remaining boxes
-			freeLoadWeights[nextLevel] = freeLoadWeights[level] - stackValue.getBox().getWeight();
-			level = nextLevel;
-			descend = true;
+	/** Start the candidate positions of a level's box in a rotation (see {@link #nextCandidate}) */
+	private static void startCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames,
+			int level, Stack stack, BoxStackValue stackValue) {
+		if(fullSupport) {
+			frames.getFullSupportCandidates(level).populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
+			frames.nextPointIndexes[level] = 0;
+		} else if(pointFilter == null) {
+			frames.pointCounts[level] = pointCalculator.size();
+			frames.nextPointIndexes[level] = 0;
+		} else {
+			frames.pointIterators[level] = pointFilter.getPoints(pointCalculator, stackValue);
 		}
+	}
+
+	/**
+	 * @return the next candidate position of a level's box: a point index (where the box fits), or with full support an
+	 *         index in the candidates; or -1 if none
+	 */
+	private static int nextCandidate(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, FullSupportCandidates candidates,
+			BruteForceSearchFrames frames, int level, BoxStackValue stackValue) {
+		if(candidates != null) {
+			int next = frames.nextPointIndexes[level];
+			if(next < candidates.size()) {
+				frames.nextPointIndexes[level] = next + 1;
+				return next;
+			}
+			return -1;
+		}
+		if(pointFilter == null) {
+			int k = frames.nextPointIndexes[level];
+			int count = frames.pointCounts[level];
+			while(k < count && !pointCalculator.get(k).fits3D(stackValue)) {
+				k++;
+			}
+			if(k < count) {
+				frames.nextPointIndexes[level] = k + 1;
+				return k;
+			}
+			return -1;
+		}
+		IntIterator pointIterator = frames.pointIterators[level];
+		return pointIterator.hasNext() ? pointIterator.next() : -1;
+	}
+
+	/**
+	 * @param rotations the rotations of the placed boxes, in the iterator's order
+	 * @return the iterator's permutation, with the rotations of the placed boxes
+	 */
+	protected static PermutationRotationState getState(BoxItemPermutationRotationIterator iterator, int[] rotations, int count) {
+		PermutationRotationState state = iterator.getState();
+		System.arraycopy(rotations, 0, state.getRotations(), 0, count);
+		return state;
 	}
 
 	/** @return the point filter's points for the box, or null for all points */

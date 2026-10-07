@@ -185,12 +185,13 @@ See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager`
 packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
 different point limit at each placement step.
 
-With a box item order (`Order.CHRONOLOGICAL`), the brute-force packagers search the rotations and positions of the
-boxes in that order (the fast brute-force packagers take the best position for each box). With skipping
-(`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), the brute-force packagers also try skipping each box (or box item group), which
-then waits for a later container, and keep the arrangement with the most volume; the fast brute-force packager tries each
-rotation of a box at its best position, and skipping it. With container priorities, they only permute the boxes within
-each priority. The parallel packagers search these inputs on one thread, as the permutations cannot be split between
+The brute-force packagers use one search for every order of the boxes: each box in the order is tried in each rotation,
+at each free point (the fast brute-force packager tries each rotation at its best point only), and a container gets the
+best arrangement by the result comparator. Without a box item order (`Order.NONE`), every permutation of the boxes is
+searched this way; with a box item order (`Order.CHRONOLOGICAL`), only that order, each box insertable after the boxes
+before it. With skipping (`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), each box (or box item group) can also be skipped, and
+waits for a later container. With container priorities, they only permute the boxes within each priority. The parallel
+packagers search a box item order or container priorities on one thread, as the permutations cannot be split between
 threads (except box item groups with container priorities, which are still split).
 
 Using a deadline is recommended whenever brute-forcing in a real-time application.
@@ -606,6 +607,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `MarkResetPointCalculator2D.reset()` restores points which were constrained in place (mutable mode)
         * Supported areas no longer overflow for large dimensions (contact areas above the `int` range, e.g. with 1/10000 inch units)
         * The brute-force placement search is iterative: packing many boxes no longer fails with a stack overflow
+        * The brute-force packagers use one search for all box orders, with and without skipping. Fast brute force no longer discards free points which another rotation of a later box fits (with 3D rotations, it placed fewer boxes than it could)
         * `withSkipReversePermutations(..)` no longer applies when the insertion order matters (extraction orders, container access other than `ANY`, obstacles or initial points, load limits, full support): a permutation and its reverse do not pack equally well there
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)

@@ -67,6 +67,15 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	private FullSupportCandidates fullSupportCandidates;
+	private FastSearchFrames searchFrames;
+
+	/** @return the per-level state of the search (reused) */
+	FastSearchFrames getSearchFrames() {
+		if(searchFrames == null) {
+			searchFrames = new FastSearchFrames(stackItems.length);
+		}
+		return searchFrames;
+	}
 
 	/** @return the positions where a box is fully supported, when full support is required (reused) */
 	FullSupportCandidates getFullSupportCandidates() {

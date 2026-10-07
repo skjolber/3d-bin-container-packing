@@ -80,8 +80,9 @@ public class BruteForceRepeatedAttemptTest {
 	}
 
 	/**
-	 * With a box item order, fast brute force searches the rotations of the boxes; an attempt ends at the last
-	 * rotations, where these boxes (in a 10 x 8 x 6 container) fit three of five instead of four.
+	 * With a box item order, fast brute force searches the rotations of the boxes; repeated attempts give the same result.
+	 * These boxes (in a 10 x 8 x 6 container) all fit: a box may use a free point which only another of its rotations
+	 * fits.
 	 */
 	@Test
 	public void fastBruteForceInOrderAttemptsAgainFromTheFirstRotations() throws PackagerInterruptedException {
@@ -98,8 +99,8 @@ public class BruteForceRepeatedAttemptTest {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
 			PackagerSession session = packager.createSession(new PackagerInput(boxItems, null, containers, 6, Order.CHRONOLOGICAL), () -> false);
 
-			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(4);
-			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(4);
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(5);
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(5);
 		}
 	}
 

@@ -45,7 +45,7 @@ class BruteForcePackagerBoundsTest {
 
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			List<Point> result = packager.packStackPlacement(pointCalculator, placements, iterator, new Stack(), container,
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null, pointFilter);
+					() -> false, null, null, pointFilter);
 
 			assertThat(result).hasSize(2);
 			assertThat(pointFilter.calls).isEqualTo(2);
@@ -61,7 +61,7 @@ class BruteForcePackagerBoundsTest {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			List<Point> result = packager.packStackPlacement(new PointCalculator3DStack(4),
 					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(), container,
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+					() -> false, null, null, null);
 
 			assertThat(result).hasSize(2);
 		}
@@ -77,10 +77,10 @@ class BruteForcePackagerBoundsTest {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			List<Point> result = packager.packStackPlacement(pointCalculator,
 					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(), container,
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+					() -> false, null, null, null);
 			List<Point> filteredResult = packager.packStackPlacement(pointCalculator,
 					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(), container,
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null,
+					() -> false, null, null,
 					BruteForcePackager.DEFAULT_POINT_FILTER);
 
 			assertThat(result).hasSize(2);
@@ -101,15 +101,15 @@ class BruteForcePackagerBoundsTest {
 			List<Point> first = packager.packStackPlacement(pointCalculator,
 					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(),
 					Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(100).build(),
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+					() -> false, null, null, null);
 			List<Point> empty = packager.packStackPlacement(pointCalculator,
 					AbstractBruteForcePackager.getPlacements(1), noFitIterator, new Stack(),
 					Container.newBuilder().withSize(4, 1, 1).withMaxLoadWeight(100).build(),
-					() -> false, noFitIterator.getMinStackableAreaIndex(0), null, null, null);
+					() -> false, null, null, null);
 			List<Point> second = packager.packStackPlacement(pointCalculator,
 					AbstractBruteForcePackager.getPlacements(3), iterator, new Stack(),
 					Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(100).build(),
-					() -> false, iterator.getMinStackableAreaIndex(0), null, null, null);
+					() -> false, null, null, null);
 
 			assertThat(first).hasSize(2);
 			assertThat(empty).isEmpty();
