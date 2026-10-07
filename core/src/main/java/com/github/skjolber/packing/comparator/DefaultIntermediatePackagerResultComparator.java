@@ -2,7 +2,6 @@ package com.github.skjolber.packing.comparator;
 
 
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 
@@ -19,13 +18,12 @@ public class DefaultIntermediatePackagerResultComparator implements Intermediate
 	@Override
 	public int compare(IntermediatePackagerResult r1, IntermediatePackagerResult r2) {
 
-		Stack o1 = r1.getStack();
-		Stack o2 = r2.getStack();
-		
+		// not the stacks: brute-force results do not build them (see IntermediatePackagerResultComparator)
+
 		// load volume - more is better
-		// (stack volume and weight are sums over all placements: read each once)
-		long volume1 = o1.getVolume();
-		long volume2 = o2.getVolume();
+		// (a stack's volume and weight are sums over all placements: read each once)
+		long volume1 = r1.getLoadVolume();
+		long volume2 = r2.getLoadVolume();
 		if(volume1 > volume2) {
 			return ARGUMENT_1_IS_BETTER;
 		} else if(volume1 < volume2) {
@@ -33,8 +31,8 @@ public class DefaultIntermediatePackagerResultComparator implements Intermediate
 		}
 
 		// load weight - more is better
-		long weight1 = o1.getWeight();
-		long weight2 = o2.getWeight();
+		long weight1 = r1.getLoadWeight();
+		long weight2 = r2.getLoadWeight();
 		if(weight1 > weight2) {
 			return ARGUMENT_1_IS_BETTER;
 		} else if(weight1 < weight2) {
@@ -42,14 +40,16 @@ public class DefaultIntermediatePackagerResultComparator implements Intermediate
 		}
 
 		// load count - more is better
-		if(o1.size() > o2.size()) {
+		int count1 = r1.getBoxCount();
+		int count2 = r2.getBoxCount();
+		if(count1 > count2) {
 			return ARGUMENT_1_IS_BETTER;
-		} else if(o1.size() < o2.size()) {
+		} else if(count1 < count2) {
 			return ARGUMENT_2_IS_BETTER;
 		}
 
 		// are both empty?
-		if(o1.isEmpty()) {
+		if(count1 == 0) {
 			return 0;
 		}
 		

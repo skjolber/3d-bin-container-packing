@@ -263,11 +263,17 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	}
 
 	@Override
+	public int getBoxCount() {
+		return points.size();
+	}
+
+	@Override
 	public long getLoadVolume() {
 		return loadVolume;
 	}
 
-	public int getLoadWeight() {
+	@Override
+	public long getLoadWeight() {
 		return loadWeight;
 	}
 

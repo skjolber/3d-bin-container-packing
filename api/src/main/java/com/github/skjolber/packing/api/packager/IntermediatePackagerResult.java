@@ -24,4 +24,18 @@ public interface IntermediatePackagerResult {
 		return getStack().getVolume();
 	}
 
+	/**
+	 * @return the total weight of the packed boxes
+	 */
+	default long getLoadWeight() {
+		return getStack().getWeight();
+	}
+
+	/**
+	 * @return the number of packed boxes
+	 */
+	default int getBoxCount() {
+		return getStack().size();
+	}
+
 }

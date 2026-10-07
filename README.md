@@ -651,6 +651,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
         * `ParallelBoxItemBruteForcePackager` renamed to `ParallelBruteForcePackager`
         * The packager builders take the comparator interfaces of the `api` module instead of `java.util.Comparator`: `IntermediatePackagerResultComparator` (which no longer extends `java.util.Comparator`), `BoxItemGroupComparator` and `BoxItemComparator`. Lambdas still work
+        * Result comparators compare the results' load volume, weight and box count (`IntermediatePackagerResult.getLoadVolume()`, `getLoadWeight()` and `getBoxCount()`), not their stacks: the brute-force packagers compare results whose stacks are not built. `DefaultIntermediatePackagerResultComparator` read the stacks, and chose wrong results when given to a brute-force packager
         * Manifest controls are named consistently: `withManifestControlsBuilderFactory(..)` on the container item builder, `ContainerItem.get/set/hasManifestControlsBuilderFactory(..)` and `ManifestControlsBuilderFactory.createManifestControlsBuilder()` (were `...BoxItemControls...`)
         * The OpenAPI modules removed (`open-api-model`, `open-api-client`, `open-api-server` and `open-api-test`)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes

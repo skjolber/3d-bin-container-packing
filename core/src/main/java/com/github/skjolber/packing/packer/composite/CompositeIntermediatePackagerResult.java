@@ -43,6 +43,16 @@ public class CompositeIntermediatePackagerResult implements IntermediatePackager
 	}
 
 	@Override
+	public long getLoadWeight() {
+		return delegate.getLoadWeight();
+	}
+
+	@Override
+	public int getBoxCount() {
+		return delegate.getBoxCount();
+	}
+
+	@Override
 	public long getLoadVolume() {
 		return delegate.getLoadVolume();
 	}

@@ -2,6 +2,12 @@ package com.github.skjolber.packing.api.packager;
 
 /**
  * Compares the results of packing a container, to choose the best.
+ * <br>
+ * <br>
+ * Compare the results by their load volume, load weight and box count ({@link IntermediatePackagerResult#getLoadVolume()},
+ * {@link IntermediatePackagerResult#getLoadWeight()} and {@link IntermediatePackagerResult#getBoxCount()}) and their
+ * container, not by their stacks: the brute-force packagers compare results whose stacks are not built (they share reused
+ * placements until a result is accepted), so the stacks of the compared results may show the same placements.
  */
 @FunctionalInterface
 public interface IntermediatePackagerResultComparator {
