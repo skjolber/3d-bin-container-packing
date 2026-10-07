@@ -605,6 +605,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation
      * The parallel brute-force packager splits the orders of box item groups between its threads
+     * Packings share the boxes of their input instead of copying them
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity
      * Behaviour changes:
         * The max load weight of a box limits the total weight resting on it, through all levels and paths of the support graph (previously only direct loads were counted)
@@ -652,6 +653,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `ParallelBoxItemBruteForcePackager` renamed to `ParallelBruteForcePackager`
         * The packager builders take the comparator interfaces of the `api` module instead of `java.util.Comparator`: `IntermediatePackagerResultComparator` (which no longer extends `java.util.Comparator`), `BoxItemGroupComparator` and `BoxItemComparator`. Lambdas still work
         * A `Box` no longer refers to its `BoxItem` (`Box.getBoxItem()` and the builders' `withBoxItem(..)` removed): use `Placement.getBoxItem()`, which placements now hold (`Placement.setStackValue(BoxItem, BoxStackValue)` and constructors with a `BoxItem`). Placements built by hand need their box item for the checks which use it (container priority, extraction order, groups, identical boxes)
+        * Boxes and their stack values are not modified once built, and packings share them with their input: a stack value belongs to the box it was built with (`BoxStackValue.setBox(..)` is no longer public), and one box can be used by several box items. The permutation iterators keep the rotations which fit the container (`getStackValues(int)`, `getBoxItemStackValues()`) instead of copies of the boxes
         * Result comparators compare the results' load volume, weight and box count (`IntermediatePackagerResult.getLoadVolume()`, `getLoadWeight()` and `getBoxCount()`), not their stacks: the brute-force packagers compare results whose stacks are not built. `DefaultIntermediatePackagerResultComparator` read the stacks, and chose wrong results when given to a brute-force packager
         * Manifest controls are named consistently: `withManifestControlsBuilderFactory(..)` on the container item builder, `ContainerItem.get/set/hasManifestControlsBuilderFactory(..)` and `ManifestControlsBuilderFactory.createManifestControlsBuilder()` (were `...BoxItemControls...`)
         * The OpenAPI modules removed (`open-api-model`, `open-api-client`, `open-api-server` and `open-api-test`)
