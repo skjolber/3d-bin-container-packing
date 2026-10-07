@@ -4,29 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 
+ *
  * Items which belong together, for example different parts of a single product
  * or order.
- * 
+ * <p>
+ * Groups are the input of packaging: packing does not modify them. A box item refers to the group it was added to
+ * (see {@link BoxItem#getGroup()}).
+ *
  */
 
 public class BoxItemGroup {
 
 	protected String id;
-
-	protected List<BoxItem> items;
-
-	protected int index = -1;
-
-	protected List<BoxItem> resetItems;
+	protected final List<BoxItem> items;
 
 	protected int containerPriority;
 	protected int extractionOrder;
-
-	public BoxItemGroup(String id, List<BoxItem> items, int index) {
-		this(id, items);
-		this.index = index;
-	}
 
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
@@ -86,17 +79,6 @@ public class BoxItemGroup {
 		return extractionOrder;
 	}
 
-	public BoxItemGroup(BoxItemGroup copy) {
-		this.containerPriority = copy.containerPriority;
-		this.extractionOrder = copy.extractionOrder;
-		this.id = copy.id;
-		this.items = new ArrayList<>(copy.items);
-		this.index = copy.index;
-		for (BoxItem boxItem : items) {
-			boxItem.setGroup(this);
-		}
-	}
-
 	public String getId() {
 		return id;
 	}
@@ -109,10 +91,6 @@ public class BoxItemGroup {
 		this.id = id;
 	}
 
-	public void setItems(List<BoxItem> items) {
-		this.items = items;
-	}
-
 	public int size() {
 		return items.size();
 	}
@@ -121,24 +99,9 @@ public class BoxItemGroup {
 		return items.get(i);
 	}
 
-	public boolean decrement(int index) {
-		BoxItem boxItem = items.get(index);
-		if (!boxItem.decrement()) {
-			items.remove(index);
-		}
-
-		return !items.isEmpty();
-	}
-
-	public boolean decrement(int index, int count) {
-		BoxItem boxItem = items.get(index);
-		if (!boxItem.decrement(count)) {
-			items.remove(index);
-		}
-
-		return !items.isEmpty();
-	}
-
+	/**
+	 * @return the number of boxes
+	 */
 	public int getBoxCount() {
 		int count = 0;
 		for (BoxItem boxItem : items) {
@@ -147,34 +110,26 @@ public class BoxItemGroup {
 		return count;
 	}
 
+	/**
+	 * @return true if the group has no boxes
+	 */
 	public boolean isEmpty() {
 		for (BoxItem boxItem : items) {
-			if (!boxItem.isEmpty()) {
+			if (boxItem.getCount() > 0) {
 				return false;
 			}
 		}
-
 		return true;
 	}
 
-	public void removeEmpty() {
-		for (int j = 0; j < items.size(); j++) {
-			BoxItem boxItem = items.get(j);
-
-			if (boxItem.isEmpty()) {
-				items.remove(j);
-				j--;
-			}
-		}
-	}
-
+	/**
+	 * @return a group with copies of the box items
+	 */
 	public BoxItemGroup copy() {
 		List<BoxItem> items = new ArrayList<>();
-
 		for (BoxItem boxItem : this.items) {
 			items.add(boxItem.copy());
 		}
-
 		return new BoxItemGroup(id, items).withOrderingOf(this);
 	}
 
@@ -192,38 +147,6 @@ public class BoxItemGroup {
 			weight += boxItem.getWeight();
 		}
 		return weight;
-	}
-
-	public BoxItem remove(int index) {
-		return items.remove(index);
-	}
-
-	public void setIndex(int index) {
-		this.index = index;
-	}
-
-	public int getIndex() {
-		return index;
-	}
-
-	public void reset() {
-		this.items.clear();
-		this.items.addAll(resetItems);
-		for (BoxItem boxItem : resetItems) {
-			boxItem.reset();
-		}
-	}
-
-	public void mark() {
-		if (resetItems == null) {
-			resetItems = new ArrayList<>(items);
-		} else {
-			resetItems.clear();
-			resetItems.addAll(items);
-		}
-		for (BoxItem boxItem : items) {
-			boxItem.mark();
-		}
 	}
 
 	@Override

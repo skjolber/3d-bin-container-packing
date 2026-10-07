@@ -70,7 +70,8 @@ Replacing the default controls does not automatically retain their checks:
 implement the requested constraints or reject unsupported configurations in
 your builder.
 
-`BoxItemSource` indexes are local and can change as inventory is removed.
+`BoxItemSource` indexes are local and can change as inventory is removed. The source holds `RemainingBoxItem`s:
+the number of boxes which remain (`getCount()`), and the box item as given to the packager (`getBoxItem()`).
 Preserve the selected item's identity and use current source/point indexes.
 Keep candidate loops allocation-light; never recycle accepted placements or
 change their box/coordinates during candidate evaluation. Test no-candidate cases, rotations, ordering,
@@ -129,11 +130,12 @@ them.
 `createSession(PackagerInput, interrupt)`, and keeps the sessions in sync: a result from one packager's
 session is accepted by all of them.
 
-- A packager implements `newSession(input, interrupt)`. The input's boxes and containers are copies which
-  belong to the new session.
+- A packager implements `newSession(input, interrupt)`. The input's containers are copies which belong to the
+  new session; the box items and groups are the caller's and are not modified. Sessions keep their packing state
+  in `RemainingBoxItem`s and `RemainingBoxItemGroup`s (see `AbstractPackagerSession.toRemainingBoxItems(..)`).
 - `accept(..)` must accept results from other packagers' sessions. Box items are identified by their global
-  index (`BoxItem.getGlobalIndex()`), which is the same in all sessions for the same input; local indexes
-  change during packing.
+  index (`RemainingBoxItem.getGlobalIndex()`, the box item's position in the input), which is the same in all
+  sessions for the same input; local indexes change during packing.
 - Box item groups are accepted in order: a result must hold a prefix of the remaining groups.
 - Return `false` from `supports(PackagerInput)` (by overriding `getUnsupportedReason(..)`) for inputs the
   packager cannot pack; the composite then skips it.

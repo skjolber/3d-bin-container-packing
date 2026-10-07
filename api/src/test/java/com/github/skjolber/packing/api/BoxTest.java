@@ -12,16 +12,6 @@ import org.junit.jupiter.api.Test;
 public class BoxTest {
 
 	@Test
-	void globalBoxItemIndexIsImmutableAfterAssignment() {
-		BoxItem item = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build());
-
-		item.setGlobalIndex(3);
-		item.setGlobalIndex(3);
-
-		assertThrows(IllegalStateException.class, () -> item.setGlobalIndex(4));
-	}
-
-	@Test
 	public void testCalculatePressure() {
 		assertEquals(2.5, Box.calculatePressure(4, 10), 0.0);
 		assertEquals(0.0, Box.calculatePressure(0, 10), 0.0);

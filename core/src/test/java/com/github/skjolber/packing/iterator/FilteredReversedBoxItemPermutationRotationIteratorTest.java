@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 class FilteredReversedBoxItemPermutationRotationIteratorTest {
 
@@ -50,12 +51,12 @@ class FilteredReversedBoxItemPermutationRotationIteratorTest {
 		List<BoxItem> items = new ArrayList<>();
 		for (int i = 0; i < counts.length; i++) {
 			Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1).withId(Integer.toString(i)).build();
-			items.add(new BoxItem(box, counts[i], i));
+			items.add(new BoxItem(box, counts[i]));
 		}
 		DefaultBoxItemPermutationRotationIterator delegate = DefaultBoxItemPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 10, 10)
 				.withMaxLoadWeight(100)
-				.withBoxItems(items)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items))
 				.build();
 		return new FilteredReversedBoxItemPermutationRotationIterator(delegate);
 	}

@@ -2,12 +2,12 @@ package com.github.skjolber.packing.api.packager.strategy;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 /**
  * One packaging operation as seen by a {@link ContainerStrategy}: the remaining boxes and the
@@ -67,10 +67,10 @@ public interface PackagerSession {
 	ContainerInventory getContainerInventory();
 
 	/** @return the remaining box items, or null when packing box item groups */
-	List<BoxItem> getRemainingBoxItems();
+	List<RemainingBoxItem> getRemainingBoxItems();
 
 	/** @return the remaining box item groups, or null when packing box items */
-	List<BoxItemGroup> getRemainingBoxItemGroups();
+	List<RemainingBoxItemGroup> getRemainingBoxItemGroups();
 
 	ContainerItem getContainerItem(int index);
 

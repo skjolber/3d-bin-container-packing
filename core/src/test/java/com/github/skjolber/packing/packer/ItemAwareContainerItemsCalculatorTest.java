@@ -16,6 +16,8 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -59,10 +61,11 @@ class ItemAwareContainerItemsCalculatorTest {
 	void boxItemsCalculatorIndexesFitAndTracksRemainingCapacity() {
 		Box small = box("small", 1, 2);
 		Box large = box("large", 2, 3);
-		BoxItem smallItems = new BoxItem(small, 2);
-		BoxItem largeItem = new BoxItem(large, 1);
+		List<RemainingBoxItem> items = AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(small, 2), new BoxItem(large, 1)));
+		RemainingBoxItem smallItems = items.get(0);
+		RemainingBoxItem largeItem = items.get(1);
 		BoxItemsContainerItemsCalculator calculator = new BoxItemsContainerItemsCalculator(
-				controlledContainers(), 100, List.of(smallItems, largeItem));
+				controlledContainers(), 100, items);
 
 		assertThat(calculator.getContainerCount()).isEqualTo(3);
 		assertThat(calculator.getRemainingVolume()).isEqualTo(4);
@@ -72,8 +75,6 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.canLoad(0, 0)).isTrue();
 		assertThat(calculator.canLoad(1, 0)).isFalse();
 		assertThat(calculator.canLoad(1, 1)).isTrue();
-		smallItems.setLocalIndex(0);
-		largeItem.setLocalIndex(1);
 		assertThat(calculator.isFeasible(List.of(smallItems, largeItem))).isFalse();
 		assertThat(calculator.isFeasible(List.of(smallItems))).isTrue();
 
@@ -104,10 +105,12 @@ class ItemAwareContainerItemsCalculatorTest {
 	@Test
 	void groupCalculatorIndexesWholeGroupFitAndCapsByGroupCount() {
 		Box small = box("small", 1, 2);
-		BoxItemGroup pair = new BoxItemGroup("pair", List.of(new BoxItem(small, 2)));
-		BoxItemGroup single = new BoxItemGroup("single", List.of(new BoxItem(small, 1)));
+		List<RemainingBoxItemGroup> remaining = AbstractPackagerSession.toRemainingBoxItemGroups(List.of(
+				new BoxItemGroup("pair", List.of(new BoxItem(small, 2))), new BoxItemGroup("single", List.of(new BoxItem(small, 1)))));
+		RemainingBoxItemGroup pair = remaining.get(0);
+		RemainingBoxItemGroup single = remaining.get(1);
 		BoxItemGroupsContainerItemsCalculator calculator = new BoxItemGroupsContainerItemsCalculator(
-				controlledContainers(), 100, List.of(pair, single));
+				controlledContainers(), 100, remaining);
 
 		assertThat(calculator.getContainerCount()).isEqualTo(2);
 		assertThat(calculator.getRemainingVolume()).isEqualTo(3);
@@ -148,8 +151,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		Box large = box("large", 2, 3);
 		ContainerItemsCalculator calculator = new ContainerItemsCalculator(controlledContainers(), 2);
 
-		ContainerItemsResult boxes = calculator.getContainers(
-				List.of(new BoxItem(small), new BoxItem(large)));
+		ContainerItemsResult boxes = calculator.getContainers(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(small), new BoxItem(large))));
 
 		assertThat(boxes).extracting(ContainerItem::getIndex).containsExactly(0, 1);
 		assertThat(boxes.getContainerIndexes()).containsExactly(0, 1);
@@ -161,11 +163,11 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(boxes.canLoad(1, 1)).isTrue();
 		assertThat(boxes.getFittingContainerItemCount(0)).isEqualTo(2);
 		assertThat(boxes.getFittingContainerItemCount(1)).isEqualTo(1);
-		assertThat(calculator.isFeasible(List.of(new BoxItem(small), new BoxItem(large)))).isTrue();
-		assertThat(calculator.isFeasible(List.of(new BoxItem(small), new BoxItem(large)), 1)).isFalse();
-		assertThat(calculator.isFeasible(List.of(new BoxItem(large)), 2, new boolean[] {false, true})).isFalse();
+		assertThat(calculator.isFeasible(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(small), new BoxItem(large))))).isTrue();
+		assertThat(calculator.isFeasible(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(small), new BoxItem(large))), 1)).isFalse();
+		assertThat(calculator.isFeasible(AbstractPackagerSession.toRemainingBoxItems(List.of(new BoxItem(large))), 2, new boolean[] {false, true})).isFalse();
 
-		BoxItemGroup pair = new BoxItemGroup("pair", List.of(new BoxItem(small, 2)));
+		RemainingBoxItemGroup pair = AbstractPackagerSession.toRemainingBoxItemGroups(List.of(new BoxItemGroup("pair", List.of(new BoxItem(small, 2))))).get(0);
 		ContainerItemsResult groups = calculator.getGroupContainers(List.of(pair));
 
 		assertThat(groups).extracting(ContainerItem::getIndex).containsExactly(1);

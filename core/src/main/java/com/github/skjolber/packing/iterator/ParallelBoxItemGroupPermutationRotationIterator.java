@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
 	
@@ -38,7 +38,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	private List<Integer> excluded;
 
 
-	public ParallelBoxItemGroupPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded) {
+	public ParallelBoxItemGroupPermutationRotationIterator(RemainingBoxItemGroup[] groupsMatrix, RemainingBoxItem[] boxMatrix, BoxStackValue[][] stackValues, List<RemainingBoxItemGroup> excluded) {
 		super(groupsMatrix, boxMatrix, stackValues, excluded);
 	}
 
@@ -168,7 +168,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
+			RemainingBoxItemGroup loadableItemGroup = groupsMatrix[g];
 			
 			// Find longest non-increasing suffix
 	
@@ -186,8 +186,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 				// TODO system arraycopy?
 				i = startIndex;
 				
-				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-					BoxItem indexedStackableItem = (BoxItem)loadableItem;
+				for (RemainingBoxItem loadableItem : loadableItemGroup.getItems()) {
+					RemainingBoxItem indexedStackableItem = (RemainingBoxItem)loadableItem;
 					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 						permutations[i] = indexedStackableItem.getLocalIndex();
 								
@@ -299,7 +299,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
+			RemainingBoxItemGroup loadableItemGroup = groupsMatrix[g];
 
 			// Find longest non-increasing suffix
 			int startIndex = limit - loadableItemGroup.getBoxCount();
@@ -337,8 +337,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 			// TODO system arraycopy?
 			int i = startIndex;
 			
-			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-				BoxItem indexedStackableItem = (BoxItem)loadableItem;
+			for (RemainingBoxItem loadableItem : loadableItemGroup.getItems()) {
+				RemainingBoxItem indexedStackableItem = (RemainingBoxItem)loadableItem;
 				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
 					permutations[i] = indexedStackableItem.getLocalIndex();
 							
@@ -394,7 +394,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	}
 
 	@Override
-	public BoxItem getBoxItem(int index) {
+	public RemainingBoxItem getBoxItem(int index) {
 		return super.getBoxItem(PADDING + index);
 	}
 
@@ -406,7 +406,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 	protected void initiatePermutations() {
 		int count = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			BoxItem value = stackableItems[j];
+			RemainingBoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				count += value.getCount();
 			}
@@ -417,7 +417,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			BoxItem value = stackableItems[j];
+			RemainingBoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[PADDING + offset] = j;
@@ -436,7 +436,7 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 				continue;
 			}
 			
-			BoxItemGroup group = groupsMatrix[g];
+			RemainingBoxItemGroup group = groupsMatrix[g];
 			
 			int boxCount = group.getBoxCount();
 			

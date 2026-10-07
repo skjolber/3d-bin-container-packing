@@ -5,12 +5,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 public abstract class AbstractBoxItemPermutationRotationIterator implements BoxItemPermutationRotationIterator {
 
-	protected final BoxItem[] stackableItems; // by index
+	protected final RemainingBoxItem[] stackableItems; // by index
 	/** The rotations of each box item which fit the container (stack values of its box), by index; not modified */
 	protected final BoxStackValue[][] stackValues;
 	protected int[] rotations;
@@ -22,7 +22,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	// minimum volume from index i and above
 	protected long[] minBoxVolume;
 	
-	public AbstractBoxItemPermutationRotationIterator(BoxItem[] matrix, BoxStackValue[][] stackValues) {
+	public AbstractBoxItemPermutationRotationIterator(RemainingBoxItem[] matrix, BoxStackValue[][] stackValues) {
 		this.stackableItems = matrix;
 		this.stackValues = stackValues;
 	}
@@ -38,8 +38,8 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return rotations.toArray(new BoxStackValue[rotations.size()]);
 	}
 
-	protected static BoxItem[] copyBoxItems(BoxItem[] source) {
-		BoxItem[] copy = new BoxItem[source.length];
+	protected static RemainingBoxItem[] copyBoxItems(RemainingBoxItem[] source) {
+		RemainingBoxItem[] copy = new RemainingBoxItem[source.length];
 		for(int i = 0; i < source.length; i++) {
 			if(source[i] != null) {
 				copy[i] = source[i].copy();
@@ -51,7 +51,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	/**
 	 * Get number of box items within the constraints.
 	 *
-	 * @return number between 0 and number of {@linkplain BoxItem}s used in the constructor.
+	 * @return number between 0 and number of {@linkplain RemainingBoxItem}s used in the constructor.
 	 */
 
 	public int boxItemLength() {
@@ -150,7 +150,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		int[] permutations = getPermutations();
 		
 		int maxCount = 0;
-		for (BoxItem value : stackableItems) {
+		for (RemainingBoxItem value : stackableItems) {
 			if(value != null) {
 				if(maxCount < value.getCount()) {
 					maxCount = value.getCount();
@@ -161,7 +161,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		long n = 1;
 		if(maxCount > 1) {
 			int[] factors = new int[maxCount];
-			for (BoxItem value : stackableItems) {
+			for (RemainingBoxItem value : stackableItems) {
 				if(value != null) {
 					for (int k = 0; k < value.getCount(); k++) {
 						factors[k]++;
@@ -203,7 +203,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return n;
 	}
 	
-	public BoxItem[] getBoxItems() {
+	public RemainingBoxItem[] getBoxItems() {
 		return stackableItems;
 	}
 	public long getMinBoxVolume(int offset) {
@@ -246,7 +246,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	}
 
 	@Override
-	public BoxItem getBoxItem(int index) {
+	public RemainingBoxItem getBoxItem(int index) {
 		return stackableItems[permutations[index]];
 	}
 

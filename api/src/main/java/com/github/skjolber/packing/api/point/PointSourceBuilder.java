@@ -1,9 +1,9 @@
 package com.github.skjolber.packing.api.point;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * Builder scaffold.
@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.packager.BoxItemSource;
 
 public interface PointSourceBuilder {
 
-	PointSourceBuilder withBoxItem(BoxItem boxItems);
+	PointSourceBuilder withBoxItem(RemainingBoxItem boxItems);
 	
 	PointSourceBuilder withPoints(PointSource points);
 	

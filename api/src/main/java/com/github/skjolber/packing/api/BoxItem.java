@@ -6,20 +6,18 @@ import java.io.Serializable;
  * A {@linkplain Box} repeated one or more times. Typically corresponding to an
  * order-line, but can also represent multiple products which share the same
  * size.
- * 
+ * <p>
+ * Box items are the input of packaging: packing does not modify them, so they can be packed again, also concurrently.
+ * The placements of results refer to them (see {@link Placement#getBoxItem()}).
  */
+
 public class BoxItem implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	protected int count;
+	protected final int count;
 	protected final Box box;
-	/** Dense, mutable position used by iterator implementations. */
-	protected int localIndex = -1;
-	/** Immutable identity of this box item within one packaging operation. */
-	protected int globalIndex = -1;
 
-	protected int resetCount;
 	protected BoxItemGroup group;
 
 	/** Containers are filled in order of priority, see {@link #withContainerPriority(int)} */
@@ -35,22 +33,6 @@ public class BoxItem implements Serializable {
 		super();
 		this.box = box;
 		this.count = count;
-
-		this.resetCount = count;
-	}
-
-	public BoxItem(Box box, int count, int localIndex) {
-		this(box, count, localIndex, -1);
-	}
-
-	public BoxItem(Box box, int count, int localIndex, int globalIndex) {
-		super();
-		this.box = box;
-		this.count = count;
-		this.localIndex = localIndex;
-		this.globalIndex = globalIndex;
-
-		this.resetCount = count;
 	}
 
 	public int getCount() {
@@ -63,25 +45,14 @@ public class BoxItem implements Serializable {
 
 	@Override
 	public String toString() {
-		return String.format("%dx%s #%d", count, box, localIndex);
+		return String.format("%dx%s", count, box);
 	}
 
-	public boolean decrement() {
-		count--;
-		return count > 0;
-	}
-
-	public boolean isEmpty() {
-		return count == 0;
-	}
-
-	public boolean decrement(int value) {
-		this.count = this.count - value;
-		return count > 0;
-	}
-
+	/**
+	 * @return a box item with the same box, count, container priority and extraction order, in no group
+	 */
 	public BoxItem copy() {
-		return new BoxItem(box, count, localIndex, globalIndex).withOrderingOf(this);
+		return new BoxItem(box, count).withOrderingOf(this);
 	}
 
 	/**
@@ -124,19 +95,6 @@ public class BoxItem implements Serializable {
 		return this;
 	}
 
-	/**
-	 * Identify the box item's group. Box items and groups are copied during packing, and a box refers to its latest
-	 * box item copy, so groups are identified by their index, which the copies keep.
-	 *
-	 * @return the group's index, the group itself if it has no index, or null without a group
-	 */
-	public Object getGroupKey() {
-		if(group == null) {
-			return null;
-		}
-		return group.getIndex() >= 0 ? (Object)Integer.valueOf(group.getIndex()) : group;
-	}
-
 	public int getContainerPriority() {
 		return containerPriority;
 	}
@@ -146,73 +104,33 @@ public class BoxItem implements Serializable {
 	}
 
 	/**
-	 * Set the dense index used by the current iterator or {@code BoxItemSource}.
-	 * This is not an operation-wide identity and may change after filtering.
+	 * @return the volume of all the boxes
 	 */
-	public void setLocalIndex(int localIndex) {
-		this.localIndex = localIndex;
-	}
-
-	/**
-	 * Return the dense index used by the current iterator or {@code BoxItemSource}.
-	 * This is not an operation-wide identity and may change after filtering.
-	 */
-	public int getLocalIndex() {
-		return localIndex;
-	}
-
-	public int getGlobalIndex() {
-		return globalIndex;
-	}
-
-	public void setGlobalIndex(int globalIndex) {
-		if(globalIndex < 0) {
-			throw new IllegalArgumentException("Expected a non-negative global index");
-		}
-		if(this.globalIndex != -1 && this.globalIndex != globalIndex) {
-			throw new IllegalStateException("Global index is immutable once assigned");
-		}
-		this.globalIndex = globalIndex;
-	}
-
 	public long getVolume() {
 		return count * box.getVolume();
 	}
 
+	/**
+	 * @return the weight of all the boxes
+	 */
 	public long getWeight() {
 		return (long)count * box.getWeight();
 	}
 
-	public void setCount(int count) {
-		this.count = count;
-	}
-
-	public void reset() {
-		this.count = resetCount;
-	}
-
-	public void setResetCount(int resetCount) {
-		this.resetCount = resetCount;
-	}
-
-	public void decrementResetCount() {
-		this.resetCount--;
-	}
-
-	public void mark() {
-		this.resetCount = count;
-	}
-
-	public void setGroup(BoxItemGroup group) {
+	/** Set by the group's constructor */
+	void setGroup(BoxItemGroup group) {
 		this.group = group;
 	}
 
+	/**
+	 * @return the group which this box item was last added to, or null
+	 */
 	public BoxItemGroup getGroup() {
 		return group;
 	}
-	
+
 	public boolean isMaxLoad() {
-		return box.isMaxLoad();		
+		return box.isMaxLoad();
 	}
 
 }

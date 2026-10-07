@@ -1,8 +1,8 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * Per-level state of the fast brute-force search ({@link FastBruteForcePackager#searchOrder}), kept in arrays
@@ -35,7 +35,7 @@ final class FastSearchFrames {
 	final long[] minAreas;
 	/** The box of the level */
 	final Box[] boxes;
-	final BoxItem[] items;
+	final RemainingBoxItem[] items;
 	/** the rotations of each level's box which fit the container */
 	final BoxStackValue[][] stackValues;
 
@@ -52,7 +52,7 @@ final class FastSearchFrames {
 		this.remainingVolumes = new long[levels + 1];
 		this.minAreas = new long[levels + 1];
 		this.boxes = new Box[levels + 1];
-		this.items = new BoxItem[levels + 1];
+		this.items = new RemainingBoxItem[levels + 1];
 		this.stackValues = new BoxStackValue[levels + 1][];
 	}
 }

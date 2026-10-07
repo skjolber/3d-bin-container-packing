@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -39,7 +40,7 @@ public class WeightLoadAwarePlacementControlsTest {
 	@BeforeEach
 	public void setup() {
 		boxItems = new DefaultBoxItemSource();
-		boxItems.setValues(new ArrayList<BoxItem>());
+		boxItems.setValues(new ArrayList<RemainingBoxItem>());
 		
 		pointCalculator = new DefaultPointCalculator3D(false, 10);
 		pointCalculator.clearToSize(10, 10, 10);
@@ -72,7 +73,7 @@ public class WeightLoadAwarePlacementControlsTest {
 		
 		Box tooHeavy = Box.newBuilder().withSize(10, 10, 1).withWeight(6).build();
 		
-		boxItems.add(new BoxItem(tooHeavy));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
 		
 		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -89,7 +90,7 @@ public class WeightLoadAwarePlacementControlsTest {
 		
 		Box tooHeavy = Box.newBuilder().withSize(10, 10, 1).withWeight(1).build();
 		
-		boxItems.add(new BoxItem(tooHeavy));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
 		
 		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -111,7 +112,7 @@ public class WeightLoadAwarePlacementControlsTest {
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).withWeight(1).build();
 		
-		boxItems.add(new BoxItem(tooLowMaxLoadLimit));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooLowMaxLoadLimit)));
 		
 		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -133,7 +134,7 @@ public class WeightLoadAwarePlacementControlsTest {
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(300).withWeight(1).build();
 		
-		boxItems.add(new BoxItem(tooLowMaxLoadLimit));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooLowMaxLoadLimit)));
 		
 		// only available point is below a box which is heavy
 		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
@@ -158,7 +159,7 @@ public class WeightLoadAwarePlacementControlsTest {
 
 		Box tooHeavy = Box.newBuilder().withSize(1, 1, 1).withWeight(2).build();
 		
-		boxItems.add(new BoxItem(tooHeavy));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooHeavy)));
 		
 		Placement placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
 		assertNull(placement);
@@ -166,7 +167,7 @@ public class WeightLoadAwarePlacementControlsTest {
 		Box notTooHeavy = Box.newBuilder().withSize(1, 1, 1).withWeight(1).build();
 		
 		boxItems.remove(0);
-		boxItems.add(new BoxItem(notTooHeavy));
+		boxItems.add(new RemainingBoxItem(new BoxItem(notTooHeavy)));
 
 		placement = weightLoadAwarePlacementControls.getPlacement(0, boxItems.size());
 		assertNotNull(placement);
@@ -197,7 +198,7 @@ public class WeightLoadAwarePlacementControlsTest {
 
 		Box tooLowMaxLoadLimit = Box.newBuilder().withSize(1, 1, 1).withWeight(1).withMaxLoadWeight(1000).build();
 		
-		boxItems.add(new BoxItem(tooLowMaxLoadLimit));
+		boxItems.add(new RemainingBoxItem(new BoxItem(tooLowMaxLoadLimit)));
 		
 		// only available point is below the overhanging box, which then rests on the new box and the corner box
 		// (in the result, the new box is inserted before the overhanging box): the bottom box carries 102

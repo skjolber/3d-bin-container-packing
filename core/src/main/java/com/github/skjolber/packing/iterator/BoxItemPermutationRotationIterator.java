@@ -2,8 +2,8 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  *
@@ -61,7 +61,7 @@ public interface BoxItemPermutationRotationIterator {
 	 * @param index position in the current permutation
 	 * @return the box item at the position
 	 */
-	BoxItem getBoxItem(int index);
+	RemainingBoxItem getBoxItem(int index);
 
 	/**
 	 * @param index position in the current permutation
@@ -159,6 +159,6 @@ public interface BoxItemPermutationRotationIterator {
 	
 	void removePermutations(int count);
 
-	BoxItem[] getBoxItems();
+	RemainingBoxItem[] getBoxItems();
 	
 }

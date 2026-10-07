@@ -1,6 +1,6 @@
 package com.github.skjolber.packing.api.packager.control.point;
 
-import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.point.PointSource;
 
 public class DefaultPointControls implements PointControls {
@@ -12,7 +12,7 @@ public class DefaultPointControls implements PointControls {
 	}
 
 	@Override
-	public PointSource getPoints(BoxItem boxItem) {
+	public PointSource getPoints(RemainingBoxItem boxItem) {
 		return filteredPoints;
 	}
 

@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -178,7 +179,7 @@ public class FastBruteForcePackagerSkippingTest {
 				Container container, PackagerInterruptSupplier interrupt, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator,
 				int[] skipEnds, int maxContainerPriority, SkippingBest best) throws PackagerInterruptedException {
 			int[] permutations = iterator.getPermutations();
-			BoxItem[] boxItems = iterator.getBoxItems();
+			RemainingBoxItem[] boxItems = iterator.getBoxItems();
 			long[] minAreas = getMinAreas(iterator.getBoxItemStackValues(), permutations);
 			pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
 			new Search(pointCalculator, placements, boxItems, permutations, minAreas, skipEnds, iterator, stack, container, interrupt, utility, pointComparator, best)
@@ -189,7 +190,7 @@ public class FastBruteForcePackagerSkippingTest {
 
 			private final FastPointCalculator3DStack pointCalculator;
 			private final Placement[] placements;
-			private final BoxItem[] boxItems;
+			private final RemainingBoxItem[] boxItems;
 			private final int[] permutations;
 			private final long[] minAreas;
 			private final int[] skipEnds;
@@ -203,7 +204,7 @@ public class FastBruteForcePackagerSkippingTest {
 			private final int[] placedPermutations;
 			private final int[] placedRotations;
 
-			Search(FastPointCalculator3DStack pointCalculator, Placement[] placements, BoxItem[] boxItems, int[] permutations, long[] minAreas, int[] skipEnds,
+			Search(FastPointCalculator3DStack pointCalculator, Placement[] placements, RemainingBoxItem[] boxItems, int[] permutations, long[] minAreas, int[] skipEnds,
 					BoxItemPermutationRotationIterator iterator, Stack stack, Container container, PackagerInterruptSupplier interrupt, LoadPlacementUtility utility,
 					FastBruteForceBoxStackValuePointComparator pointComparator, SkippingBest best) {
 				this.pointCalculator = pointCalculator;
@@ -235,7 +236,7 @@ public class FastBruteForcePackagerSkippingTest {
 					}
 					return;
 				}
-				BoxItem boxItem = boxItems[permutations[level]];
+				RemainingBoxItem boxItem = boxItems[permutations[level]];
 				Box box = boxItem.getBox();
 				if(boxItem.getContainerPriority() <= maxContainerPriority && box.getWeight() <= freeLoadWeight && placedVolume + box.getVolume() <= container.getMaxLoadVolume()) {
 					// the rotations which fit the container

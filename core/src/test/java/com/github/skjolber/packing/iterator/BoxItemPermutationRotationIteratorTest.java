@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.Dimension;
 
 class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DefaultBoxItemPermutationRotationIterator.Builder> {
@@ -32,7 +33,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -45,7 +46,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 	private List<String> permutations(List<BoxItem> items, boolean maxIndex) {
 		DefaultBoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(9, 1, 1)
-				.withBoxItems(items)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items))
 				.withMaxLoadWeight(items.size())
 				.build();
 		List<String> permutations = new ArrayList<>();
@@ -81,7 +82,7 @@ class BoxItemPermutationRotationIteratorTest extends AbstractBoxItemPermutationR
 		List<BoxItem> items = List.of(box("a", 0), box("b", 0), box("c", 1), box("d", 1));
 		DefaultBoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(9, 1, 1)
-				.withBoxItems(items)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(items))
 				.withMaxLoadWeight(items.size())
 				.build();
 		// a b c d: the box at index 0 could not be placed, so the next permutation changes it

@@ -1,9 +1,9 @@
 package com.github.skjolber.packing.iterator;
 
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
 public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
@@ -93,14 +93,14 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 	
 
 	protected int getBestItemGroup() {
-		BoxItemGroup bestBoxItemGroup = null;
+		RemainingBoxItemGroup bestBoxItemGroup = null;
 		int bestIndex = -1;
 		
 		// the groups of the lowest container priority come first, and of those the groups which are extracted last
 		int priority = Integer.MAX_VALUE;
 		int extractionOrder = Integer.MIN_VALUE;
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
-			BoxItemGroup group = filteredBoxItemGroups.get(l);
+			RemainingBoxItemGroup group = filteredBoxItemGroups.get(l);
 			if(group.getContainerPriority() < priority) {
 				priority = group.getContainerPriority();
 				extractionOrder = group.getExtractionOrder();
@@ -111,11 +111,11 @@ public class AnyOrderBoxItemGroupIterator implements BoxItemGroupIterator {
 
 		// find next best group
 		for (int l = 0; l < filteredBoxItemGroups.size(); l++) {
-			BoxItemGroup group = filteredBoxItemGroups.get(l);
+			RemainingBoxItemGroup group = filteredBoxItemGroups.get(l);
 			if(group.getContainerPriority() != priority || group.getExtractionOrder() != extractionOrder) {
 				continue;
 			}
-			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup, group) < 0) {
+			if(bestBoxItemGroup == null || comparator.compare(bestBoxItemGroup.getBoxItemGroup(), group.getBoxItemGroup()) < 0) {
 				bestBoxItemGroup = group;
 				bestIndex = l;
 			}

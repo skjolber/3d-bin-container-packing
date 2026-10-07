@@ -5,8 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * A decorator which visits one representative of each pair consisting of a
@@ -137,7 +137,7 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
-	public BoxItem getBoxItem(int index) {
+	public RemainingBoxItem getBoxItem(int index) {
 		return iterator.getBoxItem(index);
 	}
 
@@ -207,7 +207,7 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
-	public BoxItem[] getBoxItems() {
+	public RemainingBoxItem[] getBoxItems() {
 		return iterator.getBoxItems();
 	}
 }

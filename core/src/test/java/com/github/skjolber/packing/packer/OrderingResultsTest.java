@@ -20,10 +20,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
-import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -216,7 +216,7 @@ public class OrderingResultsTest {
 							failures.add(name + reasons.get(0).getMessage());
 						}
 						List<Placement> placements = container.getStack().getPlacements();
-						if(!placements.get(0).getBoxItem().getGroupKey().equals(placements.get(placements.size() - 1).getBoxItem().getGroupKey())) {
+						if(placements.get(0).getBoxItem().getGroup() != placements.get(placements.size() - 1).getBoxItem().getGroup()) {
 							shared++;
 						}
 					}

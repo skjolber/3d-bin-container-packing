@@ -2,12 +2,12 @@ package com.github.skjolber.packing.packer;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
@@ -73,12 +73,12 @@ public class DelegatingPackagerSession implements PackagerSession {
 	}
 
 	@Override
-	public List<BoxItem> getRemainingBoxItems() {
+	public List<RemainingBoxItem> getRemainingBoxItems() {
 		return delegate.getRemainingBoxItems();
 	}
 
 	@Override
-	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+	public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
 		return delegate.getRemainingBoxItemGroups();
 	}
 

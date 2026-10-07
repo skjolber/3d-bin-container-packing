@@ -21,6 +21,8 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
@@ -48,13 +50,13 @@ class ContainerCostPackingTest {
 		EstimatingContainerItemsCostCalculator delegate = new EstimatingContainerItemsCostCalculator();
 		ContainerItemsCostCalculator calculator = new ContainerItemsCostCalculator() {
 			@Override
-			public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
+			public long getMinimumCost(ContainerInventory containers, List<RemainingBoxItem> boxes, int maxCount) {
 				estimates.incrementAndGet();
 				return delegate.getMinimumCost(containers, boxes, maxCount);
 			}
 
 			@Override
-			public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
+			public long getGroupMinimumCost(ContainerInventory containers, List<RemainingBoxItemGroup> groups, int maxCount) {
 				estimates.incrementAndGet();
 				return delegate.getGroupMinimumCost(containers, groups, maxCount);
 			}

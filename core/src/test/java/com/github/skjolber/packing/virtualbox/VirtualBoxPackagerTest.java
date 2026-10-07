@@ -175,16 +175,12 @@ class VirtualBoxPackagerTest {
 		for(Packager<?> delegate : delegates) {
 			try(delegate; RecordingPackager recording = new RecordingPackager(delegate); VirtualBoxPackager wrapper = new VirtualBoxPackager(recording)) {
 				BoxItem item = item(1, 1, 1, 24);
-				item.setGlobalIndex(42);
-				item.setLocalIndex(17);
 				ContainerItem container = new ContainerItem(container(4, 2, 3), 1);
 				PackagerResult result = wrapper.newResultBuilder().withBoxItems(item).withContainerItems(container)
 						.build();
 				assertThat(recording.counts).containsExactly(1);
 				PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(item));
 				assertThat(item.getCount()).isEqualTo(24);
-				assertThat(item.getGlobalIndex()).isEqualTo(42);
-				assertThat(item.getLocalIndex()).isEqualTo(17);
 				assertThat(item.getBox().getStackValue(0).getBox()).isSameAs(item.getBox());
 				assertThat(container.getCount()).isEqualTo(1);
 			}
@@ -217,7 +213,7 @@ class VirtualBoxPackagerTest {
 	 *
 	 *       [ A A A A ] --failure--> [ A ] [ A ] [ A ] [ A ] --success-->
 	 *
-	 * Retry uses fresh inventory even if the first delegate mutated its counts.
+	 * Retry uses fresh inventory even if the first delegate mutated its container counts (box items are not modified).
 	 */
 	@Test
 	void fallsBackWithFreshUngroupedInventory() throws IOException {
@@ -497,7 +493,6 @@ class VirtualBoxPackagerTest {
 				groupCounts.add(itemGroups.size());
 				beforeAttempt.run();
 				if((failFirst && counts.size() == 1) || counts.size() == failAttempt) {
-					items.forEach(item -> item.setCount(0));
 					containers.forEach(item -> item.setCount(0));
 					return new PackagerResult(List.of(), 0, false);
 				}

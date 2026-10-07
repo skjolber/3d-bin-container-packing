@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
@@ -37,7 +37,7 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	}
 
 	@Override
-	public ContainerStrategy create(ContainerInventory containerItemsCalculator, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
+	public ContainerStrategy create(ContainerInventory containerItemsCalculator, List<RemainingBoxItem> remainingBoxItems, List<RemainingBoxItemGroup> boxItemGroups) {
 		if(containerItemsCalculator.hasCost()) {
 			return lowestCost;
 		}
@@ -54,13 +54,13 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	 * least one unit, both the per-type inventory and total container limit keep
 	 * this invariant for the rest of the operation.
 	 */
-	private static boolean isAllocationAlwaysFeasible(ContainerInventory calculator, List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups) {
+	private static boolean isAllocationAlwaysFeasible(ContainerInventory calculator, List<RemainingBoxItem> boxItems, List<RemainingBoxItemGroup> boxItemGroups) {
 		int unitCount;
 		if(boxItemGroups != null) {
 			unitCount = boxItemGroups.size();
 		} else if(boxItems != null) {
 			unitCount = 0;
-			for(BoxItem boxItem : boxItems) {
+			for(RemainingBoxItem boxItem : boxItems) {
 				unitCount += boxItem.getCount();
 			}
 		} else {
@@ -81,13 +81,13 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 			}
 			available = true;
 			if(boxItemGroups != null) {
-				for(BoxItemGroup group : boxItemGroups) {
+				for(RemainingBoxItemGroup group : boxItemGroups) {
 					if(!calculator.canLoad(group, i)) {
 						return false;
 					}
 				}
 			} else {
-				for(BoxItem boxItem : boxItems) {
+				for(RemainingBoxItem boxItem : boxItems) {
 					if(!calculator.canLoad(boxItem, i)) {
 						return false;
 					}

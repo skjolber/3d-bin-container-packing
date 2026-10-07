@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
@@ -170,7 +170,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 			// is it possible to fit the remaining boxes a single container?
 			int maxContainers = limit - containerPackResults.size();
 			if(maxContainers > 1) {
-				List<BoxItemGroup> groups = session.getRemainingBoxItemGroups();
+				List<RemainingBoxItemGroup> groups = session.getRemainingBoxItemGroups();
 				List<ContainerItem> containerItems;
 				if(groups != null) {
 					containerItems = session.getContainerInventory().getGroupContainers(groups, 1);

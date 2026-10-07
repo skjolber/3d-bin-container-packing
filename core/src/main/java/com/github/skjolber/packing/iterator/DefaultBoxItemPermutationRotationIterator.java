@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator {
 	
@@ -29,7 +29,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 	}
 	
-	private List<BoxItem> excluded;
+	private List<RemainingBoxItem> excluded;
 
 	/**
 	 * The end positions of the blocks of boxes with the same container priority (the box items are sorted by container
@@ -40,14 +40,14 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 	private static final int[] NO_BLOCKS = new int[0];
 
-	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded) {
+	public DefaultBoxItemPermutationRotationIterator(RemainingBoxItem[] boxItems, BoxStackValue[][] stackValues, List<RemainingBoxItem> excluded) {
 		super(boxItems, stackValues);
 		
 		this.excluded = excluded;
 		
 		int count = 0;
 		
-		for (BoxItem loadableItem : boxItems) {
+		for (RemainingBoxItem loadableItem : boxItems) {
 			if(loadableItem != null) {
 				count += loadableItem.getCount();
 			}
@@ -81,7 +81,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	public void removePermutations(int count) {
 		// discard a number of items from the front
 		for(int i = 0; i < count; i++) {
-			BoxItem loadableItem = stackableItems[permutations[i]];
+			RemainingBoxItem loadableItem = stackableItems[permutations[i]];
 			
 			loadableItem.decrement();
 			
@@ -102,7 +102,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		
 		int offset = 0;
 		for (int j = 0; j < stackableItems.length; j++) {
-			BoxItem value = stackableItems[j];
+			RemainingBoxItem value = stackableItems[j];
 			if(value != null && !value.isEmpty()) {
 				for (int k = 0; k < value.getCount(); k++) {
 					permutations[offset] = j;
@@ -156,7 +156,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 		int count = rotations.length;
 		for (Integer i : removed) {
-			BoxItem boxItem = stackableItems[i];
+			RemainingBoxItem boxItem = stackableItems[i];
 			if(boxItem != null) {
 				boxItem.decrement();
 				
@@ -350,7 +350,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		return new PermutationRotationState(rotations, permutations);
 	}
 
-	public BoxItem getPermutation(int index) {
+	public RemainingBoxItem getPermutation(int index) {
 		return stackableItems[permutations[index]];
 	}
 	
@@ -358,7 +358,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		return rotations;
 	}
 	
-	public List<BoxItem> getExcluded() {
+	public List<RemainingBoxItem> getExcluded() {
 		return excluded;
 	}
 }

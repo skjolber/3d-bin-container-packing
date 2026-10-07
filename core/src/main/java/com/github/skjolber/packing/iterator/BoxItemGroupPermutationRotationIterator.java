@@ -2,7 +2,7 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 /**
  *
@@ -39,9 +39,9 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 public interface BoxItemGroupPermutationRotationIterator extends BoxItemPermutationRotationIterator {
 
-	BoxItemGroup[] getBoxItemGroups();
+	RemainingBoxItemGroup[] getBoxItemGroups();
 	
-	List<BoxItemGroup> getExcludedBoxItemGroups();
+	List<RemainingBoxItemGroup> getExcludedBoxItemGroups();
 
 	int removeGroups(List<Integer> removed);
 }

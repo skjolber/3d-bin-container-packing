@@ -3,7 +3,6 @@ package com.github.skjolber.packing.packer.bruteforce;
 import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
@@ -12,6 +11,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager.SkippingBest;
@@ -66,7 +66,7 @@ public class RecursiveBruteForceSearch {
 		private final int[] rotations;
 
 		private final Box[] boxes;
-		private final BoxItem[] items;
+		private final RemainingBoxItem[] items;
 		private final BoxStackValue[][] levelStackValues;
 		private final long[] minAreas;
 		private final long[] remainingVolumes;
@@ -94,7 +94,7 @@ public class RecursiveBruteForceSearch {
 			this.rotations = rotations;
 
 			this.boxes = new Box[length];
-			this.items = new BoxItem[length];
+			this.items = new RemainingBoxItem[length];
 			this.levelStackValues = new BoxStackValue[length][];
 			this.minAreas = new long[length + 1];
 			this.remainingVolumes = new long[length + 1];

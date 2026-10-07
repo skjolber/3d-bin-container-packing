@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * Builder scaffold.
@@ -24,7 +24,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 	protected int dz = -1;
 	protected long volume = -1L;
 	
-	protected List<BoxItem> boxItems;
+	protected List<RemainingBoxItem> boxItems;
 
 	public B withLoadSize(int dx, int dy, int dz) {
 		this.dx = dx;
@@ -42,7 +42,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 		return (B)this;
 	}
 
-	public B withBoxItems(List<BoxItem> stackableItems) {
+	public B withBoxItems(List<RemainingBoxItem> stackableItems) {
 		this.boxItems = stackableItems;
 
 		return (B)this;
@@ -52,21 +52,21 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 	 * The box items of an iterator, by index: copies of the box items which fit the container (sharing their boxes), and
 	 * the rotations of each which fit (stack values of its box).
 	 */
-	protected record BoxItemMatrix(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded) {
+	protected record BoxItemMatrix(RemainingBoxItem[] boxItems, BoxStackValue[][] stackValues, List<RemainingBoxItem> excluded) {
 	}
 
 	protected BoxItemMatrix toMatrix() {
 		return toMatrix(boxItems, dx, dy, dz, volume, maxLoadWeight);
 	}
 
-	protected static BoxItemMatrix toMatrix(List<BoxItem> boxItems, int dx, int dy, int dz, long volume, int maxLoadWeight) {
-		BoxItem[] included = new BoxItem[boxItems.size()];
+	protected static BoxItemMatrix toMatrix(List<RemainingBoxItem> boxItems, int dx, int dy, int dz, long volume, int maxLoadWeight) {
+		RemainingBoxItem[] included = new RemainingBoxItem[boxItems.size()];
 		BoxStackValue[][] stackValues = new BoxStackValue[boxItems.size()][];
-		List<BoxItem> excluded = new ArrayList<>(boxItems.size());
+		List<RemainingBoxItem> excluded = new ArrayList<>(boxItems.size());
 
 		// box item and box item groups indexes are unique and static
 		for (int i = 0; i < boxItems.size(); i++) {
-			BoxItem boxItem = boxItems.get(i);
+			RemainingBoxItem boxItem = boxItems.get(i);
 
 			Box box = boxItem.getBox();
 			if(box.getWeight() > maxLoadWeight) {
@@ -85,7 +85,7 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 				continue;
 			}
 			stackValues[i] = rotations;
-			included[i] = new BoxItem(box, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
+			included[i] = new RemainingBoxItem(boxItem.getBoxItem(), boxItem.getCount(), i, boxItem.getGlobalIndex());
 		}
 		return new BoxItemMatrix(included, stackValues, excluded);
 	}

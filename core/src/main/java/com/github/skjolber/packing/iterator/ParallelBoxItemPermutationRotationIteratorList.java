@@ -2,8 +2,8 @@ package com.github.skjolber.packing.iterator;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * 
@@ -25,7 +25,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		protected int dz = -1;
 		protected long volume = -1L;
 
-		protected List<BoxItem> boxItems;
+		protected List<RemainingBoxItem> boxItems;
 
 		protected int parallelizationCount = -1;
 
@@ -44,7 +44,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			return this;
 		}
 
-		public Builder withBoxItems(List<BoxItem> stackableItems) {
+		public Builder withBoxItems(List<RemainingBoxItem> stackableItems) {
 			this.boxItems = stackableItems;
 
 			return this;
@@ -77,7 +77,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	protected final int[] frequencies;
 	protected ParallelBoxItemPermutationRotationIterator[] workUnits;
 
-	public ParallelBoxItemPermutationRotationIteratorList(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded, int parallelizationCount) {
+	public ParallelBoxItemPermutationRotationIteratorList(RemainingBoxItem[] boxItems, BoxStackValue[][] stackValues, List<RemainingBoxItem> excluded, int parallelizationCount) {
 		this.frequencies = new int[boxItems.length];
 
 		for (int i = 0; i < boxItems.length; i++) {
@@ -91,7 +91,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			
 			// copy working variables so threads are less of the same
 			// memory area as one another
-			BoxItem[] copy = copy(boxItems);
+			RemainingBoxItem[] copy = copy(boxItems);
 			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(copy, stackValues, this);
 		}
 
@@ -111,13 +111,13 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		return new ParallelBoxItemPermutationRotationIteratorList(this);
 	}
 
-	private BoxItem[] copy(BoxItem[] boxItems) {
-		BoxItem[] result = new BoxItem[boxItems.length];
+	private RemainingBoxItem[] copy(RemainingBoxItem[] boxItems) {
+		RemainingBoxItem[] result = new RemainingBoxItem[boxItems.length];
 		for(int i = 0; i < boxItems.length; i++) {
 			
-			BoxItem boxItem = boxItems[i];
+			RemainingBoxItem boxItem = boxItems[i];
 			if(boxItem != null) {
-				result[i] = new BoxItem(boxItem.getBox(), boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
+				result[i] = new RemainingBoxItem(boxItem.getBoxItem(), boxItem.getCount(), i, boxItem.getGlobalIndex());
 			}
 		}
 		return result;

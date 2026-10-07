@@ -4,7 +4,6 @@ import java.util.List;
 
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Order;
@@ -12,6 +11,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.Point;
@@ -44,7 +44,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		// max volume and weight should already be accounted for by packager
 		
 		for (int i = offset; i < offset + length; i++) {
-			BoxItem boxItem = boxItems.get(i);
+			RemainingBoxItem boxItem = boxItems.get(i);
 			
 			Box box = boxItem.getBox();
 			
@@ -54,7 +54,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 				// a negative integer, zero, or a positive integer as the 
 				// first argument is less than, equal to, or greater than the
 			    // second.
-				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem) >= 0) {
+				if(result != null && boxItemComparator.compare(result.getBoxItem(), boxItem.getBoxItem()) >= 0) {
 					continue;
 				}
 			}
@@ -101,7 +101,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 	 * be selected. Same result as calculating the support of every candidate, as the comparator never
 	 * prefers less support.
 	 */
-	private Placement selectPlacementIfSupported(Placement result, Point point, BoxItem boxItem, BoxStackValue stackValue) {
+	private Placement selectPlacementIfSupported(Placement result, Point point, RemainingBoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);
@@ -116,7 +116,7 @@ public class SupportPlacementControls extends AbstractComparatorPlacementControl
 		return selectPlacement(result, placement);
 	}
 
-	protected Placement createPlacement(Point point, BoxItem boxItem, BoxStackValue stackValue) {
+	protected Placement createPlacement(Point point, RemainingBoxItem boxItem, BoxStackValue stackValue) {
 		Placement placement = acquirePlacement();
 		placement.setStackValue(boxItem, stackValue);
 		placement.setPoint(point);

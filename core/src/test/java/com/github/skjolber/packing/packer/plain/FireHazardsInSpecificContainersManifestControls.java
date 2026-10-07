@@ -1,11 +1,11 @@
 package com.github.skjolber.packing.packer.plain;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.point.PointSource;
@@ -20,7 +20,7 @@ public class FireHazardsInSpecificContainersManifestControls implements Manifest
 			BoxItemGroupSource groups = items.getGroups();			
 			
 			for(int i = 0; i < groups.size(); i++) {
-				BoxItemGroup boxItemGroup = groups.get(i);
+				RemainingBoxItemGroup boxItemGroup = groups.get(i);
 				
 				if(isFireHazard(boxItemGroup)) {
 					groups.remove(i);
@@ -30,9 +30,9 @@ public class FireHazardsInSpecificContainersManifestControls implements Manifest
 			return new FireHazardsInSpecificContainersManifestControls(container, items, points, stack);
 		}
 
-		private boolean isFireHazard(BoxItemGroup boxItemGroup) {
+		private boolean isFireHazard(RemainingBoxItemGroup boxItemGroup) {
 			for(int i = 0; i < boxItemGroup.size(); i++) {
-				BoxItem item = boxItemGroup.get(i);
+				RemainingBoxItem item = boxItemGroup.get(i);
 				if(isFireHazard(item)) {
 					return true;
 				}
@@ -40,7 +40,7 @@ public class FireHazardsInSpecificContainersManifestControls implements Manifest
 			return false;
 		}
 
-		private boolean isFireHazard(BoxItem item) {
+		private boolean isFireHazard(RemainingBoxItem item) {
 			return item.getBox().getId().startsWith("fire-");
 		}
 	}

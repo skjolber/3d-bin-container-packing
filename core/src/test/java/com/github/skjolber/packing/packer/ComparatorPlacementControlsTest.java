@@ -16,6 +16,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
@@ -77,7 +78,7 @@ class ComparatorPlacementControlsTest {
 		}
 
 		@Override
-		protected Placement createPlacement(Point point, BoxItem boxItem, BoxStackValue stackValue) {
+		protected Placement createPlacement(Point point, RemainingBoxItem boxItem, BoxStackValue stackValue) {
 			Placement placement = super.createPlacement(point, boxItem, stackValue);
 			candidateCount++;
 			candidates.add(placement);

@@ -50,7 +50,7 @@ class PlacementControlsTestSupport {
 
 	/** Wraps the given items in a {@link DefaultBoxItemSource} with correct indices. */
 	static DefaultBoxItemSource source(BoxItem... items) {
-		return new DefaultBoxItemSource(Arrays.asList(items));
+		return new DefaultBoxItemSource(AbstractPackagerSession.toRemainingBoxItems(Arrays.asList(items)));
 	}
 
 	// -----------------------------------------------------------------------

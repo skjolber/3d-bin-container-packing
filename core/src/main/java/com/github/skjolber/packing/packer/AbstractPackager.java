@@ -8,8 +8,8 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Packager;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilde
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
 import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
@@ -64,7 +65,6 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	 */
 	public PackagerSession createSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
 		// sessions count down boxes and containers as containers are accepted
-		AbstractPackagerSession.initializeGlobalIndexes(input);
 		return newSession(input.withCopies(), interrupt);
 	}
 
@@ -92,20 +92,27 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	 */
 	protected static boolean hasLoadLimits(PackagerInput input) {
 		if(input.hasBoxItems()) {
-			return hasLoadLimits(input.getBoxItems());
+			for (BoxItem boxItem : input.getBoxItems()) {
+				if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
+					return true;
+				}
+			}
+			return false;
 		}
 		if(input.getBoxItemGroups() != null) {
 			for (BoxItemGroup group : input.getBoxItemGroups()) {
-				if(hasLoadLimits(group.getItems())) {
-					return true;
+				for (BoxItem boxItem : group.getItems()) {
+					if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
+						return true;
+					}
 				}
 			}
 		}
 		return false;
 	}
 
-	protected static boolean hasLoadLimits(List<BoxItem> boxItems) {
-		for (BoxItem boxItem : boxItems) {
+	protected static boolean hasLoadLimits(List<RemainingBoxItem> boxItems) {
+		for (RemainingBoxItem boxItem : boxItems) {
 			if(boxItem.isMaxLoad() || boxItem.getBox().isLoadIdenticalBoxOnly()) {
 				return true;
 			}
@@ -194,36 +201,6 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();
-	}
-	
-	protected List<BoxItemGroup> getFitsInside(List<BoxItemGroup> inputs, Container container) {
-		List<BoxItemGroup> result = new ArrayList<>(inputs.size());
-		for (BoxItemGroup boxItemGroup : inputs) {
-			if(container.fitsInside(boxItemGroup)) {
-				result.add(boxItemGroup);
-			}
-		}
-		return result;
-	}
-	
-	protected List<BoxItem> getBoxItemsFitsInside(List<BoxItem> inputs, Container container) {
-		List<BoxItem> result = new ArrayList<>(inputs.size());
-		for (BoxItem boxItem : inputs) {
-			if(container.fitsInside(boxItem)) {
-				result.add(boxItem);
-			}
-		}
-		return result;
-	}
-	
-	public List<BoxItem> removeEmpty(List<BoxItem> values) {
-		List<BoxItem> result = new ArrayList<>(values.size());
-		for(int i = 0; i < values.size(); i++) {
-			if(!values.get(i).isEmpty()) {
-				result.add(values.get(i));
-			}
-		}
-		return result;
 	}
 	
 	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {

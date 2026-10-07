@@ -71,8 +71,8 @@ class VirtualBoxLayoutTest {
 		assertThat(layouts.get(0).getPlacements()).hasSize(6).allMatch(p -> p.getBoxItem() == item);
 		assertFilled(layouts);
 		VirtualBox virtual = VirtualBox.of(layouts);
-		assertThat(virtual.toBoxItem(12).getCount()).isEqualTo(1);
-		assertThat(virtual.toBoxItem(12).getGlobalIndex()).isEqualTo(12);
+		assertThat(virtual.toBoxItem().getCount()).isEqualTo(1);
+		assertThat(virtual.toBoxItem(12).getCount()).isEqualTo(12);
 		assertThat(virtual.getWeight()).isEqualTo(6);
 		assertThat(item.getCount()).isEqualTo(6);
 		assertThat(item.getBox().getStackValue(0).getBox()).isSameAs(item.getBox());
@@ -92,7 +92,7 @@ class VirtualBoxLayoutTest {
 		BoxItem item = item(1, 1, 1, 6);
 		var layouts = new GridVirtualBoxLayoutGenerator().generate(item, List.of(container(3, 3, 2)), 2, () -> false);
 		assertThat(layouts).hasSize(2);
-		BoxItem virtual = VirtualBox.of(layouts).toBoxItem(0);
+		BoxItem virtual = VirtualBox.of(layouts).toBoxItem();
 		assertThat(virtual.getCount()).isEqualTo(1);
 		assertThat(virtual.getBox().getStackValues()).hasSize(2);
 		assertThat(virtual.getVolume()).isEqualTo(6);

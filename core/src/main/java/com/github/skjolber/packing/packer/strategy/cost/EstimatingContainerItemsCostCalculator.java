@@ -3,8 +3,8 @@ package com.github.skjolber.packing.packer.strategy.cost;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 
 /**
@@ -14,10 +14,10 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 public class EstimatingContainerItemsCostCalculator extends AbstractContainerItemsCostCalculator {
 
 	@Override
-	public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
+	public long getMinimumCost(ContainerInventory containers, List<RemainingBoxItem> boxes, int maxCount) {
 		long volume = 0;
 		long weight = 0;
-		for(BoxItem item : boxes) {
+		for(RemainingBoxItem item : boxes) {
 			volume += item.getBox().getVolume() * item.getCount();
 			weight += item.getBox().getWeight() * item.getCount();
 		}
@@ -28,11 +28,11 @@ public class EstimatingContainerItemsCostCalculator extends AbstractContainerIte
 	}
 
 	@Override
-	public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
+	public long getGroupMinimumCost(ContainerInventory containers, List<RemainingBoxItemGroup> groups, int maxCount) {
 		long volume = 0;
 		long weight = 0;
-		for(BoxItemGroup group : groups) {
-			for(BoxItem item : group.getItems()) {
+		for(RemainingBoxItemGroup group : groups) {
+			for(RemainingBoxItem item : group.getItems()) {
 				volume += item.getBox().getVolume() * item.getCount();
 				weight += item.getBox().getWeight() * item.getCount();
 			}

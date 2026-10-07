@@ -12,7 +12,9 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.iterator.FilteredBoxItemsPermutationRotationIterator.DelegateBuilder;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.Dimension;
 
 class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPermutationRotationIteratorTest<DelegateBuilder> {
@@ -32,7 +34,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 			for (int k = 0; k < i; k++) {
 				Box box = Box.newBuilder().withSize(3, 1, 1).withRotate3D().withId(Integer.toString(k)).withWeight(1).build();
 
-				BoxItem item = new BoxItem(box, 1, k);
+				BoxItem item = new BoxItem(box, 1);
 
 				products1.add(item);
 			}
@@ -40,7 +42,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 			FilteredBoxItemsPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-					.withBoxItems(products1)
+					.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products1))
 					.withMaxLoadWeight(products1.size())
 					.build();
 			
@@ -59,7 +61,7 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 				
 				items.decrement(0, 1);
 				for(int k = 0; k < items.size(); k++) {
-					BoxItem item = items.get(k);
+					RemainingBoxItem item = items.get(k);
 					assertFalse(item.getBox().getId().equals("0"));
 				}
 				
@@ -76,12 +78,12 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
 		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -108,12 +110,12 @@ class FilteredBoxItemsPermutationRotationIteratorTest extends AbstractBoxItemPer
 
 		List<BoxItem> products = new ArrayList<>();
 
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2, 0));
-		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4, 1));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("0").withWeight(1).build(), 2));
+		products.add(new BoxItem(Box.newBuilder().withRotate3D().withSize(1, 1, 3).withId("1").withWeight(1).build(), 4));
 
 		FilteredBoxItemsPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 

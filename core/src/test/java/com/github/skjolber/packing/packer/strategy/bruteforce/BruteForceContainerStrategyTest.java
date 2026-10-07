@@ -9,13 +9,13 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
@@ -395,12 +395,12 @@ class BruteForceContainerStrategyTest {
 		}
 
 		@Override
-		public List<BoxItem> getRemainingBoxItems() {
+		public List<RemainingBoxItem> getRemainingBoxItems() {
 			return List.of();
 		}
 
 		@Override
-		public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		public List<RemainingBoxItemGroup> getRemainingBoxItemGroups() {
 			return List.of();
 		}
 

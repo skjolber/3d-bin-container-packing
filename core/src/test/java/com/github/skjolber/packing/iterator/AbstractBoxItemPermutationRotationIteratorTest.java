@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.Dimension;
 
 public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends AbstractBoxItemIteratorBuilder> {
@@ -58,7 +59,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 			BoxItemPermutationRotationIterator rotator = 
 					newBuilder()
 					.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-					.withBoxItems(products1)
+					.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products1))
 					.withMaxLoadWeight(products1.size())
 					.build();
 
@@ -84,7 +85,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -103,7 +104,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -124,7 +125,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -143,7 +144,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -161,7 +162,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -179,7 +180,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -198,7 +199,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -234,7 +235,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -262,7 +263,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -288,13 +289,13 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator1 = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
 		BoxItemPermutationRotationIterator rotator2 = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -326,7 +327,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -374,7 +375,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -399,7 +400,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -422,7 +423,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -441,7 +442,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 		}
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -462,7 +463,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -495,7 +496,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -519,7 +520,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItems(products)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(products))
 				.withMaxLoadWeight(products.size())
 				.build();
 

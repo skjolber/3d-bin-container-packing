@@ -1,12 +1,12 @@
 package com.github.skjolber.packing.packer.plain;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
@@ -55,7 +55,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerManifestControls implements M
 	}
 
 	@Override
-	public void attemptSuccess(BoxItemGroup group) {
+	public void attemptSuccess(RemainingBoxItemGroup group) {
 		// do nothing
 		
 		if(isFireHazard(group)) {
@@ -70,7 +70,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerManifestControls implements M
 	private void removeFireHazards(BoxItemGroupSource groups) {
 		// remove other fire hazards
 		for(int i = 0; i < groups.size(); i++) {
-			BoxItemGroup boxItemGroup = groups.get(i);
+			RemainingBoxItemGroup boxItemGroup = groups.get(i);
 			
 			if(isFireHazard(boxItemGroup)) {
 				groups.remove(i);
@@ -79,9 +79,9 @@ public class MaxFireHazardBoxItemGroupsPerContainerManifestControls implements M
 		}
 	}
 
-	private boolean isFireHazard(BoxItemGroup boxItemGroup) {
+	private boolean isFireHazard(RemainingBoxItemGroup boxItemGroup) {
 		for(int i = 0; i < boxItemGroup.size(); i++) {
-			BoxItem item = boxItemGroup.get(i);
+			RemainingBoxItem item = boxItemGroup.get(i);
 			if(isFireHazard(item)) {
 				return true;
 			}
@@ -89,7 +89,7 @@ public class MaxFireHazardBoxItemGroupsPerContainerManifestControls implements M
 		return false;
 	}
 
-	private boolean isFireHazard(BoxItem item) {
+	private boolean isFireHazard(RemainingBoxItem item) {
 		Box box = item.getBox();
 		
 		Boolean b = box.getProperty(KEY);

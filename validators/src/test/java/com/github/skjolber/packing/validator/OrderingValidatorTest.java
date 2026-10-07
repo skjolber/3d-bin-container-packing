@@ -97,12 +97,12 @@ public class OrderingValidatorTest {
 		assertThat(validator.validate(container(ContainerAccess.TOP, a, b), new ArrayList<>())).isTrue();
 	}
 
-	private static Placement place(String id, int x, BoxItemGroup group) {
-		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
-		BoxItem item = new BoxItem(box);
-		group.getItems().add(item);
-		item.setGroup(group);
-		return new Placement(item, box.getStackValue(0), 0, x, 0, 0);
+	private static BoxItem item(String id) {
+		return new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build());
+	}
+
+	private static Placement place(BoxItem item, int x) {
+		return new Placement(item, item.getBox().getStackValue(0), 0, x, 0, 0);
 	}
 
 	//
@@ -116,11 +116,14 @@ public class OrderingValidatorTest {
 	@Test
 	void boxesOfAGroupAreInsertedTogether() {
 		GroupInsertionValidator validator = new GroupInsertionValidator();
-		BoxItemGroup a = new BoxItemGroup("A", new ArrayList<>(), 0);
-		BoxItemGroup b = new BoxItemGroup("B", new ArrayList<>(), 1);
-		Placement a1 = place("A1", 0, a);
-		Placement b1 = place("B1", 1, b);
-		Placement a2 = place("A2", 2, a);
+		BoxItem itemA1 = item("A1");
+		BoxItem itemA2 = item("A2");
+		BoxItem itemB1 = item("B1");
+		new BoxItemGroup("A", List.of(itemA1, itemA2));
+		new BoxItemGroup("B", List.of(itemB1));
+		Placement a1 = place(itemA1, 0);
+		Placement b1 = place(itemB1, 1);
+		Placement a2 = place(itemA2, 2);
 
 		List<ValidatorResultReason> reasons = new ArrayList<>();
 		assertThat(validator.validate(container(ContainerAccess.ANY, a1, b1, a2), reasons)).isFalse();

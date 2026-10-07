@@ -2,8 +2,6 @@ package com.github.skjolber.packing.packer.laff;
 
 import java.util.Objects;
 
-import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.point.Point;
 
 public class Placement implements Serializable {
@@ -12,8 +13,11 @@ public class Placement implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	protected BoxStackValue stackValue;
-	/** The box item of the placed box, or null (for example the boundary placements of point calculators) */
-	protected BoxItem boxItem;
+	/**
+	 * The box item of the placed box within the packaging operation, or null (for example the boundary placements of
+	 * point calculators)
+	 */
+	protected RemainingBoxItem boxItem;
 	protected int x;
 	protected int y;
 	protected int z;
@@ -50,11 +54,22 @@ public class Placement implements Serializable {
 		this(boxItem, stackValue, index, x, y, z, true);
 	}
 
-	public Placement(BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
-		this(null, stackValue, index, x, y, z, load);
+	public Placement(RemainingBoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z) {
+		this(boxItem, stackValue, index, x, y, z, true);
 	}
 
+	public Placement(BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
+		this((RemainingBoxItem)null, stackValue, index, x, y, z, load);
+	}
+
+	/**
+	 * @param boxItem the box item of the placed box, outside of a packaging operation
+	 */
 	public Placement(BoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
+		this(boxItem != null ? new RemainingBoxItem(boxItem) : null, stackValue, index, x, y, z, load);
+	}
+
+	public Placement(RemainingBoxItem boxItem, BoxStackValue stackValue, int index, int x, int y, int z, boolean load) {
 		super();
 		this.boxItem = boxItem;
 		this.stackValue = stackValue;
@@ -76,11 +91,19 @@ public class Placement implements Serializable {
 		this(boxItem, stackValue, point, true);
 	}
 
+	public Placement(RemainingBoxItem boxItem, BoxStackValue stackValue, Point point) {
+		this(boxItem, stackValue, point, true);
+	}
+
 	public Placement(BoxStackValue stackValue, Point point, boolean load) {
 		this(stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
 	}
 
 	public Placement(BoxItem boxItem, BoxStackValue stackValue, Point point, boolean load) {
+		this(boxItem, stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
+	}
+
+	public Placement(RemainingBoxItem boxItem, BoxStackValue stackValue, Point point, boolean load) {
 		this(boxItem, stackValue, point.getIndex(), point.getMinX(), point.getMinY(), point.getMinZ(), load);
 	}
 
@@ -108,15 +131,15 @@ public class Placement implements Serializable {
 	}
 
 	/**
-	 * @param boxItem the box item of the placed box
+	 * @param boxItem the box item of the placed box within the packaging operation
 	 * @param stackValue the rotation of the box
 	 */
-	public void setStackValue(BoxItem boxItem, BoxStackValue stackValue) {
+	public void setStackValue(RemainingBoxItem boxItem, BoxStackValue stackValue) {
 		this.boxItem = boxItem;
 		this.stackValue = stackValue;
 	}
 
-	public void setBoxItem(BoxItem boxItem) {
+	public void setBoxItem(RemainingBoxItem boxItem) {
 		this.boxItem = boxItem;
 	}
 
@@ -363,7 +386,17 @@ public class Placement implements Serializable {
 		return stackValue.getBox().getWeight();
 	}
 
+	/**
+	 * @return the box item of the placed box (as given to the packager), or null
+	 */
 	public BoxItem getBoxItem() {
+		return boxItem != null ? boxItem.getBoxItem() : null;
+	}
+
+	/**
+	 * @return the box item of the placed box within the packaging operation, or null
+	 */
+	public RemainingBoxItem getRemainingBoxItem() {
 		return boxItem;
 	}
 	

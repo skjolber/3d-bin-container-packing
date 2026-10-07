@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.Dimension;
 
 @SuppressWarnings("unchecked")
@@ -40,7 +41,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -77,7 +78,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -113,7 +114,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 		
@@ -151,7 +152,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator rotator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 		
@@ -178,7 +179,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(List.of(group))
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(List.of(group)))
 				.withMaxLoadWeight(products.size())
 				.build();
 
@@ -213,7 +214,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 		
@@ -263,7 +264,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -315,7 +316,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 
@@ -361,7 +362,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(5, 1, 1)
-				.withBoxItemGroups(groups)
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(groups))
 				.withMaxLoadWeight(100)
 				.build();
 

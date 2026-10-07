@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIteratorList;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.test.generator.Item;
 import com.github.skjolber.packing.test.generator.ItemIO;
@@ -82,14 +83,14 @@ public class IteratorState {
 		}
 
 		this.parallelIterator = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
-				.withBoxItems(stackableItems3D)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(stackableItems3D))
 				.withLoadSize(x, y, z)
 				.withParallelizationCount(threadPoolSize)
 				.withMaxLoadWeight(weight)
 				.build();
 
 		this.iterator = DefaultBoxItemPermutationRotationIterator.newBuilder()
-				.withBoxItems(stackableItems3D)
+				.withBoxItems(AbstractPackagerSession.toRemainingBoxItems(stackableItems3D))
 				.withLoadSize(x, y, z)
 				.withMaxLoadWeight(weight)
 				.build();

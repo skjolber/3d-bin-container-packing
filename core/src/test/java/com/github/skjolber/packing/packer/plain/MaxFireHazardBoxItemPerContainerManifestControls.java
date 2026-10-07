@@ -1,10 +1,10 @@
 package com.github.skjolber.packing.packer.plain;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.manifest.AbstractManifestControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
@@ -55,7 +55,7 @@ public class MaxFireHazardBoxItemPerContainerManifestControls implements Manifes
 	}
 
 	@Override
-	public void accepted(BoxItem boxItem) {
+	public void accepted(RemainingBoxItem boxItem) {
 		// do nothing
 		
 		if(isFireHazard(boxItem)) {
@@ -76,7 +76,7 @@ public class MaxFireHazardBoxItemPerContainerManifestControls implements Manifes
 		}
 	}
 
-	private boolean isFireHazard(BoxItem item) {
+	private boolean isFireHazard(RemainingBoxItem item) {
 		Box box = item.getBox();
 		
 		Boolean b = box.getProperty(KEY);

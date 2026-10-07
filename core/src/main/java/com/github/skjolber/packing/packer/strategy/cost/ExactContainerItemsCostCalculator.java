@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 
 /**
@@ -46,9 +46,9 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 	private final EstimatingContainerItemsCostCalculator estimate = new EstimatingContainerItemsCostCalculator();
 
 	@Override
-	public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
+	public long getMinimumCost(ContainerInventory containers, List<RemainingBoxItem> boxes, int maxCount) {
 		List<CostUnit> units = new ArrayList<>();
-		for(BoxItem item : boxes) {
+		for(RemainingBoxItem item : boxes) {
 			Box box = item.getBox();
 			CostUnit unit = new CostUnit(box.getVolume(), box.getWeight(), container -> container.canLoad(box));
 			for(int i = 0; i < item.getCount(); i++) {
@@ -59,16 +59,16 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 	}
 
 	@Override
-	public long getGroupMinimumCost(ContainerInventory containers, List<BoxItemGroup> groups, int maxCount) {
+	public long getGroupMinimumCost(ContainerInventory containers, List<RemainingBoxItemGroup> groups, int maxCount) {
 		List<CostUnit> units = new ArrayList<>(groups.size());
-		for(BoxItemGroup group : groups) {
+		for(RemainingBoxItemGroup group : groups) {
 			long volume = 0;
 			long weight = 0;
-			for(BoxItem item : group.getItems()) {
+			for(RemainingBoxItem item : group.getItems()) {
 				volume += item.getBox().getVolume() * item.getCount();
 				weight += item.getBox().getWeight() * item.getCount();
 			}
-			units.add(new CostUnit(volume, weight, container -> container.canLoad(group)));
+			units.add(new CostUnit(volume, weight, container -> container.canLoad(group.getBoxItemGroup())));
 		}
 		return calculateMinimumCost(containers, units, maxCount);
 	}

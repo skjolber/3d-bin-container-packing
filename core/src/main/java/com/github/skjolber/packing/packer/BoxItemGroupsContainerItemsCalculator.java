@@ -3,10 +3,10 @@ package com.github.skjolber.packing.packer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 
 /**
  * Container inventory with an index of which container types can load each
@@ -25,7 +25,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	private long remainingWeight;
 
 	public BoxItemGroupsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount,
-			List<BoxItemGroup> boxItemGroups) {
+			List<RemainingBoxItemGroup> boxItemGroups) {
 		super(containerItems, Math.min(containerCount, boxItemGroups.size()));
 		this.remainingVolume = calculateVolume(boxItemGroups);
 		this.remainingWeight = calculateWeight(boxItemGroups);
@@ -34,10 +34,10 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 		this.fits = new boolean[boxItemGroups.size()][containerItems.size()];
 		this.fittingContainerItemCounts = new int[boxItemGroups.size()];
 		for(int groupIndex = 0; groupIndex < boxItemGroups.size(); groupIndex++) {
-			BoxItemGroup group = boxItemGroups.get(groupIndex);
+			RemainingBoxItemGroup group = boxItemGroups.get(groupIndex);
 			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
 				ContainerItem containerItem = containerItems.get(containerItemIndex);
-				if(containerItem.getContainer().canLoad(group)) {
+				if(containerItem.getContainer().canLoad(group.getBoxItemGroup())) {
 					fits[groupIndex][containerItemIndex] = true;
 					if(containerItem.isAvailable()) {
 						fittingContainerItemCounts[groupIndex]++;
@@ -95,11 +95,11 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	}
 
 	@Override
-	public boolean isGroupFeasible(List<BoxItemGroup> groups, int maxCount, boolean[] excluded) {
+	public boolean isGroupFeasible(List<RemainingBoxItemGroup> groups, int maxCount, boolean[] excluded) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int groupCount = 0;
-		for(BoxItemGroup group : groups) {
+		for(RemainingBoxItemGroup group : groups) {
 			if(group.isEmpty()) {
 				continue;
 			}
@@ -111,7 +111,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 			return false;
 		}
 		boolean excludedContainers = hasExclusions(excluded);
-		for(BoxItemGroup group : groups) {
+		for(RemainingBoxItemGroup group : groups) {
 			if(group.isEmpty()) {
 				continue;
 			}
@@ -141,7 +141,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	}
 
 	@Override
-	public boolean canLoad(BoxItemGroup group, int containerItemIndex) {
+	public boolean canLoad(RemainingBoxItemGroup group, int containerItemIndex) {
 		int groupIndex = group.getIndex();
 		if(groupIndex >= 0 && groupIndex < fits.length) {
 			return fits[groupIndex][containerItemIndex];
@@ -189,17 +189,17 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 		return copies;
 	}
 
-	private static long calculateVolume(List<BoxItemGroup> groups) {
+	private static long calculateVolume(List<RemainingBoxItemGroup> groups) {
 		long volume = 0;
-		for(BoxItemGroup group : groups) {
+		for(RemainingBoxItemGroup group : groups) {
 			volume += group.getVolume();
 		}
 		return volume;
 	}
 
-	private static long calculateWeight(List<BoxItemGroup> groups) {
+	private static long calculateWeight(List<RemainingBoxItemGroup> groups) {
 		long weight = 0;
-		for(BoxItemGroup group : groups) {
+		for(RemainingBoxItemGroup group : groups) {
 			weight += group.getWeight();
 		}
 		return weight;

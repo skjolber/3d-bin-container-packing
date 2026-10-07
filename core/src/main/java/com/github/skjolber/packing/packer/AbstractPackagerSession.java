@@ -1,15 +1,17 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 
@@ -18,7 +20,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	protected final ContainerItemsCalculator packagerContainerItems;
 	protected final ContainerItemsCalculator initialContainerItems;
 
-	public AbstractPackagerSession(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
+	public AbstractPackagerSession(List<RemainingBoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
 		this(new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
 	}
 
@@ -45,64 +47,101 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	/** Create a new session using a calculator no longer used by another branch. */
 	protected abstract AbstractPackagerSession fresh(List<ContainerItem> containers, int containerCount);
 
-	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
-		List<BoxItem> copies = new ArrayList<>(items.size());
-		for(BoxItem item : items) {
-			// boxes are not modified: the copies share them
+	public static List<RemainingBoxItem> copyBoxItems(List<RemainingBoxItem> items) {
+		List<RemainingBoxItem> copies = new ArrayList<>(items.size());
+		for(RemainingBoxItem item : items) {
 			copies.add(item.copy());
 		}
 		return copies;
 	}
 
-	/** Assign stable identities once, before any iterator starts changing local indexes. */
-	public static List<BoxItem> initializeGlobalIndexes(List<BoxItem> items) {
-		int next = 0;
-		int[] assigned = new int[items.size()];
-		int assignedCount = 0;
-		for(BoxItem item : items) {
-			if(item.getGlobalIndex() != -1) {
-				assigned[assignedCount++] = item.getGlobalIndex();
-				next = Math.max(next, item.getGlobalIndex() + 1);
+	/**
+	 * Start a packaging operation: the box items with all their boxes remaining. The global index of a box item is its
+	 * position in the input, so that sessions for the same input agree on them.
+	 *
+	 * @param items the box items (the input, which is not modified)
+	 * @return the remaining box items, with global and local indexes
+	 */
+	public static List<RemainingBoxItem> toRemainingBoxItems(List<BoxItem> items) {
+		List<RemainingBoxItem> remaining = new ArrayList<>(items.size());
+		for(int i = 0; i < items.size(); i++) {
+			BoxItem item = items.get(i);
+			remaining.add(new RemainingBoxItem(item, item.getCount(), i, i));
+		}
+		return remaining;
+	}
+
+	/**
+	 * Start a packaging operation: the groups with all their boxes remaining. The global index of a box item is its
+	 * position in the input (the box items of all groups, in order). The groups have no index.
+	 *
+	 * @param groups the box item groups (the input, which is not modified)
+	 * @return the remaining groups, with indexes
+	 */
+	public static List<RemainingBoxItemGroup> toRemainingBoxItemGroups(List<BoxItemGroup> groups) {
+		List<RemainingBoxItemGroup> remaining = new ArrayList<>(groups.size());
+		int globalIndex = 0;
+		for(int i = 0; i < groups.size(); i++) {
+			BoxItemGroup group = groups.get(i);
+			List<RemainingBoxItem> items = new ArrayList<>(group.size());
+			for(BoxItem item : group.getItems()) {
+				items.add(new RemainingBoxItem(item, item.getCount(), -1, globalIndex++));
+			}
+			remaining.add(new RemainingBoxItemGroup(group, items));
+		}
+		return remaining;
+	}
+
+	/**
+	 * Identify the box item of a placement within the packaging operation. A placement made outside of the operation
+	 * refers to a box item as given to the packager (see {@link Placement#Placement(BoxItem, com.github.skjolber.packing.api.BoxStackValue, int, int, int, int)}):
+	 * its global index is its position in the input.
+	 *
+	 * @param placement placement of a result
+	 * @return the global index of the placement's box item, or -1 if unknown
+	 */
+	protected int getGlobalIndex(Placement placement) {
+		RemainingBoxItem boxItem = placement.getRemainingBoxItem();
+		if(boxItem.getGlobalIndex() != -1) {
+			return boxItem.getGlobalIndex();
+		}
+		return getInputIndex(boxItem.getBoxItem());
+	}
+
+	/**
+	 * @param boxItem a box item as given to the packager
+	 * @return the position of the box item in the input (the box items of all groups, in order), or -1 if not found
+	 */
+	protected int getInputIndex(BoxItem boxItem) {
+		return -1;
+	}
+
+	protected static int getInputIndex(List<BoxItem> items, BoxItem boxItem) {
+		for(int i = 0; i < items.size(); i++) {
+			if(items.get(i) == boxItem) {
+				return i;
 			}
 		}
-		if(assignedCount > 1) {
-			Arrays.sort(assigned, 0, assignedCount);
-			for(int i = 1; i < assignedCount; i++) {
-				if(assigned[i] == assigned[i - 1]) {
-					throw new IllegalArgumentException("Duplicate box item global index " + assigned[i]);
+		return -1;
+	}
+
+	protected static int getGroupInputIndex(List<BoxItemGroup> groups, BoxItem boxItem) {
+		int index = 0;
+		for(BoxItemGroup group : groups) {
+			for(BoxItem item : group.getItems()) {
+				if(item == boxItem) {
+					return index;
 				}
+				index++;
 			}
 		}
-		for(BoxItem item : items) {
-			if(item.getGlobalIndex() == -1) {
-				item.setGlobalIndex(next++);
-			}
-		}
-		return items;
+		return -1;
 	}
 
-	/** Assign stable identities to the input's box items, so that sessions for the same input agree on them. */
-	public static void initializeGlobalIndexes(PackagerInput input) {
-		if(input.hasBoxItems()) {
-			initializeGlobalIndexes(input.getBoxItems());
-		} else {
-			initializeGlobalIndexesForGroups(input.getBoxItemGroups());
-		}
-	}
-
-	public static List<BoxItemGroup> initializeGlobalIndexesForGroups(List<BoxItemGroup> groups) {
-		List<BoxItem> items = new ArrayList<>();
-		for(BoxItemGroup group : groups) {
-			items.addAll(group.getItems());
-		}
-		initializeGlobalIndexes(items);
-		return groups;
-	}
-
-	public static List<BoxItemGroup> copyBoxItemGroups(List<BoxItemGroup> groups) {
-		List<BoxItemGroup> copies = new ArrayList<>(groups.size());
-		for(BoxItemGroup group : groups) {
-			copies.add(new BoxItemGroup(group.getId(), copyBoxItems(group.getItems()), group.getIndex()).withOrderingOf(group));
+	public static List<RemainingBoxItemGroup> copyBoxItemGroups(List<RemainingBoxItemGroup> groups) {
+		List<RemainingBoxItemGroup> copies = new ArrayList<>(groups.size());
+		for(RemainingBoxItemGroup group : groups) {
+			copies.add(group.copy());
 		}
 		return copies;
 	}

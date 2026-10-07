@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator.Builder;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 public class DefaultBoxItemGroupPermutationRotationIteratorTest extends AbstractBoxItemGroupsPermutationRotationIteratorTest<DefaultBoxItemGroupPermutationRotationIterator.Builder> {
 
@@ -34,7 +35,7 @@ public class DefaultBoxItemGroupPermutationRotationIteratorTest extends Abstract
 		BoxItem b = new BoxItem(Box.newBuilder().withId("b").withSize(1, 1, 1).withRotate2D().withWeight(1).build());
 		DefaultBoxItemGroupPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(3, 3, 1)
-				.withBoxItemGroups(List.of(new BoxItemGroup("g", List.of(a, b))))
+				.withBoxItemGroups(AbstractPackagerSession.toRemainingBoxItemGroups(List.of(new BoxItemGroup("g", List.of(a, b)))))
 				.withMaxLoadWeight(10)
 				.build();
 

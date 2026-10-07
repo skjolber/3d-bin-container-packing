@@ -18,12 +18,13 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
-import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
@@ -33,12 +34,13 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
+import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightPressureCountLoadAwarePlacementUtility;
-import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 
 /**
  * Fit boxes into container, i.e. perform bin packing to a single container.
@@ -65,8 +67,8 @@ import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
  * Note: The search is exponential in the number of boxes. It is not intended for more than about 10 boxes per container.
  * <br>
  * <br>
- * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
- * to box items which have none (see {@code BoxItem.getGlobalIndex()}), so assign them before packing the same box items concurrently.
+ * Thread-safe implementation. Packing does not modify the box items and groups, and works on copies of the containers,
+ * so the same input can be packed concurrently.
  */
 
 public abstract class AbstractBruteForcePackager extends AbstractPackager<AbstractBruteForcePackager.BruteForcePackagerResultBuilder> {
@@ -145,13 +147,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		boolean sort = input.getOrder() == Order.NONE && hasContainerPriorities(input);
 		AbstractBruteForceBoxItemSession session;
 		if(input.hasBoxItems()) {
-			AbstractPackagerSession.initializeGlobalIndexes(input.getBoxItems());
-			List<BoxItem> boxItems = input.getBoxItems();
+			// global indexes in the input order
+			List<RemainingBoxItem> boxItems = AbstractPackagerSession.toRemainingBoxItems(input.getBoxItems());
 			if(sort) {
 				// the boxes of a lower container priority first; the iterators permute within each priority
-				boxItems = new ArrayList<>(boxItems);
 				for (int i = 1; i < boxItems.size(); i++) {
-					BoxItem boxItem = boxItems.get(i);
+					RemainingBoxItem boxItem = boxItems.get(i);
 					int j = i - 1;
 					while(j >= 0 && boxItems.get(j).getContainerPriority() > boxItem.getContainerPriority()) {
 						boxItems.set(j + 1, boxItems.get(j));
@@ -162,8 +163,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			}
 			session = createBoxItemSession(boxItems, input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 		} else {
-			AbstractPackagerSession.initializeGlobalIndexesForGroups(input.getBoxItemGroups());
-			List<BoxItemGroup> groups = input.getBoxItemGroups();
+			// global indexes in the input order
+			List<RemainingBoxItemGroup> groups = AbstractPackagerSession.toRemainingBoxItemGroups(input.getBoxItemGroups());
 			if(input.getOrder() == Order.NONE) {
 				// groups are packed in order: the order in which the plain packager picks them
 				groups = sortGroups(groups);
@@ -186,10 +187,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 *
 	 * @return the sorted groups (a new list)
 	 */
-	protected List<BoxItemGroup> sortGroups(List<BoxItemGroup> groups) {
-		List<BoxItemGroup> sorted = new ArrayList<>(groups);
+	protected List<RemainingBoxItemGroup> sortGroups(List<RemainingBoxItemGroup> groups) {
+		List<RemainingBoxItemGroup> sorted = new ArrayList<>(groups);
 		for (int i = 1; i < sorted.size(); i++) {
-			BoxItemGroup group = sorted.get(i);
+			RemainingBoxItemGroup group = sorted.get(i);
 			int j = i - 1;
 			while(j >= 0 && isPickedAfter(sorted.get(j), group)) {
 				sorted.set(j + 1, sorted.get(j));
@@ -203,7 +204,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/**
 	 * @return true if the plain packager picks group b before group a
 	 */
-	private boolean isPickedAfter(BoxItemGroup a, BoxItemGroup b) {
+	private boolean isPickedAfter(RemainingBoxItemGroup a, RemainingBoxItemGroup b) {
 		if(a.getContainerPriority() != b.getContainerPriority()) {
 			return a.getContainerPriority() > b.getContainerPriority();
 		}
@@ -211,7 +212,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			// the groups which are extracted last are placed first
 			return a.getExtractionOrder() < b.getExtractionOrder();
 		}
-		return boxItemGroupComparator.compare(a, b) < 0;
+		return boxItemGroupComparator.compare(a.getBoxItemGroup(), b.getBoxItemGroup()) < 0;
 	}
 
 	/**
@@ -251,10 +252,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return new BruteForcePackagerResultBuilder().withPackager(this);
 	}
 
-	protected abstract AbstractBruteForceBoxItemSession createBoxItemGroupSession(List<BoxItemGroup> itemGroups, List<ContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemSession createBoxItemGroupSession(List<RemainingBoxItemGroup> itemGroups, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
-	protected abstract AbstractBruteForceBoxItemSession createBoxItemSession(List<BoxItem> items, List<ContainerItem> containers,
+	protected abstract AbstractBruteForceBoxItemSession createBoxItemSession(List<RemainingBoxItem> items, List<ContainerItem> containers,
 			int containerCount, PackagerInterruptSupplier interrupt);
 
 	static Placement[] getPlacements(int size, boolean load) {
@@ -886,7 +887,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			return NO_COUNTS;
 		}
 
-		BoxItem[] boxItems = iterator.getBoxItems();
+		RemainingBoxItem[] boxItems = iterator.getBoxItems();
 		for (int i = 0; i < boxItems.length; i++) {
 			if(boxItems[i] != null) {
 				if(boxItems[i].getGroup() == null) {
@@ -945,7 +946,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 *         is not prevented by them: a box extracted earlier must not have a box extracted later resting on it, or
 	 *         in its path (see {@link ContainerAccess})
 	 */
-	protected static boolean isExtractable(Point point, BoxItem boxItem, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
+	protected static boolean isExtractable(Point point, RemainingBoxItem boxItem, BoxStackValue stackValue, Stack stack, ContainerAccess access) {
 		int order = boxItem.getExtractionOrder();
 		int x = point.getMinX();
 		int y = point.getMinY();
@@ -956,7 +957,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		List<Placement> placements = stack.getPlacements();
 		for (int i = 0; i < placements.size(); i++) {
 			Placement placement = placements.get(i);
-			int placementOrder = placement.getBoxItem().getExtractionOrder();
+			int placementOrder = placement.getRemainingBoxItem().getExtractionOrder();
 			if(order < placementOrder) {
 				if(placement.mustFollow(x, y, z, endX, endY, endZ, access)) {
 					return false;
@@ -1016,7 +1017,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		long[] remainingVolumes = frames.remainingVolumes;
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
-		BoxItem[] items = frames.items;
+		RemainingBoxItem[] items = frames.items;
 		BoxStackValue[][] stackValues = frames.stackValues;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;

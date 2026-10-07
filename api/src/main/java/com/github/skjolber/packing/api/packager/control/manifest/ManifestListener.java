@@ -2,9 +2,9 @@ package com.github.skjolber.packing.api.packager.control.manifest;
 
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
@@ -21,10 +21,10 @@ public interface ManifestListener {
 	 * 
 	 * Notify box was loaded. 
 	 * 
-	 * @param boxItem {@linkplain BoxItem} to be added.
+	 * @param boxItem {@linkplain RemainingBoxItem} to be added.
 	 */
 	
-	default void accepted(BoxItem boxItem) {
+	default void accepted(RemainingBoxItem boxItem) {
 	}
 	
 	/**
@@ -34,7 +34,7 @@ public interface ManifestListener {
 	 * @param boxItems list of box items
 	 */
 	
-	default void declined(List<BoxItem> boxItems) {
+	default void declined(List<RemainingBoxItem> boxItems) {
 		
 	}
 
@@ -43,17 +43,17 @@ public interface ManifestListener {
 	 * Notify box cannot be fitted, even it was previously accepted; usually because
 	 * fitting the whole group was not possible.
 	 * 
-	 * @param boxItems {@linkplain BoxItem}
+	 * @param boxItems {@linkplain RemainingBoxItem}
 	 */
 	
-	default void undo(List<BoxItem> boxItems) {
+	default void undo(List<RemainingBoxItem> boxItems) {
 	}
 
 
 	/**
 	 * 
 	 * 
-	 * @param group {@linkplain BoxItemGroup} to be added.
+	 * @param group {@linkplain RemainingBoxItemGroup} to be added.
 	 */
 	
 	/**
@@ -65,27 +65,27 @@ public interface ManifestListener {
 	 * @param length box length from offset
 	 */
 	
-	default void attempt(BoxItemGroup group, int offset, int length) {
+	default void attempt(RemainingBoxItemGroup group, int offset, int length) {
 	}
 	
 	/**
 	 * 
 	 * Notify box group was fitted.
 	 * 
-	 * @param group {@linkplain BoxItemGroup}
+	 * @param group {@linkplain RemainingBoxItemGroup}
 	 */
 	
-	default void attemptSuccess(BoxItemGroup group) {		
+	default void attemptSuccess(RemainingBoxItemGroup group) {		
 	}
 	
 	/**
 	 * 
 	 * Notify box group cannot be fitted.
 	 * 
-	 * @param group {@linkplain BoxItemGroup}
+	 * @param group {@linkplain RemainingBoxItemGroup}
 	 */
 	
-	default void attemptFailure(BoxItemGroup group) {
+	default void attemptFailure(RemainingBoxItemGroup group) {
 		declined(group.getItems());
 	}
 
@@ -94,11 +94,11 @@ public interface ManifestListener {
 	 * 
 	 * Notify box group cannot be fitted.
 	 * 
-	 * @param groups {@linkplain BoxItemGroup}
+	 * @param groups {@linkplain RemainingBoxItemGroup}
 	 */
 	
-	default void filteredGroups(List<BoxItemGroup> groups) {
-		for (BoxItemGroup boxItemGroup : groups) {
+	default void filteredGroups(List<RemainingBoxItemGroup> groups) {
+		for (RemainingBoxItemGroup boxItemGroup : groups) {
 			declined(boxItemGroup.getItems());
 		}
 	}

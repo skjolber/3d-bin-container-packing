@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 
 /**
  * Container inventory with an index of which container types can load each
@@ -30,7 +30,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	private long remainingVolume;
 	private long remainingWeight;
 
-	public BoxItemsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount, List<BoxItem> boxItems) {
+	public BoxItemsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount, List<RemainingBoxItem> boxItems) {
 		super(containerItems, Math.min(containerCount, countBoxes(boxItems)));
 		this.remainingVolume = calculateVolume(boxItems);
 		this.remainingWeight = calculateWeight(boxItems);
@@ -42,7 +42,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		indexRows(boxItems, sortedGlobalIndexes, rowsBySortedGlobalIndex);
 		this.fittingContainerItemCounts = new int[boxItems.size()];
 		for(int boxItemIndex = 0; boxItemIndex < boxItems.size(); boxItemIndex++) {
-			BoxItem boxItem = boxItems.get(boxItemIndex);
+			RemainingBoxItem boxItem = boxItems.get(boxItemIndex);
 			for(int containerItemIndex = 0; containerItemIndex < containerItems.size(); containerItemIndex++) {
 				ContainerItem containerItem = containerItems.get(containerItemIndex);
 				if(containerItem.getContainer().canLoad(boxItem.getBox())) {
@@ -69,7 +69,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		this.fittingContainerItemCounts = source.fittingContainerItemCounts.clone();
 	}
 
-	private static void indexRows(List<BoxItem> boxItems, int[] sortedGlobalIndexes, int[] rows) {
+	private static void indexRows(List<RemainingBoxItem> boxItems, int[] sortedGlobalIndexes, int[] rows) {
 		long[] keys = new long[boxItems.size()];
 		for(int row = 0; row < boxItems.size(); row++) {
 			// global index in the high bits, row in the low bits
@@ -83,7 +83,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	}
 
 	/** @return the fit record row of the box item, or -1 if unknown */
-	private int getRow(BoxItem boxItem) {
+	private int getRow(RemainingBoxItem boxItem) {
 		int globalIndex = boxItem.getGlobalIndex();
 		if(globalIndex < 0) {
 			return -1;
@@ -127,11 +127,11 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	}
 
 	@Override
-	public boolean isFeasible(List<BoxItem> boxItems, int maxCount, boolean[] excluded) {
+	public boolean isFeasible(List<RemainingBoxItem> boxItems, int maxCount, boolean[] excluded) {
 		long totalVolume = 0;
 		long totalWeight = 0;
 		int boxCount = 0;
-		for(BoxItem boxItem : boxItems) {
+		for(RemainingBoxItem boxItem : boxItems) {
 			if(boxItem.isEmpty()) {
 				continue;
 			}
@@ -143,7 +143,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 			return false;
 		}
 		boolean excludedContainers = hasExclusions(excluded);
-		for(BoxItem boxItem : boxItems) {
+		for(RemainingBoxItem boxItem : boxItems) {
 			if(boxItem.isEmpty()) {
 				continue;
 			}
@@ -173,7 +173,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	}
 
 	@Override
-	public boolean canLoad(BoxItem boxItem, int containerItemIndex) {
+	public boolean canLoad(RemainingBoxItem boxItem, int containerItemIndex) {
 		int boxItemIndex = getRow(boxItem);
 		if(boxItemIndex >= 0) {
 			return fits[boxItemIndex][containerItemIndex];
@@ -221,25 +221,25 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		return copies;
 	}
 
-	private static int countBoxes(List<BoxItem> boxItems) {
+	private static int countBoxes(List<RemainingBoxItem> boxItems) {
 		int count = 0;
-		for(BoxItem boxItem : boxItems) {
+		for(RemainingBoxItem boxItem : boxItems) {
 			count += boxItem.getCount();
 		}
 		return count;
 	}
 
-	private static long calculateVolume(List<BoxItem> boxItems) {
+	private static long calculateVolume(List<RemainingBoxItem> boxItems) {
 		long volume = 0;
-		for(BoxItem boxItem : boxItems) {
+		for(RemainingBoxItem boxItem : boxItems) {
 			volume += boxItem.getVolume();
 		}
 		return volume;
 	}
 
-	private static long calculateWeight(List<BoxItem> boxItems) {
+	private static long calculateWeight(List<RemainingBoxItem> boxItems) {
 		long weight = 0;
-		for(BoxItem boxItem : boxItems) {
+		for(RemainingBoxItem boxItem : boxItems) {
 			weight += boxItem.getWeight();
 		}
 		return weight;

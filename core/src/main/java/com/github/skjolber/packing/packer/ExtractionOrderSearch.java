@@ -1,12 +1,11 @@
 package com.github.skjolber.packing.packer;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 
 /**
- * Places the boxes which are extracted last first (see {@link BoxItem#withExtractionOrder(int)}), so that the boxes
+ * Places the boxes which are extracted last first (see {@link com.github.skjolber.packing.api.BoxItem#withExtractionOrder(int)}), so that the boxes
  * which are extracted earlier are placed after them: between them and the door, or on top of them. Placing them in
  * the order of the search instead would often leave no room for the boxes extracted last, as a box must not be placed
  * where it blocks a box which is extracted earlier.

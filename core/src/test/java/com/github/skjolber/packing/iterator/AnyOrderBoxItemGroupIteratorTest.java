@@ -9,13 +9,15 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
 
 class AnyOrderBoxItemGroupIteratorTest {
 
 	@Test
 	void acceptsNegativeComparatorValuesOtherThanMinusOne() {
-		BoxItemGroup first = group("first");
-		BoxItemGroup second = group("second");
+		RemainingBoxItemGroup first = group("first");
+		RemainingBoxItemGroup second = group("second");
 		PackagerBoxItems boxItems = new PackagerBoxItems(List.of(first, second));
 		AnyOrderBoxItemGroupIterator iterator = new AnyOrderBoxItemGroupIterator(
 				boxItems.getFilteredBoxItemGroups(), null, null, (reference, candidate) -> -2);
@@ -23,8 +25,8 @@ class AnyOrderBoxItemGroupIteratorTest {
 		assertThat(iterator.next()).isEqualTo(1);
 	}
 
-	private static BoxItemGroup group(String id) {
+	private static RemainingBoxItemGroup group(String id) {
 		Box box = Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build();
-		return new BoxItemGroup(id, List.of(new BoxItem(box)));
+		return AbstractPackagerSession.toRemainingBoxItemGroups(List.of(new BoxItemGroup(id, List.of(new BoxItem(box))))).get(0);
 	}
 }

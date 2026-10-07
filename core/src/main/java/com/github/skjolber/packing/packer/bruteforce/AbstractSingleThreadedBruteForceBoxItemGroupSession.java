@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
@@ -13,6 +11,8 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
+import com.github.skjolber.packing.api.packager.RemainingBoxItemGroup;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -27,7 +27,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 	protected final boolean load;
 	protected PackagerInterruptSupplier interrupt;
 	
-	public AbstractSingleThreadedBruteForceBoxItemGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
+	public AbstractSingleThreadedBruteForceBoxItemGroupSession(List<RemainingBoxItem> boxItems, List<RemainingBoxItemGroup> boxItemGroups,
 			List<ContainerItem> containers, int containerCount, BoxItemGroupPermutationRotationIterator[] containerIterators,
 			PackagerInterruptSupplier interrupt, boolean load) {
 		super(boxItems, containers, containerCount, boxItemGroups);
@@ -36,7 +36,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 		
 		int count = 0;
 		for(int i = 0; i < boxItems.size(); i++) {
-			BoxItem stackableItem = boxItems.get(i);
+			RemainingBoxItem stackableItem = boxItems.get(i);
 			count += stackableItem.getCount();
 		}
 		
@@ -85,7 +85,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				List<Integer> removedGroups = new ArrayList<>();
 				int wholeGroupBoxCount = 0;
 				for(int i = 0; i < boxItemGroups.size(); i++) {
-					BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+					RemainingBoxItemGroup boxItemGroup = boxItemGroups.get(i);
 					
 					int groupBoxCount = boxItemGroup.getBoxCount();
 					if(size < wholeGroupBoxCount + groupBoxCount) {
@@ -106,9 +106,9 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				
 				List<Integer> p = new ArrayList<>();
 				for(Integer removedGroup: removedGroups) {
-					BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+					RemainingBoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
 	
-					for (BoxItem boxItem : boxItemGroup.getItems()) {
+					for (RemainingBoxItem boxItem : boxItemGroup.getItems()) {
 						for (int i = 0; i < boxItem.getCount(); i++) {
 							p.add(permutations[p.size()]);
 						}

@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.RemainingBoxItem;
 import com.github.skjolber.packing.api.packager.control.point.AbstractPointControlsBuilder;
 import com.github.skjolber.packing.api.packager.control.point.DefaultPointControls;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
@@ -88,7 +88,7 @@ public class HeavyItemsOnGroundLevelPointControls extends DefaultPointControls {
 	}
 
 	@Override
-	public PointSource getPoints(BoxItem boxItem) {
+	public PointSource getPoints(RemainingBoxItem boxItem) {
 		if(boxItem.getBox().getWeight() > maxWeight) {
 			List<Point> values = new ArrayList<>();
 
