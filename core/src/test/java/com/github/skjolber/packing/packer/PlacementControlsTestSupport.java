@@ -35,7 +35,7 @@ class PlacementControlsTestSupport {
 	/** Creates a {@link BoxItem} whose box has the given dimensions (no rotation). */
 	static BoxItem boxItem(String id, int dx, int dy, int dz) {
 		Box box = Box.newBuilder().withId(id).withSize(dx, dy, dz).withWeight(0).build();
-		return new BoxItem(box); // wires box.setBoxItem(this) internally
+		return new BoxItem(box);
 	}
 
 	/** Creates a {@link BoxItem} with explicit weight (no rotation). */

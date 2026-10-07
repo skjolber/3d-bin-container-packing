@@ -22,18 +22,12 @@ public class Box {
 		protected String description;
 
 		protected Map<String, Object> properties;
-		protected BoxItem boxItem;
 		
 		public T withId(String id) {
 			this.id = id;
 			return (T)this;
 		}
 		
-		public T withBoxItem(BoxItem boxItem) {
-			this.boxItem = boxItem;
-			return (T)this;
-		}
-
 		public T withDescription(String description) {
 			this.description = description;
 			return (T)this;
@@ -126,7 +120,7 @@ public class Box {
 				}
 			}
 
-			return new Box(id, description, volume, weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), properties, boxItem);
+			return new Box(id, description, volume, weight, stackValues.toArray(new BoxStackValue[stackValues.size()]), properties);
 		}
 	}
 
@@ -516,7 +510,7 @@ public class Box {
 				properties = Collections.emptyMap();
 			}
 
-			return new Box(id, description, (long)dy * (long)dx * (long)dz, weight, getStackValues(), properties, boxItem);
+			return new Box(id, description, (long)dy * (long)dx * (long)dz, weight, getStackValues(), properties);
 		}
 
 		@SuppressWarnings("unchecked")
@@ -554,8 +548,6 @@ public class Box {
 	protected final String description;
 
 	protected final Map<String, Object> properties;
-
-	protected BoxItem boxItem;
 	
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
@@ -563,7 +555,7 @@ public class Box {
 	protected boolean loadIdenticalBoxOnly;
 
 	public Box(String id, String description, long volume, int weight, BoxStackValue[] stackValues,
-			Map<String, Object> properties, BoxItem boxItem) {
+			Map<String, Object> properties) {
 		this.id = id;
 		this.description = description;
 
@@ -590,7 +582,6 @@ public class Box {
 		}
 
 		this.properties = properties;
-		this.boxItem = boxItem;
 		
 		for (BoxStackValue boxStackValue : stackValues) {
 			if (boxStackValue.isMaxLoadWeight()) {
@@ -623,7 +614,7 @@ public class Box {
 
 	public Box(Box box, List<BoxStackValue> stackValues) {
 		this(box.id, box.description, box.volume, box.weight,
-				stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties, box.boxItem);
+				stackValues.toArray(new BoxStackValue[stackValues.size()]), box.properties);
 	}
 
 	public String getDescription() {
@@ -682,7 +673,6 @@ public class Box {
 		}
 
 		this.properties = box.properties;
-		this.boxItem = box.boxItem;
 
 		this.maxLoadWeight = box.maxLoadWeight;
 		this.maxLoadPressure = box.maxLoadPressure;
@@ -923,13 +913,6 @@ public class Box {
 		return (T) properties.get(key);
 	}
 
-	public void setBoxItem(BoxItem boxItem) {
-		this.boxItem = boxItem;
-	}
-
-	public BoxItem getBoxItem() {
-		return boxItem;
-	}
 	
 	public boolean isMaxLoadBoxCount() {
 		return maxLoadBoxCount;

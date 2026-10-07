@@ -106,7 +106,7 @@ public class VirtualBox {
 			var bounds = layouts.get(i).getBoundingBox();
 			values[i] = BoxStackValue.newBuilder().withDimensions(bounds.dx(), bounds.dy(), bounds.dz()).withIndex(i).build();
 		}
-		Box box = new Box(null, "Virtual box", layouts.get(0).getBoundingBox().getVolume(), weight, values, Map.of(), null);
+		Box box = new Box(null, "Virtual box", layouts.get(0).getBoundingBox().getVolume(), weight, values, Map.of());
 		return new BoxItem(box, count, -1, globalIndex);
 	}
 }

@@ -37,7 +37,6 @@ public class BoxItem implements Serializable {
 		this.count = count;
 
 		this.resetCount = count;
-		box.setBoxItem(this);
 	}
 
 	public BoxItem(Box box, int count, int localIndex) {
@@ -52,7 +51,6 @@ public class BoxItem implements Serializable {
 		this.globalIndex = globalIndex;
 
 		this.resetCount = count;
-		box.setBoxItem(this);
 	}
 
 	public int getCount() {

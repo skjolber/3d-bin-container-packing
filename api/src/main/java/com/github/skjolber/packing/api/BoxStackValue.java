@@ -55,8 +55,6 @@ public class BoxStackValue {
 		protected int dy = -1;
 		protected int dz = -1;
 
-		protected BoxItem boxItem;
-
 		protected List<Surface> surfaces;
 		protected int index = 0;
 
@@ -73,11 +71,6 @@ public class BoxStackValue {
 			this.centerOfGravityX = x;
 			this.centerOfGravityY = y;
 			this.centerOfGravityZ = z;
-			return (T) this;
-		}
-		
-		public T withBoxItem(BoxItem boxItem) {
-			this.boxItem = boxItem;
 			return (T) this;
 		}
 		

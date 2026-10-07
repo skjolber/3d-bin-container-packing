@@ -479,7 +479,7 @@ class ContainerCostPackingTest {
 			for(Container container : result.getContainers()) {
 				container.getStack().forEach(placement -> {
 					Box placedBox = placement.getStackValue().getBox();
-					assertThat(placedBox.getBoxItem().getBox()).isSameAs(placedBox);
+					assertThat(placement.getBoxItem().getBox()).isSameAs(placedBox);
 				});
 			}
 		} finally {

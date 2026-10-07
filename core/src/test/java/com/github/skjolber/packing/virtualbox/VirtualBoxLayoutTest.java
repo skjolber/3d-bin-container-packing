@@ -75,7 +75,7 @@ class VirtualBoxLayoutTest {
 		assertThat(virtual.toBoxItem(12).getGlobalIndex()).isEqualTo(12);
 		assertThat(virtual.getWeight()).isEqualTo(6);
 		assertThat(item.getCount()).isEqualTo(6);
-		assertThat(item.getBox().getBoxItem()).isSameAs(item);
+		assertThat(item.getBox().getStackValue(0).getBox()).isSameAs(item.getBox());
 	}
 
 	/*

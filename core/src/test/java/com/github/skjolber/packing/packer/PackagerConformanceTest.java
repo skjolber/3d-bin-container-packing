@@ -494,7 +494,7 @@ public class PackagerConformanceTest {
 			if(spec.groups == null) {
 				count++;
 			} else {
-				String group = box.getBoxItem().getGroup().getId();
+				String group = placement.getBoxItem().getGroup().getId();
 				if(!groups.contains(group)) {
 					groups.add(group);
 					count++;

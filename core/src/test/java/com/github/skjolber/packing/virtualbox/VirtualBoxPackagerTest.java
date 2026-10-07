@@ -185,7 +185,7 @@ class VirtualBoxPackagerTest {
 				assertThat(item.getCount()).isEqualTo(24);
 				assertThat(item.getGlobalIndex()).isEqualTo(42);
 				assertThat(item.getLocalIndex()).isEqualTo(17);
-				assertThat(item.getBox().getBoxItem()).isSameAs(item);
+				assertThat(item.getBox().getStackValue(0).getBox()).isSameAs(item.getBox());
 				assertThat(container.getCount()).isEqualTo(1);
 			}
 		}
