@@ -3,7 +3,6 @@ package com.github.skjolber.packing.iterator;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -43,48 +42,8 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 				throw new IllegalStateException();
 			}
 
-			List<BoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
-			List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
-			
-			// box item and box item groups indexes are unique and static
-			
-			int offset = 0;
-			for (int i = 0; i < boxItemGroups.size(); i++) {
-				BoxItemGroup group = boxItemGroups.get(i);
-				if(fitsInside(group)) {
-					List<BoxItem> loadableItems = new ArrayList<>(group.size());
-					for (int k = 0; k < group.size(); k++) {
-						BoxItem item = group.get(k);
-	
-						Box box = item.getBox();
-						
-						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-						Box boxCopy = new Box(box, boundRotations);
-						
-						loadableItems.add(new BoxItem(boxCopy, item.getCount(), offset, item.getGlobalIndex()).withOrderingOf(item));
-						
-						offset++;
-					}
-					included.add(new BoxItemGroup(group.getId(), loadableItems, i));
-				} else {
-					excluded.add(group);
-					
-					offset += group.size();
-				}
-			}
-
-			BoxItemGroup[] groupIndex = new BoxItemGroup[boxItemGroups.size()];
-			BoxItem[] boxIndex = new BoxItem[offset];
-			
-			for (BoxItemGroup loadableItemGroup : included) {
-				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
-				for (int k = 0; k < loadableItemGroup.size(); k++) {
-					BoxItem item = loadableItemGroup.get(k);
-					boxIndex[item.getLocalIndex()] = item;
-				}
-			}
-			
-			return new ParallelBoxItemGroupPermutationRotationIteratorList(groupIndex, boxIndex, excluded, parallelizationCount);
+			BoxItemGroupMatrix matrix = toMatrix();
+			return new ParallelBoxItemGroupPermutationRotationIteratorList(matrix.groups(), matrix.boxItems(), matrix.stackValues(), matrix.excluded(), parallelizationCount);
 		}
 	}
 	
@@ -95,9 +54,12 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	
 	protected BoxItemGroup[] groupsMatrix;
 	protected BoxItem[] boxMatrix;
+	/** The rotations of each box item which fit the container, by index; not modified */
+	protected final BoxStackValue[][] stackValues;
 	protected List<BoxItemGroup> excluded;
 	
-	public ParallelBoxItemGroupPermutationRotationIteratorList(BoxItemGroup[] boxItemGroups, BoxItem[] boxItems, List<BoxItemGroup> excluded, int parallelizationCount) {
+	public ParallelBoxItemGroupPermutationRotationIteratorList(BoxItemGroup[] boxItemGroups, BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded, int parallelizationCount) {
+		this.stackValues = stackValues;
 		workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
 		for (int i = 0; i < parallelizationCount; i++) {
 
@@ -119,7 +81,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 				}
 			}
 			
-			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, excluded);
+			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, stackValues, excluded);
 			if(workUnits[i].preventOptmisation() != -1L) {
 				throw new RuntimeException();
 			}
@@ -137,6 +99,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	private ParallelBoxItemGroupPermutationRotationIteratorList(ParallelBoxItemGroupPermutationRotationIteratorList source) {
 		this.frequencies = source.frequencies.clone();
 		this.workUnitIndex = source.workUnitIndex;
+		this.stackValues = source.stackValues;
 		this.boxMatrix = AbstractBoxItemPermutationRotationIterator.copyBoxItems(source.boxMatrix);
 		this.groupsMatrix = new BoxItemGroup[source.groupsMatrix.length];
 		for(int i = 0; i < groupsMatrix.length; i++) {
@@ -271,6 +234,16 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	@Override
 	public BoxItem getBoxItem(int index) {
 		return workUnits[workUnitIndex].getBoxItem(index);
+	}
+
+	@Override
+	public BoxStackValue[] getStackValues(int index) {
+		return workUnits[workUnitIndex].getStackValues(index);
+	}
+
+	@Override
+	public BoxStackValue[][] getBoxItemStackValues() {
+		return stackValues;
 	}
 
 	@Override

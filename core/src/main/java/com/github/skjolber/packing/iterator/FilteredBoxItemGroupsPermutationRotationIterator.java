@@ -76,7 +76,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemGroupsPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
-		super(iterator.getBoxItemGroups(), iterator.getBoxItems(), iterator.getExcludedBoxItemGroups());
+		super(iterator.getBoxItemGroups(), iterator.getBoxItems(), iterator.getBoxItemStackValues(), iterator.getExcludedBoxItemGroups());
 		
 		permutations = new int[0]; // n!
 		

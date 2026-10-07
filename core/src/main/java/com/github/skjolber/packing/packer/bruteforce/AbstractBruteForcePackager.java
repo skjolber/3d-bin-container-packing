@@ -539,11 +539,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/**
 	 * @return for each index of the permutation, the smallest area of the boxes from the index on, in any rotation
 	 */
-	protected static long[] getMinAreas(BoxItem[] boxItems, int[] permutations) {
+	protected static long[] getMinAreas(BoxStackValue[][] stackValues, int[] permutations) {
 		long[] minAreas = new long[permutations.length];
 		long minArea = Long.MAX_VALUE;
 		for (int i = permutations.length - 1; i >= 0; i--) {
-			for (BoxStackValue stackValue : boxItems[permutations[i]].getBox().getStackValues()) {
+			for (BoxStackValue stackValue : stackValues[permutations[i]]) {
 				if(stackValue.getArea() < minArea) {
 					minArea = stackValue.getArea();
 				}
@@ -1017,6 +1017,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
 		BoxItem[] items = frames.items;
+		BoxStackValue[][] stackValues = frames.stackValues;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;
 		List<Placement> obstacles = container.getObstacles();
@@ -1028,11 +1029,14 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		// (as a bound) their volume
 		long minArea = Long.MAX_VALUE;
 		for (int i = length - 1; i >= 0; i--) {
-			Box box = iterator.getStackValue(i).getBox();
-			boxes[i] = box;
+			boxes[i] = iterator.getStackValue(i).getBox();
 			items[i] = iterator.getBoxItem(i);
-			if(box.getMinimumArea() < minArea) {
-				minArea = box.getMinimumArea();
+			BoxStackValue[] levelStackValues = iterator.getStackValues(i);
+			stackValues[i] = levelStackValues;
+			for (BoxStackValue rotation : levelStackValues) {
+				if(rotation.getArea() < minArea) {
+					minArea = rotation.getArea();
+				}
 			}
 			minAreas[i] = minArea;
 		}
@@ -1093,7 +1097,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				if(!unplaced[level]) {
 					// save the free points, so that each candidate of this level starts from them (see redo())
 					pointCalculator.push();
-					BoxStackValue stackValue = box.getStackValues()[0];
+					BoxStackValue stackValue = stackValues[level][0];
 					rotationIndexes[level] = 0;
 					placements[placedCount].setStackValue(items[level], stackValue);
 					startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
@@ -1134,7 +1138,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				// find the next candidate for this level's box: a rotation and a position where the box can be inserted
 				// after the boxes placed before it and, with load constraints, is carried by the boxes below
 				Placement placement = placements[placedCount];
-				BoxStackValue[] stackValues = boxes[level].getStackValues();
+				BoxStackValue[] levelStackValues = stackValues[level];
 				BoxStackValue stackValue = placement.getStackValue();
 				int insertAfterCount = insertAfterCounts == null ? placedCount : insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
 				FullSupportCandidates candidates = fullSupport ? frames.getFullSupportCandidates(level) : null;
@@ -1146,11 +1150,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					if(candidate == -1) {
 						// no more positions for this rotation: the next rotation
 						int rotationIndex = rotationIndexes[level] + 1;
-						if(rotationIndex == stackValues.length) {
+						if(rotationIndex == levelStackValues.length) {
 							break;
 						}
 						rotationIndexes[level] = rotationIndex;
-						stackValue = stackValues[rotationIndex];
+						stackValue = levelStackValues[rotationIndex];
 						placement.setStackValue(items[level], stackValue);
 						startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
 						continue;

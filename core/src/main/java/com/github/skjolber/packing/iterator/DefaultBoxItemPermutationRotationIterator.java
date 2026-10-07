@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
@@ -24,40 +23,8 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 				throw new IllegalStateException();
 			}
 			
-			BoxItem[] included = new BoxItem[boxItems.size()];
-			List<BoxItem> excluded = new ArrayList<>(boxItems.size());
-			
-			// box item and box item groups indexes are unique and static
-			for (int i = 0; i < boxItems.size(); i++) {
-				BoxItem boxItem = boxItems.get(i);
-				
-				Box box = boxItem.getBox();
-				if(box.getWeight() > maxLoadWeight) {
-					excluded.add(boxItem);
-					continue;
-				}
-
-				if(box.getVolume() > volume) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-				if(boundRotations == null || boundRotations.isEmpty()) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> copied = new ArrayList<>(boundRotations.size());
-				for(BoxStackValue v : boundRotations) {
-					copied.add(v.copy());
-				}
-				Box copiedBox = new Box(box, copied);
-				
-				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
-			}
-
-			return new DefaultBoxItemPermutationRotationIterator(included, excluded);
+			BoxItemMatrix matrix = toMatrix();
+			return new DefaultBoxItemPermutationRotationIterator(matrix.boxItems(), matrix.stackValues(), matrix.excluded());
 		}
 
 	}
@@ -73,8 +40,8 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 	private static final int[] NO_BLOCKS = new int[0];
 
-	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, List<BoxItem> excluded) {
-		super(boxItems);
+	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded) {
+		super(boxItems, stackValues);
 		
 		this.excluded = excluded;
 		
@@ -92,7 +59,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	protected DefaultBoxItemPermutationRotationIterator(DefaultBoxItemPermutationRotationIterator source) {
-		super(copyBoxItems(source.stackableItems));
+		super(copyBoxItems(source.stackableItems), source.stackValues);
 		this.excluded = new ArrayList<>(source.excluded);
 		this.rotations = source.rotations.clone();
 		this.reset = source.reset.clone();
@@ -108,7 +75,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 	
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
+		return stackValues[permutations[index]][rotations[index]];
 	}
 
 	public void removePermutations(int count) {
@@ -212,7 +179,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
+			if(rotations[i] < stackValues[permutations[i]].length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));

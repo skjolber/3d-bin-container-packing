@@ -142,6 +142,16 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
+	public BoxStackValue[] getStackValues(int index) {
+		return iterator.getStackValues(index);
+	}
+
+	@Override
+	public BoxStackValue[][] getBoxItemStackValues() {
+		return iterator.getBoxItemStackValues();
+	}
+
+	@Override
 	public PermutationRotationState getState() {
 		return iterator.getState();
 	}

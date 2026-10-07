@@ -64,6 +64,17 @@ public interface BoxItemPermutationRotationIterator {
 	BoxItem getBoxItem(int index);
 
 	/**
+	 * @param index position in the current permutation
+	 * @return the rotations of the box at the position which fit the container (stack values of its box)
+	 */
+	BoxStackValue[] getStackValues(int index);
+
+	/**
+	 * @return the rotations of each box item which fit the container, by box item index (see {@link #getBoxItems()})
+	 */
+	BoxStackValue[][] getBoxItemStackValues();
+
+	/**
 	 * Get current state
 	 * 
 	 * @return current state

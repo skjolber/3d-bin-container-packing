@@ -1,9 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
@@ -68,40 +66,8 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				throw new IllegalStateException();
 			}
 			
-			BoxItem[] included = new BoxItem[boxItems.size()];
-			List<BoxItem> excluded = new ArrayList<>(boxItems.size());
-			
-			// box item and box item groups indexes are unique and static
-			for (int i = 0; i < boxItems.size(); i++) {
-				BoxItem boxItem = boxItems.get(i);
-				
-				Box box = boxItem.getBox();
-				if(box.getWeight() > maxLoadWeight) {
-					excluded.add(boxItem);
-					continue;
-				}
-
-				if(box.getVolume() > volume) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-				if(boundRotations == null || boundRotations.isEmpty()) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> copied = new ArrayList<>(boundRotations.size());
-				for(BoxStackValue v : boundRotations) {
-					copied.add(v.copy());
-				}
-				Box copiedBox = new Box(box, copied);
-				
-				included[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
-			}
-
-			return new ParallelBoxItemPermutationRotationIteratorList(included, excluded, parallelizationCount);
+			AbstractBoxItemIteratorBuilder.BoxItemMatrix matrix = AbstractBoxItemIteratorBuilder.toMatrix(boxItems, dx, dy, dz, volume, maxLoadWeight);
+			return new ParallelBoxItemPermutationRotationIteratorList(matrix.boxItems(), matrix.stackValues(), matrix.excluded(), parallelizationCount);
 		}
 
 	}	
@@ -111,7 +77,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	protected final int[] frequencies;
 	protected ParallelBoxItemPermutationRotationIterator[] workUnits;
 
-	public ParallelBoxItemPermutationRotationIteratorList(BoxItem[] boxItems, List<BoxItem> excluded, int parallelizationCount) {
+	public ParallelBoxItemPermutationRotationIteratorList(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded, int parallelizationCount) {
 		this.frequencies = new int[boxItems.length];
 
 		for (int i = 0; i < boxItems.length; i++) {
@@ -126,7 +92,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			// copy working variables so threads are less of the same
 			// memory area as one another
 			BoxItem[] copy = copy(boxItems);
-			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(copy, this);
+			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(copy, stackValues, this);
 		}
 
 		calculate();
@@ -151,15 +117,7 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 			
 			BoxItem boxItem = boxItems[i];
 			if(boxItem != null) {
-				Box box = boxItem.getBox();
-				
-				List<BoxStackValue> copied = new ArrayList<>(boxItems.length);
-				for(BoxStackValue v : box.getStackValues()) {
-					copied.add(v.copy());
-				}
-				Box copiedBox = new Box(box, copied);
-				
-				result[i] = new BoxItem(copiedBox, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
+				result[i] = new BoxItem(boxItem.getBox(), boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
 			}
 		}
 		return result;

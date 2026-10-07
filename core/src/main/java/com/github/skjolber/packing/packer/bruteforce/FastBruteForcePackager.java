@@ -549,6 +549,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		long[] minAreas = frames.minAreas;
 		Box[] boxes = frames.boxes;
 		BoxItem[] items = frames.items;
+		BoxStackValue[][] stackValues = frames.stackValues;
 
 		int length = skipping != null ? iterator.length() : maxPackableCount;
 		long maxLoadVolume = container.getMaxLoadVolume();
@@ -559,11 +560,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		// (as a bound) their volume
 		long minArea = Long.MAX_VALUE;
 		for (int i = length - 1; i >= 0; i--) {
-			Box box = iterator.getStackValue(i).getBox();
-			boxes[i] = box;
+			boxes[i] = iterator.getStackValue(i).getBox();
 			items[i] = iterator.getBoxItem(i);
-			if(box.getMinimumArea() < minArea) {
-				minArea = box.getMinimumArea();
+			BoxStackValue[] rotations = iterator.getStackValues(i);
+			stackValues[i] = rotations;
+			for (BoxStackValue rotation : rotations) {
+				if(rotation.getArea() < minArea) {
+					minArea = rotation.getArea();
+				}
 			}
 			minAreas[i] = minArea;
 		}
@@ -656,12 +660,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(!unplaced[level]) {
 				// the next rotation of this level's box which has a valid position
 				int insertAfterCount = insertAfterCounts == null ? placedCount : insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
-				BoxStackValue[] stackValues = boxes[level].getStackValues();
+				BoxStackValue[] levelStackValues = stackValues[level];
 				BoxStackValue stackValue = null;
 				int pointIndex = -1;
 				SimplePoint3D point = null;
-				while(pointIndex == -1 && rotationIndexes[level] < stackValues.length) {
-					stackValue = stackValues[rotationIndexes[level]];
+				while(pointIndex == -1 && rotationIndexes[level] < levelStackValues.length) {
+					stackValue = levelStackValues[rotationIndexes[level]];
 					rotationIndexes[level]++;
 					if(candidates != null) {
 						candidates.populate(pointCalculator, null, stack.getPlacements(), stackValue);

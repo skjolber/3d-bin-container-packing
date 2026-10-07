@@ -67,6 +67,7 @@ public class RecursiveBruteForceSearch {
 
 		private final Box[] boxes;
 		private final BoxItem[] items;
+		private final BoxStackValue[][] levelStackValues;
 		private final long[] minAreas;
 		private final long[] remainingVolumes;
 		private final int[] placedPermutations;
@@ -94,6 +95,7 @@ public class RecursiveBruteForceSearch {
 
 			this.boxes = new Box[length];
 			this.items = new BoxItem[length];
+			this.levelStackValues = new BoxStackValue[length][];
 			this.minAreas = new long[length + 1];
 			this.remainingVolumes = new long[length + 1];
 			this.placedPermutations = new int[length];
@@ -102,7 +104,11 @@ public class RecursiveBruteForceSearch {
 			for (int i = length - 1; i >= 0; i--) {
 				boxes[i] = iterator.getStackValue(i).getBox();
 				items[i] = iterator.getBoxItem(i);
-				minArea = Math.min(minArea, boxes[i].getMinimumArea());
+				// the rotations which fit the container
+				levelStackValues[i] = iterator.getStackValues(i);
+				for (BoxStackValue rotation : levelStackValues[i]) {
+					minArea = Math.min(minArea, rotation.getArea());
+				}
 				minAreas[i] = minArea;
 				remainingVolumes[i] = remainingVolumes[i + 1] + boxes[i].getVolume();
 			}
@@ -140,7 +146,7 @@ public class RecursiveBruteForceSearch {
 				pointCalculator.push();
 				int insertAfterCount = insertAfterCounts == null ? placedCount : insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
 				ContainerAccess access = container.getAccess();
-				BoxStackValue[] stackValues = box.getStackValues();
+				BoxStackValue[] stackValues = levelStackValues[level];
 				for (int rotation = 0; rotation < stackValues.length; rotation++) {
 					BoxStackValue stackValue = stackValues[rotation];
 					// the candidate positions: point indexes, or with full support positions

@@ -179,7 +179,7 @@ public class FastBruteForcePackagerSkippingTest {
 				int[] skipEnds, int maxContainerPriority, SkippingBest best) throws PackagerInterruptedException {
 			int[] permutations = iterator.getPermutations();
 			BoxItem[] boxItems = iterator.getBoxItems();
-			long[] minAreas = getMinAreas(boxItems, permutations);
+			long[] minAreas = getMinAreas(iterator.getBoxItemStackValues(), permutations);
 			pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[0], iterator.getMinBoxVolume(0));
 			new Search(pointCalculator, placements, boxItems, permutations, minAreas, skipEnds, iterator, stack, container, interrupt, utility, pointComparator, best)
 					.search(0, 0, 0L, container.getMaxLoadWeight(), maxContainerPriority);
@@ -238,7 +238,8 @@ public class FastBruteForcePackagerSkippingTest {
 				BoxItem boxItem = boxItems[permutations[level]];
 				Box box = boxItem.getBox();
 				if(boxItem.getContainerPriority() <= maxContainerPriority && box.getWeight() <= freeLoadWeight && placedVolume + box.getVolume() <= container.getMaxLoadVolume()) {
-					BoxStackValue[] stackValues = box.getStackValues();
+					// the rotations which fit the container
+					BoxStackValue[] stackValues = iterator.getBoxItemStackValues()[permutations[level]];
 					for (int rotation = 0; rotation < stackValues.length; rotation++) {
 						BoxStackValue stackValue = stackValues[rotation];
 						boolean checkObstacles = !container.getObstacles().isEmpty();
