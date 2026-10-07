@@ -5,7 +5,7 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 
 ## Key Packages
 - `com.github.skjolber.packing.packer.laff` — Largest Area Fit First: `LargestAreaFitFirstPackager`, `FastLargestAreaFitFirstPackager`
-- `com.github.skjolber.packing.packer.bruteforce` — `BruteForcePackager`, `FastBruteForcePackager`, `ParallelBoxItemBruteForcePackager`
+- `com.github.skjolber.packing.packer.bruteforce` — `BruteForcePackager`, `FastBruteForcePackager`, `ParallelBruteForcePackager`
 - `com.github.skjolber.packing.packer.plain` — `PlainPackager` (simple greedy)
 - `com.github.skjolber.packing.iterator` — `BoxItemPermutationRotationIterator`, `BoxItemGroupPermutationRotationIterator`, `FilteredBoxItemsPermutationRotationIterator`
 - `com.github.skjolber.packing.comparator` — Result comparator implementations; `comparator.placement` — placement comparator implementations (`DefaultPlacementComparatorFactory`). The comparator interfaces are in **api**, so users can supply their own decision-making.
@@ -20,7 +20,7 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 - Depends on **points** for free-space tracking during placement.
 - Strategy pattern: swap packager implementations at construction time; the calling code interacts only via the `Packager` interface.
 - Deadline/interrupt pattern: callers supply a `Supplier<Boolean>` that the packager polls; return `true` to abort early.
-- `ParallelBoxItemBruteForcePackager` uses a `ForkJoinPool`; avoid shared mutable state in iterators.
+- `ParallelBruteForcePackager` uses a `ForkJoinPool`; avoid shared mutable state in iterators.
 - `Fast*` variants trade flexibility for reduced allocation and faster iteration.
 
 ## Modules

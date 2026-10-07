@@ -67,7 +67,7 @@ public class BruteForceRepeatedAttemptTest {
 
 	@Test
 	public void parallelBruteForceAttemptsAgainFromTheFirstPermutation() throws PackagerInterruptedException {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertAttemptsAgainFromTheFirstPermutation(packager);
 		}
 	}

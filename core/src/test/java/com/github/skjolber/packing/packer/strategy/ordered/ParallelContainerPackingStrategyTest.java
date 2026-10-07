@@ -19,7 +19,7 @@ import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultC
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
@@ -98,7 +98,7 @@ class ParallelContainerPackingStrategyTest {
 	void parallelBruteForceAttemptsContainersAtTheSameTime() throws Exception {
 		ExecutorService executorService = Executors.newFixedThreadPool(4);
 		try (DefaultValidator validator = new DefaultValidator();
-				ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+				ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 						.withThreads(4)
 						.withParallelizationCount(2)
 						.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))

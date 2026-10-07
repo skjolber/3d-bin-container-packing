@@ -17,14 +17,14 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
-class ParallelBoxItemBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest {
+class ParallelBruteForcePackagerLoadTest extends AbstractLoadBruteForcePackagerTest {
 
 	private ExecutorService executorService;
 
 	@Override
-	protected ParallelBoxItemBruteForcePackager createPackager() {
+	protected ParallelBruteForcePackager createPackager() {
 		executorService = Executors.newFixedThreadPool(2);
-		return ParallelBoxItemBruteForcePackager.newBuilder()
+		return ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executorService)
 				.withParallelizationCount(2)
 				.build();
@@ -34,7 +34,7 @@ class ParallelBoxItemBruteForcePackagerLoadTest extends AbstractLoadBruteForcePa
 	void usesThePointFilterWithLoadConstraints() {
 		CountingPointFilter pointFilter = new CountingPointFilter();
 		executorService = Executors.newFixedThreadPool(2);
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executorService)
 				.withParallelizationCount(2)
 				.withPointFilter(pointFilter)

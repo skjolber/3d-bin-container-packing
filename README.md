@@ -181,7 +181,7 @@ Packager packager = BruteForcePackager
     .build();
 ```
 
-See also the `ParallelBoxItemBruteForcePackager` and `FastBruteForcePackager`
+See also the `ParallelBruteForcePackager` and `FastBruteForcePackager`
 packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
 different point limit at each placement step.
 
@@ -347,7 +347,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
    * two or more sides have the same length
    * rotations which mutated at a previously unreachable index
  
-There is also a parallel version `ParallelBoxItemBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
+There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
 
 Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
 
@@ -647,8 +647,9 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `clone()` methods renamed to `copy()` (they are copy constructors, not `Object.clone()`), including `Point.copy(maxX, maxY, maxZ)`; `ClonablePackagerInterruptSupplier` renamed to `CopyablePackagerInterruptSupplier`
         * Builder options which had no effect removed: `withPoints(..)` on the brute-force packager builders and `withFirstBoxItemGroupComparator(..)` on the LAFF builders
         * The result comparator option is `withIntermediatePackagerResultComparator(..)` on all packager builders: renamed from `withPackagerResultComparator(..)` (plain) and `withComparator(..)` (brute force). The brute-force builder classes are named `Builder`, like the others (were `BruteForcePackagerBuilder`, `FastBruteForcePackagerBuilder` and `ParallelBruteForcePackagerBuilder`)
-        * `LoadBruteForcePackager`, `LoadFastBruteForcePackager` and `LoadParallelBoxItemBruteForcePackager` removed: `BruteForcePackager`, `FastBruteForcePackager` and `ParallelBoxItemBruteForcePackager` enforce box load limits when the boxes have them
+        * `LoadBruteForcePackager`, `LoadFastBruteForcePackager` and `LoadParallelBruteForcePackager` removed: `BruteForcePackager`, `FastBruteForcePackager` and `ParallelBruteForcePackager` enforce box load limits when the boxes have them
         * `PlainPlacement*` and `LargestAreaFitFirstPlacementControlsBuilder` removed (use the default placement controls with a placement comparator factory)
+        * `ParallelBoxItemBruteForcePackager` renamed to `ParallelBruteForcePackager`
         * The OpenAPI modules removed (`open-api-model`, `open-api-client`, `open-api-server` and `open-api-test`)
         * Points: a single `DefaultPoint3D` / `DefaultPoint2D` implementation replaces the plane- and support-specific point classes
         * The module descriptors export all public packages

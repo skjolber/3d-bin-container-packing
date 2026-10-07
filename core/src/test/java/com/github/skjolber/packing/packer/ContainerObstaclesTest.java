@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -40,7 +40,7 @@ public class ContainerObstaclesTest {
 			case "fastLaff": return () -> FastLargestAreaFitFirstPackager.newBuilder().build();
 			case "bruteForce": return () -> BruteForcePackager.newBuilder().build();
 			case "fastBruteForce": return () -> FastBruteForcePackager.newBuilder().build();
-			case "parallelBruteForce": return () -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
+			case "parallelBruteForce": return () -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
 			default: throw new IllegalArgumentException(name);
 		}
 	}

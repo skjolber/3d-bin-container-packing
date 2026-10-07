@@ -36,7 +36,7 @@ public class ParallelGroupOrderSplitTest {
 		for (int parallelizationCount : new int[] { 4, 64 }) {
 			for (boolean fullSupport : new boolean[] { false, true }) {
 				try (BruteForcePackager single = BruteForcePackager.newBuilder().withRequireFullSupport(fullSupport).build();
-						ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
+						ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 								.withThreads(4)
 								.withParallelizationCount(parallelizationCount)
 								.withRequireFullSupport(fullSupport)
@@ -69,7 +69,7 @@ public class ParallelGroupOrderSplitTest {
 			groups.add(new BoxItemGroup("g" + g, items));
 		}
 		Container container = Container.newBuilder().withId("c").withSize(6, 3, 2).withMaxLoadWeight(100).build();
-		try (ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(64).build()) {
+		try (ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(64).build()) {
 			long start = System.currentTimeMillis();
 			parallel.newResultBuilder()
 					.withContainerItems(List.of(new ContainerItem(container, 12)))

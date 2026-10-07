@@ -18,7 +18,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -63,7 +63,7 @@ public class LoadLimitResultsValidTest {
 		List<Supplier<AbstractPackager<?>>> packagers = List.of(
 				() -> BruteForcePackager.newBuilder().build(),
 				() -> FastBruteForcePackager.newBuilder().build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 		for(Supplier<AbstractPackager<?>> supplier : packagers) {
 			try (AbstractPackager<?> packager = supplier.get()) {
 				List<String> failures = new ArrayList<>();

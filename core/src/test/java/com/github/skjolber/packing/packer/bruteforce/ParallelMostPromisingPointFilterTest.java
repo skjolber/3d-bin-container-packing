@@ -31,7 +31,7 @@ class ParallelMostPromisingPointFilterTest {
 					invokedOnWorker.compareAndSet(false, Thread.currentThread() != callingThread);
 					return 1;
 				});
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(2)
 				.withPointFilter(filter)

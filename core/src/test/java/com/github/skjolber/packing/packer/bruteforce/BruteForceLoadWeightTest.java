@@ -40,7 +40,7 @@ public class BruteForceLoadWeightTest {
 
 	@Test
 	public void parallelBruteForcePackagerFillsTheLoadWeight() {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
 		try {
 			assertFillsTheLoadWeight(packager);
 		} finally {

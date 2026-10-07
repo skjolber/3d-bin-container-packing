@@ -27,7 +27,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -443,10 +443,10 @@ public class OrderingResultsTest {
 		List<Supplier<AbstractPackager<?>>> packagers = List.of(
 				() -> BruteForcePackager.newBuilder().build(),
 				() -> FastBruteForcePackager.newBuilder().build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build(),
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build(),
 				() -> BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(mostBoxes).build(),
 				() -> FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(mostBoxes).build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withIntermediatePackagerResultComparator(mostBoxes).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withIntermediatePackagerResultComparator(mostBoxes).build());
 		for (int i = 0; i < packagers.size(); i++) {
 			try (AbstractPackager<?> packager = packagers.get(i).get()) {
 				List<BoxItem> items = List.of(
@@ -481,7 +481,7 @@ public class OrderingResultsTest {
 				() -> BruteForcePackager.newBuilder().build(),
 				() -> FastBruteForcePackager.newBuilder().build(),
 				// a box item order or container priorities are searched on one thread
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 	}
 
 	/** Few boxes with few rotations: the brute-force search is exponential. */

@@ -48,7 +48,7 @@ public class BruteForceLoadVolumeBoundTest {
 
 	@Test
 	public void parallelBruteForceAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult() throws PackagerInterruptedException {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(1).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(1).build()) {
 			// few permutations: searched on one thread
 			assertAttemptIsEmptyWhenTheContainerCannotLoadMoreThanTheBestResult(packager);
 			// 3! permutations: split between the threads
@@ -111,8 +111,8 @@ public class BruteForceLoadVolumeBoundTest {
 	@Test
 	public void parallelBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
-		try (ParallelBoxItemBruteForcePackager bounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build();
-				ParallelBoxItemBruteForcePackager unbounded = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
+		try (ParallelBruteForcePackager bounded = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build();
+				ParallelBruteForcePackager unbounded = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
 					// 5! permutations: split between the threads

@@ -29,7 +29,7 @@ import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
@@ -129,7 +129,7 @@ class ContainerCostPackingTest {
 		LargestAreaFitFirstPackager laff = LargestAreaFitFirstPackager.newBuilder().build();
 		BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build();
 		FastBruteForcePackager fastBruteForce = FastBruteForcePackager.newBuilder().build();
-		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
 			ContainerStrategy strategy = this::packFromRecreatedSession;
@@ -194,7 +194,7 @@ class ContainerCostPackingTest {
 				.build();
 		BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build();
 		FastBruteForcePackager fastBruteForce = FastBruteForcePackager.newBuilder().build();
-		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
 			ContainerStrategy strategy = this::packAfterPartialRestart;
@@ -528,7 +528,7 @@ class ContainerCostPackingTest {
 	void bruteForceContainerStrategyForksEachPackagerSession() {
 		BruteForcePackager brute = BruteForcePackager.newBuilder().build();
 		FastBruteForcePackager fast = FastBruteForcePackager.newBuilder().build();
-		ParallelBoxItemBruteForcePackager parallel = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		LargestAreaFitFirstPackager laff = LargestAreaFitFirstPackager.newBuilder().build();
 		try {

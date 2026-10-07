@@ -21,7 +21,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.ClosestVolumeAndAreaPointFilter;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -317,14 +317,14 @@ public class PackagerGoldenMasterTest {
 
 	@Test
 	public void parallelBruteForcePackager() throws IOException {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
 			check("EXPECTED_PARALLEL_BRUTE_FORCE", EXPECTED_PARALLEL_BRUTE_FORCE, seed -> packSummary(packager, seed, 5, 1, false));
 		}
 	}
 
 	@Test
 	public void loadParallelBruteForcePackager() throws IOException {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).build()) {
 			check("EXPECTED_LOAD_PARALLEL_BRUTE_FORCE", EXPECTED_LOAD_PARALLEL_BRUTE_FORCE, seed -> packSummary(packager, seed, 5, 1, false, LOAD_WEIGHT_PRESSURE_COUNT));
 		}
 	}

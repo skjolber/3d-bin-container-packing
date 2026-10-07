@@ -20,7 +20,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 
 /**
  * Box item groups (without a box item order) for the brute-force packagers: a container holds two or three of the
@@ -39,7 +39,7 @@ public class GroupBruteForceBenchmarkState {
 	private ExecutorService pool;
 
 	private BruteForcePackager bruteForcePackager;
-	private ParallelBoxItemBruteForcePackager parallelBruteForcePackager;
+	private ParallelBruteForcePackager parallelBruteForcePackager;
 
 	private List<BoxItemGroup> boxItemGroups;
 	private List<ContainerItem> containerItems;
@@ -56,7 +56,7 @@ public class GroupBruteForceBenchmarkState {
 		pool = Executors.newFixedThreadPool(THREADS, new DefaultThreadFactory());
 
 		bruteForcePackager = BruteForcePackager.newBuilder().build();
-		parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder()
+		parallelBruteForcePackager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(pool)
 				.withParallelizationCount(THREADS * 16)
 				.build();
@@ -100,7 +100,7 @@ public class GroupBruteForceBenchmarkState {
 		return bruteForcePackager;
 	}
 
-	public ParallelBoxItemBruteForcePackager getParallelBruteForcePackager() {
+	public ParallelBruteForcePackager getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
 	}
 

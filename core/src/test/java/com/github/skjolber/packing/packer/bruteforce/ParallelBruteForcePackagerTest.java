@@ -34,7 +34,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
-public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
+public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 
 	private ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
@@ -51,7 +51,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 		};
 
 		ExecutorService executor = Executors.newFixedThreadPool(2);
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(2)
 				.build();
@@ -87,7 +87,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.build();
 
 		ExecutorService executor = Executors.newFixedThreadPool(2);
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(4)
 				.withSkipReversePermutations(true)
@@ -120,7 +120,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withParallelizationCount(2)
 				.withExecutorService(Executors.newSingleThreadExecutor())
 				.build();
@@ -165,7 +165,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(3, 1, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 5)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(2)
 				.build();
@@ -212,7 +212,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(8, 8, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withParallelizationCount(2)
 				.withExecutorService(Executors.newSingleThreadExecutor())
 				.build();
@@ -247,7 +247,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(10, 10, 4).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(2)
 				.build();
@@ -283,7 +283,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 				.withContainer(Container.newBuilder().withId("1").withEmptyWeight(1).withSize(5, 5, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withParallelizationCount(2)
 				.withExecutorService(Executors.newSingleThreadExecutor())
 				.build();
@@ -365,7 +365,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 						.withStack(new ValidatingStack()).build(), 1)
 				.build();
 
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				//.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(4)
 				.withSkipReversePermutations(skipReverse)
@@ -406,17 +406,17 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	@Disabled // TODO
 	@Test
 	public void testAHugeProblemShouldRespectDeadline() {
-		assertDeadlineRespected(ParallelBoxItemBruteForcePackager.newBuilder().build());
+		assertDeadlineRespected(ParallelBruteForcePackager.newBuilder().build());
 	}
 
 	@Override
-	protected ParallelBoxItemBruteForcePackager createPackager() {
-		return ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
+	protected ParallelBruteForcePackager createPackager() {
+		return ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(256).build();
 	}
 	
 	@Test
 	void testStackingRectanglesWithObstacles() {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder()
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				//.withExecutorService(Executors.newSingleThreadExecutor())
 				.withParallelizationCount(4)
 				.build();
@@ -480,7 +480,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	//
 	@Test
 	void packsWithMoreContainerTypesThanWorkUnits() {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
 		try {
 			List<ContainerItem> containers = ContainerItem.newListBuilder()
 					.withContainer(Container.newBuilder().withId("1").withSize(1, 1, 1).withMaxLoadWeight(100).build(), 1)
@@ -509,13 +509,13 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 
 	@Test
 	void closeShutsDownTheExecutorServiceCreatedByTheBuilder() {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).build();
 		packager.close();
 		assertTrue(packager.getExecutorService().isShutdown());
 
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		try {
-			ParallelBoxItemBruteForcePackager withExecutorService = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(4).build();
+			ParallelBruteForcePackager withExecutorService = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(4).build();
 			withExecutorService.close();
 			// the caller's executor service
 			assertFalse(executorService.isShutdown());
@@ -526,7 +526,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 
 	@Test
 	void inputWithoutOrderIsSupported() {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).build();
 		try {
 			List<BoxItem> products = List.of(new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build(), 1));
 			List<ContainerItem> containers = List.of(new ContainerItem(Container.newBuilder().withId("c").withSize(1, 1, 1).withMaxLoadWeight(10).build(), 1));
@@ -542,7 +542,7 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 	 */
 	@Test
 	void packsFromSeveralThreadsAtTheSameTime() throws Exception {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(2).build();
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(4).withParallelizationCount(2).build();
 		ExecutorService callers = Executors.newFixedThreadPool(4);
 		try {
 			List<java.util.concurrent.Future<Boolean>> results = new ArrayList<>();

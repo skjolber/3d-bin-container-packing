@@ -32,7 +32,7 @@ same physical container are valid, provide each orientation as a separate
 | `FastLargestAreaFitFirstPackager` | Faster, more restricted LAFF variant. |
 | `BruteForcePackager` | Exact search of box orders, rotations, and points for small inputs; can instead rank fitting points and try a configured number per placement step. |
 | `FastBruteForcePackager` | Brute-force ordering and rotation search with a faster point choice. |
-| `ParallelBoxItemBruteForcePackager` | Parallel brute-force search for small inputs with available CPU capacity. |
+| `ParallelBruteForcePackager` | Parallel brute-force search for small inputs with available CPU capacity. |
 | `CompositePackager` | Combines packagers: cheap packagers give a baseline and are tried first for each container; costly packagers run only where the cheaper ones do not fit all remaining boxes, optionally with a time budget. |
 
 Brute-force packagers enforce box load limits when the boxes have them, can

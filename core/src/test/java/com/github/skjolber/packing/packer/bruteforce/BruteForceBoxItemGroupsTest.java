@@ -46,7 +46,7 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void parallelBruteForcePacksAGroupPerContainer() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertPacksAGroupPerContainer(packager);
 		}
 	}
@@ -67,7 +67,7 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void parallelBruteForcePacksAGroupWhichFitsOneContainerType() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertPacksAGroupWhichFitsOneContainerType(packager);
 		}
 	}
@@ -88,7 +88,7 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void parallelBruteForceAcceptsGroupsOutOfOrder() throws Exception {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertAcceptsGroupsOutOfOrder(packager);
 		}
 	}
@@ -204,7 +204,7 @@ public class BruteForceBoxItemGroupsTest {
 		}
 		Container container = Container.newBuilder().withId("row").withSize(3, 1, 1).withMaxLoadWeight(3).build();
 
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(List.of(new ContainerItem(container, 3)))
 					.withBoxItemGroups(groups)
@@ -240,7 +240,7 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void parallelBruteForceFillsTheFirstContainer() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertFillsTheFirstContainer(packager);
 		}
 	}
@@ -296,7 +296,7 @@ public class BruteForceBoxItemGroupsTest {
 
 	@Test
 	public void parallelBruteForceSearchesGroupOrders() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertSearchesGroupOrders(packager);
 		}
 	}
@@ -351,7 +351,7 @@ public class BruteForceBoxItemGroupsTest {
 		List<AbstractPackager<?>> packagers = List.of(
 				BruteForcePackager.newBuilder().build(),
 				FastBruteForcePackager.newBuilder().build(),
-				ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+				ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 		try (DefaultValidator validator = new DefaultValidator()) {
 			for (AbstractPackager<?> packager : packagers) {
 				int containers = 0;
@@ -435,7 +435,7 @@ public class BruteForceBoxItemGroupsTest {
 		List<java.util.function.Supplier<AbstractBruteForcePackager>> packagers = List.of(
 				() -> BruteForcePackager.newBuilder().build(),
 				() -> FastBruteForcePackager.newBuilder().build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 		for (java.util.function.Supplier<AbstractBruteForcePackager> supplier : packagers) {
 			try (AbstractBruteForcePackager skipping = supplier.get(); AbstractBruteForcePackager everyOrder = supplier.get()) {
 				everyOrder.skipGroupOrders = false;

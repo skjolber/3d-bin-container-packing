@@ -34,7 +34,7 @@ public class BruteForceFullSupportTest {
 		return List.of(
 				() -> BruteForcePackager.newBuilder().withRequireFullSupport(requireFullSupport).build(),
 				() -> FastBruteForcePackager.newBuilder().withRequireFullSupport(requireFullSupport).build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withRequireFullSupport(requireFullSupport).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withRequireFullSupport(requireFullSupport).build());
 	}
 
 	//

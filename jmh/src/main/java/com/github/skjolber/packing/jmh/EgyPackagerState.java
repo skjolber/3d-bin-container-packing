@@ -22,7 +22,7 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.generator.Item;
 import com.github.skjolber.packing.test.generator.ItemIO;
@@ -80,9 +80,9 @@ public class EgyPackagerState {
 
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
-		ParallelBoxItemBruteForcePackager filteredParallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
+		ParallelBruteForcePackager filteredParallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.withSkipReversePermutations(true)
 				.build();
 

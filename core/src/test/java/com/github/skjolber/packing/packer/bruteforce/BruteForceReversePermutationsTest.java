@@ -55,7 +55,7 @@ public class BruteForceReversePermutationsTest {
 
 	@Test
 	public void parallelBruteForceSearchesReversePermutationsWithExtractionOrders() {
-		try (ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withSkipReversePermutations(true).build()) {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withSkipReversePermutations(true).build()) {
 			assertPacks(packager, 2, 1, ContainerAccess.FRONT);
 			assertPacks(packager, 1, 2, ContainerAccess.ANY);
 			assertPacks(packager, 1, 2, ContainerAccess.TOP);
@@ -76,7 +76,7 @@ public class BruteForceReversePermutationsTest {
 				new BoxItem(Box.newBuilder().withId("w").withSize(2, 1, 1).withRotate2D().withWeight(1).build(), 1));
 		List<AbstractPackager<?>> packagers = List.of(
 				BruteForcePackager.newBuilder().withSkipReversePermutations(true).withRequireFullSupport(true).build(),
-				ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withSkipReversePermutations(true).withRequireFullSupport(true).build());
+				ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).withSkipReversePermutations(true).withRequireFullSupport(true).build());
 		for (AbstractPackager<?> packager : packagers) {
 			try (packager) {
 				Container container = Container.newBuilder().withId("c").withSize(2, 1, 2).withMaxLoadWeight(10).build();

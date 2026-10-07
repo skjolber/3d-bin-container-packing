@@ -36,7 +36,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.composite.CompositePackager;
 import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
@@ -108,7 +108,7 @@ public class PackagerConformanceTest {
 		PACKAGERS.put("fastBruteForce", spec -> FastBruteForcePackager.newBuilder()
 				.withRequireFullSupport(spec.fullSupport)
 				.build());
-		PACKAGERS.put("parallelBruteForce", spec -> ParallelBoxItemBruteForcePackager.newBuilder()
+		PACKAGERS.put("parallelBruteForce", spec -> ParallelBruteForcePackager.newBuilder()
 				.withThreads(2)
 				.withParallelizationCount(2)
 				.withRequireFullSupport(spec.fullSupport)
