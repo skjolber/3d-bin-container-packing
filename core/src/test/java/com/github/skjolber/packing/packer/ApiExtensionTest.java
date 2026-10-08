@@ -121,7 +121,7 @@ class ApiExtensionTest {
 				PackagerResult result = packager.newResultBuilder()
 						.withContainerItems(List.of(new ContainerItem(container("small", 1), 2), new ContainerItem(container("large", 2), 1)))
 						.withMaxContainerCount(2)
-						.withBoxItems(new BoxItemGroup("first", List.of(new BoxItem(box("a"), 1))), new BoxItemGroup("second", List.of(new BoxItem(box("b"), 1))))
+						.withBoxItemGroups(new BoxItemGroup("first", List.of(new BoxItem(box("a"), 1))), new BoxItemGroup("second", List.of(new BoxItem(box("b"), 1))))
 						.build();
 				// <figure>
 				//   z                         z                         y                         z

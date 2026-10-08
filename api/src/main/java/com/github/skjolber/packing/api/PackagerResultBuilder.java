@@ -73,7 +73,7 @@ public interface PackagerResultBuilder {
 
 	PackagerResultBuilder withBoxItemGroups(List<BoxItemGroup> items);
 
-	PackagerResultBuilder withBoxItems(BoxItemGroup... items);
+	PackagerResultBuilder withBoxItemGroups(BoxItemGroup... items);
 	
 	PackagerResultBuilder withContainerItems(List<ContainerItem> containers);
 

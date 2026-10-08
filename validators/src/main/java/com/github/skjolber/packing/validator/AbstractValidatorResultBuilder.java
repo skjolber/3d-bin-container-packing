@@ -277,7 +277,7 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 		return (B) this;
 	}
 
-	public B withBoxItems(BoxItemGroup... items) {
+	public B withBoxItemGroups(BoxItemGroup... items) {
 		List<BoxItemGroup> list = new ArrayList<>(items.length);
 		for (BoxItemGroup item : items) {
 			list.add(item);

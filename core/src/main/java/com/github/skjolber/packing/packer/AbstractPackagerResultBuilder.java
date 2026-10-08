@@ -335,7 +335,7 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 		return (B) this;
 	}
 
-	public B withBoxItems(BoxItemGroup... items) {
+	public B withBoxItemGroups(BoxItemGroup... items) {
 		List<BoxItemGroup> list = new ArrayList<>(items.length);
 		for (BoxItemGroup item : items) {
 			list.add(item);
