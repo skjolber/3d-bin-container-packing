@@ -645,4 +645,138 @@ public class PlacementTest {
 		}
 		assertThat(precede).isGreaterThan(1000);
 	}
+
+	// -----------------------------------------------------------------------
+	// intersection
+	// -----------------------------------------------------------------------
+
+	private static Placement placementAt(int dx, int dy, int dz, int x, int y, int z) {
+		return new Placement(new BoxStackValue(dx, dy, dz, null, 0), 0, x, y, z);
+	}
+
+	/**
+	 * A spans B on the x axis while B spans A on the y axis; they share the z range.
+	 *
+	 * <pre>
+	 *  y
+	 *  5 |    +---+
+	 *  4 |    | B |
+	 *  3 +----+---+----+
+	 *    |    A xx     |   A: x 0..9, y 3..4;  B: x 4..5, y 0..7
+	 *  2 +----+---+----+
+	 *  1      |   |
+	 *  0      +---+
+	 *    0    4   6    10  x
+	 * </pre>
+	 */
+	@Test
+	public void testIntersects_crossSpan() {
+		Placement a = placementAt(10, 2, 1, 0, 3, 0);
+		Placement b = placementAt(2, 8, 1, 4, 0, 0);
+
+		assertThat(a.intersectsX(b)).isTrue();
+		assertThat(b.intersectsX(a)).isTrue();
+		assertThat(a.intersectsY(b)).isTrue();
+		assertThat(b.intersectsY(a)).isTrue();
+		assertThat(a.intersectsZ(b)).isTrue();
+		assertThat(b.intersectsZ(a)).isTrue();
+
+		assertThat(a.intersects(b)).isTrue();
+		assertThat(b.intersects(a)).isTrue();
+		assertThat(a.intersects3D(b)).isTrue();
+	}
+
+	/**
+	 * B is entirely inside A.
+	 *
+	 * <pre>
+	 *  y
+	 *  9 +-----------+
+	 *    |     B     |
+	 *  5 |   +---+   |   A: x 0..9, y 0..9, z 0..9;  B: x 3..5, y 3..5, z 3..5
+	 *  3 |   +---+   |
+	 *    |           |
+	 *  0 +-----------+
+	 *    0   3   5   9  x
+	 * </pre>
+	 */
+	@Test
+	public void testIntersects_contained() {
+		Placement a = placementAt(10, 10, 10, 0, 0, 0);
+		Placement b = placementAt(3, 3, 3, 3, 3, 3);
+
+		assertThat(a.intersects(b)).isTrue();
+		assertThat(b.intersects(a)).isTrue();
+		assertThat(a.intersectsX(b)).isTrue();
+		assertThat(b.intersectsX(a)).isTrue();
+		assertThat(a.intersectsY(b)).isTrue();
+		assertThat(b.intersectsY(a)).isTrue();
+		assertThat(a.intersectsZ(b)).isTrue();
+		assertThat(b.intersectsZ(a)).isTrue();
+	}
+
+	/**
+	 * Boxes which touch at an edge do not intersect: coordinates are inclusive.
+	 *
+	 * <pre>
+	 *  z
+	 *  1 +---+---+
+	 *    | A | B |   A: x 0..4;  B: x 5..9
+	 *  0 +---+---+
+	 *    0   5   10  x
+	 * </pre>
+	 */
+	@Test
+	public void testIntersects_adjacentAndSeparate() {
+		Placement a = placementAt(5, 5, 1, 0, 0, 0);
+		Placement adjacent = placementAt(5, 5, 1, 5, 0, 0);
+		Placement above = placementAt(5, 5, 1, 0, 0, 1);
+		Placement far = placementAt(5, 5, 1, 20, 20, 20);
+
+		assertThat(a.intersectsX(adjacent)).isFalse();
+		assertThat(adjacent.intersectsX(a)).isFalse();
+		assertThat(a.intersects(adjacent)).isFalse();
+		assertThat(adjacent.intersects(a)).isFalse();
+
+		assertThat(a.intersectsZ(above)).isFalse();
+		assertThat(above.intersectsZ(a)).isFalse();
+		assertThat(a.intersects(above)).isFalse();
+		assertThat(above.intersects(a)).isFalse();
+
+		assertThat(a.intersectsX(far)).isFalse();
+		assertThat(a.intersectsY(far)).isFalse();
+		assertThat(a.intersectsZ(far)).isFalse();
+		assertThat(a.intersects(far)).isFalse();
+		assertThat(far.intersects(a)).isFalse();
+	}
+
+	/** Overlapping on two of the three axes is not an intersection. */
+	@Test
+	public void testIntersects_requiresAllAxes() {
+		Placement a = placementAt(10, 10, 10, 0, 0, 0);
+		Placement b = placementAt(10, 10, 10, 5, 5, 10);
+
+		assertThat(a.intersectsX(b)).isTrue();
+		assertThat(a.intersectsY(b)).isTrue();
+		assertThat(a.intersectsZ(b)).isFalse();
+		assertThat(a.intersects(b)).isFalse();
+		assertThat(b.intersects(a)).isFalse();
+	}
+
+	@Test
+	public void testIntersects_agreesWithIntersects3D() {
+		Random random = new Random(1);
+		int intersecting = 0;
+		for (int i = 0; i < 20_000; i++) {
+			Placement a = placementAt(1 + random.nextInt(8), 1 + random.nextInt(8), 1 + random.nextInt(8), random.nextInt(10), random.nextInt(10), random.nextInt(10));
+			Placement b = placementAt(1 + random.nextInt(8), 1 + random.nextInt(8), 1 + random.nextInt(8), random.nextInt(10), random.nextInt(10), random.nextInt(10));
+
+			assertThat(a.intersects(b)).isEqualTo(a.intersects3D(b));
+			assertThat(a.intersects(b)).isEqualTo(b.intersects(a));
+			if (a.intersects(b)) {
+				intersecting++;
+			}
+		}
+		assertThat(intersecting).isGreaterThan(1000);
+	}
 }
