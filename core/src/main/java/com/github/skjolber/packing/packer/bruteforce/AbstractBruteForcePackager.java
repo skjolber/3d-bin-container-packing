@@ -41,8 +41,7 @@ import com.github.skjolber.packing.packer.util.WeightPressureCountLoadAwarePlace
 import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
- * This implementation tries all permutations, rotations and points.
+ * Packs each container by trying every box permutation, rotation and point exhaustively.
  * <br>
  * <br>
  * For one container, {@link #pack(PointCalculator3DStack, Placement[], int, ContainerItem, int, BoxItemPermutationRotationIterator, PackagerInterruptSupplier, BruteForcePointIteratorFilter, IntermediatePackagerResult)}
@@ -447,9 +446,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				}
 			}
 
-			// the first bestPermutationResult.getSize() boxes were placed, but the next could not be:
+			// the first bestPermutationResult.getBoxCount() boxes were placed, but the next could not be:
 			// skip permutations which keep the same boxes up to and including that index
-			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getSize());
+			int permutationIndex = iterator.nextPermutation(bestPermutationResult.getBoxCount());
 
 			if(!bestPermutationResult.isEmpty()) {
 				// compare against other permutation's result

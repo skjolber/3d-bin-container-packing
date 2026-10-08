@@ -31,9 +31,9 @@ public class BinarySearchIterator {
 		return low <= high;
 	}
 
-	public void reset(int high, int low) {
-		this.high = high;
+	public void reset(int low, int high) {
 		this.low = low;
+		this.high = high;
 	}
 
 }

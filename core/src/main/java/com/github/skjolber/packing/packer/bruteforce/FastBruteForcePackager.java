@@ -30,9 +30,8 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container. This implementation tries all
- * permutations and rotations, for each selecting the perceived best placement.
- * So it does not try all possible placements (as i not all points)-
+ * Packs each container by trying every box permutation and rotation, for each selecting the perceived best placement.
+ * So it does not try all possible placements (i.e. not all points).
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes

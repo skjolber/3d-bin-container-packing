@@ -21,7 +21,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 	private static final Comparator<Placement> ABSOLUTE_Z_COMPARATOR = Comparator.comparingInt(Placement::getAbsoluteZ);
 	private static final Placement[] EMPTY_PLACEMENTS = new Placement[0];
 	private static final byte STACK_DIRTY = 1;
-	private static final byte CONTAINS_LAST_STACKABLE = 1 << 1;
+	private static final byte CONTAINS_LAST_BOX = 1 << 1;
 	// after the constants used by instances
 	public static final BruteForceIntermediatePackagerResult EMPTY = new BruteForceIntermediatePackagerResult(null, null, 0, null, false);
 
@@ -195,7 +195,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		copy.placements = placements;
 		copy.loadVolume = loadVolume;
 		copy.loadWeight = loadWeight;
-		copy.flags = (byte)(STACK_DIRTY | (flags & CONTAINS_LAST_STACKABLE));
+		copy.flags = (byte)(STACK_DIRTY | (flags & CONTAINS_LAST_BOX));
 		copy.anyRemaining = anyRemaining;
 		return copy;
 	}
@@ -224,7 +224,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this.state = state;
 		this.placements = placements;
 		calculateWeightAndVolume();
-		this.flags = (byte)(STACK_DIRTY | (placementCount == points.size() ? CONTAINS_LAST_STACKABLE : 0));
+		this.flags = (byte)(STACK_DIRTY | (placementCount == points.size() ? CONTAINS_LAST_BOX : 0));
 	}
 
 	public void reset() {
@@ -255,12 +255,8 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this.anyRemaining = anyRemaining;
 	}
 
-	public boolean containsLastStackable() {
-		return (flags & CONTAINS_LAST_STACKABLE) != 0;
-	}
-
-	public int getSize() {
-		return points.size();
+	public boolean containsLastBox() {
+		return (flags & CONTAINS_LAST_BOX) != 0;
 	}
 
 	@Override
@@ -316,7 +312,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 
 	public void trimToSize(int size) {
 		if(size < points.size()) {
-			flags &= ~CONTAINS_LAST_STACKABLE;
+			flags &= ~CONTAINS_LAST_BOX;
 		}
 		while (size < points.size()) {
 			points.remove(points.size() - 1);

@@ -21,7 +21,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResultCompar
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
-import com.github.skjolber.packing.packer.BoxItemGroupsContainerItemsCalculator;
+import com.github.skjolber.packing.packer.BoxItemGroupsContainerInventory;
 
 public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBruteForceBoxItemSession {
 
@@ -38,7 +38,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 
 	public AbstractBruteForceBoxItemGroupSession(List<BoxItem> boxItems,
 			List<ContainerItem> containers, int containerCount, List<BoxItemGroup> boxItemGroups) {
-		super(boxItems, new BoxItemGroupsContainerItemsCalculator(containers, containerCount, boxItemGroups));
+		super(boxItems, new BoxItemGroupsContainerInventory(containers, containerCount, boxItemGroups));
 		this.initialBoxItemGroups = copyBoxItemGroups(boxItemGroups);
 		
 		this.boxItemGroups = boxItemGroups;
@@ -180,7 +180,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 			BruteForceIntermediatePackagerResult packed = packer.pack(containerIndex, iterator, groupOrder, hint);
 			boolean pruned = (packed == null || packed.isEmpty()) && hint != null && !hint.isEmpty();
 			BruteForceIntermediatePackagerResult result = truncateToWholeGroups(packed, iteratorGroups);
-			int size = result != null ? result.getSize() : 0;
+			int size = result != null ? result.getBoxCount() : 0;
 			if(size > 0 && (bestResult == null || getIntermediatePackagerResultComparator().compare(bestResult, result) < 0)) {
 				result.setAnyRemaining(true);
 				bestResult = result;
@@ -374,7 +374,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		if(result == null) {
 			return null;
 		}
-		int size = result.getSize();
+		int size = result.getBoxCount();
 		int wholeGroupBoxCount = 0;
 		for (BoxItemGroup group : iteratorGroups) {
 			if(group == null || size < wholeGroupBoxCount + group.getBoxCount()) {
@@ -444,7 +444,7 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 		}
 
 		// are we at the border between groups?
-		int size = result.getSize();
+		int size = result.getBoxCount();
 
 		int wholeGroupBoxCount = 0;
 		for(int k = 0; k < boxItemGroups.size(); k++) {

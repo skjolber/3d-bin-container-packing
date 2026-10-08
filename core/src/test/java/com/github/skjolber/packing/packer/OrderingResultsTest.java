@@ -576,7 +576,7 @@ public class OrderingResultsTest {
 
 	private static int size(IntermediatePackagerResult result) {
 		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
-			return bruteForceResult.getSize();
+			return bruteForceResult.getBoxCount();
 		}
 		return result.isEmpty() ? 0 : result.getStack().size();
 	}

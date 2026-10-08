@@ -23,7 +23,6 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerException;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.interrupt.CopyablePackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
@@ -239,15 +238,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		this.filterReversePermutations = filterReversePermutations;
 	}
 
-	@Override
-	public String getUnsupportedReason(PackagerInput input) {
-		String reason = super.getUnsupportedReason(input);
-		if(reason != null) {
-			return reason;
-		}
-		return null;
-	}
-
 	/**
 	 * @param skip whether to skip reverse permutations for this attempt (see {@link #isReverseSymmetric(PackagerInput)})
 	 */
@@ -265,16 +255,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 		}
 		return new FilteredReversedBoxItemPermutationRotationIterator(iterator);
-	}
-
-	private PackagerInterruptSupplier[] forkInterrupts(PackagerInterruptSupplier[] source) {
-		PackagerInterruptSupplier[] copy = source.clone();
-		for(int i = 0; i < copy.length; i++) {
-			if(copy[i] instanceof CopyablePackagerInterruptSupplier copyable) {
-				copy[i] = (PackagerInterruptSupplier) copyable.copy();
-			}
-		}
-		return copy;
 	}
 
 	private class BruteForceWorker implements Callable<BruteForceIntermediatePackagerResult> {
@@ -382,7 +362,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			for(int i = 0; i < runnables.length; i++) {
 				runnables[i] = source.runnables[i].fork(maxIteratorLength);
 			}
-			this.interrupts = forkInterrupts(source.interrupts);
+			this.interrupts = source.interrupts.clone();
 		}
 
 		@Override
@@ -457,7 +437,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 									if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
 										best = result;
 										
-										if(best.containsLastStackable()) { // will not match any better than this
+										if(best.containsLastBox()) { // will not match any better than this
 											// cancel others
 											localInterrupt.interrupted = true;
 											// don't break, so we're waiting for all the remaining threads to finish
@@ -540,7 +520,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				
 				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 				
-				if(!bruteForceResult.containsLastStackable()) {
+				if(!bruteForceResult.containsLastBox()) {
 					// this result does not consume all placements
 					// remove consumed items from the iterators
 	
@@ -643,7 +623,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			for(int i = 0; i < runnables.length; i++) {
 				runnables[i] = source.runnables[i].fork(maxIteratorLength);
 			}
-			this.interrupts = forkInterrupts(source.interrupts);
+			this.interrupts = source.interrupts.clone();
 		}
 
 		@Override
@@ -710,7 +690,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 								if(best == null || intermediatePackagerResultComparator.compare(best, result) < 0) {
 									best = result;
 									
-									if(best.containsLastStackable()) { // will not match any better than this
+									if(best.containsLastBox()) { // will not match any better than this
 										// cancel others
 										localInterrupt.interrupted = true;
 										// don't break, so we're waiting for all the remaining threads to finish
@@ -857,7 +837,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 												unitInterrupt, pointFilter, hint);
 									});
 							results[u] = result;
-							if(result != null && result.getSize() == allBoxes) {
+							if(result != null && result.getBoxCount() == allBoxes) {
 								complete.accumulateAndGet(u, Math::min);
 							}
 						} catch (PackagerInterruptedException e) {
@@ -997,7 +977,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				
 				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 	
-				if(!bruteForceResult.containsLastStackable()) {
+				if(!bruteForceResult.containsLastBox()) {
 					// this result does not consume all placements
 					// remove consumed items from the iterators
 	
@@ -1114,10 +1094,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 	}
 
-	public void shutdown() {
-		executorService.shutdownNow();
-	}
-
 	public ExecutorService getExecutorService() {
 		return executorService;
 	}
@@ -1193,16 +1169,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
 
-		// copy nth interrupts so that everything is not slowed down by sharing a single counter
-		if(interrupt instanceof CopyablePackagerInterruptSupplier) {
-			CopyablePackagerInterruptSupplier c = (CopyablePackagerInterruptSupplier)interrupt;
-			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = (PackagerInterruptSupplier)c.copy();
-			}
-		} else {
-			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = interrupt;
-			}
+		for (int i = 0; i < parallelizationCount; i++) {
+			interrupts[i] = interrupt;
 		}
 
 		return new ParallelSession(items, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);
@@ -1258,16 +1226,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		
 		PackagerInterruptSupplier[] interrupts = new PackagerInterruptSupplier[parallelizationCount];
 
-		// copy nth interrupts so that everything is not slowed down by sharing a single counter
-		if(interrupt instanceof CopyablePackagerInterruptSupplier) {
-			CopyablePackagerInterruptSupplier c = (CopyablePackagerInterruptSupplier)interrupt;
-			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = (PackagerInterruptSupplier)c.copy();
-			}
-		} else {
-			for (int i = 0; i < parallelizationCount; i++) {
-				interrupts[i] = interrupt;
-			}
+		for (int i = 0; i < parallelizationCount; i++) {
+			interrupts[i] = interrupt;
 		}
 
 		return new ParallelGroupSession(items, itemGroups, containerItems, containerCount, runnables, iterators, parallelIterators, interrupts, interrupt);

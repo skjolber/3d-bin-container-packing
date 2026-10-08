@@ -172,8 +172,8 @@ public class FilteredReversedBoxItemPermutationRotationIterator implements BoxIt
 	}
 
 	@Override
-	public int getMinStackableAreaIndex(int index) {
-		return iterator.getMinStackableAreaIndex(index);
+	public int getMinBoxAreaIndex(int index) {
+		return iterator.getMinBoxAreaIndex(index);
 	}
 
 	@Override

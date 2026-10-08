@@ -52,11 +52,11 @@ class BruteForceIntermediatePackagerResultTest {
 				new DefaultPoint3D(0, 0, 0, 9, 9, 9),
 				new DefaultPoint3D(2, 0, 0, 9, 9, 9)));
 		result.setState(points, iterator.getState(), new Placement[] {new Placement(), new Placement()}, 2);
-		assertThat(result.containsLastStackable()).isTrue();
+		assertThat(result.containsLastBox()).isTrue();
 
 		result.trimToSize(1);
 
-		assertThat(result.containsLastStackable()).isFalse();
+		assertThat(result.containsLastBox()).isFalse();
 		assertThat(result.getLoadVolume()).isEqualTo(first.getVolume());
 		assertThat(result.getLoadWeight()).isEqualTo(first.getWeight());
 	}
@@ -76,7 +76,7 @@ class BruteForceIntermediatePackagerResultTest {
 		result.setStateFromReusablePoints(reusablePoints, iterator.getState(), new Placement[] {new Placement(), new Placement()}, 2);
 		reusablePoints.clear();
 
-		assertThat(result.getSize()).isEqualTo(2);
+		assertThat(result.getBoxCount()).isEqualTo(2);
 		assertThat(result.getLoadVolume()).isEqualTo(first.getVolume() + second.getVolume());
 	}
 
@@ -94,7 +94,7 @@ class BruteForceIntermediatePackagerResultTest {
 				new Placement[] {new Placement(), new Placement()},
 				2);
 
-		assertThat(result.containsLastStackable()).isFalse();
+		assertThat(result.containsLastBox()).isFalse();
 	}
 
 	@Test

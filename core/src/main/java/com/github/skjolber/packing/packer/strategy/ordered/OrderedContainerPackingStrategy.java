@@ -86,7 +86,7 @@ public class OrderedContainerPackingStrategy implements ContainerStrategy {
 			BinarySearchIterator iterator = new BinarySearchIterator();
 
 			search: do {
-				iterator.reset(containerItems.size() - 1, 0);
+				iterator.reset(0, containerItems.size() - 1);
 
 				IntermediatePackagerResult bestResult = null;
 				int bestIndex = Integer.MAX_VALUE;

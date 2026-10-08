@@ -32,7 +32,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 	 */
 	public static BoxStackValue[] getRotations(Box box, int dx, int dy, int dz) {
 		List<BoxStackValue> rotations = box.rotations(dx, dy, dz);
-		if(rotations == null || rotations.isEmpty()) {
+		if(rotations.isEmpty()) {
 			return null;
 		}
 		return rotations.toArray(new BoxStackValue[rotations.size()]);
@@ -70,7 +70,7 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return minArea;
 	}
 
-	public int getMinStackableAreaIndex(int offset) {
+	public int getMinBoxAreaIndex(int offset) {
 		long minArea = getStackValue(offset).getArea();
 		int index = offset;
 

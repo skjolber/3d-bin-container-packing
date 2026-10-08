@@ -30,8 +30,7 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.Fast
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
- * This implementation tries all permutations, rotations and points.
+ * Packs each container by trying every box permutation, rotation and point exhaustively.
  * <br>
  * <br>
  * Note: The brute force algorithm uses a recursive algorithm. It is not intended for more than 10 boxes.
