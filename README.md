@@ -603,7 +603,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
-     * Substantially faster point calculation, placement search, support calculation and load validation
+     * Substantially faster point calculation, placement search, support calculation and load validation: for example plain packing of 93 boxes 12×, fast brute force 2.3-2.6× and plain packing of small orders 1.9× (see [jmh/PERFORMANCE.md](jmh/PERFORMANCE.md))
      * The parallel brute-force packager splits the orders of box item groups between its threads
      * Packings share the boxes of their input instead of copying them
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity

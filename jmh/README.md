@@ -1,6 +1,9 @@
 # jmh module
 Module for performance-testing using the [JMH](https://openjdk.java.net/projects/code-tools/jmh/) framework.
 
+See [PERFORMANCE.md](PERFORMANCE.md) for 5.0 against 4.2, and [EXPERIMENTS.md](EXPERIMENTS.md) for optimizations which
+were measured and did not help.
+
 ## Introduction
 Performance analysis is complicated due to the dynamic nature of the JVM Hotspot implementation. 
 

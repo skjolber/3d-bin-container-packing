@@ -73,3 +73,16 @@ and memoize only placements with several supportees (or supporters). The remaini
 |---|---|---|
 | Reusing stacks and placement arrays across packing calls (pool) | Rejected after analysis | Results keep references to the stack's point lists (`setState(pointCalculator.getPoints(), …)`) and to the placement arrays until they are materialized, so reuse could corrupt results. Packagers are also shared between threads |
 | Avoiding the throwaway stack in `resetState()` | Not needed; `reset()` was later removed from the session | No strategy called the session's `reset()` |
+
+## Optimizing the 5.0 changes
+
+Interleaved A/B against the previous commit on 4 cores, 2 rounds (3 for the re-tests). The kept optimizations are commits
+`46e36a07` to `c75ac792`.
+
+| Experiment | Result | Likely cause |
+|---|---|---|
+| Reject a box by its minimum area before trying its rotations (`ComparatorPlacementControls`) | Fast LAFF Tycho 93 −1.3 %, the others within ±0.5 % | `canFitAny` already rejects each rotation cheaply, and the smallest rotation usually fits some point |
+| Allocation-free single-container check in `ContainerAllocationPlanner.canAllocate`, without the duplicate global index initialization in brute force | Egy brute force +0.9 % on average (3 rounds) | Too small: the spread between rounds was as large |
+| Set up only the levels of the brute-force search frames which changed since the previous permutation | Egy fast brute force −3.4 % (3 rounds); Bouwkamp fast unchanged once the fast point stack swaps its lists | More bookkeeping per permutation than it saves. The suffix minimum areas also change when the search is shorter than the permutation |
+| Reusable point buffers for the best arrangements of the fast search | Bouwkamp fast −4.5 % | An extra copy per offered arrangement costs more than the list allocation it saves |
+| Skip the supported-area update in `SupportPlacementControls.accepted` when no placement starts above the new box | Tycho support 93 +0.8 % | Once candidates have no load lists, the update is a small part of the cost of support |
