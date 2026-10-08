@@ -1,15 +1,12 @@
 package com.github.skjolber.packing.api;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.point.Point;
 
-public class Placement implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class Placement {
 
 	protected BoxStackValue stackValue;
 	/** The box item of the placed box, or null (for example the boundary placements of point calculators) */

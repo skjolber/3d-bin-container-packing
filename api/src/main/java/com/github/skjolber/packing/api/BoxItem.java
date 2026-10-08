@@ -1,16 +1,12 @@
 package com.github.skjolber.packing.api;
 
-import java.io.Serializable;
-
 /**
  * A {@linkplain Box} repeated one or more times. Typically corresponding to an
  * order-line, but can also represent multiple products which share the same
  * size.
  * 
  */
-public class BoxItem implements Serializable {
-
-	private static final long serialVersionUID = 1L;
+public class BoxItem {
 
 	protected int count;
 	protected final Box box;

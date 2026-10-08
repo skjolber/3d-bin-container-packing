@@ -1,13 +1,10 @@
 package com.github.skjolber.packing.api;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class Stack implements Serializable, Iterable<Placement> {
-
-	private static final long serialVersionUID = 1L;
+public class Stack implements Iterable<Placement> {
 
 	protected final List<Placement> entries;
 
