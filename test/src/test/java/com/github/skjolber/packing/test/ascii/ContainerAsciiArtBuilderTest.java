@@ -35,6 +35,12 @@ public class ContainerAsciiArtBuilderTest {
 	}
 
 	@Test
+	public void testHeightMustBeAtLeastTwo() {
+		assertThatThrownBy(() -> ContainerAsciiArt.newBuilder().withHeight(1)).isInstanceOf(IllegalArgumentException.class);
+		assertThatThrownBy(() -> ContainerAsciiArt.newBuilder().withHeight(0)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	@Test
 	public void testStyleMustNotBeNull() {
 		assertThatThrownBy(() -> ContainerAsciiArt.newBuilder().withStyle(null)).isInstanceOf(NullPointerException.class);
 	}
@@ -80,7 +86,8 @@ public class ContainerAsciiArtBuilderTest {
 	}
 
 	/**
-	 * Units of millimeters: the scale at which the labels fit would be thousands of columns, so the views are drawn smaller instead.
+	 * Units of millimeters: the scale at which the labels fit would be thousands of columns, so the views are drawn smaller instead: none of them
+	 * is wider than 80 columns or higher than 40 lines.
 	 */
 	@Test
 	public void testDefaultScaleOfALargeContainerKeepsEachViewWithinTheDefaultSize() {
@@ -88,17 +95,17 @@ public class ContainerAsciiArtBuilderTest {
 				.withPlacements(List.of(place("A", 1000, 1000, 1000, 0, 0, 0), place("B", 2000, 1000, 1000, 1000, 0, 0)), 6000, 2400, 2400)
 				.build();
 
-		assertThat(art.front().getWidth()).isLessThanOrEqualTo(100);
-		assertThat(art.top().getWidth()).isLessThanOrEqualTo(100);
-		assertThat(art.side().getWidth()).isLessThanOrEqualTo(100);
-		assertThat(art.oblique().getWidth()).isLessThanOrEqualTo(100);
-		assertThat(art.front().getHeight()).isLessThanOrEqualTo(100);
-		assertThat(art.top().getHeight()).isLessThanOrEqualTo(100);
-		assertThat(art.side().getHeight()).isLessThanOrEqualTo(100);
-		assertThat(art.oblique().getHeight()).isLessThanOrEqualTo(100);
+		assertThat(art.front().getWidth()).isLessThanOrEqualTo(80);
+		assertThat(art.top().getWidth()).isLessThanOrEqualTo(80);
+		assertThat(art.side().getWidth()).isLessThanOrEqualTo(80);
+		assertThat(art.oblique().getWidth()).isLessThanOrEqualTo(80);
+		assertThat(art.front().getHeight()).isLessThanOrEqualTo(40);
+		assertThat(art.top().getHeight()).isLessThanOrEqualTo(40);
+		assertThat(art.side().getHeight()).isLessThanOrEqualTo(40);
+		assertThat(art.oblique().getHeight()).isLessThanOrEqualTo(40);
 
-		// as large as possible: the widest view is nearly 100 columns wide
-		assertThat(art.front().getWidth()).isGreaterThan(90);
+		// as large as possible: the widest view is nearly 80 columns wide
+		assertThat(art.front().getWidth()).isGreaterThan(70);
 		assertThat(art.front().toString()).contains("A").contains("B");
 	}
 
@@ -114,17 +121,17 @@ public class ContainerAsciiArtBuilderTest {
 
 		int columns = art.front().getWidth() - 1;
 		int lines = art.front().getHeight() - 1;
-		assertThat(columns).isGreaterThan(90);
+		assertThat(columns).isGreaterThan(70);
 		assertThat(columns).isBetween(2 * lines - 1, 2 * lines + 1);
 	}
 
 	/**
-	 * The same when fitting to a width.
+	 * The same when fitting to a width (a cube that is larger than the default scale at 41 columns).
 	 */
 	@Test
 	public void testWidthKeepsTwiceAsManyColumnsAsLines() {
 		ContainerAsciiArt art = ContainerAsciiArt.newBuilder()
-				.withPlacements(List.of(place("A", 1, 1, 1, 0, 0, 0)), 1, 1, 1)
+				.withPlacements(List.of(place("A", 100, 100, 100, 0, 0, 0)), 100, 100, 100)
 				.withAxes(false)
 				.withWidth(41)
 				.build();
@@ -135,7 +142,7 @@ public class ContainerAsciiArtBuilderTest {
 
 	/**
 	 * A container which is much higher than it is wide (here 2352 x 2394 x 12031, drawn to its size with the container outline): the height limits
-	 * the scale.
+	 * the scale, so that no view is higher than 40 lines.
 	 */
 	@Test
 	public void testDefaultScaleOfATallContainerKeepsEachViewWithinTheDefaultSize() {
@@ -145,10 +152,10 @@ public class ContainerAsciiArtBuilderTest {
 				.build();
 
 		for (Figure figure : List.of(art.front(), art.top(), art.side(), art.oblique())) {
-			assertThat(figure.getWidth()).isLessThanOrEqualTo(100);
-			assertThat(figure.getHeight()).isLessThanOrEqualTo(100);
+			assertThat(figure.getWidth()).isLessThanOrEqualTo(80);
+			assertThat(figure.getHeight()).isLessThanOrEqualTo(40);
 		}
-		assertThat(art.front().getHeight()).isGreaterThan(90);
+		assertThat(art.front().getHeight()).isGreaterThan(35);
 	}
 
 	@Test

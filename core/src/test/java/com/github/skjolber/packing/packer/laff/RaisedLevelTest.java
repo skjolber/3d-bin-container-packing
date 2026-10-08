@@ -44,18 +44,7 @@ public class RaisedLevelTest extends AbstractPackagerTest {
 
 	/**
 	 * A (4x4x2) starts the first level, which is 2 high. B (2x4x3) is too tall for the level, and for a new level on
-	 * top (1 high), so it stands beside A:
-	 *
-	 * <pre>
-	 *    z
-	 *    3 +-------+---+
-	 *      |       |   |
-	 *    2 +-------+   |
-	 *      |   A   | B |
-	 *      |       |   |
-	 *    0 +-------+---+ x
-	 *      0       4   6
-	 * </pre>
+	 * top (1 high), so it stands beside A.
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("packagers")
@@ -67,6 +56,21 @@ public class RaisedLevelTest extends AbstractPackagerTest {
 
 		try (AbstractPackager<?> packager = supplier.get()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).withMaxContainerCount(1).build();
+			// <figure>
+			//   z                   /-------|       z                                 y                                 z
+			//                      /       /|       3                 +-------+       4 +---------------+-------+       3 +---------------+
+			//   |   /-------------/       / |   y                     |       |         |               |       |         |               |
+			//   |  /             /       /  |       2 +---------------+       |         |               |       |       2 |               |
+			// 3 | /             |-------|   | /       |               |   B   |         |               |       |         |       B       |
+			//   |/              |       |   |/        |       A       |       |         |       A       |   B   |         |               |
+			// 2 |---------------|       |   | 4       |               |       |         |               |       |         |               |
+			//   |               |   B   |  /        0 +---------------+-------+         |               |       |       0 +---------------+
+			//   |       A       |       | /           0               4       6   x     |               |       |         0               4   y
+			//   |               |       |/                                            0 +---------------+-------+
+			// 0 |---------------|-------|-- x                                           0               4       6   x
+			//   0               4       6
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1).hasStackSize(0, 2);
 			List<Placement> placements = result.get(0).getStack().getPlacements();
@@ -82,17 +86,7 @@ public class RaisedLevelTest extends AbstractPackagerTest {
 
 	/**
 	 * A group of A (2x2x1), which carries at most 1, and B (1x1x2), which weighs 3. A starts the first level, which is
-	 * 1 high. B is too tall for the level, and A cannot carry it in a new level on top, so B stands beside A:
-	 *
-	 * <pre>
-	 *    z
-	 *    2 +---+-+
-	 *      |   |B|
-	 *    1 +---+ |
-	 *      | A | |
-	 *    0 +---+-+ y
-	 *      0   2 3
-	 * </pre>
+	 * 1 high. B is too tall for the level, and A cannot carry it in a new level on top, so B stands beside A.
 	 */
 	@ParameterizedTest(name = "{0}")
 	@MethodSource("packagers")
@@ -104,6 +98,25 @@ public class RaisedLevelTest extends AbstractPackagerTest {
 
 		try (AbstractPackager<?> packager = supplier.get()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(groups).withMaxContainerCount(1).build();
+			// <figure>
+			//         /-------|               z                         y                         z
+			//        /   B   /|               2 +-------+               3 +-------+               2                 +-------+
+			//   z   |-------| |                 |       |                 |       |                                 |       |
+			//       |       | |                 |   B   |                 |   B   |                                 |       |
+			//   |   |       | |           y     |       |                 |       |                                 |       |
+			//   |   |       | |               1 +-------+-------+       2 +-------+-------+       1 +---------------+   B   |
+			// 2 |   |-------|-------|   /       |               |         |               |         |               |       |
+			//   |  /               /|  /        |       A       |         |               |         |       A       |       |
+			//   | /               / | / 3       |               |         |               |         |               |       |
+			//   |/               /  |/        0 +---------------+         |       A       |       0 +---------------+-------+
+			// 1 |---------------|   | 2         0       1       2   x     |               |         0               2       3   y
+			//   |               |  /                                      |               |
+			//   |       A       | /                                       |               |
+			//   |               |/                                      0 +---------------+
+			// 0 |---------------|-- x                                     0       1       2   x
+			//   0               2
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1).hasStackSize(0, 2);
 			List<Placement> placements = result.get(0).getStack().getPlacements();

@@ -52,6 +52,27 @@ public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTes
 				// strictly not necessary but included
 				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(maxWeight));
 			}).withBoxItems(products).build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             3 +---------------+       1 +---------------+       3 +-------+
+			//   | /---------------|         |               |         |               |         |       |
+			//   |/               /|         |       C       |         |       C       |         |   C   |
+			// 3 |---------------| |         |               |         |               |         |       |
+			//   |               | |       2 +---------------+       0 +---------------+       2 +-------+
+			//   |       C       | |         |               |         0       1       2   x     |       |
+			//   |               |/|         |       B       |                                   |   B   |
+			// 2 |---------------| |         |               |                                   |       |
+			//   |               | |       1 +-------+-------+                                 1 +-------+
+			//   |       B       | |   y     |       |                                           |       |
+			//   |               |/          |   A   |                                           |   A   |
+			// 1 |-------|-------|   /       |       |                                           |       |
+			//   |       | |        /      0 +-------+                                         0 +-------+
+			//   |   A   | |       / 1       0       1       2   x                               0       1   y
+			//   |       |/       /
+			// 0 |-------|---------- x
+			//   0       1       2
+			// </figure>
+			figure(build);
 			
 			assertTrue(build.isSuccess());
 			

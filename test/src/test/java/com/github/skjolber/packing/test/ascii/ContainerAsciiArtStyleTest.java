@@ -53,9 +53,10 @@ public class ContainerAsciiArtStyleTest {
 	 * B, which continues at both sides.
 	 */
 	private static ContainerAsciiArt.Builder teeScene() {
+		// the scale at which the labels fit in the front view
 		return ContainerAsciiArt.newBuilder().withPlacements(List.of(
 				place("A", 2, 1, 2, 0, 0, 2),
-				place("B", 2, 3, 3, 1, 1, 1)), 4, 4, 4);
+				place("B", 2, 3, 3, 1, 1, 1)), 4, 4, 4).withScale(4, 2);
 	}
 
 	private static ContainerAsciiArt.Builder single() {

@@ -555,9 +555,11 @@ public class ContainerAsciiArtTest {
 	public void testDrawingReachesAsFarAsTheObstacles() {
 		ContainerAsciiArt art = newBuilder(10, 10, 10, place("A", 1, 1, 2, 0, 0, 0))
 				.withObstacles(List.of(place("X", 2, 1, 1, 3, 0, 0)))
+				.withScale(4, 2)
 				.build();
 		ContainerAsciiArt exact = newBuilder(5, 1, 2, place("A", 1, 1, 2, 0, 0, 0))
 				.withObstacles(List.of(place("X", 2, 1, 1, 3, 0, 0)))
+				.withScale(4, 2)
 				.build();
 
 		assertThat(art.front().toString()).isEqualTo(exact.front().toString());
@@ -685,6 +687,7 @@ public class ContainerAsciiArtTest {
 	public void testInclusiveCoordinatesOfTheEndOfTheBoxes() {
 		ContainerAsciiArt art = newBuilder(10, 10, 10, place("A", 3, 1, 2, 0, 0, 0))
 				.withInclusiveCoordinates(true)
+				.withScale(4, 2)
 				.build();
 
 		assertThat(art.front().toString()).isEqualTo("""
@@ -1206,7 +1209,7 @@ public class ContainerAsciiArtTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌┬┬┬──────┐
+				1 ┌┬┬┬──D───┐
 				0 └┴┴┴──────┘
 				  0 2       10   x
 				""");
@@ -1226,7 +1229,7 @@ public class ContainerAsciiArtTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌───────┬┐
+				1 ┌───A───┬┐
 				0 └───────┴┘
 				  0        9   x
 				""");
@@ -1257,7 +1260,7 @@ public class ContainerAsciiArtTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌────────┐.
+				1 ┌───A────┐.
 				0 └────────┘.
 				  0         10   x
 				""");
@@ -1275,13 +1278,14 @@ public class ContainerAsciiArtTest {
 				place("C", 8, 1, 7, 0, 0, 2),
 				place("D", 8, 1, 1, 0, 0, 9))
 				.withWidth(16)
+				.withLabels(p -> "")
 				.build();
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
 				10 ┌───────┐
 				   │       │
-				   │   C   │
+				   │       │
 				   │       │
 				 1 ├───────┤
 				 0 └───────┘
@@ -1664,7 +1668,7 @@ public class ContainerAsciiArtTest {
 		assertThat(art.front().toString()).isEqualTo("""
 				z
 				2 ┌─────┐
-				1 │  A  ├─────┐
+				1 │  A  ├──B──┐
 				0 └─────┴─────┘
 				  0     2     4   x
 				""");
@@ -1677,8 +1681,8 @@ public class ContainerAsciiArtTest {
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
-				2 ┌─────┐
-				1 ├─────┤
+				2 ┌──A──┐
+				1 ├──B──┤
 				0 └─────┘
 				  0     2   y
 				""");
@@ -1709,7 +1713,7 @@ public class ContainerAsciiArtTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				┌─────────┐
-				│         ├─────────┐
+				│         ├────C────┐
 				│    A    ├─────────┤
 				│         │    B    │
 				└─────────┴─────────┘

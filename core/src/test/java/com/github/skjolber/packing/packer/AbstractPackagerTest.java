@@ -44,13 +44,20 @@ public abstract class AbstractPackagerTest {
 	/** The blank columns between the views of an overview, as in the overview of the figure utility */
 	private static final int FIGURE_COLUMN_GAP = 3;
 
-	/** The widest view when the four views do not fit in a row at the default scale: four views and three gaps are at most 160 columns */
-	private static final int FIGURE_VIEW_COLUMNS = (FIGURE_MAX_COLUMNS - 3 * FIGURE_COLUMN_GAP) / 4;
+	/** The widest view when even two rows of two views do not fit at the default scale: two views and a gap are at most 160 columns */
+	private static final int FIGURE_VIEW_COLUMNS = (FIGURE_MAX_COLUMNS - FIGURE_COLUMN_GAP) / 2;
+
+	/** The highest view when the views are drawn narrower than at the default scale: as high as at the default scale */
+	private static final int FIGURE_VIEW_LINES = 40;
+
+	/** The most lines of a figure of a result (all of its containers): a result which needs more is not recorded, as such a figure is hard to read */
+	private static final int FIGURE_MAX_LINES = 100;
 
 	/**
 	 * Draw the containers of a result as a figure in the source code of the test, if the system property figures.record is true: the figure is
 	 * written into the comment above the call of this method in the test. Each container is drawn as an overview (3D, front, top and side views),
-	 * below each other, with a caption if there is more than one.
+	 * below each other, with a caption if there is more than one. A result whose figure is more than {@linkplain #FIGURE_MAX_LINES} lines high is not
+	 * recorded: such a figure is hard to read, so the test has none (and a figure which is already there is not updated, so remove the call).
 	 *
 	 * @param result the result, with the containers to draw
 	 */
@@ -75,21 +82,31 @@ public abstract class AbstractPackagerTest {
 			}
 			figures.add(overview);
 		}
-		FigureRecorder.record(Figures.vertical(1, figures.toArray(new Figure[0])));
+		Figure figure = Figures.vertical(1, figures.toArray(new Figure[0]));
+		if (figure.getHeight() > FIGURE_MAX_LINES) {
+			return;
+		}
+		FigureRecorder.record(figure);
 	}
 
 	/**
-	 * The overview in the ASCII style at the default scale, which makes the labels fit, unless the four views do not fit in a row of 160 columns (about 40 columns per
-	 * view, which happens for containers with large boxes): then each view is drawn in the width which makes them fit.
+	 * The overview in the ASCII style at the default scale, which makes the labels fit: in one row if the four views are at most 160 columns wide, otherwise in
+	 * two rows of two views. Only if even a row of two views is wider than that (about 78 columns per view, which happens for containers with large boxes), the
+	 * views are drawn narrower, all at the same scale.
 	 */
 	private static Figure drawOverview(Container container) {
 		// ASCII: the figures are read in editors where the box drawing characters do not join across lines
-		ContainerAsciiArt art = ContainerAsciiArt.newBuilder().withContainer(container).withStyle(Style.ASCII).build();
-		int width = art.oblique().getWidth() + art.front().getWidth() + art.top().getWidth() + art.side().getWidth() + 3 * FIGURE_COLUMN_GAP;
-		if (width > FIGURE_MAX_COLUMNS) {
-			art = ContainerAsciiArt.newBuilder().withContainer(container).withStyle(Style.ASCII).withWidth(FIGURE_VIEW_COLUMNS).build();
+		Figure overview = ContainerAsciiArt.newBuilder().withContainer(container).withStyle(Style.ASCII).build().overview();
+		if (overview.getWidth() > FIGURE_MAX_COLUMNS) {
+			overview = ContainerAsciiArt.newBuilder()
+					.withContainer(container)
+					.withStyle(Style.ASCII)
+					.withWidth(FIGURE_VIEW_COLUMNS)
+					.withHeight(FIGURE_VIEW_LINES)
+					.build()
+					.overview();
 		}
-		return art.overview();
+		return overview;
 	}
 
 	protected void assertDeadlineRespected(Packager packager) {

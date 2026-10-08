@@ -25,9 +25,13 @@ import com.github.skjolber.packing.api.point.Point;
  * boxes are visible.</li>
  * </ul>
  * Boxes are drawn with their label, which is the id or description of the box, or else A, B, C and so on in the order of the placements.
+ * The label is written inside the face of the box. If the face has no line for it, or the label does not fit inside, it is written into the top edge of the
+ * face instead, centered between the corners, with at least one edge character on each side: <code>+--b1--+</code>. This is done in the front, top and
+ * side views, and on the front face in the oblique view. A label which does not fit there either is truncated.
+ * <p>
  * Boxes which are partly hidden behind other boxes are drawn partly. Obstacles are filled with '#'. A unit (as in the dimensions of boxes)
- * is drawn as a number of columns and lines, see {@linkplain Builder#withScale(double, double)}. The edges are drawn in
- * a {@linkplain Style}, by default with thin lines.
+ * is drawn as a number of columns and lines, see {@linkplain Builder#withScale(double, double)}: the same for all the views, so that a figure with several views
+ * has one scale, unless a view is too large for that and is drawn smaller. The edges are drawn in a {@linkplain Style}, by default with thin lines.
  * <p>
  * The drawing starts at 0 and reaches as far as the boxes (and the {@linkplain Builder#withPoints(List) points}) reach along each axis, not to the
  * size of the container, unless {@linkplain Builder#withContainerOutline(boolean)} asks for the container to be drawn. Without boxes, the container is drawn.
@@ -89,6 +93,7 @@ public class ContainerAsciiArt {
 		private double scaleX = -1;
 		private double scaleZ = -1;
 		private int width = -1;
+		private int height = -1;
 
 		private Function<Placement, String> labels;
 		private boolean axes = true;
@@ -198,11 +203,15 @@ public class ContainerAsciiArt {
 		}
 
 		/**
-		 * Draw a unit as a number of columns and lines. The default is the smallest scale, but at least 4 x 2, at which the labels fit within
-		 * their boxes (with a blank line above and below and a space on each side) for 90 % of the boxes. A line is about twice as tall as a
-		 * character is wide, so the default has at least two columns per unit of x for every line per unit of z, which makes a cube look like
-		 * a cube (a unit box is drawn 8 x 4). If a view would then be more than 100 columns wide or 100 lines high (for example for a container
-		 * which is measured in millimeters), it is drawn smaller, as by {@linkplain #withWidth(int)}, with the same relation between columns and lines.
+		 * Draw a unit as a number of columns and lines. The default scale is the same for all the views.
+		 * <p>
+		 * The default is the smallest scale, but at least 4 x 2, at which the labels fit within their boxes (with a blank line above and below and a space on
+		 * each side) for 90 % of the faces which the views show: the front face (x by z), the top face (x by y) and the side face (y by z) of each box.
+		 * A line is about twice as tall as a character is wide, so the default has at least two columns per unit of x for every line per unit of z,
+		 * which makes a cube look like a cube (a unit box is drawn 8 x 4). If a view would then be more than 80 columns wide or 40 lines high
+		 * (counting the axes with their values and names; for example for a container which is measured in millimeters), that view is drawn smaller, as by {@linkplain #withWidth(int)} and
+		 * {@linkplain #withHeight(int)}, with the same relation between columns and lines; the other views keep the default scale. A box which is then too
+		 * low for its label has the label written into its top edge.
 		 * <p>
 		 * A scale which is given here is used exactly as given.
 		 * <p>
@@ -220,13 +229,17 @@ public class ContainerAsciiArt {
 			this.scaleX = cx;
 			this.scaleZ = cz;
 			this.width = -1;
+			this.height = -1;
 			return this;
 		}
 
 		/**
-		 * Draw every view at the largest scale at which it is at most this wide, with half as many lines per unit as columns per unit. The width counts
-		 * everything in the view: the axes with their values and names, and in the oblique view the steps to the right for the depth.
-		 * In the oblique view, the thinnest box along y is drawn with at least 2 steps up and to the right, unless that does not fit in the width.
+		 * Draw every view at the largest scale at which it is at most this wide, but not larger than the default scale, with half as many lines per unit as
+		 * columns per unit. The width counts everything in the view: the axes with their values and names, and in the oblique view the steps to the right for
+		 * the depth. In the oblique view, the thinnest box along y is drawn with at least 2 steps up and to the right, unless that does not fit in the width.
+		 * <p>
+		 * A view which is not wider than this at the default scale keeps the default scale. The height is not limited, unless {@linkplain #withHeight(int)}
+		 * is also used: then every view is at the largest scale at which it is neither wider nor higher than that.
 		 *
 		 * @param columns the number of characters of the widest line of a view, at least 2
 		 * @return this builder
@@ -236,6 +249,26 @@ public class ContainerAsciiArt {
 				throw new IllegalArgumentException("Expected at least two columns, got " + columns);
 			}
 			this.width = columns;
+			this.scaleX = -1;
+			this.scaleZ = -1;
+			return this;
+		}
+
+		/**
+		 * Draw every view at the largest scale at which it is at most this high, but not larger than the default scale, with half as many lines per unit as
+		 * columns per unit. The height counts everything in the view: the axes with their values and names, and in the oblique view the steps up for the depth.
+		 * <p>
+		 * A view which is not higher than this at the default scale keeps the default scale. The width is not limited, unless {@linkplain #withWidth(int)}
+		 * is also used: then every view is at the largest scale at which it is neither wider nor higher than that.
+		 *
+		 * @param lines the number of lines of the highest view, at least 2
+		 * @return this builder
+		 */
+		public Builder withHeight(int lines) {
+			if (lines < 2) {
+				throw new IllegalArgumentException("Expected at least two lines, got " + lines);
+			}
+			this.height = lines;
 			this.scaleX = -1;
 			this.scaleZ = -1;
 			return this;
@@ -380,9 +413,12 @@ public class ContainerAsciiArt {
 	private static final int OVERVIEW_COLUMN_GAP = 3;
 	private static final int OVERVIEW_LINE_GAP = 1;
 
-	/** The widest and the highest view, at the scale at which the labels fit: a view which would be larger (for example of a container which is measured in millimeters) is drawn smaller */
-	private static final int DEFAULT_MAXIMUM_COLUMNS = 100;
-	private static final int DEFAULT_MAXIMUM_LINES = 100;
+	/**
+	 * The widest and the highest view, at the scale at which the labels fit: if a view would be larger (for example of a container which is measured in
+	 * millimeters), all the views are drawn smaller
+	 */
+	private static final int DEFAULT_MAXIMUM_COLUMNS = 80;
+	private static final int DEFAULT_MAXIMUM_LINES = 40;
 	/** The fewest steps up and to the right which the thinnest box along y gets in the oblique view */
 	private static final double MINIMUM_DEPTH_STEPS = 2.0;
 	/** The smallest scale when fitting a view to a width, and the number of halvings of the range of scales */
@@ -393,8 +429,10 @@ public class ContainerAsciiArt {
 	private static final int MINIMUM_LINES_PER_UNIT = 2;
 	/** A line is about twice as tall as a character is wide: columns per line when drawing to scale, so that a cube looks like a cube */
 	private static final int COLUMNS_PER_LINE = 2;
-	/** The share of the boxes for which the labels should fit */
+	/** The share of the faces for which the labels should fit */
 	private static final int LABEL_FIT_PERCENT = 90;
+	/** The faces of a box which the views show: the front face, the top face and the side face */
+	private static final int LABELLED_FACES = 3;
 
 	private final List<Item> items;
 	/**
@@ -412,9 +450,10 @@ public class ContainerAsciiArt {
 	private final int extentY;
 	private final int extentZ;
 
-	private final double scaleX;
-	private final double scaleZ;
-	private final int width;
+	/** The scale of each view, by the ordinal of the view */
+	private final Scale[] scales;
+	/** The smallest size along y of the boxes and obstacles, or 0 if there are none */
+	private final int thinnestInY;
 	private final boolean axes;
 	private final boolean containerOutline;
 	private final String comment;
@@ -425,9 +464,6 @@ public class ContainerAsciiArt {
 	private final int[] points;
 
 	private ContainerAsciiArt(Builder builder) {
-		this.scaleX = builder.scaleX;
-		this.scaleZ = builder.scaleZ;
-		this.width = builder.width;
 		this.axes = builder.axes;
 		this.containerOutline = builder.containerOutline;
 		this.comment = builder.comment;
@@ -496,6 +532,16 @@ public class ContainerAsciiArt {
 		this.extentX = extentX;
 		this.extentY = extentY;
 		this.extentZ = extentZ;
+
+		int thinnest = 0;
+		for (Item item : items) {
+			if (thinnest == 0 || item.dy < thinnest) {
+				thinnest = item.dy;
+			}
+		}
+		this.thinnestInY = thinnest;
+
+		this.scales = getScales(builder);
 	}
 
 	private static String getLabel(Function<Placement, String> labels, Placement placement, int index) {
@@ -567,7 +613,7 @@ public class ContainerAsciiArt {
 		// the projection: column = x * cx + y * d, row = z * cz + y * d, so that the points
 		// (x, y, z) which are on the same line of sight from the viewer are the points with different y.
 		// The viewer is at a lower y (and a higher x and z), so that the nearest point is the one with the lowest y.
-		Scale scale = getScale(View.OBLIQUE);
+		Scale scale = scales[View.OBLIQUE.ordinal()];
 		double cx = scale.cx;
 		double cz = scale.cz;
 		double d = scale.d;
@@ -586,6 +632,8 @@ public class ContainerAsciiArt {
 
 		int[] bounds = new int[items.size() * 4];
 		int[] interiors = new int[items.size() * 3];
+		int[] topEdges = new int[items.size() * 3];
+		int[] edgeDepths = new int[items.size()];
 		for (int i = 0; i < items.size(); i++) {
 			Item item = items.get(i);
 
@@ -611,6 +659,12 @@ public class ContainerAsciiArt {
 			bounds[i * 4 + 1] = ox + x1 + y1;
 			bounds[i * 4 + 2] = oy + z0 + y0;
 			bounds[i * 4 + 3] = oy + z1 + y1;
+
+			// the top edge of the front face, where a label is written if it has no room inside
+			topEdges[i * 3] = ox + x0 + y0;
+			topEdges[i * 3 + 1] = ox + x1 + y0;
+			topEdges[i * 3 + 2] = oy + z1 + y0;
+			edgeDepths[i] = y0;
 
 			// the cells between the edges of the front face, top face and right face
 			interiors[i * 3] = interior(x1 - x0) * interior(z1 - z0);
@@ -653,7 +707,7 @@ public class ContainerAsciiArt {
 				drawText(canvas, ox + gridX + round(coordinate * d) + 2, oy + round(coordinate * d), Integer.toString(yKeys.labels[i]), AsciiCanvas.AXIS);
 			}
 		}
-		drawLabels(canvas, bounds, interiors, 3);
+		drawLabels(canvas, bounds, interiors, 3, topEdges, edgeDepths);
 
 		if (points.length > 0) {
 			// the projection of the box corners, see drawObliqueBox. The depth is y, like for the boxes.
@@ -674,9 +728,12 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * All the views in one figure: the oblique view followed by the front, top and side views, in one row with three blank columns between
-	 * the views if that is at most 160 characters wide. Otherwise two rows with one blank line between them: the oblique and front views, then
-	 * the top and side views.
+	 * All the views in one figure: the oblique view followed by the front, top and side views, in one row with three blank
+	 * columns between the views if that is at most 160 characters wide. Otherwise two rows with one blank line between them: the oblique and front
+	 * views, then the top and side views.
+	 * <p>
+	 * If a row is still wider than 160 characters, the views are too large for an overview: use {@linkplain Builder#withWidth(int)}, for example
+	 * with 78 columns, so that a row of two views is at most 160 characters wide.
 	 *
 	 * @return the drawing
 	 */
@@ -803,7 +860,7 @@ public class ContainerAsciiArt {
 	}
 
 	private Figure draw2D(View view) {
-		Scale scale = getScale(view);
+		Scale scale = scales[view.ordinal()];
 		double horizontalScale = scale.cx;
 		double verticalScale = scale.cz;
 
@@ -820,6 +877,8 @@ public class ContainerAsciiArt {
 
 		int[] bounds = new int[items.size() * 4];
 		int[] interiors = new int[items.size()];
+		int[] topEdges = new int[items.size() * 3];
+		int[] edgeDepths = new int[items.size()];
 		for (int i = 0; i < items.size(); i++) {
 			Item item = items.get(i);
 
@@ -847,6 +906,11 @@ public class ContainerAsciiArt {
 			bounds[i * 4 + 1] = c1;
 			bounds[i * 4 + 2] = r0;
 			bounds[i * 4 + 3] = r1;
+
+			topEdges[i * 3] = c0;
+			topEdges[i * 3 + 1] = c1;
+			topEdges[i * 3 + 2] = r1;
+			edgeDepths[i] = depth;
 
 			interiors[i] = interior(c1 - c0) * interior(r1 - r0);
 		}
@@ -876,7 +940,7 @@ public class ContainerAsciiArt {
 				drawText(canvas, marginColumns + round(horizontalKeys.coordinates[i] * horizontalScale), 0, Integer.toString(horizontalKeys.labels[i]), AsciiCanvas.LABEL);
 			}
 		}
-		drawLabels(canvas, bounds, interiors, 1);
+		drawLabels(canvas, bounds, interiors, 1, topEdges, edgeDepths);
 
 		if (points.length > 0) {
 			int count = points.length / 3;
@@ -1300,41 +1364,48 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * The scale of a view: by the given scale, or else to fit the given width, or else the smallest scale at which the labels fit, unless that makes the
-	 * view larger than {@linkplain #DEFAULT_MAXIMUM_COLUMNS} x {@linkplain #DEFAULT_MAXIMUM_LINES} (for example for large containers): then to fit that.
+	 * The scale of each view. A given scale is used for all the views as it is. Otherwise the views have the default scale, the smallest scale at which the
+	 * labels fit (the same for all the views), but a view which would be wider or higher than the limits is drawn smaller on its own: by default at most
+	 * {@linkplain #DEFAULT_MAXIMUM_COLUMNS} x {@linkplain #DEFAULT_MAXIMUM_LINES} (for example for large containers), or else the given width and height.
 	 */
-	private Scale getScale(View view) {
-		if (scaleX > 0.0) {
-			return newScale(view, scaleX, scaleZ, true);
+	private Scale[] getScales(Builder builder) {
+		View[] views = View.values();
+		Scale[] result = new Scale[views.length];
+		if (builder.scaleX > 0.0) {
+			Scale scale = newScale(builder.scaleX, builder.scaleZ, true);
+			Arrays.fill(result, scale);
+			return result;
 		}
-		if (width > 0) {
-			return fit(view, width, Integer.MAX_VALUE);
-		}
-		double[] labelScale = getLabelScale(view);
 		// the labels fit, but a line is taller than a character is wide
+		double[] labelScale = getLabelScale();
 		double cz = labelScale[1];
 		double cx = Math.max(labelScale[0], cz * COLUMNS_PER_LINE);
-		Scale scale = newScale(view, cx, cz, true);
-		if (!isWithin(view, scale, DEFAULT_MAXIMUM_COLUMNS, DEFAULT_MAXIMUM_LINES)) {
-			return fit(view, DEFAULT_MAXIMUM_COLUMNS, DEFAULT_MAXIMUM_LINES);
+		Scale shared = newScale(cx, cz, true);
+
+		int columns = DEFAULT_MAXIMUM_COLUMNS;
+		int lines = DEFAULT_MAXIMUM_LINES;
+		if (builder.width > 0 || builder.height > 0) {
+			columns = builder.width > 0 ? builder.width : Integer.MAX_VALUE;
+			lines = builder.height > 0 ? builder.height : Integer.MAX_VALUE;
 		}
-		return scale;
+		for (View view : views) {
+			if (isWithin(view, shared, columns, lines)) {
+				result[view.ordinal()] = shared;
+			} else {
+				result[view.ordinal()] = fit(view, shared, columns, lines);
+			}
+		}
+		return result;
 	}
 
 	/**
 	 * @param minimumDepthSteps true to draw the thinnest box along y with at least {@linkplain #MINIMUM_DEPTH_STEPS} steps, whatever the scale (for the oblique view)
 	 */
-	private Scale newScale(View view, double cx, double cz, boolean minimumDepthSteps) {
-		double d = 0.0;
-		if (view == View.OBLIQUE) {
-			// half of the lines per unit of z, so that the depth does not take over the drawing
-			d = cz / 2;
-			if (minimumDepthSteps) {
-				int thinnest = getThinnestInY();
-				if (thinnest > 0) {
-					d = Math.max(d, MINIMUM_DEPTH_STEPS / thinnest);
-				}
-			}
+	private Scale newScale(double cx, double cz, boolean minimumDepthSteps) {
+		// half of the lines per unit of z, so that the depth does not take over the drawing
+		double d = cz / 2;
+		if (minimumDepthSteps && thinnestInY > 0) {
+			d = Math.max(d, MINIMUM_DEPTH_STEPS / thinnestInY);
 		}
 		return new Scale(cx, cz, d);
 	}
@@ -1344,52 +1415,44 @@ public class ContainerAsciiArt {
 	 *
 	 * @param minimumDepthSteps true to draw the thinnest box along y with at least {@linkplain #MINIMUM_DEPTH_STEPS} steps
 	 */
-	private Scale newFittedScale(View view, double cx, boolean minimumDepthSteps) {
-		return newScale(view, cx, cx / COLUMNS_PER_LINE, minimumDepthSteps);
-	}
-
-	/**
-	 * @return the smallest size along y of the boxes and obstacles, or 0 if there are none
-	 */
-	private int getThinnestInY() {
-		int thinnest = 0;
-		for (Item item : items) {
-			if (thinnest == 0 || item.dy < thinnest) {
-				thinnest = item.dy;
-			}
-		}
-		return thinnest;
+	private Scale newFittedScale(double cx, boolean minimumDepthSteps) {
+		return newScale(cx, cx / COLUMNS_PER_LINE, minimumDepthSteps);
 	}
 
 	/**
 	 * The largest scale, with half as many lines per unit as columns per unit, at which the view is no wider than the given number of columns and
-	 * no higher than the given number of lines: counting the axes with their values and names, and the depth of the oblique view. If the thinnest
-	 * box along y does not get its minimum number of steps in the oblique view without making the view too large, the depth is drawn at half the
-	 * lines per unit instead.
+	 * no higher than the given number of lines, and which is not larger than the given scale: counting the axes with their values and names, and the depth
+	 * of the oblique view. If the thinnest box along y does not get its minimum number of steps in the oblique view without making the view too large,
+	 * the depth is drawn at half the lines per unit instead.
 	 */
-	private Scale fit(View view, int columns, int lines) {
-		Scale scale = fit(view, columns, lines, true);
+	private Scale fit(View view, Scale upper, int columns, int lines) {
+		Scale scale = fit(view, upper, columns, lines, true);
 		if (scale == null && view == View.OBLIQUE) {
-			scale = fit(view, columns, lines, false);
+			scale = fit(view, upper, columns, lines, false);
 		}
 		if (scale == null) {
 			// the axes alone are larger
-			scale = newFittedScale(view, MINIMUM_FIT_COLUMNS_PER_UNIT, false);
+			scale = newFittedScale(MINIMUM_FIT_COLUMNS_PER_UNIT, false);
 		}
 		return scale;
 	}
 
-	private Scale fit(View view, int columns, int lines, boolean minimumDepthSteps) {
+	private Scale fit(View view, Scale upper, int columns, int lines, boolean minimumDepthSteps) {
 		double low = MINIMUM_FIT_COLUMNS_PER_UNIT;
-		Scale best = newFittedScale(view, low, minimumDepthSteps);
+		Scale best = newFittedScale(low, minimumDepthSteps);
 		if (!isWithin(view, best, columns, lines)) {
 			return null;
 		}
-		// a container is at least one unit wide, so more columns per unit than columns never fits
-		double high = columns;
+		// not larger than the given scale in columns or in lines. A container is at least one unit wide and high, so more columns per unit than
+		// columns, or more lines per unit than lines, never fits
+		double high = Math.min(upper.cz * COLUMNS_PER_LINE, Math.min(columns, (double) lines * COLUMNS_PER_LINE));
+		Scale top = newFittedScale(high, minimumDepthSteps);
+		if (isWithin(view, top, columns, lines)) {
+			return top;
+		}
 		for (int i = 0; i < FIT_ITERATIONS; i++) {
 			double middle = (low + high) / 2;
-			Scale candidate = newFittedScale(view, middle, minimumDepthSteps);
+			Scale candidate = newFittedScale(middle, minimumDepthSteps);
 			if (isWithin(view, candidate, columns, lines)) {
 				low = middle;
 				best = candidate;
@@ -1429,70 +1492,80 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * The smallest scale (at least 4 columns x 2 lines per unit) at which 90 % of the labels have a blank line above and below, and a space at each side.
+	 * The smallest scale (at least 4 columns x 2 lines per unit) at which 90 % of the labels have a blank line above and below, and a space at each side,
+	 * on the faces which the views show: the front face of each box (x by z), the top face (x by y) and the side face (y by z).
 	 * The caller raises the columns per unit to at least twice the lines per unit.
 	 * <p>
 	 * Between the edges of a face which is w units wide, there are w * cx - 1 columns, so that a label with length l needs {@code w * cx - 1 >= l + 2}, and a face which is h units high
 	 * has h * cz - 1 lines between its edges, of which three are needed.
+	 *
+	 * @return {columns per unit, lines per unit}
 	 */
-	private double[] getLabelScale(View view) {
+	private double[] getLabelScale() {
 		int count = 0;
-		int[] columns = new int[items.size()];
-		int[] lines = new int[items.size()];
+		int[] columns = new int[items.size() * LABELLED_FACES];
+		int[] lines = new int[items.size() * LABELLED_FACES];
 		for (Item item : items) {
 			if (item.obstacle || item.label == null || item.label.isEmpty()) {
 				continue;
 			}
-			int faceWidth;
-			int faceHeight;
-			switch (view) {
-			case TOP:
-				faceWidth = item.dx;
-				faceHeight = item.dy;
-				break;
-			case SIDE:
-				faceWidth = item.dy;
-				faceHeight = item.dz;
-				break;
-			default:
-				// the front, also in the oblique view
-				faceWidth = item.dx;
-				faceHeight = item.dz;
-				break;
-			}
-			columns[count] = Math.max(MINIMUM_COLUMNS_PER_UNIT, ceilDivide(item.label.length() + 3, faceWidth));
-			lines[count] = Math.max(MINIMUM_LINES_PER_UNIT, ceilDivide(4, faceHeight));
-			count++;
+			int needed = item.label.length() + 3;
+			// the front face, the top face and the side face
+			count = addFace(columns, lines, count, needed, item.dx, item.dz);
+			count = addFace(columns, lines, count, needed, item.dx, item.dy);
+			count = addFace(columns, lines, count, needed, item.dy, item.dz);
 		}
 		if (count == 0) {
 			return new double[] { MINIMUM_COLUMNS_PER_UNIT, MINIMUM_LINES_PER_UNIT };
 		}
 		int required = ceilDivide(count * LABEL_FIT_PERCENT, 100);
 
-		// the cheapest scale which is large enough for the required number of labels, using the sizes needed by the labels as candidates
+		// the cheapest scale which is large enough for the required number of labels, using the sizes needed by the labels as candidates:
+		// for each number of columns, the number of lines at which enough faces fit is that of the face with the required rank
+		int[] sortedColumns = Arrays.copyOf(columns, count);
+		Arrays.sort(sortedColumns);
+		int[] candidates = new int[count];
+
 		long bestArea = Long.MAX_VALUE;
 		int bestColumns = 0;
 		int bestLines = 0;
+		int previous = -1;
 		for (int i = 0; i < count; i++) {
-			for (int j = 0; j < count; j++) {
-				long area = (long) columns[i] * lines[j];
-				if (area > bestArea || (area == bestArea && columns[i] > bestColumns)) {
-					continue;
+			int candidateColumns = sortedColumns[i];
+			if (candidateColumns == previous) {
+				continue;
+			}
+			previous = candidateColumns;
+
+			int fits = 0;
+			for (int k = 0; k < count; k++) {
+				if (columns[k] <= candidateColumns) {
+					candidates[fits++] = lines[k];
 				}
-				int fits = 0;
-				for (int k = 0; k < count; k++) {
-					if (columns[k] <= columns[i] && lines[k] <= lines[j]) {
-						fits++;
-					}
-				}
-				if (fits >= required) {
-					bestArea = area;
-					bestColumns = columns[i];
-					bestLines = lines[j];
-				}
+			}
+			if (fits < required) {
+				continue;
+			}
+			Arrays.sort(candidates, 0, fits);
+			int candidateLines = candidates[required - 1];
+
+			long area = (long) candidateColumns * candidateLines;
+			if (area < bestArea) {
+				bestArea = area;
+				bestColumns = candidateColumns;
+				bestLines = candidateLines;
 			}
 		}
 		return new double[] { bestColumns, bestLines };
+	}
+
+	/**
+	 * @return the number of faces after adding the face
+	 */
+	private static int addFace(int[] columns, int[] lines, int count, int needed, int faceWidth, int faceHeight) {
+		columns[count] = Math.max(MINIMUM_COLUMNS_PER_UNIT, ceilDivide(needed, faceWidth));
+		lines[count] = Math.max(MINIMUM_LINES_PER_UNIT, ceilDivide(4, faceHeight));
+		return count + 1;
 	}
 
 	private static int ceilDivide(int value, int divisor) {
@@ -1512,14 +1585,17 @@ public class ContainerAsciiArt {
 
 	/**
 	 * Write the labels on the visible part of the faces of each box. A label is put on the first face which has room for the whole of it,
-	 * and which is not mostly hidden. Otherwise it is put on the face with the most room. The label is centered on the widest visible
-	 * part of the face.
+	 * and which is not mostly hidden. Otherwise it is put in the top edge of the front face if the whole of it fits there, between the corners.
+	 * Otherwise it is put on the face with the most room, or in the top edge, whichever has room for the most characters. The label is centered
+	 * on the widest visible part of the face.
 	 *
 	 * @param bounds the columns and rows (first column, last column, first row, last row) of each item
 	 * @param interiors the number of cells between the edges of each face of each item
 	 * @param faces the number of faces per item
+	 * @param topEdges the first column, the last column and the row of the top edge of the front face of each item
+	 * @param edgeDepths the depth of the front face of each item
 	 */
-	private void drawLabels(AsciiCanvas canvas, int[] bounds, int[] interiors, int faces) {
+	private void drawLabels(AsciiCanvas canvas, int[] bounds, int[] interiors, int faces, int[] topEdges, int[] edgeDepths) {
 		for (int i = 0; i < items.size(); i++) {
 			Item item = items.get(i);
 			if (item.obstacle || item.label == null || item.label.isEmpty()) {
@@ -1539,6 +1615,16 @@ public class ContainerAsciiArt {
 					chosen = run;
 				}
 			}
+			if (chosen == null || chosen[0] < item.label.length()) {
+				// no room inside for the whole of the label: the top edge, if there is more room there
+				int[] edge = findEdgeRun(canvas, item.label.length(), topEdges[i * 3], topEdges[i * 3 + 1], topEdges[i * 3 + 2], edgeDepths[i]);
+				if (edge != null && (chosen == null || edge[0] == item.label.length() || edge[0] > chosen[0])) {
+					for (int j = 0; j < edge[0]; j++) {
+						canvas.replaceEdge(edge[1] + j, topEdges[i * 3 + 2], item.label.charAt(j));
+					}
+					continue;
+				}
+			}
 			if (chosen == null) {
 				continue;
 			}
@@ -1554,6 +1640,46 @@ public class ContainerAsciiArt {
 				canvas.setCharacter(column + j, row, item.label.charAt(j));
 			}
 		}
+	}
+
+	/**
+	 * Find the place for a label in the top edge of a face: the runs of cells between the corners which are only a horizontal edge of the face (not a
+	 * corner or a junction with the edges of other boxes, not an edge of a nearer box, and not another label), with an edge character left at each side
+	 * of the label. The label goes in the middle of the run where most of it fits, or else the longest of those.
+	 *
+	 * @param firstColumn the column of the first corner
+	 * @param lastColumn the column of the last corner
+	 * @param row the row of the edge
+	 * @param depth the depth of the face
+	 * @return {number of label characters which fit, first column of the label}, or null if there is no room for a single character
+	 */
+	private static int[] findEdgeRun(AsciiCanvas canvas, int labelLength, int firstColumn, int lastColumn, int row, int depth) {
+		int bestFit = 0;
+		int bestStart = 0;
+		int bestLength = 0;
+		int column = firstColumn + 1;
+		while (column < lastColumn) {
+			if (!canvas.isStraightEdge(column, row, depth)) {
+				column++;
+				continue;
+			}
+			int start = column;
+			while (column < lastColumn && canvas.isStraightEdge(column, row, depth)) {
+				column++;
+			}
+			int length = column - start;
+			// at least one edge character at each side of the label
+			int fit = Math.min(labelLength, length - 2);
+			if (fit > bestFit || (fit == bestFit && fit > 0 && length > bestLength)) {
+				bestFit = fit;
+				bestLength = length;
+				bestStart = start + 1 + (length - 2 - fit) / 2;
+			}
+		}
+		if (bestFit <= 0) {
+			return null;
+		}
+		return new int[] { bestFit, bestStart };
 	}
 
 	/**

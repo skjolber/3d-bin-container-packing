@@ -109,6 +109,28 @@ final class AsciiCanvas {
 	}
 
 	/**
+	 * Write a character instead of the edge in a cell, keeping the depth: for a label on the edge of a face. No other label is written over it.
+	 */
+	void replaceEdge(int column, int row, char c) {
+		int index = row * width + column;
+		characters[index] = c;
+		directions[index] = 0;
+		owners[index] = NO_OWNER;
+	}
+
+	/**
+	 * @return true if the cell is a horizontal edge which is drawn at the given depth, and nothing else: not a corner or a junction, not another
+	 *         edge which is nearer, and not a label. A cell outside the canvas is not.
+	 */
+	boolean isStraightEdge(int column, int row, int depth) {
+		if (column < 0 || column >= width || row < 0 || row >= height) {
+			return false;
+		}
+		int index = row * width + column;
+		return directions[index] == HORIZONTAL && depths[index] == depth;
+	}
+
+	/**
 	 * @return true if nothing is drawn in the cell. A cell outside the canvas is not blank.
 	 */
 	boolean isBlank(int column, int row) {

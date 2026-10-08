@@ -217,8 +217,8 @@ public class ContainerAsciiArtPointsTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				2     ┌───────┐
-				1 ┌───┼───────┘
+				2     ┌───B───┐
+				1 ┌─A─┼───────┘
 				0 └───┘0
 				  0   1       3   x
 				""");
@@ -673,6 +673,51 @@ public class ContainerAsciiArtPointsTest {
 		assertThat(overview.toString()).isEqualTo(Figures.vertical(1,
 				Figures.horizontal(3, art.oblique(), art.front()),
 				Figures.horizontal(3, art.top(), art.side())).toString());
+	}
+
+	/**
+	 * At the default scale, the four views of a container 12 x 6 x 6 do not fit in one row of 160 characters, but two rows of two views do: the
+	 * overview is not drawn narrower.
+	 */
+	@Test
+	public void testOverviewIsInTwoRowsAtTheDefaultScaleWhenEachRowIsAtMostTheMaximumWidth() {
+		ContainerAsciiArt art = newBuilder(12, 6, 6,
+				place("A", 6, 6, 6, 0, 0, 0),
+				place("B", 6, 6, 6, 6, 0, 0))
+				.build();
+
+		Figure upper = Figures.horizontal(3, art.oblique(), art.front());
+		Figure lower = Figures.horizontal(3, art.top(), art.side());
+		assertThat(Figures.horizontal(3, art.oblique(), art.front(), art.top(), art.side()).getWidth()).isGreaterThan(160);
+		assertThat(upper.getWidth()).isLessThanOrEqualTo(160);
+		assertThat(lower.getWidth()).isLessThanOrEqualTo(160);
+
+		Figure overview = art.overview();
+		assertThat(overview.toString()).isEqualTo(Figures.vertical(1, upper, lower).toString());
+		// at the default scale of 4 columns per unit: 48 columns for the 12 units, and the values and the name of the axes
+		assertThat(art.front().getWidth()).isEqualTo(56);
+	}
+
+	/**
+	 * If even two rows of two views are wider than 160 characters, the overview is as wide: the views are drawn narrower with a width. A width of
+	 * 78 columns makes a row of two views at most 160 characters wide, at the same scale for all the views.
+	 */
+	@Test
+	public void testOverviewIsDrawnNarrowerWithAWidthWhenTwoRowsAreTooWide() {
+		ContainerAsciiArt.Builder builder = newBuilder(40, 20, 10,
+				place("A", 20, 20, 10, 0, 0, 0),
+				place("B", 20, 20, 10, 20, 0, 0));
+
+		ContainerAsciiArt art = builder.build();
+		assertThat(Figures.horizontal(3, art.oblique(), art.front()).getWidth()).isGreaterThan(160);
+		assertThat(art.overview().getWidth()).isGreaterThan(160);
+
+		ContainerAsciiArt narrow = builder.withWidth(78).build();
+		Figure overview = narrow.overview();
+		assertThat(overview.getWidth()).isLessThanOrEqualTo(160);
+		assertThat(overview.toString()).isEqualTo(Figures.vertical(1,
+				Figures.horizontal(3, narrow.oblique(), narrow.front()),
+				Figures.horizontal(3, narrow.top(), narrow.side())).toString());
 	}
 
 	@Test
