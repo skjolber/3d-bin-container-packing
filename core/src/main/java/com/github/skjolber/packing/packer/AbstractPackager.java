@@ -41,9 +41,11 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	protected final boolean prefersHigherLoadVolume;
 	private volatile ContainerStrategyFactory containerStrategyFactory;
 	
-	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
+	/** The deadline tasks only flag expiry, so one thread is enough. */
+	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
 
 	public AbstractPackager(IntermediatePackagerResultComparator comparator) {
+		this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
 		this.intermediatePackagerResultComparator = comparator;
 		this.prefersHigherLoadVolume = comparator != null && comparator.prefersHigherLoadVolume();
 		this.containerStrategyFactory = new DefaultContainerStrategyFactory(comparator,
@@ -170,7 +172,10 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 			long duration = System.currentTimeMillis() - start;
 			return new PackagerResult(Collections.emptyList(), duration, true, -1);
 		} finally {
-			packagerInterrupt.close();
+			// the library closes only what it created
+			if(packagerInterrupt != interrupt) {
+				packagerInterrupt.close();
+			}
 		}
 	}
 

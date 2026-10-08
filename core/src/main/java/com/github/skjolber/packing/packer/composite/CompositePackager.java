@@ -237,7 +237,10 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		} catch (PackagerInterruptedException e) {
 			return new PackagerResult(Collections.emptyList(), System.currentTimeMillis() - start, true, -1);
 		} finally {
-			packagerInterrupt.close();
+			// the library closes only what it created
+			if(packagerInterrupt != interrupt) {
+				packagerInterrupt.close();
+			}
 		}
 	}
 
@@ -286,7 +289,10 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 				return new PackagerResult(Collections.emptyList(), System.currentTimeMillis() - start, true, -1);
 			}
 		} finally {
-			packagerInterrupt.close();
+			// the library closes only what it created
+			if(packagerInterrupt != interrupt) {
+				packagerInterrupt.close();
+			}
 			if(session != null) {
 				session.close();
 			}

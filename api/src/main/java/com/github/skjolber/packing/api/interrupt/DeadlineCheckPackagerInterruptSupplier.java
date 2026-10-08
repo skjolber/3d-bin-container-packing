@@ -22,7 +22,9 @@ public class DeadlineCheckPackagerInterruptSupplier implements PackagerInterrupt
 	}
 	
 	public void close() {
-		future.cancel(true);
+		if(future != null) {
+			future.cancel(true);
+		}
 	}
 	
 	public void setFuture(ScheduledFuture<?> future) {

@@ -24,9 +24,11 @@ public class DelegateDeadlineCheckPackagerInterruptSupplier implements PackagerI
 		this.expired = true;
 	}
 	
+	/** Cancels the deadline only: the delegate remains owned by its creator. */
 	public void close() {
-		future.cancel(true);
-		delegate.close();
+		if(future != null) {
+			future.cancel(true);
+		}
 	}
 	
 	public void setFuture(ScheduledFuture<?> future) {
