@@ -9,7 +9,10 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
 public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
-	
+
+	/** The number of boxes of each group (by group index, zero for removed groups), valid as long as the permutations. */
+	private int[] groupBoxCounts;
+
 	public static Builder newBuilder() {
 		return new Builder();
 	}
@@ -50,6 +53,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		this.reset = source.reset.clone();
 		this.permutations = source.permutations.clone();
 		this.minBoxVolume = source.minBoxVolume.clone();
+		this.groupBoxCounts = source.groupBoxCounts.clone();
 	}
 
 	public DefaultBoxItemGroupPermutationRotationIterator fork() {
@@ -113,6 +117,14 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		}
 		
 		this.permutations = permutations;
+
+		int[] groupBoxCounts = new int[groupsMatrix.length];
+		for (int g = 0; g < groupBoxCounts.length; g++) {
+			if(groupsMatrix[g] != null) {
+				groupBoxCounts[g] = groupsMatrix[g].getBoxCount();
+			}
+		}
+		this.groupBoxCounts = groupBoxCounts;
 		
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
@@ -173,10 +185,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
-
 			// Find longest non-increasing suffix
-			int startIndex = limit - loadableItemGroup.getBoxCount();
+			int startIndex = limit - groupBoxCounts[g];
 
 			if(startIndex <= maxIndex && maxIndex < limit) {
 				while (maxIndex >= startIndex) {
@@ -214,18 +224,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 					return maxIndex;
 				}				
 			}
-			// reset current group
-			// TODO system arraycopy?
-			int i = startIndex;
-			
-			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-				BoxItem indexedStackableItem = (BoxItem)loadableItem;
-				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-					permutations[i] = indexedStackableItem.getLocalIndex();
-							
-					i++;
-				}
-			}
+			// reset current group: the block holds the group's box indexes, which are in ascending order in the first permutation
+			Arrays.sort(permutations, startIndex, limit);
 
 			// skip to next group
 			limit = startIndex;
@@ -250,11 +250,9 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
-
 			// Find longest non-increasing suffix
 			int i = endIndex;
-			int startIndex = endIndex - loadableItemGroup.getBoxCount() + 1;
+			int startIndex = endIndex - groupBoxCounts[g] + 1;
 
 			while (i > startIndex && permutations[i - 1] >= permutations[i])
 				i--;
@@ -262,18 +260,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 			// Are we at the last permutation already?
 			if(i <= startIndex) {
-				// reset current group
-				// TODO system arraycopy?
-				i = startIndex;
-				
-				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-					BoxItem indexedStackableItem = (BoxItem)loadableItem;
-					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-						permutations[i] = indexedStackableItem.getLocalIndex();
-								
-						i++;
-					}
-				}
+				// reset current group: the block holds the group's box indexes, which are in ascending order in the first permutation
+				Arrays.sort(permutations, startIndex, endIndex + 1);
 
 				// skip to next group
 				endIndex = startIndex - 1;

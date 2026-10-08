@@ -898,10 +898,11 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		int[] permutations = iterator.getPermutations();
 		int[] starts = new int[length];
-		Object previous = boxItems[permutations[0]].getGroupKey();
+		// within an iterator, the box items of a group share one group object, and each group is a separate object
+		BoxItemGroup previous = boxItems[permutations[0]].getGroup();
 		for (int i = 1; i < length; i++) {
-			Object group = boxItems[permutations[i]].getGroupKey();
-			starts[i] = group.equals(previous) ? starts[i - 1] : i;
+			BoxItemGroup group = boxItems[permutations[i]].getGroup();
+			starts[i] = group == previous ? starts[i - 1] : i;
 			previous = group;
 		}
 		return starts[length - 1] == 0 ? NO_COUNTS : starts;
