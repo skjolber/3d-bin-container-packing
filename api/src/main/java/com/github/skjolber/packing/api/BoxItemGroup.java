@@ -31,10 +31,7 @@ public class BoxItemGroup {
 	public BoxItemGroup(String id, List<BoxItem> items) {
 		super();
 		this.id = id;
-		this.items = items;
-		for (BoxItem boxItem : items) {
-			boxItem.setGroup(this);
-		}
+		setItems(items);
 	}
 
 	/**
@@ -111,6 +108,9 @@ public class BoxItemGroup {
 
 	public void setItems(List<BoxItem> items) {
 		this.items = items;
+		for (BoxItem boxItem : items) {
+			boxItem.setGroup(this);
+		}
 	}
 
 	public int size() {
