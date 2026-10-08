@@ -168,7 +168,11 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 	private void reload() {
 		StackItem stackItem = stackItems[stackSize];
-		stackItem.values.copyInto(values);
+		// the frame's snapshot becomes the current list; the current list becomes the frame's spare, and is not read
+		// again before the next add(..) at this level takes the frame's list as the output buffer (see saveValues)
+		Point3DFlagList current = values;
+		values = stackItem.values;
+		stackItem.values = current;
 		minVolumeLimit = stackItem.minVolumeLimit;
 		minAreaLimit = stackItem.minAreaLimit;
 	}
