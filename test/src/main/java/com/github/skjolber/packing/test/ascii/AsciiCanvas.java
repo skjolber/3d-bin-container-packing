@@ -109,6 +109,26 @@ final class AsciiCanvas {
 	}
 
 	/**
+	 * @return true if nothing is drawn in the cell. A cell outside the canvas is not blank.
+	 */
+	boolean isBlank(int column, int row) {
+		if (column < 0 || column >= width || row < 0 || row >= height) {
+			return false;
+		}
+		return depths[row * width + column] == EMPTY;
+	}
+
+	/**
+	 * @return the depth of what is drawn in the cell: the lower the nearer, or {@linkplain #EMPTY} if nothing is drawn or the cell is outside the canvas
+	 */
+	int getDepth(int column, int row) {
+		if (column < 0 || column >= width || row < 0 || row >= height) {
+			return EMPTY;
+		}
+		return depths[row * width + column];
+	}
+
+	/**
 	 * @return true if the cell shows the inside of the face with the given owner
 	 */
 	boolean isInterior(int column, int row, int owner) {
@@ -124,6 +144,14 @@ final class AsciiCanvas {
 			return false;
 		}
 		return (directions[row * width + column] & direction) != 0;
+	}
+
+	/**
+	 * @return true if the diagonal edge in the cell goes on up and to the right, and down and to the left: those cells are the next ones along the
+	 *         edge, so that they are one step further from and nearer to the viewer
+	 */
+	private boolean isDiagonalContinued(int column, int row, int depth) {
+		return hasDirection(column - 1, row - 1, DIAGONAL, depth - 1) && hasDirection(column + 1, row + 1, DIAGONAL, depth + 1);
 	}
 
 	private boolean isJoined(int column, int row, int direction, boolean oblique, int depth) {
@@ -197,6 +225,10 @@ final class AsciiCanvas {
 		boolean joinVertical = vertical || !oblique;
 
 		if ((edges & DIAGONAL) != 0) {
+			if (oblique && isDiagonalContinued(column, row, depth) && !(vertical && (isJoined(column, row + 1, VERTICAL, true, depth) || isJoined(column, row - 1, VERTICAL, true, depth)))) {
+				// a diagonal line which goes on at both sides, also where a horizontal line starts, ends or goes on: otherwise the diagonal line is broken
+				return style.diagonal;
+			}
 			if (horizontal && !vertical) {
 				// a diagonal line ends on a horizontal line
 				boolean right = hasDirection(column + 1, row, HORIZONTAL, depth);

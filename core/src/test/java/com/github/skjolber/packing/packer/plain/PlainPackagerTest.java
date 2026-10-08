@@ -50,6 +50,20 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
+			// <figure>
+			//   z   /-------|           y   z                         y                         z
+			//      /   B   /|               1 +-------+-------+       2 +-------+               1 +-------+-------+
+			//   | /-------/-------|   /       |       |       |         |       |                 |       |       |
+			//   |/       /       /|  /        |   A   |   C   |         |   B   |                 |   C   |   B   |
+			// 1 |-------|-------| | / 2       |       |       |         |       |                 |       |       |
+			//   |       |       | |/        0 +-------+-------+       1 +-------+-------+       0 +-------+-------+
+			//   |   A   |   C   | | 1         0       1       2   x     |       |       |         0       1       2   y
+			//   |       |       |/                                      |   A   |   C   |
+			// 0 |-------|-------|-- x                                   |       |       |
+			//   0       1       2                                     0 +-------+-------+
+			//                                                           0       1       2   x
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -75,6 +89,28 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withContainerItem(containerItem)
 					.withBoxItems(products)
 					.build();
+			// <figure>
+			//           /----------/----------|       z                                       y                                       z
+			//          /    A     /    A     /|       200 +------------+------------+         200 +------------+------------+         200 +------------+------------+
+			//     z   /          /          / |           |            |            |             |            |            |             |            |            |
+			//        /----------/----------|  |           |            |            |             |            |            |             |            |            |
+			//     | /          /          /|  |           |     A      |     A      |             |     A      |     A      |             |     A      |     A      |
+			//     |/          /          / |  |           |            |            |             |            |            |             |            |            |
+			// 200 |----------|----------|  | /|           |            |            |             |            |            |             |            |            |
+			//     |          |          |  |/ |   y   100 +------------+------------+         100 +------------+------------+         100 +------------+------------+
+			//     |    A     |    A     |  |  |           |            |            |             |            |            |             |            |            |
+			//     |          |          | /|A | /         |            |            |             |            |            |             |            |            |
+			//     |          |          |/ |  |/          |     A      |     A      |             |     A      |     A      |             |     A      |     A      |
+			// 100 |----------|----------|  |  | 200       |            |            |             |            |            |             |            |            |
+			//     |          |          |  | /            |            |            |             |            |            |             |            |            |
+			//     |          |          |  |/             |            |            |             |            |            |             |            |            |
+			//     |    A     |    A     |  | 100        0 +------------+------------+           0 +------------+------------+           0 +------------+------------+
+			//     |          |          | /               0            100          200   x       0            100          200   x       0            100          200   y
+			//     |          |          |/
+			//   0 |----------|----------|-- x
+			//     0         100        200
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -99,6 +135,20 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /---------------/-------|   y   z                                 y                                 z
+			//      /       B       /       /|       1 +---------------+-------+       2 +---------------+-------+       1 +---------------+
+			//   | /---------------/       / | /       |               |       |         |               |       |         |               |
+			//   |/               /       /  |/        |       A       |   C   |         |       B       |       |         |       C       |
+			// 1 |---------------|-------|   | 2       |               |       |         |               |       |         |               |
+			//   |               |       |  /        0 +---------------+-------+       1 +---------------+   C   |       0 +---------------+
+			//   |       A       |   C   | / 1         0               2       3   x     |               |       |         0       1       2   y
+			//   |               |       |/                                              |       A       |       |
+			// 0 |---------------|-------|-- x                                           |               |       |
+			//   0               2       3                                             0 +---------------+-------+
+			//                                                                           0               2       3   x
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -121,6 +171,35 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//    z                                 z                              y                                                 z
+			//                                      10 +-------------------+       3 +---------------------------------------+       10 +---+
+			//    | /-------------------|              |                   |         |                                       |          |   |
+			//    |/                   /|              |                   |         |                   C                   |          |   |
+			// 10 |-------------------| |              |                   |         |                                       |          |   |
+			//    |                   | |              |                   |       2 +---------------------------------------+          |   |
+			//    |                   | |              |                   |         |                                       |          |   |
+			//    |                   | |              |                   |         |                   B                   |          |   |
+			//    |                   | |---|          |                   |         |                                       |          |   |
+			//    |                   | |  /|          |                   |       1 +---------------------------------------+          |   |
+			//    |                   | |-| |          |                   |         |                                       |          |   |
+			//    |                   | |/| |        5 |         A         |         |                   A                   |        5 | A +---+---+
+			//    |                   | | | |          |                   |         |                                       |          |   |   |   |
+			//    |                   | | | |          |                   |       0 +---------------------------------------+          |   |   |   |
+			//    |         A         | | |C|   y      |                   |         0                                       5   x      |   |   |   |
+			//    |                   | | | |          |                   |                                                            |   |   |   |
+			//    |                   | |B| | /        |                   |                                                            |   | B | C |
+			//    |                   | | | |/         |                   |                                                            |   |   |   |
+			//    |                   | | | | 3        |                   |                                                            |   |   |   |
+			//    |                   | | |/           |                   |                                                            |   |   |   |
+			//    |                   | | | 2          |                   |                                                            |   |   |   |
+			//    |                   | |/           0 +-------------------+                                                          0 +---+---+---+
+			//    |                   | | 1            0                   5   x                                                        0   1   2   3   y
+			//    |                   |/
+			//  0 |-------------------|-- x
+			//    0                   5
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -143,6 +222,27 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z                                 y   z                                       y                                       z
+			//                                         1 +--------------+---------+----+       1 +--------------+---------+----+       1 +-----------------------------+
+			//   | /-------------/---------/---| /       |      A       |    B    | C  |         |      A       |    B    | C  |         |                             |
+			//   |/             /         /   /|/        |              |         |    |         |              |         |    |         |                             |
+			// 1 |-------------|---------|---| | 1     0 +--------------+---------+----+       0 +--------------+---------+----+         |                             |
+			//   |      A      |    B    | C |/          0              3         5    6   x     0              3         5    6   x     |                             |
+			// 0 |-------------|---------|---|-- x                                                                                       |                             |
+			//   0             3         5   6                                                                                           |                             |
+			//                                                                                                                           |              C              |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                           |                             |
+			//                                                                                                                         0 +-----------------------------+
+			//                                                                                                                           0                             1   y
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -166,6 +266,20 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /---/---/---|   y   z                     y                                 z
+			//      / A / B / C /|       2 +---+---+---+       2 +-------+-------+-------+       2 +---+---+
+			//   | /---/---/---| | /       |   |   |   |         |       |       |       |         |   |   |
+			//   |/   /   /   /| |/        | A | B | C |         |   A   |   B   |   C   |         | C | C |
+			// 2 |---|---|---| | | 2       |   |   |   |         |       |       |       |         |   |   |
+			//   |   |   |   | |/        0 +---+---+---+       1 +-------+-------+-------+       0 +---+---+
+			//   | A | B | C | | 1         0   1   2   3   x     |       |       |       |         0   1   2   y
+			//   |   |   |   |/                                  |   A   |   B   |   C   |
+			// 0 |---|---|---|-- x                               |       |       |       |
+			//   0   1   2   3                                 0 +-------+-------+-------+
+			//                                                   0       1       2       3   x
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -188,6 +302,20 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("A").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 3));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /-------/---|   y   z                     y                                 z
+			//      /   A   /   /|       2 +-------+---+       2 +---------------+-------+       2 +-------+
+			//   | /-------/   / | /       |       |   |         |               |       |         |       |
+			//   |/       /   /  |/        |   A   | A |         |       A       |       |         |   A   |
+			// 2 |-------|---|   | 2       |       |   |         |               |       |         |       |
+			//   |       |   |  /        0 +-------+---+       1 +---------------+   A   |       0 +-------+
+			//   |   A   | A | / 1         0       2   3   x     |               |       |         0   1   2   y
+			//   |       |   |/                                  |       A       |       |
+			// 0 |-------|---|-- x                               |               |       |
+			//   0       2   3                                 0 +---------------+-------+
+			//                                                   0               2       3   x
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
@@ -240,6 +368,24 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//         /-------|   y   z                 y                 z
+			//        /   C   /|       1 +-------+       3 +-------+       1 +-------+-------+-------+
+			//   z   /-------| | /       |       |         |       |         |       |       |       |
+			//      /   B   /| |/        |   A   |         |   C   |         |   A   |   B   |   C   |
+			//   | /-------| | | 3       |       |         |       |         |       |       |       |
+			//   |/       /| |/        0 +-------+       2 +-------+       0 +-------+-------+-------+
+			// 1 |-------| | | 2         0       1   x     |       |         0       1       2       3   y
+			//   |       | |/                              |   B   |
+			//   |   A   | | 1                             |       |
+			//   |       |/                              1 +-------+
+			// 0 |-------|-- x                             |       |
+			//   0       1                                 |   A   |
+			//                                             |       |
+			//                                           0 +-------+
+			//                                             0       1   x
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.get(0);
@@ -275,6 +421,58 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withDescription("D").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 4));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
+			// <figure>
+			// container 1 of 2: 7
+			//                 /-------|   y   z                 y                 z
+			//                /   D   /|       1 +-------+       7 +-------+       1 +-------+-------+-------+-------+-------+-------+-------+
+			//               /-------| | /       |       |         |       |         |       |       |       |       |       |       |       |
+			//              /   C   /| |/        |   A   |         |   D   |         |   A   |   B   |   B   |   C   |   C   |   C   |   D   |
+			//             /-------| | | 7       |       |         |       |         |       |       |       |       |       |       |       |
+			//            /   C   /| |/        0 +-------+       6 +-------+       0 +-------+-------+-------+-------+-------+-------+-------+
+			//           /-------| | | 6         0       1   x     |       |         0       1       2       3       4       5       6       7   y
+			//          /   C   /| |/                              |   C   |
+			//         /-------| | | 5                             |       |
+			//        /   B   /| |/                              5 +-------+
+			//   z   /-------| | | 4                               |       |
+			//      /   B   /| |/                                  |   C   |
+			//   | /-------| | | 3                                 |       |
+			//   |/       /| |/                                  4 +-------+
+			// 1 |-------| | | 2                                   |       |
+			//   |       | |/                                      |   C   |
+			//   |   A   | | 1                                     |       |
+			//   |       |/                                      3 +-------+
+			// 0 |-------|-- x                                     |       |
+			//   0       1                                         |   B   |
+			//                                                     |       |
+			//                                                   2 +-------+
+			//                                                     |       |
+			//                                                     |   B   |
+			//                                                     |       |
+			//                                                   1 +-------+
+			//                                                     |       |
+			//                                                     |   A   |
+			//                                                     |       |
+			//                                                   0 +-------+
+			//                                                     0       1   x
+			//
+			// container 2 of 2: 3
+			//         /-------|   y   z                 y                 z
+			//        /   D   /|       1 +-------+       3 +-------+       1 +-------+-------+-------+
+			//   z   /-------| | /       |       |         |       |         |       |       |       |
+			//      /   D   /| |/        |   D   |         |   D   |         |   D   |   D   |   D   |
+			//   | /-------| | | 3       |       |         |       |         |       |       |       |
+			//   |/       /| |/        0 +-------+       2 +-------+       0 +-------+-------+-------+
+			// 1 |-------| | | 2         0       1   x     |       |         0       1       2       3   y
+			//   |       | |/                              |   D   |
+			//   |   D   | | 1                             |       |
+			//   |       |/                              1 +-------+
+			// 0 |-------|-- x                             |       |
+			//   0       1                                 |   D   |
+			//                                             |       |
+			//                                           0 +-------+
+			//                                             0       1   x
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 	
 			assertEquals(result.size(), 2);
@@ -319,6 +517,49 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 						createStackableItem("10", 1200, 1050, 2280, 390, boxCountPerStackableItem));
 	
 				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(stackableItems).build();
+				// <figure>
+				//                  /------|               z                                       y                                       z
+				//                 /  /--|/|  /---|        6810              +----+                2340 +------------+--+-------+          6810 +------------+
+				//                /10/  /| | /   /|                          |    |                2170 +------------+  |       |               |            |
+				//               /  /  / | |/   / |        6470 +------------+    |                     |            |  |       |          6470 |            |
+				//      z       /  /  /  | /   /  |             |            |    |                     |            |6 |   1   |               |            |
+				//          /-----/  /   |/   /   |             |            |    |                     |     10     |  |       |               |            |
+				//      |  /     /  /    |   /    |             |            |    |                1560 |            |  |       |               |            |
+				//      | /     /  /     |  /     |             |            | 2  |                1200 |            +--+-+     |               |     2      |
+				// 6810 |/     |--|     /--|      |             |     8      |    |                1120 +------------+    ++----+               |            |
+				// 6470 |------|  |    /|  |     /         5380 |            |    |                     |     9      |    || 4  |          5380 |            +---------+
+				//      |      |  |   //|  |    /               |            |    |                 800 +------------+ 2  |+----+               |            |         |
+				//      |      |2 |  // |1 |   /--|   y         |            |    |                     |            |    ||    |               |            |   10    |
+				//      |  8   |  | //  |  |  /  /|             |            |    |                     |     8      |    || 7  |               |            |         |
+				//      |      |  |//   |  | /  / | /      4530 |            +----++----+               |            |    ||    |          4530 +-----------++---------++
+				// 4530 |      |--|/  /--| ||  /  |/       4370 +------------+----++    |             0 +------------+----++----+          4370 +-----------+           |
+				// 4370 |------|--|  /  /|-|| /   | 2340        |                  |    |               0            1200 1650  2250   x        |           |           |
+				//      |         | /  / |/ |/ 5 / 2170         |                  | 1  |                                                       |     9     |           |
+				//      |         |/  /  |  |   /               |                  |    |                                                       |           |           |
+				// 3390 |    9    |--|  /   |  /                |                  |    |                                                       |           |           |
+				//      |         |7 | /    | / 1560            |                  |    |                                                  3390 +-------+   |     1     |
+				//      |         |  |/     |/             3390 |        9         +----+                                                       |       |   |           |
+				// 2250 |---------|--|      | 1200         3100 |                  |    |                                                  3100 |       |   |           |
+				//      |            |     / 1120               |                  |    |                                                       |   7   |   |           |
+				//      |            |    /                     |                  | 7  |                                                       |       |   |           |
+				//      |     4      |   / 800                  |                  |    |                                                       |       |   |           |
+				//      |            |  /                       |                  |    |                                                  2250 +-------+---++--+-------+
+				//      |            | /                   2250 +------------------+----+                                                  2020 |            +--+       |
+				//      |            |/                    2020 |                       |                                                       |            |3 |   6   |
+				//    0 |------------|-- x                      |                       |                                                       |            |  |       |
+				//      0    1200  2250                         |                       |                                                  1450 |            +--+-------+
+				//                                         1450 |                       |                                                       |            |          |
+				//                                              |                       |                                                       |     4      |          |
+				//                                              |           4           |                                                       |            |          |
+				//                                              |                       |                                                       |            |    5     |
+				//                                              |                       |                                                       |            |          |
+				//                                              |                       |                                                       |            |          |
+				//                                              |                       |                                                       |            |          |
+				//                                              |                       |                                                     0 +------------+----------+
+				//                                            0 +-----------------------+                                                       0       800 1120        2340   y
+				//                                              0            1200 1650  2250   x
+				// </figure>
+				figure(result);
 				List<Container> packList = result.getContainers();
 	
 				assertNotNull(packList);
@@ -364,6 +605,45 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(5).withBoxItems(products).build();
+			// <figure>
+			// container 1 of 3: big
+			//   z   /-------/-------|   y   z                         y                         z
+			//      /   A   /   A   /|       1 +-------+-------+       2 +-------+-------+       1 +-------+-------+
+			//   | /-------/-------| | /       |       |       |         |       |       |         |       |       |
+			//   |/       /       /| |/        |   A   |   A   |         |   A   |   A   |         |   A   |   A   |
+			// 1 |-------|-------| | | 2       |       |       |         |       |       |         |       |       |
+			//   |       |       | |/        0 +-------+-------+       1 +-------+-------+       0 +-------+-------+
+			//   |   A   |   A   | | 1         0       1       2   x     |       |       |         0       1       2   y
+			//   |       |       |/                                      |   A   |   A   |
+			// 0 |-------|-------|-- x                                   |       |       |
+			//   0       1       2                                     0 +-------+-------+
+			//                                                           0       1       2   x
+			//
+			// container 2 of 3: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   B   |         |   B   |         |   B   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   B   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 3 of 3: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   C   |         |   C   |         |   C   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   C   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(build);
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
 			assertEquals(build.get(0).getId(), "big");
@@ -398,6 +678,32 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withMaxContainerCount(5)
 					.withBoxItems(products)
 					.build();
+			// <figure>
+			// container 1 of 2: my-container
+			//   z   /-----------|   y   z                     y                     z
+			//      /           /|       1 +-----------+       2 +-----------+       1 +---------------+
+			//   | /           / | /       |           |         |           |         |               |
+			//   |/           /  |/        | lighter-2 |         | lighter-2 |         |   lighter-2   |
+			// 1 |-----------|   | 2       |           |         |           |         |               |
+			//   |           |  /        0 +-----------+       0 +-----------+       0 +---------------+
+			//   | lighter-2 | /           0           1   x     0           1   x     0               2   y
+			//   |           |/
+			// 0 |-----------|-- x
+			//   0           1
+			//
+			// container 2 of 2: my-container
+			//   z                    z                    y                    z
+			//                        1 +----------+       1 +----------+       1 +----------+
+			//   | /----------|   y     |          |         |          |         |          |
+			//   |/          /|         | petrol-1 |         | petrol-1 |         | petrol-1 |
+			// 1 |----------| | /       |          |         |          |         |          |
+			//   |          | |/      0 +----------+       0 +----------+       0 +----------+
+			//   | petrol-1 | | 1       0          1   x     0          1   x     0          1   y
+			//   |          |/
+			// 0 |----------|-- x
+			//   0          1
+			// </figure>
+			figure(build);
 			
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
@@ -440,6 +746,32 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withMaxContainerCount(5)
 					.withBoxItemGroups(Arrays.asList(boxItemGroup1, boxItemGroup2))
 					.build();
+			// <figure>
+			// container 1 of 2: my-container
+			//   z   /-----------|   y   z                     y                     z
+			//      /           /|       1 +-----------+       2 +-----------+       1 +---------------+
+			//   | /           / | /       |           |         |           |         |               |
+			//   |/           /  |/        | lighter-2 |         | lighter-2 |         |   lighter-2   |
+			// 1 |-----------|   | 2       |           |         |           |         |               |
+			//   |           |  /        0 +-----------+       0 +-----------+       0 +---------------+
+			//   | lighter-2 | /           0           1   x     0           1   x     0               2   y
+			//   |           |/
+			// 0 |-----------|-- x
+			//   0           1
+			//
+			// container 2 of 2: my-container
+			//   z                    z                    y                    z
+			//                        1 +----------+       1 +----------+       1 +----------+
+			//   | /----------|   y     |          |         |          |         |          |
+			//   |/          /|         | petrol-1 |         | petrol-1 |         | petrol-1 |
+			// 1 |----------| | /       |          |         |          |         |          |
+			//   |          | |/      0 +----------+       0 +----------+       0 +----------+
+			//   | petrol-1 | | 1       0          1   x     0          1   x     0          1   y
+			//   |          |/
+			// 0 |----------|-- x
+			//   0          1
+			// </figure>
+			figure(build);
 			assertTrue(build.isSuccess());
 			List<Container> containers = build.getContainers();
 			assertEquals(containers.size(), 2);
@@ -496,6 +828,33 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				.withMaxContainerCount(5)
 				.withBoxItems(products)
 				.build();
+			// <figure>
+			// container 1 of 2: my-container
+			//   z   /------------|   y   z                      y                      z
+			//      / firehazard /|       1 +------------+       2 +------------+       1 +------------+------------+
+			//   | /------------| | /       |            |         |            |         |            |            |
+			//   |/            /| |/        |     A      |         | firehazard |         |     A      | firehazard |
+			// 1 |------------| | | 2       |            |         |            |         |            |            |
+			//   |            | |/        0 +------------+       1 +------------+       0 +------------+------------+
+			//   |     A      | | 1         0            1   x     |            |         0            1            2   y
+			//   |            |/                                   |     A      |
+			// 0 |------------|-- x                                |            |
+			//   0            1                                  0 +------------+
+			//                                                     0            1   x
+			//
+			// container 2 of 2: my-container
+			//   z                      z                      y                      z
+			//                          1 +------------+       1 +------------+       1 +------------+
+			//   | /------------|   y     |            |         |            |         |            |
+			//   |/            /|         | firehazard |         | firehazard |         | firehazard |
+			// 1 |------------| | /       |            |         |            |         |            |
+			//   |            | |/      0 +------------+       0 +------------+       0 +------------+
+			//   | firehazard | | 1       0            1   x     0            1   x     0            1   y
+			//   |            |/
+			// 0 |------------|-- x
+			//   0            1
+			// </figure>
+			figure(build);
 
 			
 			List<Container> containers = build.getContainers();
@@ -556,6 +915,33 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CHRONOLOGICAL)
 					.build();
+			// <figure>
+			// container 1 of 2: my-container
+			//   z   /-------------|   y   z                       y                       z
+			//      / firehazard1 /|       1 +-------------+       2 +-------------+       1 +-------------+-------------+
+			//   | /-------------| | /       |             |         |             |         |             |             |
+			//   |/             /| |/        |     id      |         | firehazard1 |         |     id      | firehazard1 |
+			// 1 |-------------| | | 2       |             |         |             |         |             |             |
+			//   |             | |/        0 +-------------+       1 +-------------+       0 +-------------+-------------+
+			//   |     id      | | 1         0             1   x     |             |         0             1             2   y
+			//   |             |/                                    |     id      |
+			// 0 |-------------|-- x                                 |             |
+			//   0             1                                   0 +-------------+
+			//                                                       0             1   x
+			//
+			// container 2 of 2: my-container
+			//   z                       z                       y                       z
+			//                           1 +-------------+       1 +-------------+       1 +-------------+
+			//   | /-------------|   y     |             |         |             |         |             |
+			//   |/             /|         | firehazard2 |         | firehazard2 |         | firehazard2 |
+			// 1 |-------------| | /       |             |         |             |         |             |
+			//   |             | |/      0 +-------------+       0 +-------------+       0 +-------------+
+			//   | firehazard2 | | 1       0             1   x     0             1   x     0             1   y
+			//   |             |/
+			// 0 |-------------|-- x
+			//   0             1
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
@@ -604,6 +990,27 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 				// strictly not necessary but included
 				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(maxWeight));
 			}).withBoxItems(products).build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             3 +---------------+       1 +---------------+       3 +-------+
+			//   | /---------------|         |               |         |               |         |       |
+			//   |/               /|         |       C       |         |       C       |         |   C   |
+			// 3 |---------------| |         |               |         |               |         |       |
+			//   |               | |       2 +---------------+       0 +---------------+       2 +-------+
+			//   |       C       | |         |               |         0       1       2   x     |       |
+			//   |               |/|         |       B       |                                   |   B   |
+			// 2 |---------------| |         |               |                                   |       |
+			//   |               | |       1 +-------+-------+                                 1 +-------+
+			//   |       B       | |   y     |       |                                           |       |
+			//   |               |/          |   A   |                                           |   A   |
+			// 1 |-------|-------|   /       |       |                                           |       |
+			//   |       | |        /      0 +-------+                                         0 +-------+
+			//   |   A   | |       / 1       0       1       2   x                               0       1   y
+			//   |       |/       /
+			// 0 |-------|---------- x
+			//   0       1       2
+			// </figure>
+			figure(build);
 			
 			assertTrue(build.isSuccess());
 			
@@ -642,6 +1049,51 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CHRONOLOGICAL)
 					.withMaxContainerCount(10)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//             /-------/-------|   y   z                         y                 z
+			//            /       /       /|       1 +-------+-------+       5 +---+---+       1 +-----------------------+---------------+
+			//           /       /   2   / | /       |       |       |         |   |   |         |                       |               |
+			//          /       /       /  |/        |   0   |   1   |         |   | 2 |         |           1           |       2       |
+			//         /       /-------|   | 5       |       |       |         |   |   |         |                       |               |
+			//        /       /       /|  /        0 +-------+-------+       3 |   +---+       0 +-----------------------+---------------+
+			//   z   /       /       / | /           0       1       2   x     | 0 |   |         0                       3               5   y
+			//      /       /       /  |/                                      |   |   |
+			//   | /       /       /   | 3                                     |   | 1 |
+			//   |/       /       /   /                                        |   |   |
+			// 1 |-------|-------|   /                                         |   |   |
+			//   |       |       |  /                                        0 +---+---+
+			//   |   0   |   1   | /                                           0   1   2   x
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: 1
+			//             /-------|   y   z                 y                 z
+			//            /   4   /|       1 +-------+       5 +-------+       1 +-------------------------------+-------+
+			//           /-------| | /       |       |         |       |         |                               |       |
+			//          /       /| |/        |   3   |         |   4   |         |               3               |   4   |
+			//         /       / | | 5       |       |         |       |         |                               |       |
+			//        /       /  |/        0 +-------+       4 +-------+       0 +-------------------------------+-------+
+			//   z   /       /   | 4         0       1   x     |       |         0                               4       5   y
+			//      /       /   /                              |       |
+			//   | /       /   /                               |       |
+			//   |/       /   /                                |       |
+			// 1 |-------|   /                                 |       |
+			//   |       |  /                                  |       |
+			//   |   3   | /                                   |       |
+			//   |       |/                                    |   3   |
+			// 0 |-------|-- x                                 |       |
+			//   0       1                                     |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                               0 +-------+
+			//                                                 0       1   x
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
 			List<Container> containers = result.getContainers();
@@ -691,6 +1143,51 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(10)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//             /-------/-------|   y   z                         y                 z
+			//            /       /       /|       1 +-------+-------+       5 +---+---+       1 +-----------------------+---------------+
+			//           /       /   3   / | /       |       |       |         |   |   |         |                       |               |
+			//          /       /       /  |/        |   0   |   1   |         |   | 3 |         |           1           |       3       |
+			//         /       /-------|   | 5       |       |       |         |   |   |         |                       |               |
+			//        /       /       /|  /        0 +-------+-------+       3 |   +---+       0 +-----------------------+---------------+
+			//   z   /       /       / | /           0       1       2   x     | 0 |   |         0                       3               5   y
+			//      /       /       /  |/                                      |   |   |
+			//   | /       /       /   | 3                                     |   | 1 |
+			//   |/       /       /   /                                        |   |   |
+			// 1 |-------|-------|   /                                         |   |   |
+			//   |       |       |  /                                        0 +---+---+
+			//   |   0   |   1   | /                                           0   1   2   x
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: 1
+			//             /-------|   y   z                 y                 z
+			//            /   4   /|       1 +-------+       5 +-------+       1 +-------------------------------+-------+
+			//           /-------| | /       |       |         |       |         |                               |       |
+			//          /       /| |/        |   2   |         |   4   |         |               2               |   4   |
+			//         /       / | | 5       |       |         |       |         |                               |       |
+			//        /       /  |/        0 +-------+       4 +-------+       0 +-------------------------------+-------+
+			//   z   /       /   | 4         0       1   x     |       |         0                               4       5   y
+			//      /       /   /                              |       |
+			//   | /       /   /                               |       |
+			//   |/       /   /                                |       |
+			// 1 |-------|   /                                 |       |
+			//   |       |  /                                  |       |
+			//   |   2   | /                                   |       |
+			//   |       |/                                    |   2   |
+			// 0 |-------|-- x                                 |       |
+			//   0       1                                     |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                                 |       |
+			//                                               0 +-------+
+			//                                                 0       1   x
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isStackedWithinConstraints();
 			
 			List<Container> containers = result.getContainers();
@@ -740,6 +1237,34 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItems(products)
 					.withMaxContainerCount(10)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//   z   /---------------|   y   z                         y                 z
+			//      /               /|       1 +---------------+       2 +-------+       1 +---------------+
+			//   | /               / | /       |               |         |       |         |               |
+			//   |/               /  |/        |       A       |         |   A   |         |       A       |
+			// 1 |---------------|   | 2       |               |         |       |         |               |
+			//   |               |  /        0 +---------------+       0 +-------+       0 +---------------+
+			//   |       A       | /           0               2   x     0       2   x     0               2   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: 1
+			//         /-------|   y   z                 y             z
+			//        /       /|       1 +-------+       3 +---+       1 +-----------------------+
+			//   z   /       / | /       |       |         |   |         |                       |
+			//      /       /  |/        |   B   |         |   |         |           B           |
+			//   | /       /   | 3       |       |         | B |         |                       |
+			//   |/       /   /        0 +-------+         |   |       0 +-----------------------+
+			// 1 |-------|   /           0       1   x     |   |         0                       3   y
+			//   |       |  /                            0 +---+
+			//   |   B   | /                               0   1   x
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(build);
 			
 			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
@@ -779,6 +1304,20 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					})
 					.withBoxItems(products)
 					.build();
+			// <figure>
+			//   z   /-------/-------|   y   z                         y                         z
+			//      /       /   C   /|       1 +-------+-------+       2 +-------+-------+       1 +-------+-------+
+			//   | |-------/-------| | /       |       |       |         |       |       |         |       |       |
+			//   | |  A   /       /| |/        |   A   |   B   |         |   A   |   C   |         |   B   |   C   |
+			// 1 | |     |-------| | | 2       |       |       |         |       |       |         |       |       |
+			//   | |     |       | |/        0 +-------+-------+       1 +-------+-------+       0 +-------+-------+
+			//   | |-----|   B   | | 1         0       1       2   x             |       |         0       1       2   y
+			//   |       |       |/                                              |   B   |
+			// 0 |-------|-------|-- x                                           |       |
+			//   0       1       2                                     0         +-------+
+			//                                                           0       1       2   x
+			// </figure>
+			figure(build);
 			
 			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
 			for(Placement placement : placements) {
@@ -849,6 +1388,36 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CHRONOLOGICAL)
 					.build();
+			// <figure>
+			// container 1 of 2: my-container1
+			//   z               z               y                 z
+			//                   2 +-----+       1 +-------+       2 +-----+
+			//   | /-----|   y     |     |         |       |         |     |
+			//   |/     /|         | id0 |         |  id0  |         | id0 |
+			// 2 |-----| | /       |     |         |       |         |     |
+			//   |     | |/      0 +-----+       0 +-------+       0 +-----+
+			//   | id0 | | 1       0     1   x     0       1   x     0     1   y
+			//   |     |/
+			// 0 |-----|-- x
+			//   0     1
+			//
+			// container 2 of 2: my-container1
+			//   z                                         z                                         y                                         z
+			//                                             2 +-------+-------+-------+               1 +-------+-------+-------+-------+       2 +-------+
+			//   | /-------/-------/-------|                 |       |       |       |                 |       |       |       |       |         |       |
+			//   |/       /       /       /|                 |       |  id3  |  id4  |                 |  id1  |  id3  |  id4  |  id2  |         |  id4  |
+			// 2 |-------|-------|-------| |                 |       |       |       |                 |       |       |       |       |         |       |
+			//   |       |       |       | |               1 |  id1  +-------+-------+-------+       0 +-------+-------+-------+-------+       1 +-------+
+			//   |       |  id3  |  id4  | |-------|   y     |       |                       |         0       1       2       3       4   x     |       |
+			//   |       |       |       |/       /|         |       |          id2          |                                                   |  id2  |
+			// 1 |  id1  |-------|-------|-------| | /       |       |                       |                                                   |       |
+			//   |       |                       | |/      0 +-------+-----------------------+                                                 0 +-------+
+			//   |       |          id2          | | 1       0       1       2       3       4   x                                               0       1   y
+			//   |       |                       |/
+			// 0 |-------|-----------------------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
@@ -924,6 +1493,40 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 					.withBoxItemGroups(copyGroups(groups))
 					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 					.build();
+			// <figure>
+			// container 1 of 2: my-container1
+			//   z                                 z                                 y                                 z
+			//                                     2 +-------+                       1 +-------+-------+-------+       2 +-------+
+			//   | /-------|                         |       |                         |       |       |       |         |       |
+			//   |/       /|                         |       |                         |  id0  |  id3  |  id4  |         |  id0  |
+			// 2 |-------| |                         |       |                         |       |       |       |         |       |
+			//   |       | |                       1 |  id0  +-------+-------+       0 +-------+-------+-------+       1 +-------+
+			//   |       | |-------/-------|   y     |       |       |       |         0       1       2       3   x     |       |
+			//   |       |/       /       /|         |       |  id3  |  id4  |                                           |  id4  |
+			// 1 |  id0  |-------|-------| | /       |       |       |       |                                           |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+                                         0 +-------+
+			//   |       |  id3  |  id4  | | 1       0       1       2       3   x                                       0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			//
+			// container 2 of 2: my-container1
+			//   z                                         z                                         y                                         z
+			//                                             2 +-------+                               1 +-------+-----------------------+       2 +-------+
+			//   | /-------|                                 |       |                                 |       |                       |         |       |
+			//   |/       /|                                 |       |                                 |  id1  |          id2          |         |  id1  |
+			// 2 |-------| |                                 |       |                                 |       |                       |         |       |
+			//   |       | |                               1 |  id1  +-----------------------+       0 +-------+-----------------------+       1 +-------+
+			//   |       | |-----------------------|   y     |       |                       |         0       1                       4   x     |       |
+			//   |       |/                       /|         |       |          id2          |                                                   |  id2  |
+			// 1 |  id1  |-----------------------| | /       |       |                       |                                                   |       |
+			//   |       |                       | |/      0 +-------+-----------------------+                                                 0 +-------+
+			//   |       |          id2          | | 1       0       1                       4   x                                               0       1   y
+			//   |       |                       |/
+			// 0 |-------|-----------------------|-- x
+			//   0       1                       4
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 
 			List<Container> containers = result.getContainers();
@@ -962,6 +1565,24 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
 			}).withBoxItems(products9).build();
+			// <figure>
+			//         /-------/-------/-------|   y   z                                 y                                 z
+			//        /   C   /   F   /   I   /|       1 +-------+-------+-------+       3 +-------+-------+-------+       1 +-------+-------+-------+
+			//   z   /-------/-------/-------| | /       |       |       |       |         |       |       |       |         |       |       |       |
+			//      /   B   /   E   /   H   /| |/        |   A   |   D   |   G   |         |   C   |   F   |   I   |         |   G   |   H   |   I   |
+			//   | /-------/-------/-------| | | 3       |       |       |       |         |       |       |       |         |       |       |       |
+			//   |/       /       /       /| |/        0 +-------+-------+-------+       2 +-------+-------+-------+       0 +-------+-------+-------+
+			// 1 |-------|-------|-------| | | 2         0       1       2       3   x     |       |       |       |         0       1       2       3   y
+			//   |       |       |       | |/                                              |   B   |   E   |   H   |
+			//   |   A   |   D   |   G   | | 1                                             |       |       |       |
+			//   |       |       |       |/                                              1 +-------+-------+-------+
+			// 0 |-------|-------|-------|-- x                                             |       |       |       |
+			//   0       1       2       3                                                 |   A   |   D   |   G   |
+			//                                                                             |       |       |       |
+			//                                                                           0 +-------+-------+-------+
+			//                                                                             0       1       2       3   x
+			// </figure>
+			figure(build9);
 			
 			List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
 			
@@ -997,5 +1618,5 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
-
+	
 }

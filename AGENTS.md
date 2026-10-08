@@ -32,7 +32,11 @@ Line length 200. Tabs for indentation (see `eclipse-formatter.xml`).
 
 ## Tests
 
- * Use ASCII art to explain stacking unit tests.
+ * Use ASCII art to explain stacking unit tests. Prefer generated figures (`ContainerAsciiArt` and
+   `FigureRecorder` in the `test` module) to hand-drawn ones.
+ * Generated figures sit between `// <figure>` and `// </figure>` lines. Do not edit them by hand: run the
+   tests with `-Dfigures.record=true` to write or refresh them. They are for humans, so read test files
+   without them, for example `sed '/<figure>/,/<\/figure>/d' SomeTest.java`.
  * Tests live in the same package as the code under test and may use protected members.
  * Keep brute-force test inputs small (it is exponential; about 10 boxes or fewer per
    container) and give packagers an interrupt duration so a regression cannot hang the build.

@@ -198,13 +198,11 @@ public class FiguresTest {
 
 		// the oblique view is higher than the front view
 		assertThat(Figures.horizontal(2, art.front(), art.oblique()).toString()).isEqualTo("""
-				┌───────┬───────┐      ┌───────────────┐
-				│       │       │     ╱       ╱       ╱│
-				│   A   │   B   │    ╱       ╱       ╱ │
-				│       │       │   ╱       ╱       ╱  │
-				└───────┴───────┘  ┌───────┬───────┐   │
-				                   │       │       │  ╱
-				                   │   A   │   B   │ ╱
+				┌───────┬───────┐    ┌───────────────┐
+				│       │       │   ╱       ╱       ╱│
+				│   A   │   B   │  ┌───────┬───────┐ │
+				│       │       │  │       │       │ │
+				└───────┴───────┘  │   A   │   B   │ │
 				                   │       │       │╱
 				                   └───────┴───────┘
 				""");

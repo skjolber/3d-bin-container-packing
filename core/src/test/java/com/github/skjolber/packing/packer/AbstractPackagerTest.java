@@ -14,7 +14,13 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Packager;
+import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.ascii.ContainerAsciiArt;
+import com.github.skjolber.packing.test.ascii.Figure;
+import com.github.skjolber.packing.test.ascii.FigureRecorder;
+import com.github.skjolber.packing.test.ascii.Figures;
+import com.github.skjolber.packing.test.ascii.Style;
 import com.github.skjolber.packing.test.assertj.PackagerAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
 
@@ -30,6 +36,60 @@ public abstract class AbstractPackagerTest {
 
 	protected static BoxItem box(int l, int w, int h, int count) {
 		return new BoxItem(Box.newBuilder().withRotate3D().withSize(l, w, h).withWeight(0).build(), count);
+	}
+
+	/** The most columns of an overview in a single row, as in the overview of the figure utility: more and it is drawn in two rows */
+	private static final int FIGURE_MAX_COLUMNS = 160;
+
+	/** The blank columns between the views of an overview, as in the overview of the figure utility */
+	private static final int FIGURE_COLUMN_GAP = 3;
+
+	/** The widest view when the four views do not fit in a row at the default scale: four views and three gaps are at most 160 columns */
+	private static final int FIGURE_VIEW_COLUMNS = (FIGURE_MAX_COLUMNS - 3 * FIGURE_COLUMN_GAP) / 4;
+
+	/**
+	 * Draw the containers of a result as a figure in the source code of the test, if the system property figures.record is true: the figure is
+	 * written into the comment above the call of this method in the test. Each container is drawn as an overview (3D, front, top and side views),
+	 * below each other, with a caption if there is more than one.
+	 *
+	 * @param result the result, with the containers to draw
+	 */
+	protected static void figure(PackagerResult result) {
+		if (!FigureRecorder.isEnabled()) {
+			return;
+		}
+		List<Container> containers = result.getContainers();
+		if (containers.isEmpty()) {
+			return;
+		}
+
+		List<Figure> figures = new ArrayList<>(containers.size());
+		for (int i = 0; i < containers.size(); i++) {
+			Container container = containers.get(i);
+
+			Figure overview = drawOverview(container);
+			if (containers.size() > 1) {
+				String name = container.getDescription() != null ? container.getDescription() : container.getId();
+				String caption = "container " + (i + 1) + " of " + containers.size() + (name != null ? ": " + name : "");
+				overview = Figures.vertical(0, Figure.of(caption), overview);
+			}
+			figures.add(overview);
+		}
+		FigureRecorder.record(Figures.vertical(1, figures.toArray(new Figure[0])));
+	}
+
+	/**
+	 * The overview in the ASCII style at the default scale, which makes the labels fit, unless the four views do not fit in a row of 160 columns (about 40 columns per
+	 * view, which happens for containers with large boxes): then each view is drawn in the width which makes them fit.
+	 */
+	private static Figure drawOverview(Container container) {
+		// ASCII: the figures are read in editors where the box drawing characters do not join across lines
+		ContainerAsciiArt art = ContainerAsciiArt.newBuilder().withContainer(container).withStyle(Style.ASCII).build();
+		int width = art.oblique().getWidth() + art.front().getWidth() + art.top().getWidth() + art.side().getWidth() + 3 * FIGURE_COLUMN_GAP;
+		if (width > FIGURE_MAX_COLUMNS) {
+			art = ContainerAsciiArt.newBuilder().withContainer(container).withStyle(Style.ASCII).withWidth(FIGURE_VIEW_COLUMNS).build();
+		}
+		return art.overview();
 	}
 
 	protected void assertDeadlineRespected(Packager packager) {

@@ -46,12 +46,12 @@ public class ContainerAsciiArtLabelTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌───┬───┬───┐
-				  │   │   │   │
-				  │ A │ Y │ C │
-				  │   │   │   │
-				0 └───┴───┴───┘
-				  0   1   2   3   x
+				1 ┌───────┬───────┬───────┐
+				  │       │       │       │
+				  │   A   │   Y   │   C   │
+				  │       │       │       │
+				0 └───────┴───────┴───────┘
+				  0       1       2       3   x
 				""");
 	}
 
@@ -79,12 +79,12 @@ public class ContainerAsciiArtLabelTest {
 		// null: the default label
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌────┬────┬────┐
-				  │    │    │    │
-				  │ x0 │ B  │ x2 │
-				  │    │    │    │
-				0 └────┴────┴────┘
-				  0    1    2    3   x
+				1 ┌───────┬───────┬───────┐
+				  │       │       │       │
+				  │  x0   │   B   │  x2   │
+				  │       │       │       │
+				0 └───────┴───────┴───────┘
+				  0       1       2       3   x
 				""");
 	}
 
@@ -103,7 +103,8 @@ public class ContainerAsciiArtLabelTest {
 
 	/**
 	 * A box 1 x 1 x 1 with a label of two characters needs 5 columns per unit (the label, a space on each side, and the edges),
-	 * and 4 lines per unit (the label, a blank line above and below, and the edges).
+	 * and 4 lines per unit (the label, a blank line above and below, and the edges). A line is twice as tall as a character is wide, so the
+	 * drawing gets 8 columns per unit, so that the box looks like a cube.
 	 */
 	@Test
 	public void testDefaultScaleFitsTheLabel() {
@@ -111,12 +112,12 @@ public class ContainerAsciiArtLabelTest {
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				1 ┌────┐
-				  │    │
-				  │ AB │
-				  │    │
-				0 └────┘
-				  0    1   x
+				1 ┌───────┐
+				  │       │
+				  │  AB   │
+				  │       │
+				0 └───────┘
+				  0       1   x
 				""");
 	}
 
@@ -136,13 +137,13 @@ public class ContainerAsciiArtLabelTest {
 				.withAxes(false)
 				.build();
 
-		// 4 columns and 4 lines per unit: the long label is truncated
+		// 8 columns and 4 lines per unit: the long label is truncated
 		assertThat(art.front().toString()).isEqualTo("""
-				┌───┬───┬───┬───┬───┬───┬───┬───┬───┬───┐
-				│   │   │   │   │   │   │   │   │   │   │
-				│ A │ B │ C │ D │ E │ F │ G │ H │ I │ L │
-				│   │   │   │   │   │   │   │   │   │   │
-				└───┴───┴───┴───┴───┴───┴───┴───┴───┴───┘
+				┌───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┬───────┐
+				│       │       │       │       │       │       │       │       │       │       │
+				│   A   │   B   │   C   │   D   │   E   │   F   │   G   │   H   │   I   │ LONGL │
+				│       │       │       │       │       │       │       │       │       │       │
+				└───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┴───────┘
 				""");
 	}
 
@@ -155,21 +156,21 @@ public class ContainerAsciiArtLabelTest {
 		for (int i = 0; i < 8; i++) {
 			placements.add(place(String.valueOf((char) ('A' + i)), 1, 1, 1, i, 0, 0));
 		}
-		placements.add(place("LONG", 1, 1, 1, 8, 0, 0));
-		placements.add(place("LONG", 1, 1, 1, 9, 0, 0));
+		placements.add(place("LONGER", 1, 1, 1, 8, 0, 0));
+		placements.add(place("LONGER", 1, 1, 1, 9, 0, 0));
 
 		ContainerAsciiArt art = ContainerAsciiArt.newBuilder()
 				.withPlacements(placements, 10, 1, 1)
 				.withAxes(false)
 				.build();
 
-		// 7 columns per unit for a label with four characters
+		// 9 columns per unit for a label with six characters (more than the 8 columns of the default for the short labels)
 		assertThat(art.front().toString()).isEqualTo("""
-				┌──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┬──────┐
-				│      │      │      │      │      │      │      │      │      │      │
-				│  A   │  B   │  C   │  D   │  E   │  F   │  G   │  H   │ LONG │ LONG │
-				│      │      │      │      │      │      │      │      │      │      │
-				└──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┴──────┘
+				┌────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┬────────┐
+				│        │        │        │        │        │        │        │        │        │        │
+				│   A    │   B    │   C    │   D    │   E    │   F    │   G    │   H    │ LONGER │ LONGER │
+				│        │        │        │        │        │        │        │        │        │        │
+				└────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┴────────┘
 				""");
 	}
 
@@ -182,6 +183,46 @@ public class ContainerAsciiArtLabelTest {
 	}
 
 	/**
+	 * A line is about twice as tall as a character is wide: with the default scale, the front face of a unit cube is twice as many characters wide
+	 * as it is lines tall, so that the cube looks like a cube.
+	 */
+	@Test
+	public void testDefaultScaleOfACubeHasTwiceAsManyColumnsAsLines() {
+		ContainerAsciiArt art = newBuilder(1, 1, 1, place("A", 1, 1, 1, 0, 0, 0)).withAxes(false).build();
+
+		// the characters between the edges, not counting the edges
+		int columns = art.front().getWidth() - 1;
+		int lines = art.front().getHeight() - 1;
+		assertThat(columns).isEqualTo(8);
+		assertThat(lines).isEqualTo(4);
+		assertThat(columns).isEqualTo(2 * lines);
+
+		assertThat(art.front().toString()).isEqualTo("""
+				┌───────┐
+				│       │
+				│   A   │
+				│       │
+				└───────┘
+				""");
+	}
+
+	/**
+	 * An explicit scale is used exactly as given, also when it has fewer columns than twice the lines.
+	 */
+	@Test
+	public void testExplicitScaleIsNotAdjusted() {
+		ContainerAsciiArt art = newBuilder(1, 1, 1, place("A", 1, 1, 1, 0, 0, 0)).withScale(4, 4).withAxes(false).build();
+
+		assertThat(art.front().toString()).isEqualTo("""
+				┌───┐
+				│   │
+				│ A │
+				│   │
+				└───┘
+				""");
+	}
+
+	/**
 	 * The scale follows the faces which are visible in the view: the box is only one unit high, but two units deep and wide.
 	 */
 	@Test
@@ -191,13 +232,15 @@ public class ContainerAsciiArtLabelTest {
 				.withContainerOutline(true)
 				.build();
 
-		// the front shows the face 3 x 1: 4 lines per unit of z
+		// the front shows the face 3 x 1: 4 lines per unit of z, so 8 columns per unit of x
 		assertThat(art.front().getHeight()).isEqualTo(4 * 4 + 1);
-		// the top shows the face 3 x 2: 2 lines per unit of y
+		assertThat(art.front().getWidth()).isEqualTo(3 * 8 + 1);
+		// the top shows the face 3 x 2: 2 lines per unit of y, and 4 columns per unit of x
 		assertThat(art.top().getHeight()).isEqualTo(4 * 2 + 1);
-		// the side shows the face 2 x 1: 4 lines per unit of z, and 4 columns per unit of y
+		assertThat(art.top().getWidth()).isEqualTo(3 * 4 + 1);
+		// the side shows the face 2 x 1: 4 lines per unit of z, so 8 columns per unit of y
 		assertThat(art.side().getHeight()).isEqualTo(4 * 4 + 1);
-		assertThat(art.side().getWidth()).isEqualTo(4 * 4 + 1);
+		assertThat(art.side().getWidth()).isEqualTo(4 * 8 + 1);
 	}
 
 	@Test
@@ -249,7 +292,7 @@ public class ContainerAsciiArtLabelTest {
 		assertThat(art.oblique().toString()).isEqualTo("""
 				    ┌───┐
 				   ╱ A ╱│
-				  ────┐ │
+				  ╱───┐ │
 				 ╱   ╱│╱
 				┌───┐ │
 				│ F │╱
@@ -340,17 +383,13 @@ public class ContainerAsciiArtLabelTest {
 				place("B", 2, 2, 2, 0, 2, 0)).withAxes(false).build();
 
 		assertThat(art.oblique().toString()).isEqualTo("""
-				        ┌───────┐
-				       ╱       ╱│
-				      ╱   B   ╱ │
-				     ╱       ╱  │
-				    ────────┐   │
-				   ╱       ╱│  ╱
-				  ╱       ╱ │ ╱
-				 ╱       ╱  │╱
-				┌───────┐   │
-				│       │  ╱
-				│   A   │ ╱
+				    ┌───────┐
+				   ╱   B   ╱│
+				  ╱───────┐ │
+				 ╱       ╱│ │
+				┌───────┐ │ │
+				│       │ │╱
+				│   A   │ │
 				│       │╱
 				└───────┘
 				""");

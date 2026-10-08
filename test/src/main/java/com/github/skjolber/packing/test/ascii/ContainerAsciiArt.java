@@ -10,6 +10,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.point.Point;
 
 /**
  * Draw the boxes of a container as text, for example for documentation or to explain a unit test.
@@ -28,7 +29,14 @@ import com.github.skjolber.packing.api.Stack;
  * is drawn as a number of columns and lines, see {@linkplain Builder#withScale(double, double)}. The edges are drawn in
  * a {@linkplain Style}, by default with thin lines.
  * <p>
- * The views have the coordinates at the axes: 0, the size of the container, and where the boxes start and end.
+ * The drawing starts at 0 and reaches as far as the boxes (and the {@linkplain Builder#withPoints(List) points}) reach along each axis, not to the
+ * size of the container, unless {@linkplain Builder#withContainerOutline(boolean)} asks for the container to be drawn. Without boxes, the container is drawn.
+ * <p>
+ * The views have the coordinates at the axes: 0, the end of the drawing, and where the boxes start and end (or, with
+ * {@linkplain Builder#withInclusiveCoordinates(boolean)}, the coordinates of the first and last unit of the boxes).
+ * <p>
+ * {@linkplain Builder#withPoints(List)} marks free-space points by their position in the list, in every view, and {@linkplain #overview()}
+ * puts all four views in one figure.
  * <p>
  * Example of the front view of three boxes (a larger scale than the default is used to make the example small):
  *
@@ -42,7 +50,7 @@ import com.github.skjolber.packing.api.Stack;
  *   0       1       2   x
  * </pre>
  *
- * Example of the oblique view of a single box, 3 x 2 x 2 units, at the default scale. The axes are along the edges of the container, with the
+ * Example of the oblique view of a single box, 3 x 2 x 2 units, at the default scale. The axes are along the edges of the drawing, with the
  * coordinates of the box:
  *
  * <pre>
@@ -88,6 +96,8 @@ public class ContainerAsciiArt {
 		private String comment;
 		private Style style = Style.LIGHT;
 		private boolean shading = false;
+		private List<Point> points = new ArrayList<>();
+		private boolean inclusiveCoordinates = false;
 
 		/**
 		 * Draw the stack and obstacles of a container, within its load size.
@@ -145,6 +155,39 @@ public class ContainerAsciiArt {
 			return this;
 		}
 
+		/**
+		 * Mark free-space points by their position in the list (0, 1, 2, ...), in every view. A point is drawn at its minimum corner, in the
+		 * free corner which the point starts in: one cell to the right and one line up from the corner. If that cell is not blank, the cell to
+		 * the right of the corner is used, then the cell above it. A point is left out of a view if none of these cells are blank. Nothing which
+		 * is already drawn is overwritten. Points which are drawn at the same cell share a label, with the positions separated by commas.
+		 * In the oblique view, a point which is hidden behind a box is left out.
+		 *
+		 * @param points the points
+		 * @return this builder
+		 */
+		public Builder withPoints(List<? extends Point> points) {
+			Objects.requireNonNull(points);
+			List<Point> copy = new ArrayList<>(points.size());
+			for (Point point : points) {
+				copy.add(Objects.requireNonNull(point, "Expected points, got null"));
+			}
+			this.points = copy;
+			return this;
+		}
+
+		/**
+		 * Write the coordinates at the axes as inclusive coordinates, as in the unit tests: an edge where a box starts is labelled with the
+		 * start of the box, and an edge where boxes only end is labelled with the last unit of the box, which is the end minus one. The end of the
+		 * drawing is labelled with its size minus one, and 0 is still 0.
+		 *
+		 * @param inclusiveCoordinates true for inclusive coordinates, false (the default) for the coordinates of the edges
+		 * @return this builder
+		 */
+		public Builder withInclusiveCoordinates(boolean inclusiveCoordinates) {
+			this.inclusiveCoordinates = inclusiveCoordinates;
+			return this;
+		}
+
 		private void withSize(int dx, int dy, int dz) {
 			if (dx <= 0 || dy <= 0 || dz <= 0) {
 				throw new IllegalArgumentException("Expected positive container size, got " + dx + "x" + dy + "x" + dz);
@@ -156,9 +199,15 @@ public class ContainerAsciiArt {
 
 		/**
 		 * Draw a unit as a number of columns and lines. The default is the smallest scale, but at least 4 x 2, at which the labels fit within
-		 * their boxes (with a blank line above and below and a space on each side) for 90 % of the boxes.
+		 * their boxes (with a blank line above and below and a space on each side) for 90 % of the boxes. A line is about twice as tall as a
+		 * character is wide, so the default has at least two columns per unit of x for every line per unit of z, which makes a cube look like
+		 * a cube (a unit box is drawn 8 x 4). If a view would then be more than 100 columns wide or 100 lines high (for example for a container
+		 * which is measured in millimeters), it is drawn smaller, as by {@linkplain #withWidth(int)}, with the same relation between columns and lines.
 		 * <p>
-		 * In the oblique view, one unit of y is drawn as {@code cz} steps up and to the right.
+		 * A scale which is given here is used exactly as given.
+		 * <p>
+		 * In the oblique view, one unit of y is drawn as half of {@code cz} steps up and to the right, but at least 2 steps for the thinnest box along y,
+		 * so that thin boxes are not drawn as a single line.
 		 *
 		 * @param cx columns per unit of x (of y in the side view)
 		 * @param cz lines per unit of z (of y in the top view)
@@ -175,9 +224,11 @@ public class ContainerAsciiArt {
 		}
 
 		/**
-		 * Draw the container at the given width, with half as many lines per unit as columns per unit.
+		 * Draw every view at the largest scale at which it is at most this wide, with half as many lines per unit as columns per unit. The width counts
+		 * everything in the view: the axes with their values and names, and in the oblique view the steps to the right for the depth.
+		 * In the oblique view, the thinnest box along y is drawn with at least 2 steps up and to the right, unless that does not fit in the width.
 		 *
-		 * @param columns the number of columns for the container, not counting axes
+		 * @param columns the number of characters of the widest line of a view, at least 2
 		 * @return this builder
 		 */
 		public Builder withWidth(int columns) {
@@ -201,8 +252,8 @@ public class ContainerAsciiArt {
 
 		/**
 		 * @param axes true to draw the axes (the default): the names of the axes in all views, and also the coordinates in the front, top and side views:
-		 *        0, the size of the container and where the boxes start and end (as many as there is room for). In the oblique view, the axes are along
-		 *        the edges of the container, with the coordinates of the boxes with their front at y = 0 on the x and z axes (the other boxes are
+		 *        0, the end of the drawing and where the boxes start and end (as many as there is room for). In the oblique view, the axes are along
+		 *        the edges of the drawing, with the coordinates of the boxes with their front at y = 0 on the x and z axes (the other boxes are
 		 *        drawn further up and to the right), and the coordinates of all boxes on the y axis.
 		 * @return this builder
 		 */
@@ -212,6 +263,9 @@ public class ContainerAsciiArt {
 		}
 
 		/**
+		 * Draw the whole container, not only as far as the boxes reach: the edges of the container as dots, behind the boxes, and the axes up to the
+		 * size of the container.
+		 *
 		 * @param containerOutline true to draw the edges of the container as dots, behind the boxes
 		 * @return this builder
 		 */
@@ -289,20 +343,71 @@ public class ContainerAsciiArt {
 		}
 	}
 
-	/** The number of cells the axes of the oblique view extend past the container */
+	/**
+	 * The coordinates of the edges where something is written at an axis, and the numbers which are written: the same, or the inclusive
+	 * coordinates.
+	 */
+	private static final class Keys {
+
+		private final int[] coordinates;
+		private final int[] labels;
+
+		private Keys(int[] coordinates, int[] labels) {
+			this.coordinates = coordinates;
+			this.labels = labels;
+		}
+
+		private int length() {
+			return coordinates.length;
+		}
+
+		private Keys select(int[] indexes, int count) {
+			int[] selectedCoordinates = new int[count];
+			int[] selectedLabels = new int[count];
+			for (int i = 0; i < count; i++) {
+				selectedCoordinates[i] = coordinates[indexes[i]];
+				selectedLabels[i] = labels[indexes[i]];
+			}
+			return new Keys(selectedCoordinates, selectedLabels);
+		}
+	}
+
+	/** The number of cells the axes of the oblique view extend past the drawing */
 	private static final int AXIS_EXTENSION = 2;
+
+	/** The most characters of an overview in a single row */
+	private static final int OVERVIEW_MAXIMUM_WIDTH = 160;
+	private static final int OVERVIEW_COLUMN_GAP = 3;
+	private static final int OVERVIEW_LINE_GAP = 1;
+
+	/** The widest and the highest view, at the scale at which the labels fit: a view which would be larger (for example of a container which is measured in millimeters) is drawn smaller */
+	private static final int DEFAULT_MAXIMUM_COLUMNS = 100;
+	private static final int DEFAULT_MAXIMUM_LINES = 100;
+	/** The fewest steps up and to the right which the thinnest box along y gets in the oblique view */
+	private static final double MINIMUM_DEPTH_STEPS = 2.0;
+	/** The smallest scale when fitting a view to a width, and the number of halvings of the range of scales */
+	private static final double MINIMUM_FIT_COLUMNS_PER_UNIT = 0.001;
+	private static final int FIT_ITERATIONS = 40;
 
 	private static final int MINIMUM_COLUMNS_PER_UNIT = 4;
 	private static final int MINIMUM_LINES_PER_UNIT = 2;
+	/** A line is about twice as tall as a character is wide: columns per line when drawing to scale, so that a cube looks like a cube */
+	private static final int COLUMNS_PER_LINE = 2;
 	/** The share of the boxes for which the labels should fit */
 	private static final int LABEL_FIT_PERCENT = 90;
 
 	private final List<Item> items;
-	/** Size of the container */
-	private final int containerX;
-	private final int containerY;
-	private final int containerZ;
-	/** Size of the container, or the boxes if they stick out of it */
+	/**
+	 * The end of the drawing which is written at the axes (after 0): the size of the container with the container outline or if there are no boxes,
+	 * otherwise where the boxes end
+	 */
+	private final int endX;
+	private final int endY;
+	private final int endZ;
+	/**
+	 * How far the drawing reaches: where the boxes (and points) end, or with the container outline or if there are no boxes, the size of the
+	 * container (or the boxes, if they stick out of it)
+	 */
 	private final int extentX;
 	private final int extentY;
 	private final int extentZ;
@@ -315,6 +420,9 @@ public class ContainerAsciiArt {
 	private final String comment;
 	private final Style style;
 	private final boolean shading;
+	private final boolean inclusiveCoordinates;
+	/** The minimum corners of the points: x, y and z of each point */
+	private final int[] points;
 
 	private ContainerAsciiArt(Builder builder) {
 		this.scaleX = builder.scaleX;
@@ -325,35 +433,69 @@ public class ContainerAsciiArt {
 		this.comment = builder.comment;
 		this.style = builder.style;
 		this.shading = builder.shading;
+		this.inclusiveCoordinates = builder.inclusiveCoordinates;
+
+		this.points = new int[builder.points.size() * 3];
+		for (int i = 0; i < builder.points.size(); i++) {
+			Point point = builder.points.get(i);
+			points[i * 3] = point.getMinX();
+			points[i * 3 + 1] = point.getMinY();
+			points[i * 3 + 2] = point.getMinZ();
+		}
 
 		this.items = new ArrayList<>(builder.placements.size() + builder.obstacles.size());
 
-		int extentX = builder.dx;
-		int extentY = builder.dy;
-		int extentZ = builder.dz;
+		// where the boxes end
+		int boxX = 0;
+		int boxY = 0;
+		int boxZ = 0;
 		for (int i = 0; i < builder.placements.size(); i++) {
 			Placement placement = builder.placements.get(i);
 			Item item = new Item(placement, getLabel(builder.labels, placement, i), false);
 			items.add(item);
 
-			extentX = Math.max(extentX, item.x + item.dx);
-			extentY = Math.max(extentY, item.y + item.dy);
-			extentZ = Math.max(extentZ, item.z + item.dz);
+			boxX = Math.max(boxX, item.x + item.dx);
+			boxY = Math.max(boxY, item.y + item.dy);
+			boxZ = Math.max(boxZ, item.z + item.dz);
 		}
 		for (Placement placement : builder.obstacles) {
 			Item item = new Item(placement, null, true);
 			items.add(item);
 
-			extentX = Math.max(extentX, item.x + item.dx);
-			extentY = Math.max(extentY, item.y + item.dy);
-			extentZ = Math.max(extentZ, item.z + item.dz);
+			boxX = Math.max(boxX, item.x + item.dx);
+			boxY = Math.max(boxY, item.y + item.dy);
+			boxZ = Math.max(boxZ, item.z + item.dz);
+		}
+
+		int extentX;
+		int extentY;
+		int extentZ;
+		if (builder.containerOutline || items.isEmpty()) {
+			// the container is drawn, or there is nothing else to draw
+			this.endX = builder.dx;
+			this.endY = builder.dy;
+			this.endZ = builder.dz;
+			extentX = Math.max(builder.dx, boxX);
+			extentY = Math.max(builder.dy, boxY);
+			extentZ = Math.max(builder.dz, boxZ);
+		} else {
+			// only as far as the boxes reach
+			this.endX = boxX;
+			this.endY = boxY;
+			this.endZ = boxZ;
+			extentX = boxX;
+			extentY = boxY;
+			extentZ = boxZ;
+		}
+		// the points are drawn within the figure
+		for (int i = 0; i < points.length; i += 3) {
+			extentX = Math.max(extentX, points[i]);
+			extentY = Math.max(extentY, points[i + 1]);
+			extentZ = Math.max(extentZ, points[i + 2]);
 		}
 		this.extentX = extentX;
 		this.extentY = extentY;
 		this.extentZ = extentZ;
-		this.containerX = builder.dx;
-		this.containerY = builder.dy;
-		this.containerZ = builder.dz;
 	}
 
 	private static String getLabel(Function<Placement, String> labels, Placement placement, int index) {
@@ -416,7 +558,8 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * Oblique projection: x to the right, z up, y going inwards, up and to the right.
+	 * Oblique projection: x to the right, z up, y going inwards, up and to the right. One unit of y is drawn as half of the lines per unit of z
+	 * in steps up and to the right, but as at least two steps for the thinnest box along y, so that it is not drawn as a line.
 	 *
 	 * @return the drawing
 	 */
@@ -424,54 +567,22 @@ public class ContainerAsciiArt {
 		// the projection: column = x * cx + y * d, row = z * cz + y * d, so that the points
 		// (x, y, z) which are on the same line of sight from the viewer are the points with different y.
 		// The viewer is at a lower y (and a higher x and z), so that the nearest point is the one with the lowest y.
-		double[] scale = getScale(View.OBLIQUE);
-		double cx = scale[0];
-		double cz = scale[1];
-		double d = cz;
+		Scale scale = getScale(View.OBLIQUE);
+		double cx = scale.cx;
+		double cz = scale.cz;
+		double d = scale.d;
 
-		int gridX = round(extentX * cx);
-		int gridY = round(extentY * d);
-		int gridZ = round(extentZ * cz);
+		ObliqueLayout layout = new ObliqueLayout(scale);
+		int gridX = layout.gridX;
+		int gridY = layout.gridY;
+		int gridZ = layout.gridZ;
+		int ox = layout.ox;
+		int oy = layout.oy;
+		Keys xKeys = layout.xKeys;
+		Keys zKeys = layout.zKeys;
+		Keys yKeys = layout.yKeys;
 
-		// the axes are along the edges of the container, with the coordinates of the boxes with their front at y = 0 on the x and z axes
-		// (the other boxes are drawn further up and to the right), and the coordinates of all boxes on the y axis
-		int[] xValues = null;
-		int[] zValues = null;
-		int[] yValues = null;
-		int ox = 0;
-		int oy = 0;
-		int width = gridX + gridY + 1;
-		int height = gridZ + gridY + 1;
-		if (axes) {
-			xValues = selectColumnValues(getFrontKeyValues(true), cx, true);
-			zValues = selectRowValues(getFrontKeyValues(false), cz);
-			yValues = selectRowValues(getDepthKeyValues(), d);
-
-			// the values of z on the left of the z axis, and the values of x below the x axis
-			int digits = 0;
-			for (int value : zValues) {
-				digits = Math.max(digits, Integer.toString(value).length());
-			}
-			ox = digits + 1;
-			oy = 1;
-
-			width = ox + gridX + gridY + 1;
-			height = oy + gridZ + gridY + 1;
-
-			// the names of the axes, after the axes (which extend past the container) and a blank
-			width = Math.max(width, ox + gridX + AXIS_EXTENSION + 2 + 1);
-			width = Math.max(width, ox + gridX + gridY + AXIS_EXTENSION + 2 + 1);
-			height = Math.max(height, oy + gridZ + AXIS_EXTENSION + 2 + 1);
-			height = Math.max(height, oy + gridY + AXIS_EXTENSION + 2 + 1);
-			for (int value : xValues) {
-				width = Math.max(width, ox + round(value * cx) - Integer.toString(value).length() / 2 + Integer.toString(value).length());
-			}
-			for (int value : yValues) {
-				width = Math.max(width, ox + gridX + round(value * d) + 2 + Integer.toString(value).length());
-			}
-		}
-
-		AsciiCanvas canvas = new AsciiCanvas(width, height);
+		AsciiCanvas canvas = new AsciiCanvas(layout.width, layout.height);
 
 		int[] bounds = new int[items.size() * 4];
 		int[] interiors = new int[items.size() * 3];
@@ -529,26 +640,64 @@ public class ContainerAsciiArt {
 
 			// the values: of x below the axis, centered at the coordinate; of z to the left of the axis, aligned to the right;
 			// of y to the right of the axis
-			for (int value : xValues) {
-				String text = Integer.toString(value);
-				drawText(canvas, ox + round(value * cx) - text.length() / 2, 0, text, AsciiCanvas.AXIS);
+			for (int i = 0; i < xKeys.length(); i++) {
+				String text = Integer.toString(xKeys.labels[i]);
+				drawText(canvas, ox + round(xKeys.coordinates[i] * cx) - text.length() / 2, 0, text, AsciiCanvas.AXIS);
 			}
-			for (int value : zValues) {
-				String text = Integer.toString(value);
-				drawText(canvas, ox - 1 - text.length(), oy + round(value * cz), text, AsciiCanvas.AXIS);
+			for (int i = 0; i < zKeys.length(); i++) {
+				String text = Integer.toString(zKeys.labels[i]);
+				drawText(canvas, ox - 1 - text.length(), oy + round(zKeys.coordinates[i] * cz), text, AsciiCanvas.AXIS);
 			}
-			for (int value : yValues) {
-				drawText(canvas, ox + gridX + round(value * d) + 2, oy + round(value * d), Integer.toString(value), AsciiCanvas.AXIS);
+			for (int i = 0; i < yKeys.length(); i++) {
+				int coordinate = yKeys.coordinates[i];
+				drawText(canvas, ox + gridX + round(coordinate * d) + 2, oy + round(coordinate * d), Integer.toString(yKeys.labels[i]), AsciiCanvas.AXIS);
 			}
 		}
 		drawLabels(canvas, bounds, interiors, 3);
+
+		if (points.length > 0) {
+			// the projection of the box corners, see drawObliqueBox. The depth is y, like for the boxes.
+			int count = points.length / 3;
+			int[] columns = new int[count];
+			int[] rows = new int[count];
+			int[] depths = new int[count];
+			for (int i = 0; i < count; i++) {
+				int y = round(points[i * 3 + 1] * d);
+				columns[i] = ox + round(points[i * 3] * cx) + y;
+				rows[i] = oy + round(points[i * 3 + 2] * cz) + y;
+				depths[i] = y;
+			}
+			drawPoints(canvas, columns, rows, depths);
+		}
 
 		return newFigure(canvas, true);
 	}
 
 	/**
-	 * Leave out the blank lines above and below the drawing: for example above the boxes when the container is higher than the boxes.
-	 * The container is shown by the axes and the outline, if any.
+	 * All the views in one figure: the oblique view followed by the front, top and side views, in one row with three blank columns between
+	 * the views if that is at most 160 characters wide. Otherwise two rows with one blank line between them: the oblique and front views, then
+	 * the top and side views.
+	 *
+	 * @return the drawing
+	 */
+	public Figure overview() {
+		Figure oblique = oblique();
+		Figure front = front();
+		Figure top = top();
+		Figure side = side();
+
+		Figure row = Figures.horizontal(OVERVIEW_COLUMN_GAP, oblique, front, top, side);
+		if (row.getWidth() <= OVERVIEW_MAXIMUM_WIDTH) {
+			return row;
+		}
+		return Figures.vertical(OVERVIEW_LINE_GAP,
+				Figures.horizontal(OVERVIEW_COLUMN_GAP, oblique, front),
+				Figures.horizontal(OVERVIEW_COLUMN_GAP, top, side));
+	}
+
+	/**
+	 * Leave out the blank lines above and below the drawing: for example below the boxes when they are in the air.
+	 * The axes and the container outline, if any, are not blank.
 	 */
 	private Figure newFigure(AsciiCanvas canvas, boolean oblique) {
 		String[] lines = canvas.toLines(style, oblique);
@@ -654,48 +803,20 @@ public class ContainerAsciiArt {
 	}
 
 	private Figure draw2D(View view) {
-		double[] scale = getScale(view);
-		double horizontalScale = scale[0];
-		double verticalScale = scale[1];
+		Scale scale = getScale(view);
+		double horizontalScale = scale.cx;
+		double verticalScale = scale.cz;
 
-		int horizontalExtent = (int) getHorizontalExtent(view);
-		int verticalExtent = (int) getVerticalExtent(view);
+		Layout layout = new Layout(view, scale);
+		int gridWidth = layout.gridWidth;
+		int gridHeight = layout.gridHeight;
+		int marginColumns = layout.marginColumns;
+		int marginRows = layout.marginRows;
+		int nameColumn = layout.nameColumn;
+		Keys horizontalKeys = layout.horizontalKeys;
+		Keys verticalKeys = layout.verticalKeys;
 
-		int gridWidth = round(horizontalExtent * horizontalScale);
-		int gridHeight = round(verticalExtent * verticalScale);
-
-		// the coordinates on the left and at the bottom
-		int[] horizontalValues = null;
-		int[] verticalValues = null;
-		int marginColumns = 0;
-		int marginRows = 0;
-		int width = gridWidth + 1;
-		int height = gridHeight + 1;
-		int nameColumn = 0;
-		if (axes) {
-			horizontalValues = selectColumnValues(getKeyValues(view, true), horizontalScale, false);
-			verticalValues = selectRowValues(getKeyValues(view, false), verticalScale);
-
-			int digits = 0;
-			for (int value : verticalValues) {
-				digits = Math.max(digits, Integer.toString(value).length());
-			}
-			marginColumns = digits + 1;
-			marginRows = 1;
-
-			int numbersEnd = marginColumns + gridWidth + 1;
-			for (int value : horizontalValues) {
-				numbersEnd = Math.max(numbersEnd, marginColumns + round(value * horizontalScale) + Integer.toString(value).length());
-			}
-			// the name of the axis, after the last value
-			nameColumn = numbersEnd + 3;
-
-			width = nameColumn + 1;
-			// the values below the drawing, the name of the axis above the drawing
-			height = marginRows + gridHeight + 1 + 1;
-		}
-
-		AsciiCanvas canvas = new AsciiCanvas(width, height);
+		AsciiCanvas canvas = new AsciiCanvas(layout.width, layout.height);
 
 		int[] bounds = new int[items.size() * 4];
 		int[] interiors = new int[items.size()];
@@ -746,16 +867,27 @@ public class ContainerAsciiArt {
 			canvas.putCharacter(nameColumn, 0, view == View.SIDE ? 'y' : 'x', AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
 
 			int valueWidth = marginColumns - 1;
-			for (int value : verticalValues) {
-				String text = Integer.toString(value);
+			for (int i = 0; i < verticalKeys.length(); i++) {
+				String text = Integer.toString(verticalKeys.labels[i]);
 				// right aligned
-				drawText(canvas, valueWidth - text.length(), marginRows + round(value * verticalScale), text, AsciiCanvas.LABEL);
+				drawText(canvas, valueWidth - text.length(), marginRows + round(verticalKeys.coordinates[i] * verticalScale), text, AsciiCanvas.LABEL);
 			}
-			for (int value : horizontalValues) {
-				drawText(canvas, marginColumns + round(value * horizontalScale), 0, Integer.toString(value), AsciiCanvas.LABEL);
+			for (int i = 0; i < horizontalKeys.length(); i++) {
+				drawText(canvas, marginColumns + round(horizontalKeys.coordinates[i] * horizontalScale), 0, Integer.toString(horizontalKeys.labels[i]), AsciiCanvas.LABEL);
 			}
 		}
 		drawLabels(canvas, bounds, interiors, 1);
+
+		if (points.length > 0) {
+			int count = points.length / 3;
+			int[] columns = new int[count];
+			int[] rows = new int[count];
+			for (int i = 0; i < count; i++) {
+				columns[i] = marginColumns + round(getHorizontalPoint(view, i) * horizontalScale);
+				rows[i] = marginRows + round(getVerticalPoint(view, i) * verticalScale);
+			}
+			drawPoints(canvas, columns, rows, null);
+		}
 
 		return newFigure(canvas, false);
 	}
@@ -767,17 +899,75 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * The coordinates which are written at an axis, in the order of priority: 0, the size of the container, and then the coordinates where
-	 * a box starts or ends, from low to high.
+	 * Write the position of each point at the cell of its minimum corner, on top of everything else.
+	 * <p>
+	 * The label is put in the free corner which the point starts in: one cell to the right of the corner cell and one line up. If that cell is
+	 * not blank, the cell to the right of the corner is tried, then the cell above it. A label is only written where all of its characters are
+	 * blank cells, so that nothing which is drawn is overwritten.
+	 * Points with the same corner cell share a label, with the positions separated by commas.
+	 *
+	 * @param columns the column of the corner cell of each point
+	 * @param rows the line of the corner cell of each point
+	 * @param depths the depth of each point, or null to draw the points whatever is at their corner cell. Otherwise a point is left out when
+	 *        something nearer is drawn at its corner cell.
+	 */
+	private static void drawPoints(AsciiCanvas canvas, int[] columns, int[] rows, int[] depths) {
+		int count = columns.length;
+
+		// before any label is written
+		boolean[] pending = new boolean[count];
+		for (int i = 0; i < count; i++) {
+			pending[i] = depths == null || canvas.getDepth(columns[i], rows[i]) >= depths[i];
+		}
+
+		StringBuilder builder = new StringBuilder();
+		for (int i = 0; i < count; i++) {
+			if (!pending[i]) {
+				continue;
+			}
+			builder.setLength(0);
+			builder.append(i);
+			for (int j = i + 1; j < count; j++) {
+				if (pending[j] && columns[j] == columns[i] && rows[j] == rows[i]) {
+					pending[j] = false;
+					builder.append(',').append(j);
+				}
+			}
+			String label = builder.toString();
+
+			int column = columns[i];
+			int row = rows[i];
+			if (isBlank(canvas, column + 1, row + 1, label.length())) {
+				drawText(canvas, column + 1, row + 1, label, AsciiCanvas.LABEL);
+			} else if (isBlank(canvas, column + 1, row, label.length())) {
+				drawText(canvas, column + 1, row, label, AsciiCanvas.LABEL);
+			} else if (isBlank(canvas, column, row + 1, label.length())) {
+				drawText(canvas, column, row + 1, label, AsciiCanvas.LABEL);
+			}
+		}
+	}
+
+	private static boolean isBlank(AsciiCanvas canvas, int column, int row, int length) {
+		for (int i = 0; i < length; i++) {
+			if (!canvas.isBlank(column + i, row)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * The coordinates which are written at an axis, in the order of priority: 0, the end of the drawing (where the boxes end, or the size of the
+	 * container with the container outline), and then the coordinates where a box starts or ends, from low to high.
 	 *
 	 * @param horizontal true for the horizontal axis of the view, false for the vertical axis
 	 */
-	private int[] getKeyValues(View view, boolean horizontal) {
-		int container;
+	private Keys getKeyValues(View view, boolean horizontal) {
+		int end;
 		if (horizontal) {
-			container = view == View.SIDE ? containerY : containerX;
+			end = view == View.SIDE ? endY : endX;
 		} else {
-			container = view == View.TOP ? containerY : containerZ;
+			end = view == View.TOP ? endY : endZ;
 		}
 		int[] boxes = new int[items.size() * 2];
 		for (int i = 0; i < items.size(); i++) {
@@ -787,16 +977,22 @@ public class ContainerAsciiArt {
 			boxes[i * 2] = start;
 			boxes[i * 2 + 1] = start + size;
 		}
-		return getKeyValues(container, boxes, true);
+		return getKeyValues(end, boxes, true);
 	}
 
 	/**
-	 * @param container the size of the container
-	 * @param boxes the coordinates where boxes start or end, in no particular order
+	 * @param end the end of the drawing along the axis
+	 * @param boxes the start and end coordinates of each box (the start first), in no particular order
 	 * @param origin true to include 0 as the first coordinate
-	 * @return the coordinates in the order of priority: 0 (if origin), the size of the container, and then the coordinates of the boxes from low to high
+	 * @return the coordinates in the order of priority: 0 (if origin), the end of the drawing, and then the coordinates of the boxes from low to high,
+	 *         with the numbers to write for them
 	 */
-	private static int[] getKeyValues(int container, int[] boxes, boolean origin) {
+	private Keys getKeyValues(int end, int[] boxes, boolean origin) {
+		int[] starts = new int[boxes.length / 2];
+		for (int i = 0; i < starts.length; i++) {
+			starts[i] = boxes[i * 2];
+		}
+		Arrays.sort(starts);
 		Arrays.sort(boxes);
 
 		int[] values = new int[boxes.length + 2];
@@ -804,25 +1000,47 @@ public class ContainerAsciiArt {
 		if (origin) {
 			values[count++] = 0;
 		}
-		values[count++] = container;
+		values[count++] = end;
 		int first = count;
 		for (int value : boxes) {
 			// the values are not negative, and in order
-			if (value != 0 && value != container && (count == first || values[count - 1] != value)) {
+			if (value != 0 && value != end && (count == first || values[count - 1] != value)) {
 				values[count++] = value;
 			}
 		}
-		return Arrays.copyOf(values, count);
+		int[] coordinates = Arrays.copyOf(values, count);
+		int[] labels = new int[count];
+		for (int i = 0; i < count; i++) {
+			labels[i] = inclusiveCoordinates ? getInclusiveCoordinate(coordinates[i], end, starts) : coordinates[i];
+		}
+		return new Keys(coordinates, labels);
 	}
 
 	/**
-	 * The coordinates which are written at the x axis or the z axis of the oblique view, in the order of priority: 0, the size of the container,
+	 * @param coordinate the coordinate of an edge
+	 * @param end the end of the drawing
+	 * @param starts the coordinates where boxes start, sorted
+	 * @return 0 for 0, the end of the drawing minus one for the end of the drawing, the coordinate where a box starts, otherwise the coordinate minus one
+	 *         (the last unit of the boxes which end there)
+	 */
+	private static int getInclusiveCoordinate(int coordinate, int end, int[] starts) {
+		if (coordinate == 0) {
+			return 0;
+		}
+		if (coordinate == end) {
+			return coordinate - 1;
+		}
+		return Arrays.binarySearch(starts, coordinate) >= 0 ? coordinate : coordinate - 1;
+	}
+
+	/**
+	 * The coordinates which are written at the x axis or the z axis of the oblique view, in the order of priority: 0, the end of the drawing,
 	 * and then the coordinates where a box with its front at y = 0 starts or ends, from low to high. The other boxes are drawn further up
 	 * and to the right, so their coordinates would be next to the wrong edge.
 	 *
 	 * @param horizontal true for the x axis, false for the z axis
 	 */
-	private int[] getFrontKeyValues(boolean horizontal) {
+	private Keys getFrontKeyValues(boolean horizontal) {
 		int[] boxes = new int[items.size() * 2];
 		int count = 0;
 		for (Item item : items) {
@@ -832,73 +1050,73 @@ public class ContainerAsciiArt {
 				boxes[count++] = start + (horizontal ? item.dx : item.dz);
 			}
 		}
-		return getKeyValues(horizontal ? containerX : containerZ, Arrays.copyOf(boxes, count), true);
+		return getKeyValues(horizontal ? endX : endZ, Arrays.copyOf(boxes, count), true);
 	}
 
 	/**
-	 * The coordinates which are written at the y axis of the oblique view, in the order of priority: the size of the container, and then the
+	 * The coordinates which are written at the y axis of the oblique view, in the order of priority: the end of the drawing, and then the
 	 * coordinates where a box starts or ends, from low to high. Not 0.
 	 */
-	private int[] getDepthKeyValues() {
+	private Keys getDepthKeyValues() {
 		int[] boxes = new int[items.size() * 2];
 		for (int i = 0; i < items.size(); i++) {
 			Item item = items.get(i);
 			boxes[i * 2] = item.y;
 			boxes[i * 2 + 1] = item.y + item.dy;
 		}
-		return getKeyValues(containerY, boxes, false);
+		return getKeyValues(endY, boxes, false);
 	}
 
 	/**
 	 * Keep the coordinates which have room in a line, with a blank column between each: the ones with the highest priority first.
 	 *
-	 * @param values the coordinates, in the order of priority
+	 * @param keys the coordinates and the numbers written for them, in the order of priority
 	 * @param scale columns per unit
 	 * @param centered true if a value is centered at its coordinate, false if it starts there
 	 * @return the coordinates which are written
 	 */
-	private static int[] selectColumnValues(int[] values, double scale, boolean centered) {
-		int[] selected = new int[values.length];
+	private static Keys selectColumnValues(Keys keys, double scale, boolean centered) {
+		int[] selected = new int[keys.length()];
 		int count = 0;
-		for (int value : values) {
-			int length = Integer.toString(value).length();
-			int column = round(value * scale) - (centered ? length / 2 : 0);
+		for (int index = 0; index < keys.length(); index++) {
+			int length = Integer.toString(keys.labels[index]).length();
+			int column = round(keys.coordinates[index] * scale) - (centered ? length / 2 : 0);
 
 			boolean fits = true;
 			for (int i = 0; i < count && fits; i++) {
-				int otherLength = Integer.toString(selected[i]).length();
-				int otherColumn = round(selected[i] * scale) - (centered ? otherLength / 2 : 0);
+				int otherLength = Integer.toString(keys.labels[selected[i]]).length();
+				int otherColumn = round(keys.coordinates[selected[i]] * scale) - (centered ? otherLength / 2 : 0);
 				fits = column >= otherColumn + otherLength + 1 || otherColumn >= column + length + 1;
 			}
 			if (fits) {
-				selected[count++] = value;
+				selected[count++] = index;
 			}
 		}
-		return Arrays.copyOf(selected, count);
+		return keys.select(selected, count);
 	}
 
 	/**
 	 * Keep one coordinate for each line: the one with the highest priority.
 	 *
-	 * @param values the coordinates, in the order of priority
+	 * @param keys the coordinates and the numbers written for them, in the order of priority
 	 * @param scale lines per unit
 	 * @return the coordinates which are written
 	 */
-	private static int[] selectRowValues(int[] values, double scale) {
-		int[] selected = new int[values.length];
+	private static Keys selectRowValues(Keys keys, double scale) {
+		int[] selected = new int[keys.length()];
 		int count = 0;
-		for (int value : values) {
-			int row = round(value * scale);
+		for (int index = 0; index < keys.length(); index++) {
+			int row = round(keys.coordinates[index] * scale);
 
 			boolean fits = true;
 			for (int i = 0; i < count && fits; i++) {
-				fits = round(selected[i] * scale) != row;
+				fits = round(keys.coordinates[selected[i]] * scale) != row;
 			}
 			if (fits) {
-				selected[count++] = value;
+				selected[count++] = index;
 			}
 		}
-		return Arrays.copyOf(selected, count);
+		return keys.select(selected, count);
 	}
 
 	private static int getHorizontalStart(View view, Item item) {
@@ -915,6 +1133,17 @@ public class ContainerAsciiArt {
 
 	private static int getVerticalSize(View view, Item item) {
 		return view == View.TOP ? item.dy : item.dz;
+	}
+
+	/**
+	 * @return the coordinate of a point in the horizontal direction of the view
+	 */
+	private int getHorizontalPoint(View view, int index) {
+		return view == View.SIDE ? points[index * 3 + 1] : points[index * 3];
+	}
+
+	private int getVerticalPoint(View view, int index) {
+		return view == View.TOP ? points[index * 3 + 1] : points[index * 3 + 2];
 	}
 
 	private static int getDepth(View view, Item item) {
@@ -934,43 +1163,274 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * @return the size of the container in the horizontal direction of the view, in units
+	 * The size of the front, top or side view at a scale, and the coordinates which are written at its axes.
 	 */
-	private double getHorizontalExtent(View view) {
-		switch (view) {
-		case FRONT:
-		case TOP:
-			return extentX;
-		case SIDE:
-			return extentY;
-		case OBLIQUE:
-			// y is drawn at half the scale
-			return extentX + extentY / 2.0;
-		default:
-			throw new IllegalArgumentException();
+	private final class Layout {
+
+		private final int gridWidth;
+		private final int gridHeight;
+		/** The coordinates written at the axes, null without axes */
+		private final Keys horizontalKeys;
+		private final Keys verticalKeys;
+		/** The columns on the left and the lines at the bottom (for the values of the axes) */
+		private final int marginColumns;
+		private final int marginRows;
+		/** The column of the name of the horizontal axis */
+		private final int nameColumn;
+		private final int width;
+		private final int height;
+
+		private Layout(View view, Scale scale) {
+			this.gridWidth = round(getHorizontalExtent(view) * scale.cx);
+			this.gridHeight = round(getVerticalExtent(view) * scale.cz);
+
+			if (!axes) {
+				this.horizontalKeys = null;
+				this.verticalKeys = null;
+				this.marginColumns = 0;
+				this.marginRows = 0;
+				this.nameColumn = 0;
+				this.width = gridWidth + 1;
+				this.height = gridHeight + 1;
+				return;
+			}
+			this.horizontalKeys = selectColumnValues(getKeyValues(view, true), scale.cx, false);
+			this.verticalKeys = selectRowValues(getKeyValues(view, false), scale.cz);
+
+			int digits = 0;
+			for (int i = 0; i < verticalKeys.length(); i++) {
+				digits = Math.max(digits, Integer.toString(verticalKeys.labels[i]).length());
+			}
+			this.marginColumns = digits + 1;
+			this.marginRows = 1;
+
+			int numbersEnd = marginColumns + gridWidth + 1;
+			for (int i = 0; i < horizontalKeys.length(); i++) {
+				numbersEnd = Math.max(numbersEnd, marginColumns + round(horizontalKeys.coordinates[i] * scale.cx) + Integer.toString(horizontalKeys.labels[i]).length());
+			}
+			// the name of the axis, after the last value
+			this.nameColumn = numbersEnd + 3;
+
+			this.width = nameColumn + 1;
+			// the values below the drawing, the name of the axis above the drawing
+			this.height = marginRows + gridHeight + 1 + 1;
 		}
 	}
 
-	private double getVerticalExtent(View view) {
+	/**
+	 * The size of the oblique view at a scale, and the coordinates which are written at its axes.
+	 */
+	private final class ObliqueLayout {
+
+		private final int gridX;
+		private final int gridY;
+		private final int gridZ;
+		/** The coordinates written at the axes, null without axes */
+		private final Keys xKeys;
+		private final Keys zKeys;
+		private final Keys yKeys;
+		/** The column of the origin and the line of the origin: room for the values of the z axis and the x axis */
+		private final int ox;
+		private final int oy;
+		private final int width;
+		private final int height;
+
+		private ObliqueLayout(Scale scale) {
+			double cx = scale.cx;
+			double cz = scale.cz;
+			double d = scale.d;
+
+			this.gridX = round(extentX * cx);
+			this.gridY = round(extentY * d);
+			this.gridZ = round(extentZ * cz);
+
+			if (!axes) {
+				this.xKeys = null;
+				this.zKeys = null;
+				this.yKeys = null;
+				this.ox = 0;
+				this.oy = 0;
+				this.width = gridX + gridY + 1;
+				this.height = gridZ + gridY + 1;
+				return;
+			}
+			// the axes are along the edges of the drawing, with the coordinates of the boxes with their front at y = 0 on the x and z axes
+			// (the other boxes are drawn further up and to the right), and the coordinates of all boxes on the y axis
+			this.xKeys = selectColumnValues(getFrontKeyValues(true), cx, true);
+			this.zKeys = selectRowValues(getFrontKeyValues(false), cz);
+			this.yKeys = selectRowValues(getDepthKeyValues(), d);
+
+			// the values of z on the left of the z axis, and the values of x below the x axis
+			int digits = 0;
+			for (int i = 0; i < zKeys.length(); i++) {
+				digits = Math.max(digits, Integer.toString(zKeys.labels[i]).length());
+			}
+			this.ox = digits + 1;
+			this.oy = 1;
+
+			int width = ox + gridX + gridY + 1;
+			int height = oy + gridZ + gridY + 1;
+
+			// the names of the axes, after the axes (which extend past the drawing) and a blank
+			width = Math.max(width, ox + gridX + AXIS_EXTENSION + 2 + 1);
+			width = Math.max(width, ox + gridX + gridY + AXIS_EXTENSION + 2 + 1);
+			height = Math.max(height, oy + gridZ + AXIS_EXTENSION + 2 + 1);
+			height = Math.max(height, oy + gridY + AXIS_EXTENSION + 2 + 1);
+			for (int i = 0; i < xKeys.length(); i++) {
+				int length = Integer.toString(xKeys.labels[i]).length();
+				width = Math.max(width, ox + round(xKeys.coordinates[i] * cx) - length / 2 + length);
+			}
+			for (int i = 0; i < yKeys.length(); i++) {
+				width = Math.max(width, ox + gridX + round(yKeys.coordinates[i] * d) + 2 + Integer.toString(yKeys.labels[i]).length());
+			}
+			this.width = width;
+			this.height = height;
+		}
+	}
+
+	/**
+	 * @return how far the drawing reaches in the horizontal direction of the view, in units
+	 */
+	private int getHorizontalExtent(View view) {
+		return view == View.SIDE ? extentY : extentX;
+	}
+
+	private int getVerticalExtent(View view) {
 		return view == View.TOP ? extentY : extentZ;
 	}
 
 	/**
-	 * @return columns per unit horizontally and lines per unit vertically
+	 * The scale of a view: by the given scale, or else to fit the given width, or else the smallest scale at which the labels fit, unless that makes the
+	 * view larger than {@linkplain #DEFAULT_MAXIMUM_COLUMNS} x {@linkplain #DEFAULT_MAXIMUM_LINES} (for example for large containers): then to fit that.
 	 */
-	private double[] getScale(View view) {
+	private Scale getScale(View view) {
 		if (scaleX > 0.0) {
-			return new double[] { scaleX, scaleZ };
+			return newScale(view, scaleX, scaleZ, true);
 		}
 		if (width > 0) {
-			double columnsPerUnit = (width - 1) / getHorizontalExtent(view);
-			return new double[] { columnsPerUnit, columnsPerUnit / 2 };
+			return fit(view, width, Integer.MAX_VALUE);
 		}
-		return getLabelScale(view);
+		double[] labelScale = getLabelScale(view);
+		// the labels fit, but a line is taller than a character is wide
+		double cz = labelScale[1];
+		double cx = Math.max(labelScale[0], cz * COLUMNS_PER_LINE);
+		Scale scale = newScale(view, cx, cz, true);
+		if (!isWithin(view, scale, DEFAULT_MAXIMUM_COLUMNS, DEFAULT_MAXIMUM_LINES)) {
+			return fit(view, DEFAULT_MAXIMUM_COLUMNS, DEFAULT_MAXIMUM_LINES);
+		}
+		return scale;
+	}
+
+	/**
+	 * @param minimumDepthSteps true to draw the thinnest box along y with at least {@linkplain #MINIMUM_DEPTH_STEPS} steps, whatever the scale (for the oblique view)
+	 */
+	private Scale newScale(View view, double cx, double cz, boolean minimumDepthSteps) {
+		double d = 0.0;
+		if (view == View.OBLIQUE) {
+			// half of the lines per unit of z, so that the depth does not take over the drawing
+			d = cz / 2;
+			if (minimumDepthSteps) {
+				int thinnest = getThinnestInY();
+				if (thinnest > 0) {
+					d = Math.max(d, MINIMUM_DEPTH_STEPS / thinnest);
+				}
+			}
+		}
+		return new Scale(cx, cz, d);
+	}
+
+	/**
+	 * A scale for fitting a view to a size: the lines per unit follow from the columns per unit, so that a drawing keeps its aspect when it is scaled down.
+	 *
+	 * @param minimumDepthSteps true to draw the thinnest box along y with at least {@linkplain #MINIMUM_DEPTH_STEPS} steps
+	 */
+	private Scale newFittedScale(View view, double cx, boolean minimumDepthSteps) {
+		return newScale(view, cx, cx / COLUMNS_PER_LINE, minimumDepthSteps);
+	}
+
+	/**
+	 * @return the smallest size along y of the boxes and obstacles, or 0 if there are none
+	 */
+	private int getThinnestInY() {
+		int thinnest = 0;
+		for (Item item : items) {
+			if (thinnest == 0 || item.dy < thinnest) {
+				thinnest = item.dy;
+			}
+		}
+		return thinnest;
+	}
+
+	/**
+	 * The largest scale, with half as many lines per unit as columns per unit, at which the view is no wider than the given number of columns and
+	 * no higher than the given number of lines: counting the axes with their values and names, and the depth of the oblique view. If the thinnest
+	 * box along y does not get its minimum number of steps in the oblique view without making the view too large, the depth is drawn at half the
+	 * lines per unit instead.
+	 */
+	private Scale fit(View view, int columns, int lines) {
+		Scale scale = fit(view, columns, lines, true);
+		if (scale == null && view == View.OBLIQUE) {
+			scale = fit(view, columns, lines, false);
+		}
+		if (scale == null) {
+			// the axes alone are larger
+			scale = newFittedScale(view, MINIMUM_FIT_COLUMNS_PER_UNIT, false);
+		}
+		return scale;
+	}
+
+	private Scale fit(View view, int columns, int lines, boolean minimumDepthSteps) {
+		double low = MINIMUM_FIT_COLUMNS_PER_UNIT;
+		Scale best = newFittedScale(view, low, minimumDepthSteps);
+		if (!isWithin(view, best, columns, lines)) {
+			return null;
+		}
+		// a container is at least one unit wide, so more columns per unit than columns never fits
+		double high = columns;
+		for (int i = 0; i < FIT_ITERATIONS; i++) {
+			double middle = (low + high) / 2;
+			Scale candidate = newFittedScale(view, middle, minimumDepthSteps);
+			if (isWithin(view, candidate, columns, lines)) {
+				low = middle;
+				best = candidate;
+			} else {
+				high = middle;
+			}
+		}
+		return best;
+	}
+
+	/**
+	 * @return true if a view at the scale is at most the given number of characters wide and lines high
+	 */
+	private boolean isWithin(View view, Scale scale, int columns, int lines) {
+		if (view == View.OBLIQUE) {
+			ObliqueLayout layout = new ObliqueLayout(scale);
+			return layout.width <= columns && layout.height <= lines;
+		}
+		Layout layout = new Layout(view, scale);
+		return layout.width <= columns && layout.height <= lines;
+	}
+
+	/**
+	 * Columns per unit of x (of y in the side view), lines per unit of z (of y in the top view), and for the oblique view the steps up and to the right per unit of y.
+	 */
+	private static final class Scale {
+
+		private final double cx;
+		private final double cz;
+		private final double d;
+
+		private Scale(double cx, double cz, double d) {
+			this.cx = cx;
+			this.cz = cz;
+			this.d = d;
+		}
 	}
 
 	/**
 	 * The smallest scale (at least 4 columns x 2 lines per unit) at which 90 % of the labels have a blank line above and below, and a space at each side.
+	 * The caller raises the columns per unit to at least twice the lines per unit.
 	 * <p>
 	 * Between the edges of a face which is w units wide, there are w * cx - 1 columns, so that a label with length l needs {@code w * cx - 1 >= l + 2}, and a face which is h units high
 	 * has h * cz - 1 lines between its edges, of which three are needed.
