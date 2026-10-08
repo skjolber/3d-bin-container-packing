@@ -10,9 +10,12 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.test.assertj.StackPlacementAssert;
 
 /**
  * PlainPackager integration tests for the {@code maxLoadPressure} constraint.
@@ -134,6 +137,7 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 	/**
 	 * Top box weight equals exactly the pressure limit × area — accepted
 	 * (boundary is inclusive: constraint fails only when strictly greater).
+	 * The boxes are packed in the given order, so that top is placed on bot.
 	 *
 	 * <pre>
 	 *  z |
@@ -160,26 +164,27 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem(new ContainerItem(c, 1))
 					.withMaxContainerCount(1)
+					.withOrder(Order.CHRONOLOGICAL)
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
 			// <figure>
 			//             /---------------|       z                         y                         z
 			//            /               /|       2 +---------------+       5 +---------------+       2 +---------------------------------------+
 			//           /               / |         |               |         |               |         |                                       |
-			//          /               /  |         |      bot      |         |               |         |                  bot                  |
+			//          /               /  |         |      top      |         |               |         |                  top                  |
 			//         /               /   |   y     |               |         |               |         |                                       |
 			//        /               /   /|       1 +---------------+         |               |       1 +---------------------------------------+
 			//   z   /               /   / | /       |               |         |               |         |                                       |
-			//      /               /   /  |/        |      top      |         |               |         |                  top                  |
+			//      /               /   /  |/        |      bot      |         |               |         |                  bot                  |
 			//   | /               /   /   | 5       |               |         |               |         |                                       |
 			//   |/               /   /   /        0 +---------------+         |               |       0 +---------------------------------------+
 			// 2 |---------------|   /   /           0               2   x     |               |         0                                       5   y
-			//   |               |  /   /                                      |      bot      |
-			//   |      bot      | /   /                                       |               |
+			//   |               |  /   /                                      |      top      |
+			//   |      top      | /   /                                       |               |
 			//   |               |/   /                                        |               |
 			// 1 |---------------|   /                                         |               |
 			//   |               |  /                                          |               |
-			//   |      top      | /                                           |               |
+			//   |      bot      | /                                           |               |
 			//   |               |/                                            |               |
 			// 0 |---------------|-- x                                         |               |
 			//   0               2                                             |               |
@@ -191,6 +196,9 @@ public class PlainPackagerPressureConstraintTest extends AbstractPackagerConstra
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
+			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
+			StackPlacementAssert.assertThat(placementAt(placements, 0)).hasBoxItemId("bot").hasLoadWeight(10.0);
+			StackPlacementAssert.assertThat(placementAt(placements, 1)).hasBoxItemId("top");
 		} finally {
 			packager.close();
 		}

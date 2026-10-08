@@ -11,6 +11,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.AbstractPackagerConstraintTest;
@@ -81,6 +82,7 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 	/**
 	 * A box whose weight equals exactly the bottom's {@code maxLoadWeight}
 	 * is accepted (boundary is inclusive).
+	 * The boxes are packed in the given order, so that top is placed on bot.
 	 *
 	 * <pre>
 	 *  z |
@@ -108,16 +110,17 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItem(new ContainerItem(c, 1))
 					.withMaxContainerCount(1)
+					.withOrder(Order.CHRONOLOGICAL)
 					.withBoxItems(items)
 					.build();
 			// <figure>
 			//                 /--------------------------------------------------------|       z
 			//                /                                                        /|       2 +---------------------------------------------------------------------+
-			//               /                                                        / |   y     |                                 bot                                 |
+			//               /                                                        / |   y     |                                 top                                 |
 			//              /                                                        /  |         |                                                                     |
 			//             /                                                        /  /| /     1 +---------------------------------------------------------------------+
 			//            /                                                        /  / |/        |                                                                     |
-			//           /                                                        /  /  | 10      |                                 top                                 |
+			//           /                                                        /  /  | 10      |                                 bot                                 |
 			//          /                                                        /  /  /          |                                                                     |
 			//         /                                                        /  /  /         0 +---------------------------------------------------------------------+
 			//        /                                                        /  /  /            0                                                                     10   x
@@ -126,21 +129,21 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 			//   | /                                                        /  /  /
 			//   |/                                                        /  /  /
 			// 2 |--------------------------------------------------------|  /  /
-			//   |                          bot                           | /  /
+			//   |                          top                           | /  /
 			//   |                                                        |/  /
 			// 1 |--------------------------------------------------------|  /
-			//   |                          top                           | /
+			//   |                          bot                           | /
 			//   |                                                        |/
 			// 0 |--------------------------------------------------------|-- x
 			//   0                                                       10
 			//
 			// y                                                                                z
 			// 10 +--------------------------------------------------------------------+        2 +---------------------------------------------------------------------+
-			//    |                                                                    |          |                                 bot                                 |
+			//    |                                                                    |          |                                 top                                 |
 			//    |                                                                    |          |                                                                     |
 			//    |                                                                    |        1 +---------------------------------------------------------------------+
 			//    |                                                                    |          |                                                                     |
-			//    |                                                                    |          |                                 top                                 |
+			//    |                                                                    |          |                                 bot                                 |
 			//    |                                                                    |          |                                                                     |
 			//    |                                                                    |        0 +---------------------------------------------------------------------+
 			//    |                                                                    |          0                                                                     10   y
@@ -152,7 +155,7 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 			//    |                                                                    |
 			//    |                                                                    |
 			//    |                                                                    |
-			//    |                                bot                                 |
+			//    |                                top                                 |
 			//    |                                                                    |
 			//    |                                                                    |
 			//    |                                                                    |
@@ -177,6 +180,9 @@ public class LargestAreaFitFirstPackagerWeightConstraintTest extends AbstractPac
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1);
 			PackagerResultAssert.assertThat(result).hasStackSize(0, 2);
+			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();
+			StackPlacementAssert.assertThat(placementAt(placements, 0)).hasBoxItemId("bot").hasLoadWeight(5.0);
+			StackPlacementAssert.assertThat(placementAt(placements, 1)).hasBoxItemId("top");
 		} finally {
 			packager.close();
 		}
