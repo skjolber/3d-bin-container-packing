@@ -20,7 +20,7 @@ public interface BoxItemGroupSource extends Iterable<BoxItemGroup> {
 	BoxItemGroup remove(int index);
  
 	default long getMinVolume() {
-		long minVolume = Integer.MAX_VALUE;
+		long minVolume = Long.MAX_VALUE;
 		for(BoxItemGroup boxItemGroup: this) {
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getVolume() < minVolume) {
@@ -32,7 +32,7 @@ public interface BoxItemGroupSource extends Iterable<BoxItemGroup> {
 	}
 
 	default long getMinArea() {
-		long minArea = Integer.MAX_VALUE;
+		long minArea = Long.MAX_VALUE;
 		for(BoxItemGroup boxItemGroup: this) {
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				if(boxItem.getBox().getMinimumArea() < minArea) {

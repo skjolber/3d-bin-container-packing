@@ -26,6 +26,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 	
 	public DefaultBoxItemSource() {
+		this.values = new ArrayList<>();
 	}
 
 	@Override
@@ -79,6 +80,11 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	public void setValues(List<BoxItem> values) {
 		this.values = values;
 		minimumsValid = false;
+
+		// update indexes
+		for(int i = 0; i < values.size(); i++) {
+			values.get(i).setLocalIndex(i);
+		}
 	}
 	
 	public boolean isEmpty() {
@@ -120,6 +126,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 
 	public void add(BoxItem boxItem) {
+		boxItem.setLocalIndex(values.size());
 		values.add(boxItem);
 		minimumsValid = false;
 	}
@@ -142,8 +149,8 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	}
 
 	private void calculateMinimums() {
-		long minArea = Integer.MAX_VALUE;
-		long minVolume = Integer.MAX_VALUE;
+		long minArea = Long.MAX_VALUE;
+		long minVolume = Long.MAX_VALUE;
 		for (int i = 0; i < values.size(); i++) {
 			Box box = values.get(i).getBox();
 			if(box.getMinimumArea() < minArea) {

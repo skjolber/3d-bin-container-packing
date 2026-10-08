@@ -476,7 +476,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
-		long maxBoxArea = filteredBoxItems.getMaxVolume();
+		long maxBoxArea = filteredBoxItems.getMaxArea();
 		long maxGroupVolume = getMaxGroupVolume(filteredBoxItemGroups);
 		long maxGroupWeight = getMaxGroupWeight(filteredBoxItemGroups);
 		
