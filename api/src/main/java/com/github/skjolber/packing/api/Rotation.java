@@ -87,7 +87,7 @@ public class Rotation {
 		}
 
 		public Builder withRightAtNinetyDegrees() {
-			return withSide(new SurfaceRotate(Surface.RIGHT, false));
+			return withSide(new SurfaceRotate(Surface.RIGHT, true));
 		}
 
 		public Builder withTop() {
