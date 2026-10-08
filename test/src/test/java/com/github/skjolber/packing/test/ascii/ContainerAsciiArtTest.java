@@ -50,10 +50,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────────┐
 				  │           │
-				1 │     A     │
+				  │     A     │
 				  │           │
 				0 └───────────┘
-				  0   1   2   3   x
+				  0           3   x
 				""");
 	}
 
@@ -65,10 +65,10 @@ public class ContainerAsciiArtTest {
 				y
 				2 ┌───────────┐
 				  │           │
-				1 │     A     │
+				  │     A     │
 				  │           │
 				0 └───────────┘
-				  0   1   2   3   x
+				  0           3   x
 				""");
 	}
 
@@ -80,10 +80,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   y
+				  0       2   y
 				""");
 	}
 
@@ -126,10 +126,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┬───────┐
 				  │       │       │
-				1 │   A   │   B   │
+				  │   A   │   B   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z           y
@@ -171,40 +171,40 @@ public class ContainerAsciiArtTest {
 				z
 				4 ┌───────────────┐
 				  │               │
-				3 │       B       │
+				  │       B       │
 				  │               │
 				2 ├───────┐       │
 				  │       │       │
-				1 │   A   │       │
+				  │   A   │       │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				4 ┌───────────────┐
 				  │               │
-				3 │       B       │
+				  │       B       │
 				  │               │
 				2 ├───────┬───────┘
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
 				4         ┌───────┐
 				          │       │
-				3         │       │
+				          │       │
 				          │       │
 				2 ┌───────┤   B   │
 				  │       │       │
-				1 │   A   │       │
+				  │   A   │       │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   y
+				  0       2       4   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -241,14 +241,14 @@ public class ContainerAsciiArtTest {
 				z
 				4 ┌───────┐
 				  │       │
-				3 │   B   │
+				  │   B   │
 				  │       │
 				2 ├───────┤
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z               y
@@ -291,23 +291,23 @@ public class ContainerAsciiArtTest {
 				z
 				4         ┌───────────────┐
 				          │               │
-				3         │       B       │
+				          │       B       │
 				          │               │
 				2 ┌───────┴───────┬───────┘
 				  │               │
-				1 │       A       │
+				  │       A       │
 				  │               │
 				0 └───────────────┘
-				  0   1   2   3   4   5   6   x
+				  0       2       4       6   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				2 ┌───────┬───────────────┐
 				  │       │               │
-				1 │   A   │       B       │
+				  │   A   │       B       │
 				  │       │               │
 				0 └───────┴───────────────┘
-				  0   1   2   3   4   5   6   x
+				  0       2       4       6   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z               y
@@ -340,19 +340,19 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┬───────┐
 				  │#######│       │
-				1 │#######│   A   │
+				  │#######│   A   │
 				  │#######│       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				2 ┌───────┬───────┐
 				  │#######│       │
-				1 │#######│   A   │
+				  │#######│   A   │
 				  │#######│       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z           y
@@ -379,28 +379,28 @@ public class ContainerAsciiArtTest {
 				z
 				2
 
-				1
+
 
 				0
-				  0   1   2   3   4   x
+				  0               4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				2
 
-				1
+
 
 				0
-				  0   1   2   3   4   x
+				  0               4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
 				2
 
-				1
+
 
 				0
-				  0   1   2   y
+				  0       2   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z           y
@@ -477,10 +477,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 .................
 				  .               .
-				1 .               .
+				  .               .
 				  .               .
 				0 .................
-				  0   1   2   3   4   x
+				  0               4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z           y
@@ -509,10 +509,10 @@ public class ContainerAsciiArtTest {
 				  │   C   │       │
 				2 ├───────┼───────┤
 				  │       │       │
-				1 │   A   │   B   │
+				  │   A   │   B   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 	}
 
@@ -522,14 +522,14 @@ public class ContainerAsciiArtTest {
 				y
 				4 ┌───────────────┐
 				  │               │
-				3 │       C       │
+				  │       C       │
 				  │               │
 				2 ├───────┬───────┤
 				  │       │       │
-				1 │   A   │   D   │
+				  │   A   │   D   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 	}
 
@@ -543,10 +543,10 @@ public class ContainerAsciiArtTest {
 				  │       │       │
 				2 ├───────┤       │
 				  │       │   C   │
-				1 │   B   │       │
+				  │   B   │       │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   y
+				  0       2       4   y
 				""");
 	}
 
@@ -645,10 +645,10 @@ public class ContainerAsciiArtTest {
 				  │   C   │       │
 				2 ├───────┼───────┤
 				  │       │       │
-				1 │   A   │   B   │
+				  │   A   │   B   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -764,10 +764,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 	}
 
@@ -784,10 +784,10 @@ public class ContainerAsciiArtTest {
 				y
 				2 ┌───────┐
 				  │       │
-				1 │   B   │
+				  │   B   │
 				  │       │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 	}
 
@@ -804,10 +804,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   B   │
+				  │   B   │
 				  │       │
 				0 └───────┘
-				  0   1   2   y
+				  0       2   y
 				""");
 	}
 
@@ -824,40 +824,40 @@ public class ContainerAsciiArtTest {
 				z
 				4         ┌───────┐
 				          │       │
-				3         │   B   │
+				          │   B   │
 				          │       │
 				2 ┌───────┼───────┘
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				4         ┌───────┐
 				          │       │
-				3         │   B   │
+				          │   B   │
 				          │       │
 				2 ┌───────┼───────┘
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
 				4         ┌───────┐
 				          │       │
-				3         │   B   │
+				          │   B   │
 				          │       │
 				2 ┌───────┼───────┘
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   3   4   y
+				  0       2       4   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -930,84 +930,186 @@ public class ContainerAsciiArtTest {
 				""");
 	}
 
+	/**
+	 * The coordinates are 0, the size of the container, and where the boxes start and end: not at every unit. The values on the left are
+	 * aligned to the right.
+	 */
 	@Test
 	public void testCoordinatesWithSeveralDigits() {
-		ContainerAsciiArt art = newBuilder(10, 1, 10, place("A", 10, 1, 10, 0, 0, 0))
+		ContainerAsciiArt art = newBuilder(11, 1, 11,
+				place("A", 5, 1, 10, 0, 0, 0),
+				place("B", 6, 1, 3, 5, 0, 0))
 				.withScale(3, 1)
 				.build();
 
-		// the values on the left are aligned to the right
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				10 ┌─────────────────────────────┐
-				 9 │                             │
-				 8 │                             │
-				 7 │                             │
-				 6 │                             │
-				 5 │              A              │
-				 4 │                             │
-				 3 │                             │
-				 2 │                             │
-				 1 │                             │
-				 0 └─────────────────────────────┘
-				   0  1  2  3  4  5  6  7  8  9  10   x
+				11
+				10 ┌──────────────┐
+				   │              │
+				   │              │
+				   │              │
+				   │              │
+				   │      A       │
+				   │              │
+				 3 │              ├─────────────────┐
+				   │              │        B        │
+				   │              │                 │
+				 0 └──────────────┴─────────────────┘
+				   0              5                 11   x
 				""");
 	}
 
 	/**
-	 * The values are written for every second unit when the values for every unit would be too close: there are two columns per unit, a value
-	 * with two digits needs three, but there is a line for every unit.
+	 * Only the coordinates where the boxes start and end are written, with 0 and the size of the container: in the front view for x 0, 3, 5, 7 and 10,
+	 * and for z 0, 2, 4 and 10. The coordinates of the box behind the others are also written.
 	 */
 	@Test
-	public void testCoordinatesForEverySecondUnit() {
-		ContainerAsciiArt art = newBuilder(20, 2, 4, place("A", 20, 2, 4, 0, 0, 0))
-				.withWidth(41)
+	public void testCoordinatesAreWhereTheBoxesStartAndEnd() {
+		ContainerAsciiArt art = newBuilder(10, 4, 10,
+				place("A", 2, 4, 2, 3, 0, 0),
+				place("B", 2, 2, 2, 3, 0, 2),
+				place("C", 4, 2, 2, 3, 2, 2))
+				.withScale(3, 1)
 				.build();
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				4 ┌───────────────────────────────────────┐
-				3 │                                       │
-				2 │                   A                   │
-				1 │                                       │
-				0 └───────────────────────────────────────┘
-				  0   2   4   6   8   10  12  14  16  18  20   x
+				10
+
+
+
+
+
+				 4          ┌─────┬─────┐
+				            │  B  │  C  │
+				 2          ├─────┼─────┘
+				            │  A  │
+				 0          └─────┘
+				   0        3     5     7        10   x
+				""");
+		assertThat(art.top().toString()).isEqualTo("""
+				y
+				4          ┌───────────┐
+				           │     C     │
+				2          ├─────┬─────┘
+				           │  B  │
+				0          └─────┘
+				  0        3     5     7        10   x
+				""");
+		assertThat(art.side().toString()).isEqualTo("""
+				z
+				10
+
+
+
+
+
+				 4 ┌─────┬─────┐
+				   │  B  │  C  │
+				 2 ├─────┴─────┤
+				   │     A     │
+				 0 └───────────┘
+				   0     2     4   y
 				""");
 	}
 
 	/**
-	 * The container is 100 x 100 units, drawn in 41 columns: the values are written for every 10th unit along x and every 5th unit along z.
+	 * The obstacles also have coordinates.
 	 */
 	@Test
-	public void testCoordinatesForEveryFifthAndTenthUnit() {
-		ContainerAsciiArt art = newBuilder(100, 1, 100, place("A", 50, 1, 50, 0, 0, 0))
-				.withWidth(41)
+	public void testCoordinatesOfObstacles() {
+		ContainerAsciiArt art = newBuilder(6, 1, 2, place("A", 2, 1, 2, 4, 0, 0))
+				.withObstacles(List.of(place("X", 3, 1, 1, 0, 0, 0)))
+				.withScale(3, 2)
 				.build();
 
 		assertThat(art.front().toString()).isEqualTo("""
 				z
-				100
-				 95
-				 90
-				 85
-				 80
-				 75
-				 70
-				 65
-				 60
-				 55
-				 50 ┌───────────────────┐
-				 45 │                   │
-				 40 │                   │
-				 35 │                   │
-				 30 │                   │
-				 25 │         A         │
-				 20 │                   │
-				 15 │                   │
-				 10 │                   │
-				  5 │                   │
-				  0 └───────────────────┘
-				    0   10  20  30  40  50  60  70  80  90  100   x
+				2             ┌─────┐
+				              │     │
+				1 ┌────────┐  │  A  │
+				  │########│  │     │
+				0 └────────┘  └─────┘
+				  0        3  4     6   x
+				""");
+	}
+
+	/**
+	 * The boxes are 1 unit wide, in 21 columns for the 20 units of the container, so a coordinate next to another coordinate is left out: the
+	 * coordinates of the boxes are 0, 1, 2, 3 and 10. The coordinates 0 and 20 (the container) are kept, and then the others from the left to
+	 * the right as long as there is a blank column in between: 2 and 10, but not 1 and 3.
+	 */
+	@Test
+	public void testCoordinatesWhichAreTooCloseAreLeftOut() {
+		ContainerAsciiArt art = newBuilder(20, 1, 1,
+				place("A", 1, 1, 1, 0, 0, 0),
+				place("B", 1, 1, 1, 1, 0, 0),
+				place("C", 1, 1, 1, 2, 0, 0),
+				place("D", 7, 1, 1, 3, 0, 0))
+				.withWidth(21)
+				.build();
+
+		assertThat(art.front().toString()).isEqualTo("""
+				z
+				1 ┌┬┬┬──────┐
+				0 └┴┴┴──────┘
+				  0 2       10        20   x
+				""");
+	}
+
+	/**
+	 * The coordinate 0 and the size of the container (10) have priority over the coordinate where the box ends (9), which is next to the size of
+	 * the container, although it is further to the left.
+	 */
+	@Test
+	public void testCoordinatesOfTheContainerHavePriority() {
+		ContainerAsciiArt art = newBuilder(10, 1, 1, place("A", 9, 1, 1, 0, 0, 0))
+				.withWidth(11)
+				.build();
+
+		assertThat(art.front().toString()).isEqualTo("""
+				z
+				1 ┌────────┐
+				0 └────────┘
+				  0         10   x
+				""");
+
+		// the box ends next to the origin: the coordinate 1 is left out
+		ContainerAsciiArt origin = newBuilder(10, 1, 1, place("A", 1, 1, 1, 0, 0, 0))
+				.withWidth(11)
+				.build();
+
+		assertThat(origin.front().toString()).isEqualTo("""
+				z
+				1 ┌┐
+				0 └┘
+				  0         10   x
+				""");
+	}
+
+	/**
+	 * With half a line per unit, the coordinates 1 and 2 are on the same line, as are 9 and 10. There is one value per line: 0, the size of the
+	 * container (10), and then from the bottom to the top.
+	 */
+	@Test
+	public void testCoordinatesOnTheSameLine() {
+		ContainerAsciiArt art = newBuilder(8, 1, 10,
+				place("A", 8, 1, 1, 0, 0, 0),
+				place("B", 8, 1, 1, 0, 0, 1),
+				place("C", 8, 1, 7, 0, 0, 2))
+				.withWidth(9)
+				.build();
+
+		assertThat(art.front().toString()).isEqualTo("""
+				z
+				10 ┌───────┐
+				   │       │
+				   │   C   │
+				   │       │
+				 1 ├───────┤
+				 0 └───────┘
+				   0       8   x
 				""");
 	}
 
@@ -1047,10 +1149,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┬───────┐
 				  │#######│       │
-				1 │#######│   A   │
+				  │#######│   A   │
 				  │#######│       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 	}
 
@@ -1072,10 +1174,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 	}
 
@@ -1090,10 +1192,10 @@ public class ContainerAsciiArtTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 	}
 
@@ -1108,21 +1210,21 @@ public class ContainerAsciiArtTest {
 				2 ┌─────┐
 				1 │  A  ├─────┐
 				0 └─────┴─────┘
-				  0  1  2  3  4   x
+				  0     2     4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				2 ┌─────┬─────┐
-				1 │  A  │  B  │
+				  │  A  │  B  │
 				0 └─────┴─────┘
-				  0  1  2  3  4   x
+				  0     2     4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
 				2 ┌─────┐
 				1 ├─────┤
 				0 └─────┘
-				  0  1  2   y
+				  0     2   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z       y

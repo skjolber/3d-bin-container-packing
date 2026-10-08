@@ -68,10 +68,10 @@ public class ContainerAsciiArtStyleTest {
 				  │   C   │       │
 				2 ├───────┼───────┤
 				  │       │       │
-				1 │   A   │   B   │
+				  │   A   │   B   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -110,10 +110,10 @@ public class ContainerAsciiArtStyleTest {
 				  │   C   │       │
 				2 ├───────┼───────┤
 				  │       │       │
-				1 │   A   │   B   │
+				  │   A   │   B   │
 				  │       │       │
 				0 ╰───────┴───────╯
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -152,10 +152,10 @@ public class ContainerAsciiArtStyleTest {
 				  ┃   C   ┃       ┃
 				2 ┣━━━━━━━╋━━━━━━━┫
 				  ┃       ┃       ┃
-				1 ┃   A   ┃   B   ┃
+				  ┃   A   ┃   B   ┃
 				  ┃       ┃       ┃
 				0 ┗━━━━━━━┻━━━━━━━┛
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
 				z                   y
@@ -195,23 +195,23 @@ public class ContainerAsciiArtStyleTest {
 				  |   C   |       |
 				2 +-------+-------+
 				  |       |       |
-				1 |   A   |   B   |
+				  |   A   |   B   |
 				  |       |       |
 				0 +-------+-------+
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.top().toString()).isEqualTo("""
 				y
 				4 +---------------+
 				  |               |
-				3 |       C       |
+				  |       C       |
 				  |               |
 				2 +-------+-------+
 				  |       |       |
-				1 |   A   |   D   |
+				  |   A   |   D   |
 				  |       |       |
 				0 +-------+-------+
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
@@ -221,10 +221,10 @@ public class ContainerAsciiArtStyleTest {
 				  |       |       |
 				2 +-------+       |
 				  |       |   C   |
-				1 |   B   |       |
+				  |   B   |       |
 				  |       |       |
 				0 +-------+-------+
-				  0   1   2   3   4   y
+				  0       2       4   y
 				""");
 		// vertical edges are drawn through corners and junctions, then diagonal edges
 		assertThat(art.oblique().toString()).isEqualTo("""
@@ -260,14 +260,14 @@ public class ContainerAsciiArtStyleTest {
 				y
 				4 ┌───────────────┐
 				  │               │
-				3 │       C       │
+				  │       C       │
 				  │               │
 				2 ├───────┬───────┤
 				  │       │       │
-				1 │   A   │   D   │
+				  │   A   │   D   │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 		assertThat(art.side().toString()).isEqualTo("""
 				z
@@ -277,10 +277,10 @@ public class ContainerAsciiArtStyleTest {
 				  │       │       │
 				2 ├───────┤       │
 				  │       │   C   │
-				1 │   B   │       │
+				  │   B   │       │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   y
+				  0       2       4   y
 				""");
 	}
 

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.test.ascii;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -27,7 +28,8 @@ import com.github.skjolber.packing.api.Stack;
  * is drawn as a number of columns and lines, see {@linkplain Builder#withScale(double, double)}. The edges are drawn in
  * a {@linkplain Style}, by default with thin lines.
  * <p>
- * The front, top and side views have the values of the units at the axes. The oblique view has the names of the axes.
+ * The front, top and side views have the coordinates at the axes: 0, the size of the container, and where the boxes start and end.
+ * The oblique view has the names of the axes.
  * <p>
  * Example of the front view of three boxes (a larger scale than the default is used to make the example small):
  *
@@ -201,7 +203,8 @@ public class ContainerAsciiArt {
 		}
 
 		/**
-		 * @param axes true to draw the axes (the default): the names of the axes in all views, and also the values of the units in the front, top and side views.
+		 * @param axes true to draw the axes (the default): the names of the axes in all views, and also the coordinates in the front, top and side views:
+		 *        0, the size of the container and where the boxes start and end (as many as there is room for).
 		 *        Without axes and container outline, the blank lines above and below the boxes are left out.
 		 * @return this builder
 		 */
@@ -297,6 +300,10 @@ public class ContainerAsciiArt {
 	private static final int LABEL_FIT_PERCENT = 90;
 
 	private final List<Item> items;
+	/** Size of the container */
+	private final int containerX;
+	private final int containerY;
+	private final int containerZ;
 	/** Size of the container, or the boxes if they stick out of it */
 	private final int extentX;
 	private final int extentY;
@@ -346,6 +353,9 @@ public class ContainerAsciiArt {
 		this.extentX = extentX;
 		this.extentY = extentY;
 		this.extentZ = extentZ;
+		this.containerX = builder.dx;
+		this.containerY = builder.dy;
+		this.containerZ = builder.dz;
 	}
 
 	private static String getLabel(Function<Placement, String> labels, Placement placement, int index) {
@@ -613,24 +623,27 @@ public class ContainerAsciiArt {
 		int gridWidth = round(horizontalExtent * horizontalScale);
 		int gridHeight = round(verticalExtent * verticalScale);
 
-		// the values of the units, on the left and at the bottom
-		int horizontalStep = 1;
-		int verticalStep = 1;
+		// the coordinates on the left and at the bottom
+		int[] horizontalValues = null;
+		int[] verticalValues = null;
 		int marginColumns = 0;
 		int marginRows = 0;
 		int width = gridWidth + 1;
 		int height = gridHeight + 1;
 		int nameColumn = 0;
 		if (axes) {
-			horizontalStep = getStep(horizontalExtent, horizontalScale, true);
-			verticalStep = getStep(verticalExtent, verticalScale, false);
+			horizontalValues = selectColumnValues(getKeyValues(view, true), horizontalScale);
+			verticalValues = selectRowValues(getKeyValues(view, false), verticalScale);
 
-			int lastVerticalValue = verticalExtent - verticalExtent % verticalStep;
-			marginColumns = Integer.toString(lastVerticalValue).length() + 1;
+			int digits = 0;
+			for (int value : verticalValues) {
+				digits = Math.max(digits, Integer.toString(value).length());
+			}
+			marginColumns = digits + 1;
 			marginRows = 1;
 
 			int numbersEnd = marginColumns + gridWidth + 1;
-			for (int value = 0; value <= horizontalExtent; value += horizontalStep) {
+			for (int value : horizontalValues) {
 				numbersEnd = Math.max(numbersEnd, marginColumns + round(value * horizontalScale) + Integer.toString(value).length());
 			}
 			// the name of the axis, after the last value
@@ -692,12 +705,12 @@ public class ContainerAsciiArt {
 			canvas.putCharacter(nameColumn, 0, view == View.SIDE ? 'y' : 'x', AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
 
 			int valueWidth = marginColumns - 1;
-			for (int value = 0; value <= verticalExtent; value += verticalStep) {
+			for (int value : verticalValues) {
 				String text = Integer.toString(value);
 				// right aligned
 				drawText(canvas, valueWidth - text.length(), marginRows + round(value * verticalScale), text);
 			}
-			for (int value = 0; value <= horizontalExtent; value += horizontalStep) {
+			for (int value : horizontalValues) {
 				drawText(canvas, marginColumns + round(value * horizontalScale), 0, Integer.toString(value));
 			}
 		}
@@ -713,42 +726,90 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * The values of the units are written for every unit, or if the values would be too close, for every 2nd, 5th, 10th, 20th, 50th, ... unit.
+	 * The coordinates which are written at an axis, in the order of priority: 0, the size of the container, and then the coordinates where
+	 * a box starts or ends, from low to high.
 	 *
-	 * @param extent the size of the container in units
-	 * @param scale columns or lines per unit
-	 * @param horizontal true if the values are in a line, so that the values need room for their digits, false if the values are in a column
-	 * @return the number of units between the values
+	 * @param horizontal true for the horizontal axis of the view, false for the vertical axis
 	 */
-	private static int getStep(int extent, double scale, boolean horizontal) {
-		int step = 1;
-		while (!fits(extent, scale, horizontal, step)) {
-			step = nextStep(step);
+	private int[] getKeyValues(View view, boolean horizontal) {
+		int container;
+		if (horizontal) {
+			container = view == View.SIDE ? containerY : containerX;
+		} else {
+			container = view == View.TOP ? containerY : containerZ;
 		}
-		return step;
+		int[] boxes = new int[items.size() * 2];
+		for (int i = 0; i < items.size(); i++) {
+			Item item = items.get(i);
+			int start = horizontal ? getHorizontalStart(view, item) : getVerticalStart(view, item);
+			int size = horizontal ? getHorizontalSize(view, item) : getVerticalSize(view, item);
+			boxes[i * 2] = start;
+			boxes[i * 2 + 1] = start + size;
+		}
+		Arrays.sort(boxes);
+
+		int[] values = new int[boxes.length + 2];
+		int count = 0;
+		values[count++] = 0;
+		values[count++] = container;
+		for (int value : boxes) {
+			// the values are not negative, and in order
+			if (value != 0 && value != container && (count == 2 || values[count - 1] != value)) {
+				values[count++] = value;
+			}
+		}
+		return Arrays.copyOf(values, count);
 	}
 
 	/**
-	 * @return 2 after 1, 5 after 2, 10 after 5, 20 after 10, and so on
+	 * Keep the coordinates which have room in a line, with a blank column between each: the ones with the highest priority first.
+	 *
+	 * @param values the coordinates, in the order of priority
+	 * @param scale columns per unit
+	 * @return the coordinates which are written
 	 */
-	private static int nextStep(int step) {
-		int leading = step;
-		while (leading >= 10) {
-			leading /= 10;
-		}
-		return leading == 2 ? step / 2 * 5 : step * 2;
-	}
+	private static int[] selectColumnValues(int[] values, double scale) {
+		int[] selected = new int[values.length];
+		int count = 0;
+		for (int value : values) {
+			int column = round(value * scale);
+			int length = Integer.toString(value).length();
 
-	private static boolean fits(int extent, double scale, boolean horizontal, int step) {
-		for (int value = 0; value + step <= extent; value += step) {
-			int distance = round((value + step) * scale) - round(value * scale);
-			// room for the digits and a blank
-			int needed = horizontal ? Integer.toString(value).length() + 1 : 1;
-			if (distance < needed) {
-				return false;
+			boolean fits = true;
+			for (int i = 0; i < count && fits; i++) {
+				int otherColumn = round(selected[i] * scale);
+				int otherLength = Integer.toString(selected[i]).length();
+				fits = column >= otherColumn + otherLength + 1 || otherColumn >= column + length + 1;
+			}
+			if (fits) {
+				selected[count++] = value;
 			}
 		}
-		return true;
+		return Arrays.copyOf(selected, count);
+	}
+
+	/**
+	 * Keep one coordinate for each line: the one with the highest priority.
+	 *
+	 * @param values the coordinates, in the order of priority
+	 * @param scale lines per unit
+	 * @return the coordinates which are written
+	 */
+	private static int[] selectRowValues(int[] values, double scale) {
+		int[] selected = new int[values.length];
+		int count = 0;
+		for (int value : values) {
+			int row = round(value * scale);
+
+			boolean fits = true;
+			for (int i = 0; i < count && fits; i++) {
+				fits = round(selected[i] * scale) != row;
+			}
+			if (fits) {
+				selected[count++] = value;
+			}
+		}
+		return Arrays.copyOf(selected, count);
 	}
 
 	private static int getHorizontalStart(View view, Item item) {

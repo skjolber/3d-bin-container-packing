@@ -210,7 +210,7 @@ public class ContainerAsciiArtLabelTest {
 				1 ┌───────┐
 				  │ ABCDE │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 	}
 
@@ -258,14 +258,14 @@ public class ContainerAsciiArtLabelTest {
 				z
 				4 ┌───────────────┐
 				  │               │
-				3 │       B       │
+				  │       B       │
 				  │               │
 				2 ├───────┐       │
 				  │       │       │
-				1 │   A   │       │
+				  │   A   │       │
 				  │       │       │
 				0 └───────┴───────┘
-				  0   1   2   3   4   x
+				  0       2       4   x
 				""");
 	}
 
@@ -279,10 +279,10 @@ public class ContainerAsciiArtLabelTest {
 				z
 				2 ┌───────┐
 				  │       │
-				1 │   A   │
+				  │   A   │
 				  │       │
 				0 └───────┘
-				  0   1   2   x
+				  0       2   x
 				""");
 		assertThat(art.front().toString()).doesNotContain("B");
 	}
