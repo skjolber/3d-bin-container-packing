@@ -219,6 +219,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
+		long maxBoxVolume = filteredBoxItems.getMaxVolume();
+		int maxBoxWeight = getMaxBoxWeight(filteredBoxItems);
+
 		int levelOffset = 0;
 		boolean newLevel = true;
 
@@ -363,33 +366,36 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			
 			if(!filteredBoxItems.isEmpty()) {
 				// remove items are too big according to total volume / weight
-				for(int i = 0; i < filteredBoxItems.size(); i++) {
-					BoxItem boxItem = filteredBoxItems.get(i);
-					Box box = boxItem.getBox();
-					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
-						
-						if(abortOnAnyBoxTooBig) {
-							return EmptyIntermediatePackagerResult.EMPTY;
-						}
-						
-						if(order != Order.CHRONOLOGICAL) {
-							removed.add(filteredBoxItems.remove(i));
-							i--;
-						} else {
-							// remove all later then the first removed
-							while(i < filteredBoxItems.size()) {
+				// (the items only shrink, so nothing can be too big while the remaining capacity holds the largest initial item)
+				if(remainingLoadVolume < maxBoxVolume || remainingLoadWeight < maxBoxWeight) {
+					for(int i = 0; i < filteredBoxItems.size(); i++) {
+						BoxItem boxItem = filteredBoxItems.get(i);
+						Box box = boxItem.getBox();
+						if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return EmptyIntermediatePackagerResult.EMPTY;
+							}
+							
+							if(order != Order.CHRONOLOGICAL) {
 								removed.add(filteredBoxItems.remove(i));
-							}					
+								i--;
+							} else {
+								// remove all later then the first removed
+								while(i < filteredBoxItems.size()) {
+									removed.add(filteredBoxItems.remove(i));
+								}					
+							}
 						}
 					}
-				}
-				
-				if(!removed.isEmpty()) {
-					manifestControls.declined(removed);
-					pointControls.declined(removed);
-					maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 					
-					removed.clear();
+					if(!removed.isEmpty()) {
+						manifestControls.declined(removed);
+						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
+						
+						removed.clear();
+					}
 				}
 				
 				
@@ -482,6 +488,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
+
+		long maxGroupVolume = getMaxGroupVolume(filteredBoxItemGroups);
+		long maxGroupWeight = getMaxGroupWeight(filteredBoxItemGroups);
 
 		PlacementControls placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 		PlacementControls firstPlacementControls = createFirstControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
@@ -629,34 +638,36 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 				if(!filteredBoxItems.isEmpty()) {
 					// remove groups are too big according to total volume / weight
-					
-					for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
-						BoxItemGroup g = filteredBoxItemGroups.get(i);
-						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
-							
-							if(abortOnAnyBoxTooBig) {
-								return EmptyIntermediatePackagerResult.EMPTY;
-							}
-							
-							if(order != Order.CHRONOLOGICAL) {
-								filteredBoxItemGroups.remove(i);
-								i--;
+					// (the groups only shrink, so nothing can be too big while the remaining capacity holds the largest initial group)
+					if(remainingLoadVolume < maxGroupVolume || remainingLoadWeight < maxGroupWeight) {
+						for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+							BoxItemGroup g = filteredBoxItemGroups.get(i);
+							if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
 								
-								removedBoxItemGroups.add(g);
-							} else {
-								// remove all later groups than the first removed
-								while(i < filteredBoxItemGroups.size()) {
-									removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+								if(abortOnAnyBoxTooBig) {
+									return EmptyIntermediatePackagerResult.EMPTY;
+								}
+								
+								if(order != Order.CHRONOLOGICAL) {
+									filteredBoxItemGroups.remove(i);
+									i--;
+									
+									removedBoxItemGroups.add(g);
+								} else {
+									// remove all later groups than the first removed
+									while(i < filteredBoxItemGroups.size()) {
+										removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+									}
 								}
 							}
 						}
-					}
-					
-					if(!removedBoxItemGroups.isEmpty()) {
-						manifestControls.filteredGroups(removedBoxItemGroups);
-						pointControls.filteredGroups(removedBoxItemGroups);
-						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
-						removedBoxItemGroups.clear();
+						
+						if(!removedBoxItemGroups.isEmpty()) {
+							manifestControls.filteredGroups(removedBoxItemGroups);
+							pointControls.filteredGroups(removedBoxItemGroups);
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
+							removedBoxItemGroups.clear();
+						}
 					}
 					
 					// remove small points

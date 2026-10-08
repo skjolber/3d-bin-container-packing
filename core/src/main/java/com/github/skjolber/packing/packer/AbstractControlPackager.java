@@ -105,6 +105,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		
 		long maxBoxArea = boxItemSource.getMaxArea();
 		long maxBoxVolume = boxItemSource.getMaxVolume();
+		int maxBoxWeight = getMaxBoxWeight(boxItemSource);
 		
 		pointCalculator.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());
 
@@ -149,32 +150,35 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			if(!boxItemSource.isEmpty()) {
 				
 				// remove items are too big according to total volume / weight
-				for(int i = 0; i < boxItemSource.size(); i++) {
-					BoxItem boxItem = boxItemSource.get(i);
-					Box box = boxItem.getBox();
-					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
-						
-						if(abortOnAnyBoxTooBig) {
-							return createEmptyIntermediatePackagerResult();
-						}
-						
-						if(order != Order.CHRONOLOGICAL) {
-							removed.add(boxItemSource.remove(i));
-							i--;
-						} else {
-							// remove all later then the first removed
-							while(i < boxItemSource.size()) {
+				// (the items only shrink, so nothing can be too big while the remaining capacity holds the largest initial item)
+				if(remainingLoadVolume < maxBoxVolume || remainingLoadWeight < maxBoxWeight) {
+					for(int i = 0; i < boxItemSource.size(); i++) {
+						BoxItem boxItem = boxItemSource.get(i);
+						Box box = boxItem.getBox();
+						if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return createEmptyIntermediatePackagerResult();
+							}
+							
+							if(order != Order.CHRONOLOGICAL) {
 								removed.add(boxItemSource.remove(i));
-							}							
+								i--;
+							} else {
+								// remove all later then the first removed
+								while(i < boxItemSource.size()) {
+									removed.add(boxItemSource.remove(i));
+								}							
+							}
 						}
 					}
-				}
-				if(!removed.isEmpty()) {
-					manifestControls.declined(removed);
-					pointControls.declined(removed);
-					maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
-					
-					removed.clear();
+					if(!removed.isEmpty()) {
+						manifestControls.declined(removed);
+						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
+						
+						removed.clear();
+					}
 				}
 				
 				// remove small points
@@ -473,6 +477,8 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxVolume();
+		long maxGroupVolume = getMaxGroupVolume(filteredBoxItemGroups);
+		long maxGroupWeight = getMaxGroupWeight(filteredBoxItemGroups);
 		
 		PlacementControls placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 
@@ -524,36 +530,38 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 				if(!filteredBoxItemGroups.isEmpty()) {
 					// remove groups are too big according to total volume / weight
-					
-					for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
-						BoxItemGroup g = filteredBoxItemGroups.get(i);
-						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
-							
-							if(abortOnAnyBoxTooBig) {
-								return createEmptyIntermediatePackagerResult();
-							}
-							
-							if(order != Order.CHRONOLOGICAL) {
-								filteredBoxItemGroups.remove(i);
-								i--;
+					// (the groups only shrink, so nothing can be too big while the remaining capacity holds the largest initial group)
+					if(remainingLoadVolume < maxGroupVolume || remainingLoadWeight < maxGroupWeight) {
+						for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+							BoxItemGroup g = filteredBoxItemGroups.get(i);
+							if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
 								
-								removedBoxItemGroups.add(g);
-							} else {
-								// remove all later groups than the first removed
-								while(i < filteredBoxItemGroups.size()) {
-									removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+								if(abortOnAnyBoxTooBig) {
+									return createEmptyIntermediatePackagerResult();
 								}
 								
-								
+								if(order != Order.CHRONOLOGICAL) {
+									filteredBoxItemGroups.remove(i);
+									i--;
+									
+									removedBoxItemGroups.add(g);
+								} else {
+									// remove all later groups than the first removed
+									while(i < filteredBoxItemGroups.size()) {
+										removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+									}
+									
+									
+								}
 							}
 						}
-					}
-
-					if(!removedBoxItemGroups.isEmpty()) {
-						manifestControls.filteredGroups(removedBoxItemGroups);
-						pointControls.filteredGroups(removedBoxItemGroups);
-						maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
-						removedBoxItemGroups.clear();
+	
+						if(!removedBoxItemGroups.isEmpty()) {
+							manifestControls.filteredGroups(removedBoxItemGroups);
+							pointControls.filteredGroups(removedBoxItemGroups);
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
+							removedBoxItemGroups.clear();
+						}
 					}
 					
 					// remove / constrain to small points
@@ -669,6 +677,39 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		}
 		
 		return createIntermediatePackagerResult(controlContainerItem, stack);
+	}
+
+	protected static int getMaxBoxWeight(BoxItemSource boxItemSource) {
+		int maxWeight = 0;
+		for(int i = 0; i < boxItemSource.size(); i++) {
+			int weight = boxItemSource.get(i).getBox().getWeight();
+			if(weight > maxWeight) {
+				maxWeight = weight;
+			}
+		}
+		return maxWeight;
+	}
+
+	protected static long getMaxGroupVolume(BoxItemGroupSource boxItemGroups) {
+		long maxVolume = 0;
+		for(int i = 0; i < boxItemGroups.size(); i++) {
+			long volume = boxItemGroups.get(i).getVolume();
+			if(volume > maxVolume) {
+				maxVolume = volume;
+			}
+		}
+		return maxVolume;
+	}
+
+	protected static long getMaxGroupWeight(BoxItemGroupSource boxItemGroups) {
+		long maxWeight = 0;
+		for(int i = 0; i < boxItemGroups.size(); i++) {
+			long weight = boxItemGroups.get(i).getWeight();
+			if(weight > maxWeight) {
+				maxWeight = weight;
+			}
+		}
+		return maxWeight;
 	}
 
 	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack);
