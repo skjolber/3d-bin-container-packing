@@ -33,7 +33,7 @@ public abstract class AbstractBoxItemGroupSession extends AbstractPackagerSessio
 	
 	public AbstractBoxItemGroupSession(List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers,
 			int containerCount, Order order, PackagerInterruptSupplier interrupt) {
-		super(new BoxItemGroupsContainerItemsCalculator(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
+		super(new BoxItemGroupsContainerInventory(containers, containerCount, initializeGlobalIndexesForGroups(boxItemGroups)));
 		// the session owns the groups (see AbstractPackager#createSession) and packs copies of them
 		this.initialBoxItemGroups = boxItemGroups;
 		

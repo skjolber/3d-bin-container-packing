@@ -47,7 +47,7 @@ import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Fills each container level by level: the box with the largest ground area starts a level, then the remaining boxes are stacked within the level.
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
@@ -55,24 +55,24 @@ import com.github.skjolber.packing.packer.PackagerInput;
  */
 public abstract class AbstractLargestAreaFitFirstPackager extends AbstractControlPackager<Placement, AbstractLargestAreaFitFirstPackager.LargestAreaFitFirstResultBuilder> {
 
-	protected class PlainBoxItemSession extends AbstractBoxItemSession {
+	protected class LargestAreaFitFirstBoxItemSession extends AbstractBoxItemSession {
 
-		public PlainBoxItemSession(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
+		public LargestAreaFitFirstBoxItemSession(List<BoxItem> boxItems, Order order, List<ContainerItem> containers, int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItems, order, containers, containerCount, interrupt);
 		}
 
-		private PlainBoxItemSession(PlainBoxItemSession source) {
+		private LargestAreaFitFirstBoxItemSession(LargestAreaFitFirstBoxItemSession source) {
 			super(source);
 		}
 
 		@Override
 		public PackagerSession fork() {
-			return new PlainBoxItemSession(this);
+			return new LargestAreaFitFirstBoxItemSession(this);
 		}
 
 		@Override
-		protected PlainBoxItemSession fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemSession(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
+		protected LargestAreaFitFirstBoxItemSession fresh(List<ContainerItem> containers, int containerCount) {
+			return new LargestAreaFitFirstBoxItemSession(copyBoxItems(initialBoxItems), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -89,27 +89,27 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 
 	}
 	
-	protected class PlainBoxItemGroupSession extends AbstractBoxItemGroupSession {
+	protected class LargestAreaFitFirstBoxItemGroupSession extends AbstractBoxItemGroupSession {
 
-		public PlainBoxItemGroupSession(List<BoxItemGroup> boxItemGroups,
+		public LargestAreaFitFirstBoxItemGroupSession(List<BoxItemGroup> boxItemGroups,
 				Order order,
 				List<ContainerItem> containers,
 				int containerCount, PackagerInterruptSupplier interrupt) {
 			super(boxItemGroups, containers, containerCount, order, interrupt);
 		}
 
-		private PlainBoxItemGroupSession(PlainBoxItemGroupSession source) {
+		private LargestAreaFitFirstBoxItemGroupSession(LargestAreaFitFirstBoxItemGroupSession source) {
 			super(source);
 		}
 
 		@Override
 		public PackagerSession fork() {
-			return new PlainBoxItemGroupSession(this);
+			return new LargestAreaFitFirstBoxItemGroupSession(this);
 		}
 
 		@Override
-		protected PlainBoxItemGroupSession fresh(List<ContainerItem> containers, int containerCount) {
-			return new PlainBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
+		protected LargestAreaFitFirstBoxItemGroupSession fresh(List<ContainerItem> containers, int containerCount) {
+			return new LargestAreaFitFirstBoxItemGroupSession(copyBoxItemGroups(initialBoxItemGroups), order, containers, containerCount, interrupt);
 		}
 
 		@Override
@@ -128,9 +128,9 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 	@Override
 	protected PackagerSession newSession(PackagerInput input, PackagerInterruptSupplier interrupt) {
 		if(input.hasBoxItems()) {
-			return new PlainBoxItemSession(input.getBoxItems(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+			return new LargestAreaFitFirstBoxItemSession(input.getBoxItems(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 		}
-		return new PlainBoxItemGroupSession(input.getBoxItemGroups(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
+		return new LargestAreaFitFirstBoxItemGroupSession(input.getBoxItemGroups(), input.getOrder(), input.getContainerItems(), input.getMaxContainerCount(), interrupt);
 	}
 
 	public class LargestAreaFitFirstResultBuilder extends AbstractPackagerResultBuilder<LargestAreaFitFirstResultBuilder> {
@@ -188,7 +188,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 		List<BoxItem> removed = new ArrayList<>();
 		for(int i = 0; i < filteredBoxItems.size(); i++) {
 			BoxItem boxItem = filteredBoxItems.get(i);
-			if(!container.fitsInside(boxItem.getBox())) {
+			if(!container.canLoad(boxItem.getBox())) {
 
 				if(abortOnAnyBoxTooBig) {
 					return EmptyIntermediatePackagerResult.EMPTY;
@@ -448,7 +448,7 @@ public abstract class AbstractLargestAreaFitFirstPackager extends AbstractContro
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
-				if(!container.fitsInside(boxItemGroup)) {
+				if(!container.canLoadAtLeastOneBox(boxItemGroup)) {
 					if(abortOnAnyBoxTooBig) {
 						return EmptyIntermediatePackagerResult.EMPTY;
 					}

@@ -46,8 +46,7 @@ import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFacto
 import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
- * Selects the box with the highest volume first, then places it into the point with the lowest volume.
+ * Packs each container by repeatedly selecting the box with the highest volume, then placing it into the point with the lowest volume.
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes

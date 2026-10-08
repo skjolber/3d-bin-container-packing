@@ -17,7 +17,7 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Fills each container level by level: the box with the largest ground area starts a level, then the remaining boxes are stacked within the level. Stacks in 3D within each level.
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes

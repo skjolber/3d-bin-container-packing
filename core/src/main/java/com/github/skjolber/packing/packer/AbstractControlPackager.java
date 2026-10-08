@@ -35,7 +35,7 @@ import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.PackagerBoxItems;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Base class for packagers which pack one container at a time, placing boxes at extreme points according to placement, point and manifest controls.
  * <br>
  * <br>
  * Thread-safe implementation.
@@ -77,7 +77,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		List<BoxItem> removed = new ArrayList<>(boxItemSource.size());
 		for(int i = 0; i < boxItemSource.size(); i++) {
 			BoxItem boxItem = boxItemSource.get(i);
-			if(!container.fitsInside(boxItem.getBox())) {
+			if(!container.canLoad(boxItem.getBox())) {
 
 				if(abortOnAnyBoxTooBig) {
 					return createEmptyIntermediatePackagerResult();
@@ -374,7 +374,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
 				
 		if(manifestControlsBuilderFactory == null) {
-			return new DefaultManifestControls(boxItemSource);
+			return new DefaultManifestControls();
 		}
 		return manifestControlsBuilderFactory.createManifestControlsBuilder()
 				.withContainer(container)
@@ -438,7 +438,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
-				if(!container.fitsInside(boxItemGroup)) {
+				if(!container.canLoadAtLeastOneBox(boxItemGroup)) {
 					if(abortOnAnyBoxTooBig) {
 						return createEmptyIntermediatePackagerResult();
 					}

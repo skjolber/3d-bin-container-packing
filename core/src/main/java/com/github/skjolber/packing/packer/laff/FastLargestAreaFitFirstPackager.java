@@ -17,7 +17,7 @@ import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container. Only places boxes along the floor of each level.
+ * Fills each container level by level: the box with the largest ground area starts a level, then the remaining boxes are stacked within the level. Stacks in 2D, i.e. only places boxes along the floor of each level.
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
