@@ -28,8 +28,7 @@ import com.github.skjolber.packing.api.Stack;
  * is drawn as a number of columns and lines, see {@linkplain Builder#withScale(double, double)}. The edges are drawn in
  * a {@linkplain Style}, by default with thin lines.
  * <p>
- * The front, top and side views have the coordinates at the axes: 0, the size of the container, and where the boxes start and end.
- * The oblique view has the names of the axes.
+ * The views have the coordinates at the axes: 0, the size of the container, and where the boxes start and end.
  * <p>
  * Example of the front view of three boxes (a larger scale than the default is used to make the example small):
  *
@@ -43,22 +42,20 @@ import com.github.skjolber.packing.api.Stack;
  *   0       1       2   x
  * </pre>
  *
- * Example of the oblique view of a single box, 3 x 2 x 2 units, at the default scale:
+ * Example of the oblique view of a single box, 3 x 2 x 2 units, at the default scale. The axes are along the edges of the container, with the
+ * coordinates of the box:
  *
  * <pre>
- * z           y
- * │      ┌───────────┐
- * │     ╱           ╱│
- * │    ╱           ╱ │
- * │   ╱           ╱  │
- * │  ┌───────────┐   │
- * │  │           │  ╱
- * │  │     A     │ ╱
- * │  │           │╱
- * │  └───────────┘
- * │ ╱
- * │╱
- * └─────────────────── x
+ *   z   ┌───────────┐   y
+ *      ╱           ╱│
+ *   │ ╱           ╱ │ ╱
+ *   │╱           ╱  │╱
+ * 2 ┌───────────┐   │ 2
+ *   │           │  ╱
+ *   │     A     │ ╱
+ *   │           │╱
+ * 0 └───────────┘── x
+ *   0           3
  * </pre>
  */
 public class ContainerAsciiArt {
@@ -204,8 +201,9 @@ public class ContainerAsciiArt {
 
 		/**
 		 * @param axes true to draw the axes (the default): the names of the axes in all views, and also the coordinates in the front, top and side views:
-		 *        0, the size of the container and where the boxes start and end (as many as there is room for).
-		 *        Without axes and container outline, the blank lines above and below the boxes are left out.
+		 *        0, the size of the container and where the boxes start and end (as many as there is room for). In the oblique view, the axes are along
+		 *        the edges of the container, with the coordinates of the boxes with their front at y = 0 on the x and z axes (the other boxes are
+		 *        drawn further up and to the right), and the coordinates of all boxes on the y axis.
 		 * @return this builder
 		 */
 		public Builder withAxes(boolean axes) {
@@ -291,8 +289,8 @@ public class ContainerAsciiArt {
 		}
 	}
 
-	/** Space around the drawing, with the axes at the left and bottom edge, in the oblique view */
-	private static final int AXES_MARGIN_OBLIQUE = 3;
+	/** The number of cells the axes of the oblique view extend past the container */
+	private static final int AXIS_EXTENSION = 2;
 
 	private static final int MINIMUM_COLUMNS_PER_UNIT = 4;
 	private static final int MINIMUM_LINES_PER_UNIT = 2;
@@ -435,9 +433,45 @@ public class ContainerAsciiArt {
 		int gridY = round(extentY * d);
 		int gridZ = round(extentZ * cz);
 
-		int margin = axes ? AXES_MARGIN_OBLIQUE : 0;
+		// the axes are along the edges of the container, with the coordinates of the boxes with their front at y = 0 on the x and z axes
+		// (the other boxes are drawn further up and to the right), and the coordinates of all boxes on the y axis
+		int[] xValues = null;
+		int[] zValues = null;
+		int[] yValues = null;
+		int ox = 0;
+		int oy = 0;
+		int width = gridX + gridY + 1;
+		int height = gridZ + gridY + 1;
+		if (axes) {
+			xValues = selectColumnValues(getFrontKeyValues(true), cx, true);
+			zValues = selectRowValues(getFrontKeyValues(false), cz);
+			yValues = selectRowValues(getDepthKeyValues(), d);
 
-		AsciiCanvas canvas = new AsciiCanvas(margin + gridX + gridY + 1 + (axes ? 2 : 0), margin + gridZ + gridY + 1 + (axes ? 1 : 0));
+			// the values of z on the left of the z axis, and the values of x below the x axis
+			int digits = 0;
+			for (int value : zValues) {
+				digits = Math.max(digits, Integer.toString(value).length());
+			}
+			ox = digits + 1;
+			oy = 1;
+
+			width = ox + gridX + gridY + 1;
+			height = oy + gridZ + gridY + 1;
+
+			// the names of the axes, after the axes (which extend past the container) and a blank
+			width = Math.max(width, ox + gridX + AXIS_EXTENSION + 2 + 1);
+			width = Math.max(width, ox + gridX + gridY + AXIS_EXTENSION + 2 + 1);
+			height = Math.max(height, oy + gridZ + AXIS_EXTENSION + 2 + 1);
+			height = Math.max(height, oy + gridY + AXIS_EXTENSION + 2 + 1);
+			for (int value : xValues) {
+				width = Math.max(width, ox + round(value * cx) - Integer.toString(value).length() / 2 + Integer.toString(value).length());
+			}
+			for (int value : yValues) {
+				width = Math.max(width, ox + gridX + round(value * d) + 2 + Integer.toString(value).length());
+			}
+		}
+
+		AsciiCanvas canvas = new AsciiCanvas(width, height);
 
 		int[] bounds = new int[items.size() * 4];
 		int[] interiors = new int[items.size() * 3];
@@ -460,12 +494,12 @@ public class ContainerAsciiArt {
 				topFill = style.topShade;
 				rightFill = style.rightShade;
 			}
-			drawObliqueBox(canvas, i * 3, item.obstacle ? '#' : ' ', topFill, rightFill, margin, x0, x1, y0, y1, z0, z1);
+			drawObliqueBox(canvas, i * 3, item.obstacle ? '#' : ' ', topFill, rightFill, ox, oy, x0, x1, y0, y1, z0, z1);
 
-			bounds[i * 4] = margin + x0 + y0;
-			bounds[i * 4 + 1] = margin + x1 + y1;
-			bounds[i * 4 + 2] = margin + z0 + y0;
-			bounds[i * 4 + 3] = margin + z1 + y1;
+			bounds[i * 4] = ox + x0 + y0;
+			bounds[i * 4 + 1] = ox + x1 + y1;
+			bounds[i * 4 + 2] = oy + z0 + y0;
+			bounds[i * 4 + 3] = oy + z1 + y1;
 
 			// the cells between the edges of the front face, top face and right face
 			interiors[i * 3] = interior(x1 - x0) * interior(z1 - z0);
@@ -474,29 +508,38 @@ public class ContainerAsciiArt {
 		}
 
 		if (containerOutline) {
-			drawObliqueOutline(canvas, margin, gridX, gridY, gridZ);
+			drawObliqueOutline(canvas, ox, oy, gridX, gridY, gridZ);
 		}
 		if (axes) {
-			// the origin of the axes is the origin of the container, moved towards the viewer along the y axis
-			int right = margin + gridX + gridY;
-			int top = margin + gridZ + gridY;
+			// behind the boxes: the x axis along the front bottom edge of the container, the z axis along the front left edge, and the y axis
+			// along the right bottom edge
+			for (int column = 0; column <= gridX + AXIS_EXTENSION; column++) {
+				canvas.putEdge(ox + column, oy, AsciiCanvas.HORIZONTAL, AsciiCanvas.AXIS);
+			}
+			for (int row = 0; row <= gridZ + AXIS_EXTENSION; row++) {
+				canvas.putEdge(ox, oy + row, AsciiCanvas.VERTICAL, AsciiCanvas.AXIS);
+			}
+			for (int step = 0; step <= gridY + AXIS_EXTENSION; step++) {
+				canvas.putEdge(ox + gridX + step, oy + step, AsciiCanvas.DIAGONAL, AsciiCanvas.AXIS);
+			}
+			// the names, after a blank
+			canvas.putCharacter(ox + gridX + AXIS_EXTENSION + 2, oy, 'x', AsciiCanvas.AXIS, AsciiCanvas.NO_OWNER);
+			canvas.putCharacter(ox, oy + gridZ + AXIS_EXTENSION + 2, 'z', AsciiCanvas.AXIS, AsciiCanvas.NO_OWNER);
+			canvas.putCharacter(ox + gridX + gridY + AXIS_EXTENSION + 2, oy + gridY + AXIS_EXTENSION + 2, 'y', AsciiCanvas.AXIS, AsciiCanvas.NO_OWNER);
 
-			// the z axis (vertical) at the left and the x axis (horizontal) at the bottom, with their names after the ends
-			for (int row = 0; row <= top; row++) {
-				canvas.putEdge(0, row, row == 0 ? AsciiCanvas.VERTICAL | AsciiCanvas.HORIZONTAL : AsciiCanvas.VERTICAL, AsciiCanvas.AXIS);
+			// the values: of x below the axis, centered at the coordinate; of z to the left of the axis, aligned to the right;
+			// of y to the right of the axis
+			for (int value : xValues) {
+				String text = Integer.toString(value);
+				drawText(canvas, ox + round(value * cx) - text.length() / 2, 0, text, AsciiCanvas.AXIS);
 			}
-			canvas.putCharacter(0, top + 1, 'z', AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
-			for (int column = 1; column <= right; column++) {
-				canvas.putEdge(column, 0, AsciiCanvas.HORIZONTAL, AsciiCanvas.AXIS);
+			for (int value : zValues) {
+				String text = Integer.toString(value);
+				drawText(canvas, ox - 1 - text.length(), oy + round(value * cz), text, AsciiCanvas.AXIS);
 			}
-			canvas.putCharacter(right + 2, 0, 'x', AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
-
-			// the y axis follows the lower left edge of the container, and leaves the drawing where the drawing ends
-			int end = margin + gridY + Math.min(gridX, gridZ) + 1;
-			for (int i = 1; i < end; i++) {
-				canvas.putEdge(i, i, AsciiCanvas.DIAGONAL, AsciiCanvas.AXIS);
+			for (int value : yValues) {
+				drawText(canvas, ox + gridX + round(value * d) + 2, oy + round(value * d), Integer.toString(value), AsciiCanvas.AXIS);
 			}
-			canvas.putCharacter(end, end, 'y', AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
 		}
 		drawLabels(canvas, bounds, interiors, 3);
 
@@ -504,13 +547,11 @@ public class ContainerAsciiArt {
 	}
 
 	/**
-	 * Without axes and outline, nothing shows the extent of the container: leave out the blank lines above and below the boxes.
+	 * Leave out the blank lines above and below the drawing: for example above the boxes when the container is higher than the boxes.
+	 * The container is shown by the axes and the outline, if any.
 	 */
 	private Figure newFigure(AsciiCanvas canvas, boolean oblique) {
 		String[] lines = canvas.toLines(style, oblique);
-		if (axes || containerOutline) {
-			return new Figure(lines, comment);
-		}
 		int first = 0;
 		while (first < lines.length && lines[first].isEmpty()) {
 			first++;
@@ -529,7 +570,7 @@ public class ContainerAsciiArt {
 	 * column = x + y, row = z + y. So the nearest point on a line of sight is the one with the lowest y, which is also the
 	 * depth.
 	 */
-	private static void drawObliqueBox(AsciiCanvas canvas, int owner, char frontFill, char topFill, char rightFill, int margin, int x0, int x1, int y0, int y1, int z0, int z1) {
+	private static void drawObliqueBox(AsciiCanvas canvas, int owner, char frontFill, char topFill, char rightFill, int ox, int oy, int x0, int x1, int y0, int y1, int z0, int z1) {
 		// front face, at the lowest y
 		for (int x = x0; x <= x1; x++) {
 			for (int z = z0; z <= z1; z++) {
@@ -540,7 +581,7 @@ public class ContainerAsciiArt {
 				if (z == z0 || z == z1) {
 					edges |= AsciiCanvas.HORIZONTAL;
 				}
-				put(canvas, margin + x + y0, margin + z + y0, edges, frontFill, y0, owner);
+				put(canvas, ox + x + y0, oy + z + y0, edges, frontFill, y0, owner);
 			}
 		}
 		// top face, at the highest z
@@ -553,7 +594,7 @@ public class ContainerAsciiArt {
 				if (y == y0 || y == y1) {
 					edges |= AsciiCanvas.HORIZONTAL;
 				}
-				put(canvas, margin + x + y, margin + z1 + y, edges, topFill, y, owner + 1);
+				put(canvas, ox + x + y, oy + z1 + y, edges, topFill, y, owner + 1);
 			}
 		}
 		// right face, at the highest x
@@ -566,7 +607,7 @@ public class ContainerAsciiArt {
 				if (z == z0 || z == z1) {
 					edges |= AsciiCanvas.DIAGONAL;
 				}
-				put(canvas, margin + x1 + y, margin + z + y, edges, rightFill, y, owner + 2);
+				put(canvas, ox + x1 + y, oy + z + y, edges, rightFill, y, owner + 2);
 			}
 		}
 	}
@@ -579,7 +620,7 @@ public class ContainerAsciiArt {
 		}
 	}
 
-	private static void drawObliqueOutline(AsciiCanvas canvas, int margin, int gridX, int gridY, int gridZ) {
+	private static void drawObliqueOutline(AsciiCanvas canvas, int ox, int oy, int gridX, int gridY, int gridZ) {
 		int[] xs = { 0, gridX };
 		int[] ys = { 0, gridY };
 		int[] zs = { 0, gridZ };
@@ -588,21 +629,21 @@ public class ContainerAsciiArt {
 		for (int y : ys) {
 			for (int z : zs) {
 				for (int x = 0; x <= gridX; x++) {
-					drawOutline(canvas, margin + x + y, margin + z + y);
+					drawOutline(canvas, ox + x + y, oy + z + y);
 				}
 			}
 		}
 		for (int x : xs) {
 			for (int z : zs) {
 				for (int y = 0; y <= gridY; y++) {
-					drawOutline(canvas, margin + x + y, margin + z + y);
+					drawOutline(canvas, ox + x + y, oy + z + y);
 				}
 			}
 		}
 		for (int x : xs) {
 			for (int y : ys) {
 				for (int z = 0; z <= gridZ; z++) {
-					drawOutline(canvas, margin + x + y, margin + z + y);
+					drawOutline(canvas, ox + x + y, oy + z + y);
 				}
 			}
 		}
@@ -632,7 +673,7 @@ public class ContainerAsciiArt {
 		int height = gridHeight + 1;
 		int nameColumn = 0;
 		if (axes) {
-			horizontalValues = selectColumnValues(getKeyValues(view, true), horizontalScale);
+			horizontalValues = selectColumnValues(getKeyValues(view, true), horizontalScale, false);
 			verticalValues = selectRowValues(getKeyValues(view, false), verticalScale);
 
 			int digits = 0;
@@ -708,10 +749,10 @@ public class ContainerAsciiArt {
 			for (int value : verticalValues) {
 				String text = Integer.toString(value);
 				// right aligned
-				drawText(canvas, valueWidth - text.length(), marginRows + round(value * verticalScale), text);
+				drawText(canvas, valueWidth - text.length(), marginRows + round(value * verticalScale), text, AsciiCanvas.LABEL);
 			}
 			for (int value : horizontalValues) {
-				drawText(canvas, marginColumns + round(value * horizontalScale), 0, Integer.toString(value));
+				drawText(canvas, marginColumns + round(value * horizontalScale), 0, Integer.toString(value), AsciiCanvas.LABEL);
 			}
 		}
 		drawLabels(canvas, bounds, interiors, 1);
@@ -719,9 +760,9 @@ public class ContainerAsciiArt {
 		return newFigure(canvas, false);
 	}
 
-	private static void drawText(AsciiCanvas canvas, int column, int row, String text) {
+	private static void drawText(AsciiCanvas canvas, int column, int row, String text, int depth) {
 		for (int i = 0; i < text.length(); i++) {
-			canvas.putCharacter(column + i, row, text.charAt(i), AsciiCanvas.LABEL, AsciiCanvas.NO_OWNER);
+			canvas.putCharacter(column + i, row, text.charAt(i), depth, AsciiCanvas.NO_OWNER);
 		}
 	}
 
@@ -746,15 +787,28 @@ public class ContainerAsciiArt {
 			boxes[i * 2] = start;
 			boxes[i * 2 + 1] = start + size;
 		}
+		return getKeyValues(container, boxes, true);
+	}
+
+	/**
+	 * @param container the size of the container
+	 * @param boxes the coordinates where boxes start or end, in no particular order
+	 * @param origin true to include 0 as the first coordinate
+	 * @return the coordinates in the order of priority: 0 (if origin), the size of the container, and then the coordinates of the boxes from low to high
+	 */
+	private static int[] getKeyValues(int container, int[] boxes, boolean origin) {
 		Arrays.sort(boxes);
 
 		int[] values = new int[boxes.length + 2];
 		int count = 0;
-		values[count++] = 0;
+		if (origin) {
+			values[count++] = 0;
+		}
 		values[count++] = container;
+		int first = count;
 		for (int value : boxes) {
 			// the values are not negative, and in order
-			if (value != 0 && value != container && (count == 2 || values[count - 1] != value)) {
+			if (value != 0 && value != container && (count == first || values[count - 1] != value)) {
 				values[count++] = value;
 			}
 		}
@@ -762,23 +816,58 @@ public class ContainerAsciiArt {
 	}
 
 	/**
+	 * The coordinates which are written at the x axis or the z axis of the oblique view, in the order of priority: 0, the size of the container,
+	 * and then the coordinates where a box with its front at y = 0 starts or ends, from low to high. The other boxes are drawn further up
+	 * and to the right, so their coordinates would be next to the wrong edge.
+	 *
+	 * @param horizontal true for the x axis, false for the z axis
+	 */
+	private int[] getFrontKeyValues(boolean horizontal) {
+		int[] boxes = new int[items.size() * 2];
+		int count = 0;
+		for (Item item : items) {
+			if (item.y == 0) {
+				int start = horizontal ? item.x : item.z;
+				boxes[count++] = start;
+				boxes[count++] = start + (horizontal ? item.dx : item.dz);
+			}
+		}
+		return getKeyValues(horizontal ? containerX : containerZ, Arrays.copyOf(boxes, count), true);
+	}
+
+	/**
+	 * The coordinates which are written at the y axis of the oblique view, in the order of priority: the size of the container, and then the
+	 * coordinates where a box starts or ends, from low to high. Not 0.
+	 */
+	private int[] getDepthKeyValues() {
+		int[] boxes = new int[items.size() * 2];
+		for (int i = 0; i < items.size(); i++) {
+			Item item = items.get(i);
+			boxes[i * 2] = item.y;
+			boxes[i * 2 + 1] = item.y + item.dy;
+		}
+		return getKeyValues(containerY, boxes, false);
+	}
+
+	/**
 	 * Keep the coordinates which have room in a line, with a blank column between each: the ones with the highest priority first.
 	 *
 	 * @param values the coordinates, in the order of priority
 	 * @param scale columns per unit
+	 * @param centered true if a value is centered at its coordinate, false if it starts there
 	 * @return the coordinates which are written
 	 */
-	private static int[] selectColumnValues(int[] values, double scale) {
+	private static int[] selectColumnValues(int[] values, double scale, boolean centered) {
 		int[] selected = new int[values.length];
 		int count = 0;
 		for (int value : values) {
-			int column = round(value * scale);
 			int length = Integer.toString(value).length();
+			int column = round(value * scale) - (centered ? length / 2 : 0);
 
 			boolean fits = true;
 			for (int i = 0; i < count && fits; i++) {
-				int otherColumn = round(selected[i] * scale);
 				int otherLength = Integer.toString(selected[i]).length();
+				int otherColumn = round(selected[i] * scale) - (centered ? otherLength / 2 : 0);
 				fits = column >= otherColumn + otherLength + 1 || otherColumn >= column + length + 1;
 			}
 			if (fits) {

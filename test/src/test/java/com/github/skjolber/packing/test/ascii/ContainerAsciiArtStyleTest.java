@@ -35,15 +35,27 @@ public class ContainerAsciiArtStyleTest {
 	}
 
 	/**
-	 * Container 4 x 4 x 4 with four boxes, with one vertex where a diagonal ends on a horizontal edge which continues at both sides
-	 * (on the edge of another box).
+	 * Container 4 x 4 x 4 with four boxes. The top face of A has its back edge at the height of the top of D, behind D: this edge is not joined
+	 * to the front top left corner of D. The back edge of the top face of A touches the front face of C, where it is joined to the front left edge
+	 * of C.
 	 */
-	private static ContainerAsciiArt.Builder vertexScene() {
+	private static ContainerAsciiArt.Builder depthScene() {
 		return ContainerAsciiArt.newBuilder().withPlacements(List.of(
 				place("A", 2, 2, 2, 0, 0, 0),
 				place("B", 2, 2, 2, 2, 0, 0),
 				place("D", 2, 2, 2, 2, 0, 2),
 				place("C", 3, 2, 4, 0, 2, 0)), 4, 4, 4);
+	}
+
+	/**
+	 * Container 4 x 4 x 4 with two boxes: the box B is behind the box A, which is above the floor. The back edge of the top face of A touches the
+	 * front face of B. The right edge of the top face of A is a diagonal edge which ends on the horizontal edge at the top of the front face of
+	 * B, which continues at both sides.
+	 */
+	private static ContainerAsciiArt.Builder teeScene() {
+		return ContainerAsciiArt.newBuilder().withPlacements(List.of(
+				place("A", 2, 1, 2, 0, 0, 2),
+				place("B", 2, 3, 3, 1, 1, 1)), 4, 4, 4);
 	}
 
 	private static ContainerAsciiArt.Builder single() {
@@ -74,27 +86,22 @@ public class ContainerAsciiArtStyleTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ╱
-				│                 ╱
-				│          ┌───────────────┐
-				│         ╱       C       ╱│
-				│        ╱     ┌───────┐ ╱ │
-				│       ╱     ╱       ╱│╱  │
-				│      ┌─────╱       ╱ │   │
-				│      │    ╱       ╱  │   │
-				│      └───┬───────┐   │   │
-				│     ╱    │       │  ╱│  ╱
-				│    ╱     │   D   │ ╱ │ ╱
-				│   ╱      │       │╱  │╱
-				│  ┌───────┼───────┤   │
-				│  │       │       │  ╱
-				│  │   A   │   B   │ ╱
-				│  │       │       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				          ┌───────────────┐
+				         ╱       C       ╱│
+				  z     ╱     ┌───────┐ ╱ │   y
+				       ╱     ╱       ╱│╱  │
+				  │   ┌─────╱       ╱ │   │ ╱
+				  │   │    ╱       ╱  │   │╱
+				4 │   └───┌───────┐   │   │ 4
+				  │  ╱    │       │  ╱│  ╱
+				  │ ╱     │   D   │ ╱ │ ╱
+				  │╱      │       │╱  │╱
+				2 ┌───────┼───────┤   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 	}
 
@@ -116,27 +123,22 @@ public class ContainerAsciiArtStyleTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ╱
-				│                 ╱
-				│          ╭───────────────╮
-				│         ╱       C       ╱│
-				│        ╱     ╭───────╮ ╱ │
-				│       ╱     ╱       ╱│╱  │
-				│      ╭─────╱       ╱ │   │
-				│      │    ╱       ╱  │   │
-				│      ╰───┬───────╮   │   │
-				│     ╱    │       │  ╱│  ╱
-				│    ╱     │   D   │ ╱ │ ╱
-				│   ╱      │       │╱  │╱
-				│  ╭───────┼───────┤   │
-				│  │       │       │  ╱
-				│  │   A   │   B   │ ╱
-				│  │       │       │╱
-				│  ╰───────┴───────╯
-				│ ╱
-				│╱
-				╰─────────────────────────── x
+				          ╭───────────────╮
+				         ╱       C       ╱│
+				  z     ╱     ╭───────╮ ╱ │   y
+				       ╱     ╱       ╱│╱  │
+				  │   ╭─────╱       ╱ │   │ ╱
+				  │   │    ╱       ╱  │   │╱
+				4 │   ╰───╭───────╮   │   │ 4
+				  │  ╱    │       │  ╱│  ╱
+				  │ ╱     │   D   │ ╱ │ ╱
+				  │╱      │       │╱  │╱
+				2 ╭───────┼───────┤   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 ╰───────┴───────╯── x
+				  0       2       4
 				""");
 	}
 
@@ -158,27 +160,22 @@ public class ContainerAsciiArtStyleTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				┃                  ╱
-				┃                 ╱
-				┃          ┏━━━━━━━━━━━━━━━┓
-				┃         ╱       C       ╱┃
-				┃        ╱     ┏━━━━━━━┓ ╱ ┃
-				┃       ╱     ╱       ╱┃╱  ┃
-				┃      ┏━━━━━╱       ╱ ┃   ┃
-				┃      ┃    ╱       ╱  ┃   ┃
-				┃      ┗━━━┳━━━━━━━┓   ┃   ┃
-				┃     ╱    ┃       ┃  ╱┃  ╱
-				┃    ╱     ┃   D   ┃ ╱ ┃ ╱
-				┃   ╱      ┃       ┃╱  ┃╱
-				┃  ┏━━━━━━━╋━━━━━━━┫   ┃
-				┃  ┃       ┃       ┃  ╱
-				┃  ┃   A   ┃   B   ┃ ╱
-				┃  ┃       ┃       ┃╱
-				┃  ┗━━━━━━━┻━━━━━━━┛
-				┃ ╱
-				┃╱
-				┗━━━━━━━━━━━━━━━━━━━━━━━━━━━ x
+				          ┏━━━━━━━━━━━━━━━┓
+				         ╱       C       ╱┃
+				  z     ╱     ┏━━━━━━━┓ ╱ ┃   y
+				       ╱     ╱       ╱┃╱  ┃
+				  ┃   ┏━━━━━╱       ╱ ┃   ┃ ╱
+				  ┃   ┃    ╱       ╱  ┃   ┃╱
+				4 ┃   ┗━━━┏━━━━━━━┓   ┃   ┃ 4
+				  ┃  ╱    ┃       ┃  ╱┃  ╱
+				  ┃ ╱     ┃   D   ┃ ╱ ┃ ╱
+				  ┃╱      ┃       ┃╱  ┃╱
+				2 ┏━━━━━━━╋━━━━━━━┫   ┃ 2
+				  ┃       ┃       ┃  ╱
+				  ┃   A   ┃   B   ┃ ╱
+				  ┃       ┃       ┃╱
+				0 ┗━━━━━━━┻━━━━━━━┛━━ x
+				  0       2       4
 				""");
 	}
 
@@ -228,27 +225,22 @@ public class ContainerAsciiArtStyleTest {
 				""");
 		// vertical edges are drawn through corners and junctions, then diagonal edges
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				|                  /
-				|                 /
-				|          /---------------|
-				|         /       C       /|
-				|        /     /-------| / |
-				|       /     /       /|/  |
-				|      |-----/       / |   |
-				|      |    /       /  |   |
-				|      |---|-------|   |   |
-				|     /    |       |  /|  /
-				|    /     |   D   | / | /
-				|   /      |       |/  |/
-				|  |-------|-------|   |
-				|  |       |       |  /
-				|  |   A   |   B   | /
-				|  |       |       |/
-				|  |-------|-------|
-				| /
-				|/
-				|--------------------------- x
+				          /---------------|
+				         /       C       /|
+				  z     /     /-------| / |   y
+				       /     /       /|/  |
+				  |   |-----/       / |   | /
+				  |   |    /       /  |   |/
+				4 |   |---|-------|   |   | 4
+				  |  /    |       |  /|  /
+				  | /     |   D   | / | /
+				  |/      |       |/  |/
+				2 |-------|-------|   | 2
+				  |       |       |  /
+				  |   A   |   B   | /
+				  |       |       |/
+				0 |-------|-------|-- x
+				  0       2       4
 				""");
 	}
 
@@ -288,88 +280,77 @@ public class ContainerAsciiArtStyleTest {
 	public void testSingleBoxInEveryStyle() {
 		// the back top left vertex, where the diagonal edge ends on a horizontal edge which continues to the right, is the top left corner
 		assertThat(single().withStyle(Style.LIGHT).build().oblique().toString()).isEqualTo("""
-				z             y
-				│        ┌───────┐
-				│       ╱       ╱│
-				│      ╱       ╱ │
-				│     ╱       ╱  │
-				│    ╱       ╱   │
-				│   ╱       ╱   ╱
-				│  ┌───────┐   ╱
-				│  │       │  ╱
-				│  │  box  │ ╱
-				│  │       │╱
-				│  └───────┘
-				│ ╱
-				│╱
-				└───────────────── x
+				        ┌───────┐   y
+				       ╱       ╱│
+				  z   ╱       ╱ │ ╱
+				     ╱       ╱  │╱
+				  │ ╱       ╱   │ 3
+				  │╱       ╱   ╱
+				2 ┌───────┐   ╱
+				  │       │  ╱
+				  │  box  │ ╱
+				  │       │╱
+				0 └───────┘── x
+				  0       2
 				""");
 		assertThat(single().withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
-				z             y
-				│        ╭───────╮
-				│       ╱       ╱│
-				│      ╱       ╱ │
-				│     ╱       ╱  │
-				│    ╱       ╱   │
-				│   ╱       ╱   ╱
-				│  ╭───────╮   ╱
-				│  │       │  ╱
-				│  │  box  │ ╱
-				│  │       │╱
-				│  ╰───────╯
-				│ ╱
-				│╱
-				╰───────────────── x
+				        ╭───────╮   y
+				       ╱       ╱│
+				  z   ╱       ╱ │ ╱
+				     ╱       ╱  │╱
+				  │ ╱       ╱   │ 3
+				  │╱       ╱   ╱
+				2 ╭───────╮   ╱
+				  │       │  ╱
+				  │  box  │ ╱
+				  │       │╱
+				0 ╰───────╯── x
+				  0       2
 				""");
 		assertThat(single().withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
-				z             y
-				┃        ┏━━━━━━━┓
-				┃       ╱       ╱┃
-				┃      ╱       ╱ ┃
-				┃     ╱       ╱  ┃
-				┃    ╱       ╱   ┃
-				┃   ╱       ╱   ╱
-				┃  ┏━━━━━━━┓   ╱
-				┃  ┃       ┃  ╱
-				┃  ┃  box  ┃ ╱
-				┃  ┃       ┃╱
-				┃  ┗━━━━━━━┛
-				┃ ╱
-				┃╱
-				┗━━━━━━━━━━━━━━━━━ x
+				        ┏━━━━━━━┓   y
+				       ╱       ╱┃
+				  z   ╱       ╱ ┃ ╱
+				     ╱       ╱  ┃╱
+				  ┃ ╱       ╱   ┃ 3
+				  ┃╱       ╱   ╱
+				2 ┏━━━━━━━┓   ╱
+				  ┃       ┃  ╱
+				  ┃  box  ┃ ╱
+				  ┃       ┃╱
+				0 ┗━━━━━━━┛━━ x
+				  0       2
 				""");
 		assertThat(single().withStyle(Style.ASCII).build().oblique().toString()).isEqualTo("""
-				z             y
-				|        /-------|
-				|       /       /|
-				|      /       / |
-				|     /       /  |
-				|    /       /   |
-				|   /       /   /
-				|  |-------|   /
-				|  |       |  /
-				|  |  box  | /
-				|  |       |/
-				|  |-------|
-				| /
-				|/
-				|----------------- x
+				        /-------|   y
+				       /       /|
+				  z   /       / | /
+				     /       /  |/
+				  | /       /   | 3
+				  |/       /   /
+				2 |-------|   /
+				  |       |  /
+				  |  box  | /
+				  |       |/
+				0 |-------|-- x
+				  0       2
 				""");
 	}
 
 	@Test
-	public void testVertexOnTheEdgeOfAnotherBox() {
-		// the diagonal edge ends on a horizontal edge which continues at both sides: a T junction
-		assertThat(vertexScene().withAxes(false).build().oblique().toString()).isEqualTo("""
+	public void testEdgesAtAnotherDepthAreNotJoined() {
+		// the horizontal edge from the left which is the back edge of the top face of A, runs up to the front left corner of D
+		// but does not join it, as D is nearer: the corner stays a corner
+		assertThat(depthScene().withAxes(false).build().oblique().toString()).isEqualTo("""
 				        ┌───────────┐
 				       ╱           ╱│
 				      ╱     C     ╱ │
 				     ╱           ╱  │
-				    ┌───────┬───────┤
+				    ┌───────┬───────┐
 				    │      ╱       ╱│
 				    │     ╱       ╱ │
 				    │    ╱       ╱  │
-				    └───┬───────┐   │
+				    └───┌───────┐   │
 				   ╱    │       │  ╱│
 				  ╱     │   D   │ ╱ │
 				 ╱      │       │╱  │
@@ -379,16 +360,16 @@ public class ContainerAsciiArtStyleTest {
 				│       │       │╱
 				└───────┴───────┘
 				""");
-		assertThat(vertexScene().withAxes(false).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
+		assertThat(depthScene().withAxes(false).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
 				        ┏━━━━━━━━━━━┓
 				       ╱           ╱┃
 				      ╱     C     ╱ ┃
 				     ╱           ╱  ┃
-				    ┏━━━━━━━┳━━━━━━━┫
+				    ┏━━━━━━━┳━━━━━━━┓
 				    ┃      ╱       ╱┃
 				    ┃     ╱       ╱ ┃
 				    ┃    ╱       ╱  ┃
-				    ┗━━━┳━━━━━━━┓   ┃
+				    ┗━━━┏━━━━━━━┓   ┃
 				   ╱    ┃       ┃  ╱┃
 				  ╱     ┃   D   ┃ ╱ ┃
 				 ╱      ┃       ┃╱  ┃
@@ -398,16 +379,16 @@ public class ContainerAsciiArtStyleTest {
 				┃       ┃       ┃╱
 				┗━━━━━━━┻━━━━━━━┛
 				""");
-		assertThat(vertexScene().withAxes(false).withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
+		assertThat(depthScene().withAxes(false).withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
 				        ╭───────────╮
 				       ╱           ╱│
 				      ╱     C     ╱ │
 				     ╱           ╱  │
-				    ╭───────┬───────┤
+				    ╭───────┬───────╮
 				    │      ╱       ╱│
 				    │     ╱       ╱ │
 				    │    ╱       ╱  │
-				    ╰───┬───────╮   │
+				    ╰───╭───────╮   │
 				   ╱    │       │  ╱│
 				  ╱     │   D   │ ╱ │
 				 ╱      │       │╱  │
@@ -416,6 +397,81 @@ public class ContainerAsciiArtStyleTest {
 				│   A   │   B   │ ╱
 				│       │       │╱
 				╰───────┴───────╯
+				""");
+	}
+
+	@Test
+	public void testEdgesAtTheSameDepthAreJoined() {
+		// A and B side by side: the front face of A and the front face of B are joined in a junction, as are their top faces
+		ContainerAsciiArt art = ContainerAsciiArt.newBuilder()
+				.withPlacements(List.of(place("A", 2, 2, 2, 0, 0, 0), place("B", 2, 2, 2, 2, 0, 0), place("C", 2, 2, 2, 2, 0, 2)), 4, 2, 4)
+				.withAxes(false)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				            ┌───────┐
+				           ╱       ╱│
+				          ╱       ╱ │
+				         ╱       ╱  │
+				    ┌───┌───────┐   │
+				   ╱    │       │  ╱│
+				  ╱     │   C   │ ╱ │
+				 ╱      │       │╱  │
+				┌───────┼───────┤   │
+				│       │       │  ╱
+				│   A   │   B   │ ╱
+				│       │       │╱
+				└───────┴───────┘
+				""");
+	}
+
+	@Test
+	public void testVertexOnAnEdgeWhichContinuesAtTheSameDepth() {
+		// the diagonal edge ends on a horizontal edge which continues at both sides at the same depth: a T junction
+		assertThat(teeScene().withAxes(false).build().oblique().toString()).isEqualTo("""
+				            ┌───────┐
+				           ╱       ╱│
+				          ╱       ╱ │
+				         ╱   B   ╱  │
+				        ╱       ╱   │
+				       ╱       ╱    │
+				  ┌───────┬───┐     │
+				 ╱       ╱│   │    ╱
+				┌───────┐ │   │   ╱
+				│       │ │   │  ╱
+				│   A   │ │   │ ╱
+				│       │╱    │╱
+				└───────┘─────┘
+				""");
+		assertThat(teeScene().withAxes(false).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
+				            ┏━━━━━━━┓
+				           ╱       ╱┃
+				          ╱       ╱ ┃
+				         ╱   B   ╱  ┃
+				        ╱       ╱   ┃
+				       ╱       ╱    ┃
+				  ┏━━━━━━━┳━━━┓     ┃
+				 ╱       ╱┃   ┃    ╱
+				┏━━━━━━━┓ ┃   ┃   ╱
+				┃       ┃ ┃   ┃  ╱
+				┃   A   ┃ ┃   ┃ ╱
+				┃       ┃╱    ┃╱
+				┗━━━━━━━┛━━━━━┛
+				""");
+		assertThat(teeScene().withAxes(false).withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
+				            ╭───────╮
+				           ╱       ╱│
+				          ╱       ╱ │
+				         ╱   B   ╱  │
+				        ╱       ╱   │
+				       ╱       ╱    │
+				  ╭───────┬───╮     │
+				 ╱       ╱│   │    ╱
+				╭───────╮ │   │   ╱
+				│       │ │   │  ╱
+				│   A   │ │   │ ╱
+				│       │╱    │╱
+				╰───────╯─────╯
 				""");
 	}
 
@@ -467,99 +523,157 @@ public class ContainerAsciiArtStyleTest {
 				""");
 	}
 
+	/**
+	 * The diagonal axis (y) starts in the cell after the end of the straight axis (x): in the cell where it starts, the x axis goes on. Here the
+	 * box ends before the right edge of the container, so the x axis is visible at the end of the box, and continues to the right edge of the
+	 * container and past it.
+	 */
+	@Test
+	public void testTheDiagonalAxisStartsAfterTheStraightAxis() {
+		List<Placement> placements = List.of(place("A", 9, 1, 1, 0, 0, 0));
+
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(placements, 10, 1, 1).withScale(1, 1).withStyle(Style.LIGHT).build().oblique().toString()).isEqualTo("""
+				  z              y
+
+				  │            ╱
+				  │┌────────┐ ╱
+				1 ┌────────┐│╱ 1
+				0 └────────┘─── x
+				  0        10
+				""");
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(placements, 10, 1, 1).withScale(1, 1).withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
+				  z              y
+
+				  │            ╱
+				  │╭────────╮ ╱
+				1 ╭────────╮│╱ 1
+				0 ╰────────╯─── x
+				  0        10
+				""");
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(placements, 10, 1, 1).withScale(1, 1).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
+				  z              y
+
+				  ┃            ╱
+				  ┃┏━━━━━━━━┓ ╱
+				1 ┏━━━━━━━━┓┃╱ 1
+				0 ┗━━━━━━━━┛━━━ x
+				  0        10
+				""");
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(placements, 10, 1, 1).withScale(1, 1).withStyle(Style.ASCII).build().oblique().toString()).isEqualTo("""
+				  z              y
+
+				  |            /
+				  |/--------| /
+				1 |--------||/ 1
+				0 |--------|--- x
+				  0        10
+				""");
+	}
+
+	@Test
+	public void testTheAxesOfAnEmptyContainerOnlyHaveTheirOwnStraightCharacters() {
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(List.of(), 4, 1, 1).withScale(2, 1).withStyle(Style.LIGHT).build().oblique().toString()).isEqualTo("""
+				  z            y
+
+				  │          ╱
+				  │         ╱
+				1 │        ╱ 1
+				0 └────────── x
+				  0       4
+				""");
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(List.of(), 4, 1, 1).withScale(2, 1).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
+				  z            y
+
+				  ┃          ╱
+				  ┃         ╱
+				1 ┃        ╱ 1
+				0 ┗━━━━━━━━━━ x
+				  0       4
+				""");
+		assertThat(ContainerAsciiArt.newBuilder().withPlacements(List.of(), 4, 1, 1).withScale(2, 1).withStyle(Style.ASCII).build().oblique().toString()).isEqualTo("""
+				  z            y
+
+				  |          /
+				  |         /
+				1 |        / 1
+				0 |---------- x
+				  0       4
+				""");
+	}
+
 	@Test
 	public void testShading() {
 		assertThat(scene().withShading(true).build().oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ╱
-				│                 ╱
-				│          ┌───────────────┐
-				│         ╱░░░░░░░C░░░░░░░╱│
-				│        ╱░░░░░┌───────┐░╱▒│
-				│       ╱░░░░░╱░░░░░░░╱│╱▒▒│
-				│      ┌─────╱░░░░░░░╱▒│▒▒▒│
-				│      │    ╱░░░░░░░╱▒▒│▒▒▒│
-				│      └───┬───────┐▒▒▒│▒▒▒│
-				│     ╱░░░░│       │▒▒╱│▒▒╱
-				│    ╱░░░░░│   D   │▒╱▒│▒╱
-				│   ╱░░░░░░│       │╱▒▒│╱
-				│  ┌───────┼───────┤▒▒▒│
-				│  │       │       │▒▒╱
-				│  │   A   │   B   │▒╱
-				│  │       │       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				          ┌───────────────┐
+				         ╱░░░░░░░C░░░░░░░╱│
+				  z     ╱░░░░░┌───────┐░╱▒│   y
+				       ╱░░░░░╱░░░░░░░╱│╱▒▒│
+				  │   ┌─────╱░░░░░░░╱▒│▒▒▒│ ╱
+				  │   │    ╱░░░░░░░╱▒▒│▒▒▒│╱
+				4 │   └───┌───────┐▒▒▒│▒▒▒│ 4
+				  │  ╱░░░░│       │▒▒╱│▒▒╱
+				  │ ╱░░░░░│   D   │▒╱▒│▒╱
+				  │╱░░░░░░│       │╱▒▒│╱
+				2 ┌───────┼───────┤▒▒▒│ 2
+				  │       │       │▒▒╱
+				  │   A   │   B   │▒╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 		assertThat(scene().withShading(true).withStyle(Style.HEAVY).build().oblique().toString()).isEqualTo("""
-				z                   y
-				┃                  ╱
-				┃                 ╱
-				┃          ┏━━━━━━━━━━━━━━━┓
-				┃         ╱░░░░░░░C░░░░░░░╱┃
-				┃        ╱░░░░░┏━━━━━━━┓░╱▒┃
-				┃       ╱░░░░░╱░░░░░░░╱┃╱▒▒┃
-				┃      ┏━━━━━╱░░░░░░░╱▒┃▒▒▒┃
-				┃      ┃    ╱░░░░░░░╱▒▒┃▒▒▒┃
-				┃      ┗━━━┳━━━━━━━┓▒▒▒┃▒▒▒┃
-				┃     ╱░░░░┃       ┃▒▒╱┃▒▒╱
-				┃    ╱░░░░░┃   D   ┃▒╱▒┃▒╱
-				┃   ╱░░░░░░┃       ┃╱▒▒┃╱
-				┃  ┏━━━━━━━╋━━━━━━━┫▒▒▒┃
-				┃  ┃       ┃       ┃▒▒╱
-				┃  ┃   A   ┃   B   ┃▒╱
-				┃  ┃       ┃       ┃╱
-				┃  ┗━━━━━━━┻━━━━━━━┛
-				┃ ╱
-				┃╱
-				┗━━━━━━━━━━━━━━━━━━━━━━━━━━━ x
+				          ┏━━━━━━━━━━━━━━━┓
+				         ╱░░░░░░░C░░░░░░░╱┃
+				  z     ╱░░░░░┏━━━━━━━┓░╱▒┃   y
+				       ╱░░░░░╱░░░░░░░╱┃╱▒▒┃
+				  ┃   ┏━━━━━╱░░░░░░░╱▒┃▒▒▒┃ ╱
+				  ┃   ┃    ╱░░░░░░░╱▒▒┃▒▒▒┃╱
+				4 ┃   ┗━━━┏━━━━━━━┓▒▒▒┃▒▒▒┃ 4
+				  ┃  ╱░░░░┃       ┃▒▒╱┃▒▒╱
+				  ┃ ╱░░░░░┃   D   ┃▒╱▒┃▒╱
+				  ┃╱░░░░░░┃       ┃╱▒▒┃╱
+				2 ┏━━━━━━━╋━━━━━━━┫▒▒▒┃ 2
+				  ┃       ┃       ┃▒▒╱
+				  ┃   A   ┃   B   ┃▒╱
+				  ┃       ┃       ┃╱
+				0 ┗━━━━━━━┻━━━━━━━┛━━ x
+				  0       2       4
 				""");
 		assertThat(scene().withShading(true).withStyle(Style.ROUNDED).build().oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ╱
-				│                 ╱
-				│          ╭───────────────╮
-				│         ╱░░░░░░░C░░░░░░░╱│
-				│        ╱░░░░░╭───────╮░╱▒│
-				│       ╱░░░░░╱░░░░░░░╱│╱▒▒│
-				│      ╭─────╱░░░░░░░╱▒│▒▒▒│
-				│      │    ╱░░░░░░░╱▒▒│▒▒▒│
-				│      ╰───┬───────╮▒▒▒│▒▒▒│
-				│     ╱░░░░│       │▒▒╱│▒▒╱
-				│    ╱░░░░░│   D   │▒╱▒│▒╱
-				│   ╱░░░░░░│       │╱▒▒│╱
-				│  ╭───────┼───────┤▒▒▒│
-				│  │       │       │▒▒╱
-				│  │   A   │   B   │▒╱
-				│  │       │       │╱
-				│  ╰───────┴───────╯
-				│ ╱
-				│╱
-				╰─────────────────────────── x
+				          ╭───────────────╮
+				         ╱░░░░░░░C░░░░░░░╱│
+				  z     ╱░░░░░╭───────╮░╱▒│   y
+				       ╱░░░░░╱░░░░░░░╱│╱▒▒│
+				  │   ╭─────╱░░░░░░░╱▒│▒▒▒│ ╱
+				  │   │    ╱░░░░░░░╱▒▒│▒▒▒│╱
+				4 │   ╰───╭───────╮▒▒▒│▒▒▒│ 4
+				  │  ╱░░░░│       │▒▒╱│▒▒╱
+				  │ ╱░░░░░│   D   │▒╱▒│▒╱
+				  │╱░░░░░░│       │╱▒▒│╱
+				2 ╭───────┼───────┤▒▒▒│ 2
+				  │       │       │▒▒╱
+				  │   A   │   B   │▒╱
+				  │       │       │╱
+				0 ╰───────┴───────╯── x
+				  0       2       4
 				""");
 		assertThat(scene().withShading(true).withStyle(Style.ASCII).build().oblique().toString()).isEqualTo("""
-				z                   y
-				|                  /
-				|                 /
-				|          /---------------|
-				|         /.......C......./|
-				|        /...../-------|./:|
-				|       /...../......./|/::|
-				|      |-----/......./:|:::|
-				|      |    /......./::|:::|
-				|      |---|-------|:::|:::|
-				|     /....|       |::/|::/
-				|    /.....|   D   |:/:|:/
-				|   /......|       |/::|/
-				|  |-------|-------|:::|
-				|  |       |       |::/
-				|  |   A   |   B   |:/
-				|  |       |       |/
-				|  |-------|-------|
-				| /
-				|/
-				|--------------------------- x
+				          /---------------|
+				         /.......C......./|
+				  z     /...../-------|./:|   y
+				       /...../......./|/::|
+				  |   |-----/......./:|:::| /
+				  |   |    /......./::|:::|/
+				4 |   |---|-------|:::|:::| 4
+				  |  /....|       |::/|::/
+				  | /.....|   D   |:/:|:/
+				  |/......|       |/::|/
+				2 |-------|-------|:::| 2
+				  |       |       |::/
+				  |   A   |   B   |:/
+				  |       |       |/
+				0 |-------|-------|-- x
+				  0       2       4
 				""");
 	}
 

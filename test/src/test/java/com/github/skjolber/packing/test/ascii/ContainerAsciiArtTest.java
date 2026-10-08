@@ -92,19 +92,16 @@ public class ContainerAsciiArtTest {
 		ContainerAsciiArt art = newBuilder(3, 2, 2, place("A", 3, 2, 2, 0, 0, 0)).build();
 
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z           y
-				│      ┌───────────┐
-				│     ╱           ╱│
-				│    ╱           ╱ │
-				│   ╱           ╱  │
-				│  ┌───────────┐   │
-				│  │           │  ╱
-				│  │     A     │ ╱
-				│  │           │╱
-				│  └───────────┘
-				│ ╱
-				│╱
-				└─────────────────── x
+				  z   ┌───────────┐   y
+				     ╱           ╱│
+				  │ ╱           ╱ │ ╱
+				  │╱           ╱  │╱
+				2 ┌───────────┐   │ 2
+				  │           │  ╱
+				  │     A     │ ╱
+				  │           │╱
+				0 └───────────┘── x
+				  0           3
 				""");
 	}
 
@@ -132,19 +129,16 @@ public class ContainerAsciiArtTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z           y
-				│      ┌───────────────┐
-				│     ╱       ╱       ╱│
-				│    ╱       ╱       ╱ │
-				│   ╱       ╱       ╱  │
-				│  ┌───────┬───────┐   │
-				│  │       │       │  ╱
-				│  │   A   │   B   │ ╱
-				│  │       │       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────── x
+				  z   ┌───────────────┐   y
+				     ╱       ╱       ╱│
+				  │ ╱       ╱       ╱ │ ╱
+				  │╱       ╱       ╱  │╱
+				2 ┌───────┬───────┐   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 	}
 
@@ -207,27 +201,24 @@ public class ContainerAsciiArtTest {
 				  0       2       4   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				│          ┌───────────────┐
-				│         ╱               ╱│
-				│        ╱               ╱ │
-				│       ╱               ╱  │
-				│      ┌───────────────┐   │
-				│      │               │   │
-				│      │       B       │   │
-				│      │               │   │
-				│      └───────┐       │   │
-				│     ╱       ╱│       │  ╱
-				│    ╱       ╱ │       │ ╱
-				│   ╱       ╱  │       │╱
-				│  ┌───────┐   └───────┘
-				│  │       │  ╱
-				│  │   A   │ ╱
-				│  │       │╱
-				│  └───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				          ┌───────────────┐
+				         ╱               ╱│
+				        ╱               ╱ │
+				       ╱               ╱  │
+				  z   ┌───────────────┐   │   y
+				      │               │   │
+				  │   │       B       │   │ ╱
+				  │   │               │   │╱
+				4 │   └───────┐       │   │ 4
+				  │  ╱       ╱│       │  ╱
+				  │ ╱       ╱ │       │ ╱
+				  │╱       ╱  │       │╱
+				2 ┌───────┐   └───────┘ 2
+				  │       │  ╱       ╱
+				  │   A   │ ╱       ╱
+				  │       │╱       ╱
+				0 └───────┘────────── x
+				  0       2       4
 				""");
 	}
 
@@ -251,23 +242,20 @@ public class ContainerAsciiArtTest {
 				  0       2   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z               y
-				│      ┌───────┐
-				│     ╱       ╱│
-				│    ╱       ╱ │
-				│   ╱       ╱  │
-				│  ┌───────┐   │
-				│  │       │  ╱│
-				│  │   B   │ ╱ │
-				│  │       │╱  │
-				│  ├───────┤   │
-				│  │       │  ╱
-				│  │   A   │ ╱
-				│  │       │╱
-				│  └───────┘
-				│ ╱
-				│╱
-				└─────────────── x
+				  z   ┌───────┐
+				     ╱       ╱│
+				  │ ╱       ╱ │
+				  │╱       ╱  │
+				4 ┌───────┐   │   y
+				  │       │  ╱│
+				  │   B   │ ╱ │ ╱
+				  │       │╱  │╱
+				2 ├───────┤   │ 2
+				  │       │  ╱
+				  │   A   │ ╱
+				  │       │╱
+				0 └───────┘── x
+				  0       2
 				""");
 	}
 
@@ -310,23 +298,20 @@ public class ContainerAsciiArtTest {
 				  0       2       4       6   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z               y
-				│              ┌───────────────┐
-				│             ╱               ╱│
-				│            ╱               ╱ │
-				│           ╱               ╱  │
-				│      ┌───┬───────────────┐   │
-				│     ╱    │               │  ╱
-				│    ╱     │       B       │ ╱
-				│   ╱      │               │╱
-				│  ┌───────┴───────┬───────┘
-				│  │               │  ╱
-				│  │       A       │ ╱
-				│  │               │╱
-				│  └───────────────┘
-				│ ╱
-				│╱
-				└─────────────────────────────── x
+				  z           ┌───────────────┐
+				             ╱               ╱│
+				  │         ╱               ╱ │
+				  │        ╱               ╱  │
+				4 │   ┌───┌───────────────┐   │   y
+				  │  ╱    │               │  ╱
+				  │ ╱     │       B       │ ╱   ╱
+				  │╱      │               │╱   ╱
+				2 ┌───────┴───────┬───────┘   ╱ 2
+				  │               │  ╱       ╱
+				  │       A       │ ╱       ╱
+				  │               │╱       ╱
+				0 └───────────────┘────────── x
+				  0       2       4       6
 				""");
 	}
 
@@ -355,19 +340,16 @@ public class ContainerAsciiArtTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z           y
-				│      ┌───────────────┐
-				│     ╱#######╱       ╱│
-				│    ╱#######╱       ╱ │
-				│   ╱#######╱       ╱  │
-				│  ┌───────┬───────┐   │
-				│  │#######│       │  ╱
-				│  │#######│   A   │ ╱
-				│  │#######│       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────── x
+				  z   ┌───────────────┐   y
+				     ╱#######╱       ╱│
+				  │ ╱#######╱       ╱ │ ╱
+				  │╱#######╱       ╱  │╱
+				2 ┌───────┬───────┐   │ 2
+				  │#######│       │  ╱
+				  │#######│   A   │ ╱
+				  │#######│       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 	}
 
@@ -403,19 +385,16 @@ public class ContainerAsciiArtTest {
 				  0       2   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z           y
-				│          ╱
-				│         ╱
-				│        ╱
-				│       ╱
-				│      ╱
-				│     ╱
-				│    ╱
-				│   ╱
-				│  ╱
-				│ ╱
-				│╱
-				└─────────────────────── x
+				  z                       y
+
+				  │                     ╱
+				  │                    ╱
+				2 │                   ╱ 2
+				  │                  ╱
+				  │                 ╱
+				  │                ╱
+				0 └────────────────── x
+				  0               4
 				""");
 	}
 
@@ -483,19 +462,16 @@ public class ContainerAsciiArtTest {
 				  0               4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z           y
-				│      ....╱............
-				│     ..  ╱           ..
-				│    . . ╱           . .
-				│   .  .╱           .  .
-				│  ....╱................
-				│  .  ╱            .  .
-				│  . ╱             . .
-				│  .╱              ..
-				│  ╱................
-				│ ╱
-				│╱
-				└─────────────────────── x
+				  z   .................   y
+				     ..              ..
+				  │ . .             . . ╱
+				  │.  .            .  .╱
+				2 │...................╱ 2
+				  │  .            .  ╱
+				  │ .             . ╱
+				  │.              .╱
+				0 └────────────────── x
+				  0               4
 				""");
 	}
 
@@ -553,27 +529,22 @@ public class ContainerAsciiArtTest {
 	@Test
 	public void testSceneOblique() {
 		assertThat(scene().build().oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ╱
-				│                 ╱
-				│          ┌───────────────┐
-				│         ╱       C       ╱│
-				│        ╱     ┌───────┐ ╱ │
-				│       ╱     ╱       ╱│╱  │
-				│      ┌─────╱       ╱ │   │
-				│      │    ╱       ╱  │   │
-				│      └───┬───────┐   │   │
-				│     ╱    │       │  ╱│  ╱
-				│    ╱     │   D   │ ╱ │ ╱
-				│   ╱      │       │╱  │╱
-				│  ┌───────┼───────┤   │
-				│  │       │       │  ╱
-				│  │   A   │   B   │ ╱
-				│  │       │       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				          ┌───────────────┐
+				         ╱       C       ╱│
+				  z     ╱     ┌───────┐ ╱ │   y
+				       ╱     ╱       ╱│╱  │
+				  │   ┌─────╱       ╱ │   │ ╱
+				  │   │    ╱       ╱  │   │╱
+				4 │   └───┌───────┐   │   │ 4
+				  │  ╱    │       │  ╱│  ╱
+				  │ ╱     │   D   │ ╱ │ ╱
+				  │╱      │       │╱  │╱
+				2 ┌───────┼───────┤   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 	}
 
@@ -621,7 +592,7 @@ public class ContainerAsciiArtTest {
 				     ╱     ╱       ╱│╱  │
 				    ┌─────╱       ╱ │   │
 				    │    ╱       ╱  │   │
-				    └───┬───────┐   │   │
+				    └───┌───────┐   │   │
 				   ╱    │       │  ╱│  ╱
 				  ╱     │   D   │ ╱ │ ╱
 				 ╱      │       │╱  │╱
@@ -651,27 +622,24 @@ public class ContainerAsciiArtTest {
 				  0       2       4   x
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				│          ........╱........
-				│         ..      ╱       ..
-				│        . ┌───────────────┐
-				│       . ╱       C       ╱│
-				│      . ╱     ┌───────┐ ╱ │
-				│     . ╱     ╱       ╱│╱  │
-				│    . ┌─────╱       ╱ │   │
-				│   .  │    ╱       ╱  │   │
-				│  ....└───┬───────┐   │   │
-				│  .  ╱    │       │  ╱│  ╱
-				│  . ╱     │   D   │ ╱ │ ╱
-				│  .╱      │       │╱  │╱
-				│  ┌───────┼───────┤   │
-				│  │       │       │  ╱
-				│  │   A   │   B   │ ╱
-				│  │       │       │╱
-				│  └───────┴───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				          .................
+				         ..              ..
+				        . ┌───────────────┐
+				       . ╱       C       ╱│
+				  z   . ╱     ┌───────┐ ╱ │   y
+				     . ╱     ╱       ╱│╱  │
+				  │ . ┌─────╱       ╱ │   │ ╱
+				  │.  │    ╱       ╱  │   │╱
+				4 │...└───┌───────┐   │   │ 4
+				  │  ╱    │       │  ╱│  ╱
+				  │ ╱     │   D   │ ╱ │ ╱
+				  │╱      │       │╱  │╱
+				2 ┌───────┼───────┤   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
 				""");
 	}
 
@@ -691,7 +659,7 @@ public class ContainerAsciiArtTest {
 				   . ╱     ╱       ╱│╱  │
 				  . ┌─────╱       ╱ │   │
 				 .  │    ╱       ╱  │   │
-				....└───┬───────┐   │   │
+				....└───┌───────┐   │   │
 				.  ╱    │       │  ╱│  ╱
 				. ╱     │   D   │ ╱ │ ╱
 				.╱      │       │╱  │╱
@@ -708,19 +676,16 @@ public class ContainerAsciiArtTest {
 		ContainerAsciiArt art = newBuilder(3, 2, 2, place("A", 3, 2, 2, 0, 0, 0)).withComment("// ").build();
 
 		assertThat(art.oblique().toString()).isEqualTo("""
-				// z           y
-				// │      ┌───────────┐
-				// │     ╱           ╱│
-				// │    ╱           ╱ │
-				// │   ╱           ╱  │
-				// │  ┌───────────┐   │
-				// │  │           │  ╱
-				// │  │     A     │ ╱
-				// │  │           │╱
-				// │  └───────────┘
-				// │ ╱
-				// │╱
-				// └─────────────────── x
+				//   z   ┌───────────┐   y
+				//      ╱           ╱│
+				//   │ ╱           ╱ │ ╱
+				//   │╱           ╱  │╱
+				// 2 ┌───────────┐   │ 2
+				//   │           │  ╱
+				//   │     A     │ ╱
+				//   │           │╱
+				// 0 └───────────┘── x
+				//   0           3
 				""");
 	}
 
@@ -860,27 +825,24 @@ public class ContainerAsciiArtTest {
 				  0       2       4   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z                   y
-				│                  ┌───────┐
-				│                 ╱       ╱│
-				│                ╱       ╱ │
-				│               ╱       ╱  │
-				│              ┌───────┐   │
-				│             ╱│       │  ╱
-				│            ╱ │   B   │ ╱
-				│           ╱  │       │╱
-				│      ┌───────┼───────┘
-				│     ╱       ╱│
-				│    ╱       ╱ │
-				│   ╱       ╱  │
-				│  ┌───────┐   │
-				│  │       │  ╱
-				│  │   A   │ ╱
-				│  │       │╱
-				│  └───────┘
-				│ ╱
-				│╱
-				└─────────────────────────── x
+				                  ┌───────┐
+				                 ╱       ╱│
+				                ╱       ╱ │
+				               ╱       ╱  │
+				  z           ┌───────┐   │   y
+				              │       │  ╱
+				  │           │   B   │ ╱   ╱
+				  │           │       │╱   ╱
+				4 │   ┌───────┼───────┘   ╱ 4
+				  │  ╱       ╱│          ╱
+				  │ ╱       ╱ │         ╱
+				  │╱       ╱  │        ╱
+				2 ┌───────┐   │       ╱ 2
+				  │       │  ╱       ╱
+				  │   A   │ ╱       ╱
+				  │       │╱       ╱
+				0 └───────┘────────── x
+				  0       2       4
 				""");
 	}
 
@@ -1113,6 +1075,147 @@ public class ContainerAsciiArtTest {
 				""");
 	}
 
+	/**
+	 * The axes of the oblique view are along the edges of the container, with coordinates. The x and z axes have the coordinates of the boxes with
+	 * their front at y = 0: the box C is further back, so its height of 3 is not written next to the z axis. The y axis has the coordinates in y of
+	 * all boxes, the size of the container, but not 0.
+	 */
+	@Test
+	public void testObliqueCoordinates() {
+		ContainerAsciiArt art = newBuilder(4, 4, 4,
+				place("A", 2, 2, 2, 0, 0, 0),
+				place("B", 2, 2, 2, 2, 0, 0),
+				place("C", 4, 2, 3, 0, 2, 0),
+				place("D", 2, 2, 2, 2, 0, 2))
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				          ┌───────────────┐
+				         ╱       C       ╱│
+				  z     ╱     ┌───────┐ ╱ │   y
+				       ╱     ╱       ╱│╱  │
+				  │   ┌─────╱       ╱ │   │ ╱
+				  │   │    ╱       ╱  │   │╱
+				4 │   └───┌───────┐   │   │ 4
+				  │  ╱    │       │  ╱│  ╱
+				  │ ╱     │   D   │ ╱ │ ╱
+				  │╱      │       │╱  │╱
+				2 ┌───────┼───────┤   │ 2
+				  │       │       │  ╱
+				  │   A   │   B   │ ╱
+				  │       │       │╱
+				0 └───────┴───────┘── x
+				  0       2       4
+				""");
+	}
+
+	@Test
+	public void testObliqueCoordinatesOfAnEmptyContainer() {
+		ContainerAsciiArt art = newBuilder(4, 2, 2).build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				  z                       y
+
+				  │                     ╱
+				  │                    ╱
+				2 │                   ╱ 2
+				  │                  ╱
+				  │                 ╱
+				  │                ╱
+				0 └────────────────── x
+				  0               4
+				""");
+	}
+
+	/**
+	 * The values of x are centered below the x axis; they are left out if they are too close, as for the other views: here 1 and 3 are next to
+	 * 0 and 2, the values of 10 and 20 are two digits wide.
+	 */
+	@Test
+	public void testObliqueCoordinatesWhichAreTooCloseAreLeftOut() {
+		ContainerAsciiArt art = newBuilder(20, 1, 1,
+				place("A", 1, 1, 1, 0, 0, 0),
+				place("B", 1, 1, 1, 1, 0, 0),
+				place("C", 1, 1, 1, 2, 0, 0),
+				place("D", 7, 1, 1, 3, 0, 0))
+				.withScale(1, 1)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				  z                        y
+
+				  │                      ╱
+				  │┌─────────┐          ╱
+				1 ┌┬┬┬──────┐│         ╱ 1
+				0 └┴┴┴──────┘──────────── x
+				  0 2      10        20
+				""");
+	}
+
+	@Test
+	public void testObliqueCoordinatesOfTheContainerHavePriority() {
+		// the box ends at 9, next to the size of the container (10)
+		ContainerAsciiArt art = newBuilder(10, 1, 1, place("A", 9, 1, 1, 0, 0, 0))
+				.withScale(1, 1)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				  z              y
+
+				  │            ╱
+				  │┌────────┐ ╱
+				1 ┌────────┐│╱ 1
+				0 └────────┘─── x
+				  0        10
+				""");
+	}
+
+	/**
+	 * With half a line per unit, the coordinates 1 and 2 are on the same line along the y axis, as are 9 and 10. There is one value per line:
+	 * the size of the container (10), and then from low to high.
+	 */
+	@Test
+	public void testObliqueCoordinatesOnTheSameLine() {
+		ContainerAsciiArt art = newBuilder(8, 10, 1,
+				place("A", 8, 1, 1, 0, 0, 0),
+				place("B", 8, 1, 1, 0, 1, 0),
+				place("C", 8, 7, 1, 0, 2, 0))
+				.withScale(1, 0.5)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				                   y
+
+				                 ╱
+				       ┌───────┐╱
+				  z   ╱       ╱│ 10
+				     ╱   C   ╱╱
+				  │ ╱       ╱╱
+				  │────────┐╱
+				1 ┌───────┐│ 1
+				0 └───────┘── x
+				  0       8
+				""");
+	}
+
+	@Test
+	public void testObliqueWithoutAxesThereAreNoNamesAndNoCoordinates() {
+		ContainerAsciiArt art = newBuilder(2, 1, 2, place("A", 2, 1, 2, 0, 0, 0))
+				.withScale(4, 2)
+				.withAxes(false)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				  ┌───────┐
+				 ╱       ╱│
+				┌───────┐ │
+				│       │ │
+				│   A   │ │
+				│       │╱
+				└───────┘
+				""");
+	}
+
 	@Test
 	public void testWithoutAxesThereAreNoCoordinates() {
 		ContainerAsciiArt art = newBuilder(2, 1, 2, place("A", 2, 1, 2, 0, 0, 0))
@@ -1227,15 +1330,14 @@ public class ContainerAsciiArtTest {
 				  0     2   y
 				""");
 		assertThat(art.oblique().toString()).isEqualTo("""
-				z       y
-				│    ┌─────┐
-				│   ╱     ╱└─────┐
-				│  ┌─────┐╱  B  ╱│
-				│  │  A  ├─────┐╱
-				│  └─────┴─────┘
-				│ ╱
-				│╱
-				└───────────────── x
+				  z                 y
+
+				  │ ┌─────┐       ╱
+				  │╱     ╱└─────┐╱
+				2 ┌─────┐╱  B  ╱│ 2
+				1 │  A  ├─────┐╱
+				0 └─────┴─────┘── x
+				  0     2     4
 				""");
 	}
 

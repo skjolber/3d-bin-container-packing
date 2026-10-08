@@ -214,6 +214,49 @@ public class ContainerAsciiArtLabelTest {
 				""");
 	}
 
+	/**
+	 * The label is within the edges of the face, also when it is truncated.
+	 */
+	@Test
+	public void testObliqueLabelIsTruncatedWithinTheFace() {
+		ContainerAsciiArt art = newBuilder(1, 1, 1, place("ABCDE", 1, 1, 1, 0, 0, 0))
+				.withScale(4, 2)
+				.withAxes(false)
+				.build();
+
+		// three characters between the edges, a space on each side
+		assertThat(art.oblique().toString()).isEqualTo("""
+				  ┌───┐
+				 ╱   ╱│
+				┌───┐ │
+				│ A │╱
+				└───┘
+				""");
+	}
+
+	/**
+	 * The label is on the top face when the front face is hidden, within the edges of the top face.
+	 */
+	@Test
+	public void testObliqueLabelIsTruncatedWithinTheTopFace() {
+		ContainerAsciiArt art = newBuilder(1, 2, 1,
+				place("ABCDE", 1, 1, 1, 0, 1, 0),
+				place("F", 1, 1, 1, 0, 0, 0))
+				.withScale(4, 2)
+				.withAxes(false)
+				.build();
+
+		assertThat(art.oblique().toString()).isEqualTo("""
+				    ┌───┐
+				   ╱ A ╱│
+				  ────┐ │
+				 ╱   ╱│╱
+				┌───┐ │
+				│ F │╱
+				└───┘
+				""");
+	}
+
 	@Test
 	public void testLabelOnNarrowFace() {
 		ContainerAsciiArt art = newBuilder(2, 1, 1,

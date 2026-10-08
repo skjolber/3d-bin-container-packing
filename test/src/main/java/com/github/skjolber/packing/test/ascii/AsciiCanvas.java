@@ -126,6 +126,21 @@ final class AsciiCanvas {
 		return (directions[row * width + column] & direction) != 0;
 	}
 
+	private boolean isJoined(int column, int row, int direction, boolean oblique, int depth) {
+		return oblique ? hasDirection(column, row, direction, depth) : hasDirection(column, row, direction);
+	}
+
+	/**
+	 * @return true if the cell has an edge in the direction, which is at the given depth
+	 */
+	private boolean hasDirection(int column, int row, int direction, int depth) {
+		if (column < 0 || column >= width || row < 0 || row >= height) {
+			return false;
+		}
+		int index = row * width + column;
+		return (directions[index] & direction) != 0 && depths[index] == depth;
+	}
+
 	/**
 	 * @param style the characters of the edges
 	 * @param oblique true for the oblique view, which has diagonal edges
@@ -159,6 +174,11 @@ final class AsciiCanvas {
 		boolean horizontal = (edges & HORIZONTAL) != 0;
 		boolean vertical = (edges & VERTICAL) != 0;
 
+		if (depths[index] == AXIS && (edges & DIAGONAL) != 0) {
+			// where the diagonal axis starts at the end of another axis: the straight axis goes on, the diagonal starts in the next cell
+			return horizontal ? style.horizontal : style.vertical;
+		}
+
 		if (style == Style.ASCII && oblique) {
 			// a vertical line is hidden except for its end point where it meets other edges: draw the other edges
 			if (vertical && edges != VERTICAL && !hasDirection(column, row - 1, VERTICAL) && !hasDirection(column, row + 1, VERTICAL)) {
@@ -170,11 +190,17 @@ final class AsciiCanvas {
 			return (edges & DIAGONAL) != 0 ? style.diagonal : style.horizontal;
 		}
 
+		// in the oblique view, only edges at the same depth are joined: an edge of a box further back which runs up to the edge of a nearer box
+		// does not join it. In the other views, an edge of a box which is nearer than the edge of another box which meets it, is also joined with it.
+		int depth = depths[index];
+		boolean joinHorizontal = horizontal || !oblique;
+		boolean joinVertical = vertical || !oblique;
+
 		if ((edges & DIAGONAL) != 0) {
 			if (horizontal && !vertical) {
 				// a diagonal line ends on a horizontal line
-				boolean right = hasDirection(column + 1, row, HORIZONTAL);
-				boolean left = hasDirection(column - 1, row, HORIZONTAL);
+				boolean right = hasDirection(column + 1, row, HORIZONTAL, depth);
+				boolean left = hasDirection(column - 1, row, HORIZONTAL, depth);
 				if (left && right) {
 					// the end point is on a line which continues at both sides, for example the edge of another box
 					return style.teeDown;
@@ -186,12 +212,10 @@ final class AsciiCanvas {
 				return style.vertical;
 			}
 		}
-		// in the oblique view, the edges of the cell itself decide which lines can continue; in the other views, the edge of a box which is
-		// nearer than the edge of another box, which meets it, is also joined with it
-		boolean up = (vertical || !oblique) && hasDirection(column, row + 1, VERTICAL);
-		boolean down = (vertical || !oblique) && hasDirection(column, row - 1, VERTICAL);
-		boolean left = (horizontal || !oblique) && hasDirection(column - 1, row, HORIZONTAL);
-		boolean right = (horizontal || !oblique) && hasDirection(column + 1, row, HORIZONTAL);
+		boolean up = joinVertical && isJoined(column, row + 1, VERTICAL, oblique, depth);
+		boolean down = joinVertical && isJoined(column, row - 1, VERTICAL, oblique, depth);
+		boolean left = joinHorizontal && isJoined(column - 1, row, HORIZONTAL, oblique, depth);
+		boolean right = joinHorizontal && isJoined(column + 1, row, HORIZONTAL, oblique, depth);
 
 		if ((left || right) && (up || down)) {
 			return style.junction(up, down, left, right);
