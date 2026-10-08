@@ -212,7 +212,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 					? b.comparatorFactory
 					: DefaultPlacementComparatorFactory.newFactory()
 							.higherVolumeIsBetter().higherWeightIsBetter()
-							.lowerAreaIsBetter().lowerZIsBetter();
+							.lowerAreaIsBetter().lowerZIsBetter().compile();
 			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport);
 			
 			return this;
@@ -287,7 +287,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 						.higherWeightIsBetter()
 						.lowerAreaIsBetter()
 						.lowerZIsBetter();
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory, boxItemComparator, calculateSupport, requireFullSupport);
+				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory.compile(), boxItemComparator, calculateSupport, requireFullSupport);
 			}
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();

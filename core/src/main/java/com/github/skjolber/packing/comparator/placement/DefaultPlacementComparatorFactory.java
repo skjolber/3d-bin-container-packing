@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -226,6 +227,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	private final PlacementComparatorSupplier[] supplierKeys;
 	/** Registry for O(1) prefix lookup during {@link #buildFrom}. */
 	private final Map<List<PlacementComparatorAttribute>, PlacementComparatorSupplier> registry;
+	/**
+	 * Comparators built by {@link #build(Collection)}, by the ids of the disabled attributes in iteration order.
+	 * Only used with the default registry, whose comparators do not change when comparing placements.
+	 */
+	private final Map<List<String>, PlacementComparator> cache = new ConcurrentHashMap<>();
 
 	// =========================================================================
 	// Package-private constructors (used by Builder.compile() and copy methods)
@@ -395,11 +401,34 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 	 * <p>Uses the per-instance registry map for O(1) prefix lookup. Tries the longest prefix
 	 * first, falling back to shorter prefixes, then a plain per-dimension chain.
 	 *
+	 * <p>With the default registry, the comparator is built once for each sequence of disabled
+	 * attributes, and the same instance is returned by later calls. The comparator does not change
+	 * when comparing placements, so it can be shared between packagers and threads; it must not be
+	 * modified, for example by {@link AbstractChainedPlacementComparator#linkNext}. With a custom
+	 * registry, a new comparator is built for every call.
+	 *
 	 * @param disabled attributes to skip; must not be {@code null}
 	 * @return a non-null {@link PlacementComparator}; the no-op comparator if no active entries
 	 */
 	@Override
 	public PlacementComparator build(Collection<PlacementComparatorAttribute> disabled) {
+		if (registry != DEFAULT_REGISTRY_MAP) {
+			// custom suppliers might create comparators which are not safe to share
+			return buildUncached(disabled);
+		}
+		List<String> key = new ArrayList<>(disabled.size());
+		for (PlacementComparatorAttribute a : disabled) key.add(a.getId());
+		PlacementComparator comparator = cache.get(key);
+		if (comparator == null) {
+			// a concurrent build produces an equivalent comparator
+			comparator = buildUncached(disabled);
+			cache.put(key, comparator);
+		}
+		return comparator;
+	}
+
+	/** Builds a new comparator on every call. */
+	private PlacementComparator buildUncached(Collection<PlacementComparatorAttribute> disabled) {
 		if (disabled.isEmpty()) return buildFrom(attrKeys, supplierKeys);
 		Set<String> disabledIds = new HashSet<>(disabled.size() * 2);
 		for (PlacementComparatorAttribute a : disabled) disabledIds.add(a.getId());
@@ -977,11 +1006,11 @@ public final class DefaultPlacementComparatorFactory implements PlacementCompara
 		/**
 		 * Builds a {@link PlacementComparator} from this builder's current state,
 		 * skipping any entry whose attribute appears in {@code disabled}.
-		 * Equivalent to {@code compile().build(disabled)}.
+		 * Equivalent to {@code compile().build(disabled)}, except that a new comparator is built on every call.
 		 */
 		@Override
 		public PlacementComparator build(Collection<PlacementComparatorAttribute> disabled) {
-			return compile().build(disabled);
+			return compile().buildUncached(disabled);
 		}
 
 		/**
