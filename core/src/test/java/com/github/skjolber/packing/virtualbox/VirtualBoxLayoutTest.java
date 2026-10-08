@@ -67,7 +67,7 @@ class VirtualBoxLayoutTest {
 		BoxItem item = item(1, 1, 1, 6);
 		var layouts = new GridVirtualBoxLayoutGenerator().generate(item, List.of(container(3, 2, 1)), 8, () -> false);
 		assertThat(layouts).hasSize(1);
-		assertThat(layouts.get(0).getBoundingBox()).isEqualTo(new VirtualBoxBounds(3, 2, 1));
+		assertThat(layouts.get(0).getBounds()).isEqualTo(new VirtualBoxBounds(3, 2, 1));
 		assertThat(layouts.get(0).getPlacements()).hasSize(6).allMatch(p -> p.getBoxItem() == item);
 		assertFilled(layouts);
 		VirtualBox virtual = VirtualBox.of(layouts);
@@ -131,7 +131,7 @@ class VirtualBoxLayoutTest {
 	void respectsDeadlineAndCancellation() {
 		var generator = new GridVirtualBoxLayoutGenerator();
 		BoxItem small = item(1, 1, 1, 2);
-		try(var expired = PackagerInterruptSupplierBuilder.builder().withDeadline(0).build()) {
+		try(var expired = PackagerInterruptSupplierBuilder.newBuilder().withDeadline(0).build()) {
 			assertThat(generator.generate(small, List.of(container(2, 1, 1)), 8, expired::getAsBoolean)).isEmpty();
 		}
 		assertThat(generator.generate(small, List.of(container(2, 1, 1)), 8, () -> true)).isEmpty();
@@ -161,7 +161,7 @@ class VirtualBoxLayoutTest {
 				placements.add(child);
 				volume += child.getStackValue().getVolume();
 			}
-			assertThat(volume).isEqualTo(layout.getBoundingBox().getVolume());
+			assertThat(volume).isEqualTo(layout.getBounds().getVolume());
 		}
 	}
 }

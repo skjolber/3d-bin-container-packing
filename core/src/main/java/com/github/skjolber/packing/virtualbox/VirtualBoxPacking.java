@@ -77,7 +77,7 @@ public class VirtualBoxPacking {
 			throw new IllegalStateException("Delegate did not preserve virtual layout indexes");
 		}
 		VirtualBoxLayout layout = virtualBox.getLayouts().get(layoutIndex);
-		var bounds = layout.getBoundingBox();
+		var bounds = layout.getBounds();
 		if(value.getDx() != bounds.dx() || value.getDy() != bounds.dy() || value.getDz() != bounds.dz()) {
 			throw new IllegalStateException("Delegate changed a virtual box orientation");
 		}

@@ -103,10 +103,10 @@ public class VirtualBox {
 	public BoxItem toBoxItem(int globalIndex, int count) {
 		BoxStackValue[] values = new BoxStackValue[layouts.size()];
 		for(int i = 0; i < values.length; i++) {
-			var bounds = layouts.get(i).getBoundingBox();
+			var bounds = layouts.get(i).getBounds();
 			values[i] = BoxStackValue.newBuilder().withDimensions(bounds.dx(), bounds.dy(), bounds.dz()).withIndex(i).build();
 		}
-		Box box = new Box(null, "Virtual box", layouts.get(0).getBoundingBox().getVolume(), weight, values, Map.of());
+		Box box = new Box(null, "Virtual box", layouts.get(0).getBounds().getVolume(), weight, values, Map.of());
 		return new BoxItem(box, count, -1, globalIndex);
 	}
 }

@@ -265,7 +265,7 @@ class GridVirtualBoxLayoutGeneratorTest {
 	@Test
 	void everyContainerKeepsALayout() {
 		List<VirtualBoxLayout> layouts = new GridVirtualBoxLayoutGenerator().generate(item(1, 1, 1, 4), List.of(container(4, 1, 1), container(2, 2, 1)), 1, () -> false);
-		assertThat(layouts).extracting(VirtualBoxLayout::getBoundingBox).containsExactly(VirtualBoxBounds.of(2, 2, 1), VirtualBoxBounds.of(4, 1, 1));
+		assertThat(layouts).extracting(VirtualBoxLayout::getBounds).containsExactly(VirtualBoxBounds.of(2, 2, 1), VirtualBoxBounds.of(4, 1, 1));
 	}
 
 	/*
@@ -278,8 +278,8 @@ class GridVirtualBoxLayoutGeneratorTest {
 		List<Container> containers = List.of(container(5, 2, 2));
 		var exact = new GridVirtualBoxLayoutGenerator().generate(boxes, containers, 1, () -> false).get(0);
 		var near = new GridVirtualBoxLayoutGenerator(2).generate(boxes, containers, 1, () -> false).get(0);
-		assertThat(exact.getBoundingBox()).isEqualTo(VirtualBoxBounds.of(2, 2, 2));
-		assertThat(near.getBoundingBox()).isEqualTo(VirtualBoxBounds.of(4, 2, 1));
+		assertThat(exact.getBounds()).isEqualTo(VirtualBoxBounds.of(2, 2, 2));
+		assertThat(near.getBounds()).isEqualTo(VirtualBoxBounds.of(4, 2, 1));
 	}
 
 	/* Every retained alternative is a complete grid, not just the first best envelope. */
@@ -293,7 +293,7 @@ class GridVirtualBoxLayoutGeneratorTest {
 		List<VirtualBoxLayout> layouts = new GridVirtualBoxLayoutGenerator().generate(original, List.of(container(12, 12, 12)), 100, () -> false);
 		assertThat(layouts.size()).isGreaterThan(8);
 		for(VirtualBoxLayout layout : layouts) {
-			new VirtualBoxLayout(layout.getBoundingBox(), layout.getPlacements()).prepare();
+			new VirtualBoxLayout(layout.getBounds(), layout.getPlacements()).prepare();
 		}
 	}
 

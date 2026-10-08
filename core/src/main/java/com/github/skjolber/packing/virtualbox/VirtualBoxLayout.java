@@ -22,7 +22,7 @@ public class VirtualBoxLayout {
 		this.placements = placements;
 	}
 
-	public VirtualBoxBounds getBoundingBox() {
+	public VirtualBoxBounds getBounds() {
 		return bounds;
 	}
 

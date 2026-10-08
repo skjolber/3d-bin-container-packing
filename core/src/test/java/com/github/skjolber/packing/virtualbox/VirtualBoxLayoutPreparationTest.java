@@ -50,7 +50,7 @@ class VirtualBoxLayoutPreparationTest {
 		for(int[] dimensions : new int[][] {{6, 1, 2}, {1, 6, 2}, {1, 1, 12}}) {
 			var layout = new GridVirtualBoxLayoutGenerator().generate(item(1, 1, 1, 12),
 					List.of(container(dimensions[0], dimensions[1], dimensions[2])), 1, () -> false).get(0);
-			VirtualBoxLayout generic = new VirtualBoxLayout(layout.getBoundingBox(), layout.getPlacements());
+			VirtualBoxLayout generic = new VirtualBoxLayout(layout.getBounds(), layout.getPlacements());
 			generic.prepare();
 			assertThat(generic.prepared).isTrue();
 		}

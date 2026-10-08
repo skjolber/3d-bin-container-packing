@@ -243,8 +243,8 @@ class VirtualBoxRefinementTest {
 		assertThat(plan.refine(() -> false)).isTrue();
 		assertThat(plan.frontier).hasSize(1);
 		List<VirtualBoxLayout> layouts = plan.frontier.get(0).virtualBox.getLayouts();
-		assertThat(layouts).anyMatch(layout -> layout.getBoundingBox().dx() <= 8 && layout.getBoundingBox().dy() <= 1 && layout.getBoundingBox().dz() <= 1);
-		assertThat(layouts).anyMatch(layout -> layout.getBoundingBox().equals(VirtualBoxBounds.of(2, 2, 1)));
+		assertThat(layouts).anyMatch(layout -> layout.getBounds().dx() <= 8 && layout.getBounds().dy() <= 1 && layout.getBounds().dz() <= 1);
+		assertThat(layouts).anyMatch(layout -> layout.getBounds().equals(VirtualBoxBounds.of(2, 2, 1)));
 	}
 
 	/*
