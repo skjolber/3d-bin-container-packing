@@ -43,7 +43,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		BoxItem boxItem = values.get(index);
 		if(!boxItem.decrement(count)) {
 			values.remove(index);
-			minimumsValid = false;
+			removed(boxItem);
 
 			// update indexes
 			for(int i = index; i < values.size(); i++) {
@@ -56,7 +56,7 @@ public class DefaultBoxItemSource implements BoxItemSource {
 	@Override
 	public BoxItem remove(int index) {
 		BoxItem remove = values.remove(index);
-		minimumsValid = false;
+		removed(remove);
 		
 		// update indexes
 		for(int i = index; i < values.size(); i++) {
@@ -64,6 +64,16 @@ public class DefaultBoxItemSource implements BoxItemSource {
 		}
 		
 		return remove;
+	}
+
+	private void removed(BoxItem boxItem) {
+		// the minimums of the remaining items are unchanged unless the removed item attained one of them
+		if(minimumsValid) {
+			Box box = boxItem.getBox();
+			if(box.getMinimumArea() <= minArea || box.getVolume() <= minVolume) {
+				minimumsValid = false;
+			}
+		}
 	}
 
 	public void setValues(List<BoxItem> values) {
