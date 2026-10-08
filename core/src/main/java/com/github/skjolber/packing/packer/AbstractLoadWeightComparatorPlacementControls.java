@@ -52,6 +52,12 @@ public abstract class AbstractLoadWeightComparatorPlacementControls extends Abst
 	/** Factory method — subclasses return the appropriate utility variant. */
 	protected abstract LoadPlacementUtility createLoadPlacementUtility(Stack stack);
 
+	/** The loads of the placements are linked, so they need load lists. */
+	@Override
+	protected Placement newPlacement() {
+		return new Placement(true);
+	}
+
 
 	/** Re-initializes internal arrays to hold at least {@code count} entries. */
 	public void initialize(int count) {

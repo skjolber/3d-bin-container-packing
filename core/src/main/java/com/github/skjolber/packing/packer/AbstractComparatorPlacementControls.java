@@ -149,7 +149,7 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 	protected Placement acquirePlacement() {
 		Placement placement = recyclablePlacement;
 		if(placement == null) {
-			return new Placement();
+			return newPlacement();
 		}
 
 		recyclablePlacement = null;
@@ -157,6 +157,14 @@ public abstract class AbstractComparatorPlacementControls extends AbstractPlacem
 		placement.setProperties(null);
 		placement.setIndex(0);
 		return placement;
+	}
+
+	/**
+	 * Create a candidate placement. Without load lists: these controls do not link the loads of placements
+	 * (see {@link AbstractLoadWeightComparatorPlacementControls}).
+	 */
+	protected Placement newPlacement() {
+		return new Placement(false);
 	}
 
 	/**
