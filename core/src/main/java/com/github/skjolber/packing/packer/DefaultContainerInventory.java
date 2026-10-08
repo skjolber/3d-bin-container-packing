@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,7 +17,25 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
 
-public class ContainerItemsCalculator implements ContainerInventory {
+public class DefaultContainerInventory implements ContainerInventory {
+
+	private static final Comparator<ContainerItem> MAX_LOAD_VOLUME_COMPARATOR = new Comparator<ContainerItem>() {
+
+		@Override
+		public int compare(ContainerItem o1, ContainerItem o2) {
+			return Long.compare(o1.getContainer().getMaxLoadVolume(), o2.getContainer().getMaxLoadVolume());
+		}
+
+	};
+
+	private static final Comparator<ContainerItem> MAX_LOAD_WEIGHT_COMPARATOR = new Comparator<ContainerItem>() {
+
+		@Override
+		public int compare(ContainerItem o1, ContainerItem o2) {
+			return Long.compare(o1.getContainer().getMaxLoadWeight(), o2.getContainer().getMaxLoadWeight());
+		}
+
+	};
 
 	public static class Limit {
 		
@@ -52,11 +71,11 @@ public class ContainerItemsCalculator implements ContainerInventory {
 	
 	protected long cost;
 
-	public ContainerItemsCalculator(List<ContainerItem> items, int containerCount) {
+	public DefaultContainerInventory(List<ContainerItem> items, int containerCount) {
 		this(items, containerCount, containerCount);
 	}
 	
-	public ContainerItemsCalculator(List<ContainerItem> items, int containerCount, int resetContainerCount) {
+	public DefaultContainerInventory(List<ContainerItem> items, int containerCount, int resetContainerCount) {
 		for(int i = 0; i < items.size(); i++) {
 			items.get(i).setIndex(i);
 		}
@@ -67,16 +86,16 @@ public class ContainerItemsCalculator implements ContainerInventory {
 		this.containerItemsSortedByWeight = new ArrayList<>(items);
 		this.containerItemsSortedByVolume = new ArrayList<>(items);
 		
-		Collections.sort(containerItemsSortedByWeight, ContainerItem.MAX_LOAD_WEIGHT_COMPARATOR);
-		Collections.sort(containerItemsSortedByVolume, ContainerItem.MAX_LOAD_VOLUME_COMPARATOR);
+		Collections.sort(containerItemsSortedByWeight, MAX_LOAD_WEIGHT_COMPARATOR);
+		Collections.sort(containerItemsSortedByVolume, MAX_LOAD_VOLUME_COMPARATOR);
 	}
 
-	public ContainerItemsCalculator copy() {
+	public DefaultContainerInventory copy() {
 		List<ContainerItem> copies = new ArrayList<>(containerItems.size());
 		for(ContainerItem item : containerItems) {
 			copies.add(new ContainerItem(item));
 		}
-		ContainerItemsCalculator copy = new ContainerItemsCalculator(copies, containerCount, resetContainerCount);
+		DefaultContainerInventory copy = new DefaultContainerInventory(copies, containerCount, resetContainerCount);
 		copy.cost = cost;
 		return copy;
 	}

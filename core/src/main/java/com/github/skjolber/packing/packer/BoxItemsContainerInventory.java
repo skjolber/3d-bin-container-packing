@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Stack;
  * box-item type. The remaining container count is capped at the number of
  * boxes, because using more containers cannot contribute to a packing.
  */
-public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalculator {
+public final class BoxItemsContainerInventory extends DefaultContainerInventory {
 
 	private final boolean[][] fits;
 	/**
@@ -30,7 +30,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	private long remainingVolume;
 	private long remainingWeight;
 
-	public BoxItemsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount, List<BoxItem> boxItems) {
+	public BoxItemsContainerInventory(List<ContainerItem> containerItems, int containerCount, List<BoxItem> boxItems) {
 		super(containerItems, Math.min(containerCount, countBoxes(boxItems)));
 		this.remainingVolume = calculateVolume(boxItems);
 		this.remainingWeight = calculateWeight(boxItems);
@@ -55,7 +55,7 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 		}
 	}
 
-	private BoxItemsContainerItemsCalculator(BoxItemsContainerItemsCalculator source, List<ContainerItem> containerItems) {
+	private BoxItemsContainerInventory(BoxItemsContainerInventory source, List<ContainerItem> containerItems) {
 		super(containerItems, source.containerCount, source.resetContainerCount);
 		this.cost = source.cost;
 		this.remainingVolume = source.remainingVolume;
@@ -93,8 +93,8 @@ public final class BoxItemsContainerItemsCalculator extends ContainerItemsCalcul
 	}
 
 	@Override
-	public BoxItemsContainerItemsCalculator copy() {
-		return new BoxItemsContainerItemsCalculator(this, copyContainerItems());
+	public BoxItemsContainerInventory copy() {
+		return new BoxItemsContainerInventory(this, copyContainerItems());
 	}
 
 	@Override

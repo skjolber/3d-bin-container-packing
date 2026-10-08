@@ -33,7 +33,7 @@ public class AbstractPackagerSessionTest {
                 .withContainer(container2, 3)
                 .build();
 
-        ContainerItemsCalculator session = create(items);
+        DefaultContainerInventory session = create(items);
 
 		// volume
         for(int i = 0; i <= 5; i++) {
@@ -78,7 +78,7 @@ public class AbstractPackagerSessionTest {
                 .withContainer(container2, 3)
                 .build();
         
-        ContainerItemsCalculator session = create(items);
+        DefaultContainerInventory session = create(items);
 
 		// volume overflows, max value is 9,223,372,036,854,775,807 (~19 digits) and 
 		// max integer 2,147,483,647 (~10 digits) 
@@ -98,7 +98,7 @@ public class AbstractPackagerSessionTest {
     	assertEquals(maxWeight, expectedWeight);
 	}
 	
-	private ContainerItemsCalculator create(List<ContainerItem> items) {
+	private DefaultContainerInventory create(List<ContainerItem> items) {
 		List<ContainerItem> containerItems = new ArrayList<>(items.size());
 		for(ContainerItem containerItem : items) {
 			containerItems.add(new ContainerItem(containerItem));
@@ -108,6 +108,6 @@ public class AbstractPackagerSessionTest {
 		for(ContainerItem item : containerItems) {
 			containerCount += item.getCount();
 		}
-		return new ContainerItemsCalculator(containerItems, containerCount);
+		return new DefaultContainerInventory(containerItems, containerCount);
 	}
 }

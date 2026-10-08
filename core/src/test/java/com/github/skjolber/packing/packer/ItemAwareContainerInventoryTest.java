@@ -21,15 +21,15 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerItemsResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 
-class ItemAwareContainerItemsCalculatorTest {
+class ItemAwareContainerInventoryTest {
 
 	@Test
-	void sessionsCreateTheMatchingStandaloneCalculator() {
+	void sessionsCreateTheMatchingContainerInventory() {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
-			List<Class<?>> calculatorTypes = new ArrayList<>();
-			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
-				calculatorTypes.add(calculator.getClass());
+			List<Class<?>> inventoryTypes = new ArrayList<>();
+			packager.setContainerStrategyFactory((inventory, boxes, groups) -> {
+				inventoryTypes.add(inventory.getClass());
 				return (interrupt, session) -> {
 					IntermediatePackagerResult result = session.attempt(0, null, true);
 					Container packed = session.accept(result);
@@ -57,7 +57,7 @@ class ItemAwareContainerItemsCalculatorTest {
 			figure(boxes);
 			PackagerResult groups = packager.newResultBuilder().withContainerItems(containers)
 					.withMaxContainerCount(10)
-					.withBoxItems(new BoxItemGroup("group", List.of(new BoxItem(box("box", 1, 1)))))
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(new BoxItem(box("box", 1, 1)))))
 					.build();
 			// <figure>
 			//   z                 z                 y                 z
@@ -75,20 +75,20 @@ class ItemAwareContainerItemsCalculatorTest {
 
 			assertThat(boxes.isSuccess()).isTrue();
 			assertThat(groups.isSuccess()).isTrue();
-			assertThat(calculatorTypes).containsExactly(BoxItemsContainerItemsCalculator.class,
-					BoxItemGroupsContainerItemsCalculator.class);
+			assertThat(inventoryTypes).containsExactly(BoxItemsContainerInventory.class,
+					BoxItemGroupsContainerInventory.class);
 		} finally {
 			packager.close();
 		}
 	}
 
 	@Test
-	void boxItemsCalculatorIndexesFitAndTracksRemainingCapacity() {
+	void boxItemsInventoryIndexesFitAndTracksRemainingCapacity() {
 		Box small = box("small", 1, 2);
 		Box large = box("large", 2, 3);
 		BoxItem smallItems = new BoxItem(small, 2);
 		BoxItem largeItem = new BoxItem(large, 1);
-		BoxItemsContainerItemsCalculator calculator = new BoxItemsContainerItemsCalculator(
+		BoxItemsContainerInventory calculator = new BoxItemsContainerInventory(
 				controlledContainers(), 100, List.of(smallItems, largeItem));
 
 		assertThat(calculator.getContainerCount()).isEqualTo(3);
@@ -115,7 +115,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.isFeasible(List.of(smallItems, largeItem))).isFalse();
 		assertThat(calculator.isFeasible(List.of(smallItems))).isFalse();
 
-		BoxItemsContainerItemsCalculator copy = calculator.copy();
+		BoxItemsContainerInventory copy = calculator.copy();
 		copy.toContainer(copy.getContainerItem(0), stack(small));
 		assertThat(copy.hasContainer(0)).isFalse();
 		assertThat(calculator.hasContainer(0)).isTrue();
@@ -129,11 +129,11 @@ class ItemAwareContainerItemsCalculatorTest {
 	}
 
 	@Test
-	void groupCalculatorIndexesWholeGroupFitAndCapsByGroupCount() {
+	void groupInventoryIndexesWholeGroupFitAndCapsByGroupCount() {
 		Box small = box("small", 1, 2);
 		BoxItemGroup pair = new BoxItemGroup("pair", List.of(new BoxItem(small, 2)));
 		BoxItemGroup single = new BoxItemGroup("single", List.of(new BoxItem(small, 1)));
-		BoxItemGroupsContainerItemsCalculator calculator = new BoxItemGroupsContainerItemsCalculator(
+		BoxItemGroupsContainerInventory calculator = new BoxItemGroupsContainerInventory(
 				controlledContainers(), 100, List.of(pair, single));
 
 		assertThat(calculator.getContainerCount()).isEqualTo(2);
@@ -157,7 +157,7 @@ class ItemAwareContainerItemsCalculatorTest {
 		assertThat(calculator.isGroupFeasible(List.of(pair, single))).isFalse();
 		assertThat(calculator.isGroupFeasible(List.of(single))).isTrue();
 
-		BoxItemGroupsContainerItemsCalculator copy = calculator.copy();
+		BoxItemGroupsContainerInventory copy = calculator.copy();
 		assertThat(copy.getRemainingVolume()).isEqualTo(1);
 		assertThat(copy.hasContainer(0)).isFalse();
 
@@ -173,7 +173,7 @@ class ItemAwareContainerItemsCalculatorTest {
 	void containerResultRetainsBoxAndGroupFitRecords() {
 		Box small = box("small", 1, 2);
 		Box large = box("large", 2, 3);
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(controlledContainers(), 2);
+		DefaultContainerInventory calculator = new DefaultContainerInventory(controlledContainers(), 2);
 
 		ContainerItemsResult boxes = calculator.getContainers(
 				List.of(new BoxItem(small), new BoxItem(large)));

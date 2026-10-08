@@ -13,8 +13,8 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
-import com.github.skjolber.packing.packer.BoxItemsContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.BoxItemsContainerInventory;
+import com.github.skjolber.packing.packer.DefaultContainerInventory;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 
 public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerSession {
@@ -40,12 +40,12 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 
 	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
 			int containerCount) {
-		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerInventory(containers, containerCount, boxItems));
 	}
 
 	protected AbstractBruteForceBoxItemSession(List<BoxItem> boxItems,
-			ContainerItemsCalculator containerItemsCalculator) {
-		super(containerItemsCalculator);
+			DefaultContainerInventory containerInventory) {
+		super(containerInventory);
 		
 		this.boxes = new Box[boxItems.size()];
 		this.boxesRemaining = new int[boxItems.size()];

@@ -37,7 +37,6 @@ import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContaine
 import com.github.skjolber.packing.packer.strategy.bruteforce.LowestCostControls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
-import com.github.skjolber.packing.packer.strategy.cost.LowestCostContainersComparator;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ContainerCostPackingTest {
@@ -137,10 +136,10 @@ class ContainerCostPackingTest {
 			useStrategy(plain, strategy);
 			useStrategy(brute, strategy);
 			assertThat(plain.newResultBuilder().withContainerItems(containers)
-					.withMaxContainerCount(1000).withBoxItems(new BoxItemGroup("pair", List.of(twoBoxes())))
+					.withMaxContainerCount(1000).withBoxItemGroups(new BoxItemGroup("pair", List.of(twoBoxes())))
 					.build().isSuccess()).isTrue();
 			assertThat(brute.newResultBuilder().withContainerItems(containers)
-					.withMaxContainerCount(1000).withBoxItems(new BoxItemGroup("pair", List.of(twoBoxes())))
+					.withMaxContainerCount(1000).withBoxItemGroups(new BoxItemGroup("pair", List.of(twoBoxes())))
 					.build().isSuccess()).isTrue();
 		} finally {
 			plain.close();
@@ -168,23 +167,23 @@ class ContainerCostPackingTest {
 			assertThat(plain.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItems(boxItem()).build().isSuccess()).isTrue();
 			assertThat(plain.newResultBuilder().withContainerItems(containerItems)
-					.withBoxItems(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
 			assertThat(laff.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItems(boxItem()).build().isSuccess()).isTrue();
 			assertThat(laff.newResultBuilder().withContainerItems(containerItems)
-					.withBoxItems(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
 			assertThat(bruteForce.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItems(boxItem()).build().isSuccess()).isTrue();
 			assertThat(bruteForce.newResultBuilder().withContainerItems(containerItems)
-					.withBoxItems(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
 			assertThat(fastBruteForce.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItems(boxItem()).build().isSuccess()).isTrue();
 			assertThat(fastBruteForce.newResultBuilder().withContainerItems(containerItems)
-					.withBoxItems(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
 			assertThat(parallel.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItems(boxItem()).build().isSuccess()).isTrue();
 			assertThat(parallel.newResultBuilder().withContainerItems(containerItems)
-					.withBoxItems(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
+					.withBoxItemGroups(new BoxItemGroup("group", List.of(boxItem()))).build().isSuccess()).isTrue();
 		} finally {
 			plain.close();
 			laff.close();
@@ -235,13 +234,13 @@ class ContainerCostPackingTest {
 			assertThat(parallel.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(2)
 					.withBoxItems(twoBoxes()).build().isSuccess()).isTrue();
 			assertThat(bruteForce.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(2)
-					.withBoxItems(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
+					.withBoxItemGroups(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
 					.build().isSuccess()).isTrue();
 			assertThat(fastBruteForce.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(2)
-					.withBoxItems(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
+					.withBoxItemGroups(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
 					.build().isSuccess()).isTrue();
 			assertThat(parallel.newResultBuilder().withContainerItems(containerItems).withMaxContainerCount(2)
-					.withBoxItems(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
+					.withBoxItemGroups(new BoxItemGroup("first", List.of(boxItem())), new BoxItemGroup("second", List.of(boxItem())))
 					.build().isSuccess()).isTrue();
 		} finally {
 			bruteForce.close();
@@ -431,9 +430,9 @@ class ContainerCostPackingTest {
 			for(ContainerItem item : containerItems) {
 				calculators.put(item.getContainer().getId(), item.getCostCalculator());
 			}
-			LowestCostContainersComparator comparator = new LowestCostContainersComparator(container ->
-					calculators.get(container.getId()).calculateCost(container.getLoadWeight()));
-			useStrategyFactory(packager, () -> comparisonStrategy(comparator));
+			// positive when the first packing is cheaper
+			useStrategyFactory(packager, () -> comparisonStrategy((first, second) ->
+					Long.compare(totalCost(calculators, second), totalCost(calculators, first))));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(containerItems)
 					.withMaxContainerCount(2)
@@ -653,7 +652,7 @@ class ContainerCostPackingTest {
 			PackagerResult grouped = bruteForce.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
-					.withBoxItems(twoGroups())
+					.withBoxItemGroups(twoGroups())
 					.build();
 			// <figure>
 			// container 1 of 2: small
@@ -801,7 +800,7 @@ class ContainerCostPackingTest {
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
-					.withBoxItems(new BoxItemGroup("first", List.of(boxItem())),
+					.withBoxItemGroups(new BoxItemGroup("first", List.of(boxItem())),
 							new BoxItemGroup("second", List.of(boxItem())))
 					.build();
 			// <figure>
@@ -854,17 +853,17 @@ class ContainerCostPackingTest {
 			assertThat(brute.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
 					.withBoxItems(twoBoxes()).build().getContainers()).hasSize(2);
 			assertThat(brute.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
-					.withBoxItems(twoGroups()).build().getContainers()).hasSize(2);
+					.withBoxItemGroups(twoGroups()).build().getContainers()).hasSize(2);
 			assertThat(fast.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
-					.withBoxItems(twoGroups()).build().getContainers()).hasSize(2);
+					.withBoxItemGroups(twoGroups()).build().getContainers()).hasSize(2);
 			assertThat(parallel.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
 					.withBoxItems(twoBoxes()).build().getContainers()).hasSize(2);
 			assertThat(parallel.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
-					.withBoxItems(twoGroups()).build().getContainers()).hasSize(2);
+					.withBoxItemGroups(twoGroups()).build().getContainers()).hasSize(2);
 			assertThat(laff.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
 					.withBoxItems(twoBoxes()).build().getContainers()).hasSize(2);
 			assertThat(laff.newResultBuilder().withContainerItems(planContainers()).withMaxContainerCount(2)
-					.withBoxItems(twoGroups()).build().getContainers()).hasSize(2);
+					.withBoxItemGroups(twoGroups()).build().getContainers()).hasSize(2);
 		} finally {
 			brute.close();
 			fast.close();
@@ -949,6 +948,14 @@ class ContainerCostPackingTest {
 	private static void useStrategyFactory(AbstractPackager<?> packager,
 			Supplier<? extends ContainerStrategy> strategyFactory) {
 		packager.setContainerStrategyFactory((calculator, boxes, groups) -> strategyFactory.get());
+	}
+
+	private static long totalCost(Map<String, ContainerCostCalculator> calculators, List<Container> containers) {
+		long total = 0;
+		for(Container container : containers) {
+			total += calculators.get(container.getId()).calculateCost(container.getLoadWeight());
+		}
+		return total;
 	}
 
 	private static BruteForceContainerStrategy comparisonStrategy(Comparator<List<Container>> comparator) {

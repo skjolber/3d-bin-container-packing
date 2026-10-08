@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.Stack;
  * number of groups, because using more containers cannot contribute to a
  * packing.
  */
-public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsCalculator {
+public final class BoxItemGroupsContainerInventory extends DefaultContainerInventory {
 
 	private final boolean[][] fits;
 	private final int[] fittingContainerItemCounts;
@@ -24,7 +24,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	private long remainingVolume;
 	private long remainingWeight;
 
-	public BoxItemGroupsContainerItemsCalculator(List<ContainerItem> containerItems, int containerCount,
+	public BoxItemGroupsContainerInventory(List<ContainerItem> containerItems, int containerCount,
 			List<BoxItemGroup> boxItemGroups) {
 		super(containerItems, Math.min(containerCount, boxItemGroups.size()));
 		this.remainingVolume = calculateVolume(boxItemGroups);
@@ -47,7 +47,7 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 		}
 	}
 
-	private BoxItemGroupsContainerItemsCalculator(BoxItemGroupsContainerItemsCalculator source,
+	private BoxItemGroupsContainerInventory(BoxItemGroupsContainerInventory source,
 			List<ContainerItem> containerItems) {
 		super(containerItems, source.containerCount, source.resetContainerCount);
 		this.cost = source.cost;
@@ -61,8 +61,8 @@ public final class BoxItemGroupsContainerItemsCalculator extends ContainerItemsC
 	}
 
 	@Override
-	public BoxItemGroupsContainerItemsCalculator copy() {
-		return new BoxItemGroupsContainerItemsCalculator(this, copyContainerItems());
+	public BoxItemGroupsContainerInventory copy() {
+		return new BoxItemGroupsContainerInventory(this, copyContainerItems());
 	}
 
 	@Override

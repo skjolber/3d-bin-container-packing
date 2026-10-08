@@ -22,18 +22,18 @@ import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalcul
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.ExactContainerItemsCostCalculator;
 
-public class ContainerItemsCalculatorTest {
+public class DefaultContainerInventoryTest {
 
 	@Test
-	public void copydCalculatorHasIndependentContainerInventory() {
+	public void copiedInventoryHasIndependentContainerItems() {
 		Container container = Container.newBuilder()
 				.withMaxLoadWeight(100)
 				.withSize(10, 10, 10)
 				.build();
-		ContainerItemsCalculator original = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory original = create(ContainerItem.newListBuilder()
 				.withContainer(container, 2)
 				.build());
-		ContainerItemsCalculator copy = original.copy();
+		DefaultContainerInventory copy = original.copy();
 
 		assertNotSame(original.getContainerItem(0), copy.getContainerItem(0));
 		assertEquals(0, copy.getContainerItem(0).getIndex());
@@ -51,7 +51,7 @@ public class ContainerItemsCalculatorTest {
 				.withMaxLoadWeight(100)
 				.withSize(10, 10, 10)
 				.build();
-		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory calculator = create(ContainerItem.newListBuilder()
 				.withContainer(container, 2)
 				.withContainer(container, 1)
 				.build());
@@ -60,7 +60,7 @@ public class ContainerItemsCalculatorTest {
 		first.decrement();
 		second.decrement();
 
-		ContainerItemsCalculator copy = calculator.copy();
+		DefaultContainerInventory copy = calculator.copy();
 		copy.reset();
 		assertEquals(3, copy.getContainerCount());
 		assertEquals(2, copy.getContainerItem(0).getCount());
@@ -92,7 +92,7 @@ public class ContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		assertEquals(1000L, calculator.calculateMaxVolume(1).getValue().intValue());
 		assertEquals(100L, calculator.calculateMaxWeight(1).getValue().intValue());
@@ -129,7 +129,7 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		assertEquals(9000L, calculator.calculateMaxVolume(2).getValue().intValue());
 		assertEquals(200L, calculator.calculateMaxWeight(2).getValue().intValue());
@@ -163,7 +163,7 @@ public class ContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -189,7 +189,7 @@ public class ContainerItemsCalculatorTest {
 		List<ContainerItem> items = ContainerItem.newListBuilder()
 				.withContainer(container, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -220,7 +220,7 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container1, 1)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -254,7 +254,7 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container1, 10)
 				.withContainer(container2, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 1);
+		DefaultContainerInventory calculator = create(items, 1);
 		
 		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 10);
@@ -283,7 +283,7 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(Container.newBuilder().withDescription("2").withEmptyWeight(1).withSize(8, 2, 1).withMaxLoadWeight(100).build(), 1)
 				.build();
 
-		ContainerItemsCalculator calculator = create(containers, 2);
+		DefaultContainerInventory calculator = create(containers, 2);
 		
 		List<BoxItem> products = new ArrayList<>();
 		products.add(new BoxItem(Box.newBuilder().withDescription("A").withSize(4, 2, 1).withRotate3D().withWeight(1).build(), 1));
@@ -326,7 +326,7 @@ public class ContainerItemsCalculatorTest {
 				.withContainer(container2, 1)
 				.withContainer(container3, 1)
 				.build();
-		ContainerItemsCalculator calculator = create(items, 2);
+		DefaultContainerInventory calculator = create(items, 2);
 		
 		Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1).build();
 		BoxItem boxItem = new BoxItem(box, 12);
@@ -347,7 +347,7 @@ public class ContainerItemsCalculatorTest {
 		Container container = new Container("id", "description", 10, 10, 10, 1, 10, 10, 10, 100, new Stack(), motion);
 		ContainerItem containerItem = new ContainerItem(container, 1);
 
-		ContainerItemsCalculator calculator = create(List.of(containerItem));
+		DefaultContainerInventory calculator = create(List.of(containerItem));
 
 		Container result = calculator.toContainer(calculator.getContainerItem(0), new Stack());
 
@@ -358,7 +358,7 @@ public class ContainerItemsCalculatorTest {
 	public void estimateUsesTheNextCostEffectiveContainerAfterInventoryIsExhausted() {
 		Container cheap = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(2).build();
 		Container next = Container.newBuilder().withSize(2, 1, 1).withMaxLoadWeight(2).build();
-		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory calculator = create(ContainerItem.newListBuilder()
 				.withContainer(cheap, 2, new FixedContainerCostCalculator(1, 2, null, 0))
 				.withContainer(next, 2, new FixedContainerCostCalculator(3, 2, null, 0))
 				.build());
@@ -379,7 +379,7 @@ public class ContainerItemsCalculatorTest {
 	public void exactCostAssignsWholeBoxesAndGroups() {
 		Container small = Container.newBuilder().withSize(3, 1, 1).withMaxLoadWeight(3).build();
 		Container large = Container.newBuilder().withSize(4, 1, 1).withMaxLoadWeight(4).build();
-		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory calculator = create(ContainerItem.newListBuilder()
 				.withContainer(small, 2, new FixedContainerCostCalculator(2, 3, null, 0))
 				.withContainer(large, 1, new FixedContainerCostCalculator(5, 4, null, 0))
 				.build());
@@ -398,7 +398,7 @@ public class ContainerItemsCalculatorTest {
 	public void exactCostRejectsContainersThatCannotFitTheBoxDimensions() {
 		Container cheap = Container.newBuilder().withSize(1, 2, 2).withMaxLoadWeight(4).build();
 		Container fitting = Container.newBuilder().withSize(2, 2, 1).withMaxLoadWeight(4).build();
-		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory calculator = create(ContainerItem.newListBuilder()
 				.withContainer(cheap, 1, new FixedContainerCostCalculator(1, 4, null, 0))
 				.withContainer(fitting, 1, new FixedContainerCostCalculator(5, 4, null, 0))
 				.build());
@@ -411,7 +411,7 @@ public class ContainerItemsCalculatorTest {
 	@Test
 	public void exactCostPricesTheAssignedLoadWeight() {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = create(ContainerItem.newListBuilder()
+		DefaultContainerInventory calculator = create(ContainerItem.newListBuilder()
 				.withContainer(container, 1, new LinearBucketWeightContainerCostCalculator(0, 0, 1, 10, 1, 1, null, 0))
 				.withContainer(container, 1, new FixedContainerCostCalculator(5, 1, null, 0))
 				.build());
@@ -422,7 +422,7 @@ public class ContainerItemsCalculatorTest {
 	}
 
 
-	private ContainerItemsCalculator create(List<ContainerItem> items) {
+	private DefaultContainerInventory create(List<ContainerItem> items) {
 		int containerCount = 0;
 		for(ContainerItem item : items) {
 			containerCount += item.getCount();
@@ -430,7 +430,7 @@ public class ContainerItemsCalculatorTest {
 		return create(items, containerCount);
 	}
 
-	private ContainerItemsCalculator create(List<ContainerItem> items, int containerCount) {
+	private DefaultContainerInventory create(List<ContainerItem> items, int containerCount) {
 		List<ContainerItem> containerItems = new ArrayList<>(items.size());
 		for(ContainerItem containerItem : items) {
 			ContainerItem c = new ContainerItem(containerItem);
@@ -438,6 +438,6 @@ public class ContainerItemsCalculatorTest {
 			containerItems.add(c);
 		}
 		
-		return new ContainerItemsCalculator(containerItems, containerCount);
+		return new DefaultContainerInventory(containerItems, containerCount);
 	}
 }

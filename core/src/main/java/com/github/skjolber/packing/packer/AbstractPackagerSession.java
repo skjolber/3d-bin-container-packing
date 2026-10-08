@@ -15,19 +15,19 @@ import com.github.skjolber.packing.api.point.Point;
 
 public abstract class AbstractPackagerSession implements PackagerSession {
 
-	protected final ContainerItemsCalculator packagerContainerItems;
-	protected final ContainerItemsCalculator initialContainerItems;
+	protected final DefaultContainerInventory packagerContainerItems;
+	protected final DefaultContainerInventory initialContainerItems;
 
 	public AbstractPackagerSession(List<BoxItem> boxItems, List<ContainerItem> containers, int containerCount) {
-		this(new BoxItemsContainerItemsCalculator(containers, containerCount, boxItems));
+		this(new BoxItemsContainerInventory(containers, containerCount, boxItems));
 	}
 
 	public AbstractPackagerSession(List<ContainerItem> containers, int containerCount) {
-		this(new ContainerItemsCalculator(containers, containerCount));
+		this(new DefaultContainerInventory(containers, containerCount));
 	}
 
-	protected AbstractPackagerSession(ContainerItemsCalculator containerItemsCalculator) {
-		this.packagerContainerItems = containerItemsCalculator;
+	protected AbstractPackagerSession(DefaultContainerInventory containerInventory) {
+		this.packagerContainerItems = containerInventory;
 		this.initialContainerItems = packagerContainerItems.copy();
 	}
 
@@ -38,11 +38,11 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 
 	@Override
 	public PackagerSession fresh() {
-		ContainerItemsCalculator containers = initialContainerItems.copy();
+		DefaultContainerInventory containers = initialContainerItems.copy();
 		return fresh(containers.getContainerItems(), containers.getContainerCount());
 	}
 
-	/** Create a new session using a calculator no longer used by another branch. */
+	/** Create a new session using an inventory no longer used by another branch. */
 	protected abstract AbstractPackagerSession fresh(List<ContainerItem> containers, int containerCount);
 
 	public static List<BoxItem> copyBoxItems(List<BoxItem> items) {
@@ -108,7 +108,7 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 	}
 
 	@Override
-	public ContainerItemsCalculator getContainerInventory() {
+	public DefaultContainerInventory getContainerInventory() {
 		return packagerContainerItems;
 	}
 

@@ -20,16 +20,16 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.DefaultContainerInventory;
 
 class BruteForceContainerStrategyTest {
 
 	@Test
 	void forksWithoutMutatingTheSourceOrSiblingState() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
-		List<ContainerItemsCalculator> branchCalculators = new ArrayList<>();
+		List<DefaultContainerInventory> branchCalculators = new ArrayList<>();
 		List<Integer> attemptedCounts = new ArrayList<>();
 		TestSession source = new TestSession(calculator, branchCalculators, attemptedCounts);
 
@@ -46,9 +46,9 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void backtracksUsingEligibilityFromEachPackingState() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 2), new ContainerItem(container, 1)), 2);
-		List<ContainerItemsCalculator> branches = new ArrayList<>();
+		List<DefaultContainerInventory> branches = new ArrayList<>();
 		List<Integer> attempts = new ArrayList<>();
 		List<List<Integer>> completed = new ArrayList<>();
 		int[] queries = new int[1];
@@ -71,7 +71,7 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void keepsParentSessionsForNestedSiblings() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1),
 				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
@@ -90,7 +90,7 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void triesEveryOrderedCombinationWhilePoppingBranches() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1),
 				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
@@ -120,7 +120,7 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void defaultBoundSkipsBranchesThatCanOnlyTie() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 1);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
@@ -136,7 +136,7 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void customPotentialComparatorPrunesSelectedContainers() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1),
 				new ContainerItem(container, 1)), 3);
 		List<Integer> attempts = new ArrayList<>();
@@ -162,7 +162,7 @@ class BruteForceContainerStrategyTest {
 	@Test
 	void limitsIteratorByAvailableContainersAndRemainingBoxes() throws PackagerInterruptedException {
 		Container container = Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator twoContainers = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory twoContainers = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, 1), new ContainerItem(container, 1)), 2);
 		int[] requested = new int[1];
 		TestSession threeBoxes = new TestSession(twoContainers, new ArrayList<>(), new ArrayList<>(),
@@ -177,7 +177,7 @@ class BruteForceContainerStrategyTest {
 		assertEquals(2, requested[0]);
 		assertEquals(2, threeBoxes.getContainerInventory().getContainerCount());
 
-		ContainerItemsCalculator manyContainers = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory manyContainers = new DefaultContainerInventory(List.of(
 				new ContainerItem(container, Integer.MAX_VALUE)), Integer.MAX_VALUE);
 		TestSession oneBox = new TestSession(manyContainers, new ArrayList<>(), new ArrayList<>());
 		assertEquals(Integer.MAX_VALUE, oneBox.getContainerInventory().getContainerCount());
@@ -188,7 +188,7 @@ class BruteForceContainerStrategyTest {
 	void lowestCostControlsPrunesAnExpensiveContainerBeforeAttempt() throws PackagerInterruptedException {
 		Container cheap = Container.newBuilder().withId("cheap").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		Container expensive = Container.newBuilder().withId("expensive").withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				costed(cheap, 1, 5), costed(expensive, 1, 100)), 1);
 		List<Integer> attempts = new ArrayList<>();
 		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts);
@@ -203,7 +203,7 @@ class BruteForceContainerStrategyTest {
 	void lowestCostControlsUsesNextContainerMinimumBeforeDescending() throws PackagerInterruptedException {
 		Container cheap = Container.newBuilder().withId("cheap").withSize(1, 1, 1).withMaxLoadWeight(1).build();
 		Container expensive = Container.newBuilder().withId("expensive").withSize(1, 1, 1).withMaxLoadWeight(1).build();
-		ContainerItemsCalculator calculator = new ContainerItemsCalculator(List.of(
+		DefaultContainerInventory calculator = new DefaultContainerInventory(List.of(
 				costed(cheap, 2, 5), costed(expensive, 1, 6)), 2);
 		List<Integer> attempts = new ArrayList<>();
 		int[] queries = new int[1];
@@ -279,7 +279,7 @@ class BruteForceContainerStrategyTest {
 
 	private static class TestSession extends AbstractPackagerSession {
 
-		private final List<ContainerItemsCalculator> branchCalculators;
+		private final List<DefaultContainerInventory> branchCalculators;
 		private final List<Integer> attemptedCounts;
 		private final int initialRemaining;
 		private final List<List<Integer>> completed;
@@ -288,7 +288,7 @@ class BruteForceContainerStrategyTest {
 		private final List<Integer> accepted = new ArrayList<>();
 		private int remaining;
 
-		private TestSession(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
+		private TestSession(DefaultContainerInventory calculator, List<DefaultContainerInventory> branchCalculators,
 				List<Integer> attemptedCounts) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
 			this.branchCalculators = branchCalculators;
@@ -299,7 +299,7 @@ class BruteForceContainerStrategyTest {
 			this.remaining = 1;
 		}
 
-		private TestSession(ContainerItemsCalculator calculator, List<ContainerItemsCalculator> branchCalculators,
+		private TestSession(DefaultContainerInventory calculator, List<DefaultContainerInventory> branchCalculators,
 				List<Integer> attemptedCounts, int initialRemaining,
 				List<List<Integer>> completed, int[] queryCalls) {
 			super(calculator.getContainerItems(), calculator.getContainerCount());
@@ -313,7 +313,7 @@ class BruteForceContainerStrategyTest {
 
 		@Override
 		protected TestSession fresh(List<ContainerItem> containers, int containerCount) {
-			ContainerItemsCalculator calculator = new ContainerItemsCalculator(containers, containerCount);
+			DefaultContainerInventory calculator = new DefaultContainerInventory(containers, containerCount);
 			branchCalculators.add(calculator);
 			return new TestSession(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);
@@ -321,7 +321,7 @@ class BruteForceContainerStrategyTest {
 
 		@Override
 		public PackagerSession fork() {
-			ContainerItemsCalculator calculator = packagerContainerItems.copy();
+			DefaultContainerInventory calculator = packagerContainerItems.copy();
 			branchCalculators.add(calculator);
 			TestSession fork = new TestSession(calculator, branchCalculators, attemptedCounts,
 					initialRemaining, completed, queryCalls);

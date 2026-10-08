@@ -37,11 +37,11 @@ public class DefaultContainerStrategyFactory implements ContainerStrategyFactory
 	}
 
 	@Override
-	public ContainerStrategy create(ContainerInventory containerItemsCalculator, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
-		if(containerItemsCalculator.hasCost()) {
+	public ContainerStrategy create(ContainerInventory containerInventory, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
+		if(containerInventory.hasCost()) {
 			return lowestCost;
 		}
-		if(isAllocationAlwaysFeasible(containerItemsCalculator, remainingBoxItems, boxItemGroups)) {
+		if(isAllocationAlwaysFeasible(containerInventory, remainingBoxItems, boxItemGroups)) {
 			return orderedWithoutAllocationFeasibilityCheck;
 		}
 		return ordered;

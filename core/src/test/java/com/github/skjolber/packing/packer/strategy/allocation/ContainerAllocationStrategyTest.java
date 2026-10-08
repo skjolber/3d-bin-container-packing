@@ -20,7 +20,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
+import com.github.skjolber.packing.packer.DefaultContainerInventory;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
@@ -119,7 +119,7 @@ class ContainerAllocationStrategyTest {
 	void allocatesWholeGroupsOnlyToContainersWhichFitThem() throws Exception {
 		Container small = container("small", 1);
 		Container large = container("large", 2);
-		ContainerItemsCalculator calculator = calculator(List.of(
+		DefaultContainerInventory calculator = calculator(List.of(
 				new ContainerItem(small, 1), new ContainerItem(large, 1)), 2);
 		Box cube = box("cube", 1);
 		List<BoxItemGroup> groups = List.of(
@@ -140,7 +140,7 @@ class ContainerAllocationStrategyTest {
 	void bruteForceDoesNotDescendIntoAnUnallocatableBranch() throws Exception {
 		Box smallBox = box("small-box", 1);
 		Box longBox = Box.newBuilder().withId("long-box").withSize(2, 1, 1).withWeight(1).build();
-		ContainerItemsCalculator calculator = calculator(List.of(
+		DefaultContainerInventory calculator = calculator(List.of(
 				new ContainerItem(container("small", 1), 1),
 				new ContainerItem(container("long", 2), 1)), 2);
 		List<Integer> attempts = new ArrayList<>();
@@ -159,12 +159,12 @@ class ContainerAllocationStrategyTest {
 		assertThat(containerQueries[0]).isEqualTo(2);
 	}
 
-	private static ContainerItemsCalculator calculator(List<ContainerItem> items, int count) {
+	private static DefaultContainerInventory calculator(List<ContainerItem> items, int count) {
 		List<ContainerItem> controlled = new ArrayList<>(items.size());
 		for(ContainerItem item : items) {
 			controlled.add(new ContainerItem(item));
 		}
-		return new ContainerItemsCalculator(controlled, count);
+		return new DefaultContainerInventory(controlled, count);
 	}
 
 	private static ContainerItem costed(Container container, int count, long cost) {
@@ -182,18 +182,18 @@ class ContainerAllocationStrategyTest {
 
 	private static class PlanningSession implements PackagerSession {
 
-		protected final ContainerItemsCalculator calculator;
+		protected final DefaultContainerInventory calculator;
 		protected final List<BoxItem> boxes;
 		protected final List<BoxItemGroup> groups;
 
-		private PlanningSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
+		private PlanningSession(DefaultContainerInventory calculator, List<BoxItem> boxes,
 				List<BoxItemGroup> groups) {
 			this.calculator = calculator;
 			this.boxes = boxes;
 			this.groups = groups;
 		}
 
-		@Override public ContainerItemsCalculator getContainerInventory() { return calculator; }
+		@Override public DefaultContainerInventory getContainerInventory() { return calculator; }
 		@Override public List<BoxItem> getRemainingBoxItems() { return boxes; }
 		@Override public List<BoxItemGroup> getRemainingBoxItemGroups() { return groups; }
 		@Override public ContainerItem getContainerItem(int index) { return calculator.getContainerItem(index); }
@@ -223,7 +223,7 @@ class ContainerAllocationStrategyTest {
 		private final List<Integer> attempts;
 		private final int[] containerQueries;
 
-		private BranchSession(ContainerItemsCalculator calculator, List<BoxItem> boxes,
+		private BranchSession(DefaultContainerInventory calculator, List<BoxItem> boxes,
 				List<Integer> attempts, int[] containerQueries) {
 			super(calculator, boxes, null);
 			this.attempts = attempts;
