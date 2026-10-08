@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +33,18 @@ public class FirstFittingContainerTest {
 	@Test
 	public void plainPackagerUsesTheFirstContainerWhichHoldsTheBoxes() {
 		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesTheFirstContainer(packager);
 		}
 	}
@@ -39,6 +52,18 @@ public class FirstFittingContainerTest {
 	@Test
 	public void largestAreaFitFirstPackagerUsesTheFirstContainerWhichHoldsTheBoxes() {
 		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build()) {
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesTheFirstContainer(packager);
 		}
 	}
@@ -46,6 +71,18 @@ public class FirstFittingContainerTest {
 	@Test
 	public void bruteForcePackagerUsesTheFirstContainerWhichHoldsTheBoxes() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesTheFirstContainer(packager);
 		}
 	}
@@ -53,6 +90,18 @@ public class FirstFittingContainerTest {
 	@Test
 	public void fastBruteForcePackagerUsesTheFirstContainerWhichHoldsTheBoxes() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesTheFirstContainer(packager);
 		}
 	}
@@ -70,6 +119,7 @@ public class FirstFittingContainerTest {
 						.withBoxItems(new BoxItem(Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).build(), 1))
 						.withMaxContainerCount(maxContainerCount)
 						.build();
+				figure(result);
 
 				assertThat(result.getContainers()).as("%d container types, max %d containers", count, maxContainerCount).extracting(Container::getId).containsExactly("c0");
 			}

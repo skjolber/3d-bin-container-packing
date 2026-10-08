@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -58,6 +59,20 @@ public class GroupPlacementSearchTest {
 						.withBoxItemGroups(groups)
 						.withMaxContainerCount(2)
 						.build();
+				// <figure>
+				//   z   /-------/-------/-------|   y   z                                 y                                 z
+				//      /       /       /  a1   /|       1 +-------+-------+-------+       2 +-------+-------+-------+       1 +-------+-------+
+				//   | /       /       /-------| | /       |       |       |       |         |       |       |       |         |       |       |
+				//   |/       /       /       /| |/        |  b0   |  b1   |  a0   |         |       |       |  a1   |         |  a0   |  a1   |
+				// 1 |-------|-------|-------| | | 2       |       |       |       |         |       |       |       |         |       |       |
+				//   |       |       |       | |/        0 +-------+-------+-------+       1 |  b0   |  b1   +-------+       0 +-------+-------+
+				//   |  b0   |  b1   |  a0   | | 1         0       1       2       3   x     |       |       |       |         0       1       2   y
+				//   |       |       |       |/                                              |       |       |  a0   |
+				// 0 |-------|-------|-------|-- x                                           |       |       |       |
+				//   0       1       2       3                                             0 +-------+-------+-------+
+				//                                                                           0       1       2       3   x
+				// </figure>
+				figure(result);
 
 				assertThat(result.isSuccess()).as(packager.getClass().getSimpleName()).isTrue();
 				assertThat(result.getContainers()).as(packager.getClass().getSimpleName()).hasSize(1);

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.strategy.ordered;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -70,11 +71,35 @@ public class OrderedContainerPackingStrategyNullResultTest {
 	@Test
 	public void searchesForTheFirstContainerWhichHoldsAllBoxes() {
 		//  a [x][ ]   b [x][ ][ ]   c ...   (a returns null; b is the first which holds the box)
+		// <figure>
+		//   z                 z                 y                 z
+		//                     1 +-------+       1 +-------+       1 +-------+
+		//   | /-------|   y     |       |         |       |         |       |
+		//   |/       /|         |  box  |         |  box  |         |  box  |
+		// 1 |-------| | /       |       |         |       |         |       |
+		//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+		//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+		//   |       |/
+		// 0 |-------|-- x
+		//   0       1
+		// </figure>
 		assertUsesTheSecondContainer(4);
 	}
 
 	@Test
 	public void triesTheContainersInOrder() {
+		// <figure>
+		//   z                 z                 y                 z
+		//                     1 +-------+       1 +-------+       1 +-------+
+		//   | /-------|   y     |       |         |       |         |       |
+		//   |/       /|         |  box  |         |  box  |         |  box  |
+		// 1 |-------| | /       |       |         |       |         |       |
+		//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+		//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+		//   |       |/
+		// 0 |-------|-- x
+		//   0       1
+		// </figure>
 		assertUsesTheSecondContainer(2);
 	}
 
@@ -88,6 +113,7 @@ public class OrderedContainerPackingStrategyNullResultTest {
 					.withContainerItems(List.of(containers))
 					.withBoxItems(new BoxItem(Box.newBuilder().withId("box").withSize(1, 1, 1).withWeight(1).build(), 1))
 					.build();
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("c1");
 		}

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,10 +42,36 @@ class ItemAwareContainerItemsCalculatorTest {
 
 			PackagerResult boxes = packager.newResultBuilder().withContainerItems(containers)
 					.withMaxContainerCount(10).withBoxItems(new BoxItem(box("box", 1, 1))).build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(boxes);
 			PackagerResult groups = packager.newResultBuilder().withContainerItems(containers)
 					.withMaxContainerCount(10)
 					.withBoxItems(new BoxItemGroup("group", List.of(new BoxItem(box("box", 1, 1)))))
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |  box  |         |  box  |         |  box  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |  box  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(groups);
 
 			assertThat(boxes.isSuccess()).isTrue();
 			assertThat(groups.isSuccess()).isTrue();

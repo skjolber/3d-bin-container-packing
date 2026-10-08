@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.strategy.ordered;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,6 +44,19 @@ class ParallelContainerPackingStrategyTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(new BoxItem(box, 2))
 					.build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |  box  |  box  |         |  box  |  box  |         |  box  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |  box  |  box  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement().extracting(Container::getId).isEqualTo("large");
@@ -78,6 +92,44 @@ class ParallelContainerPackingStrategyTest {
 						.withMaxContainerCount(4)
 						.withBoxItems(boxItems)
 						.build();
+				// <figure>
+				// container 1 of 3: large
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         |   a   |   b   |         |   a   |   b   |         |   b   |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   |   a   |   b   | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				//
+				// container 2 of 3: small
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         |   c   |         |   c   |         |   c   |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   |   c   | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				//
+				// container 3 of 3: small
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         |   d   |         |   d   |         |   d   |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   |   d   | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				// </figure>
+				figure(result);
 
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.getContainers()).as(packager.getClass().getSimpleName()).extracting(Container::getId).containsOnlyOnce("large");

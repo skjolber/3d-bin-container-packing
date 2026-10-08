@@ -2,6 +2,7 @@ package com.github.skjolber.packing.virtualbox;
 
 import static org.assertj.core.api.Assertions.*;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,6 +46,20 @@ class VirtualBoxPackagerTest {
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b)
 					.withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.withCompareUngrouped(true).withInterruptDuration(60_000).withInterrupt(interrupt).build();
+			// <figure>
+			//   z   /-------/-------|   y   z                         y                         z
+			//      /   B   /       /|       1 +-------+-------+       2 +-------+-------+       1 +---------------+
+			//   | /-------/       / | /       |       |       |         |       |       |         |               |
+			//   |/       /       /  |/        |   A   |   C   |         |   B   |       |         |       C       |
+			// 1 |-------|-------|   | 2       |       |       |         |       |       |         |               |
+			//   |       |       |  /        0 +-------+-------+       1 +-------+   C   |       0 +---------------+
+			//   |   A   |   C   | / 1         0       1       2   x     |       |       |         0       1       2   y
+			//   |       |       |/                                      |   A   |       |
+			// 0 |-------|-------|-- x                                   |       |       |
+			//   0       1       2                                     0 +-------+-------+
+			//                                                           0       1       2   x
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(recording.counts).containsExactly(2, 3);
 			assertThat(scheduled).hasSize(2);
@@ -86,6 +101,19 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a)
 					.withContainerItem(c -> c.withContainerItem(container(4, 1, 1), 1).withPoints(p -> p.withPoint(2, 0, 0, 2, 1, 1))).build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1                 +-------+-------+       1                 +-------+-------+       1 +-------+
+			//   |                 /-------/-------|   y                     |       |       |                         |       |       |         |       |
+			//   |                /       /       /|                         |   A   |   B   |                         |   A   |   B   |         |   B   |
+			// 1 |               |-------|-------| | /                       |       |       |                         |       |       |         |       |
+			//   |               |       |       | |/      0                 +-------+-------+       0                 +-------+-------+       0 +-------+
+			//   |               |   A   |   B   | | 1       0               2       3       4   x     0               2       3       4   x     0       1   y
+			//   |               |       |       |/
+			// 0 |---------------|-------|-------|-- x
+			//   0               2       3       4
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(2, 3);
@@ -111,6 +139,20 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 4), b = item(2, 1, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.withMaxRefinements(0).build();
+			// <figure>
+			//   z   /-------/---------------|   y   z                                 y                                 z
+			//      /   B   /       E       /|       1 +-------+-------+-------+       2 +-------+---------------+       1 +-------+-------+
+			//   | /-------/-------/-------| | /       |       |       |       |         |       |               |         |       |       |
+			//   |/       /       /       /| |/        |   A   |   C   |   D   |         |   B   |       E       |         |   D   |   E   |
+			// 1 |-------|-------|-------| | | 2       |       |       |       |         |       |               |         |       |       |
+			//   |       |       |       | |/        0 +-------+-------+-------+       1 +-------+-------+-------+       0 +-------+-------+
+			//   |   A   |   C   |   D   | | 1         0       1       2       3   x     |       |       |       |         0       1       2   y
+			//   |       |       |       |/                                              |   A   |   C   |   D   |
+			// 0 |-------|-------|-------|-- x                                           |       |       |       |
+			//   0       1       2       3                                             0 +-------+-------+-------+
+			//                                                                           0       1       2       3   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2, 5);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
@@ -131,6 +173,20 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 4), b = item(2, 1, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(3, 2, 1), 2))
 					.withMaxContainerCount(2).withMaxRefinements(0).withCompareUngrouped(true).build();
+			// <figure>
+			//   z   /-------/---------------|   y   z                                 y                                 z
+			//      /   B   /       E       /|       1 +-------+-------+-------+       2 +-------+---------------+       1 +-------+-------+
+			//   | /-------/-------/-------| | /       |       |       |       |         |       |               |         |       |       |
+			//   |/       /       /       /| |/        |   A   |   C   |   D   |         |   B   |       E       |         |   D   |   E   |
+			// 1 |-------|-------|-------| | | 2       |       |       |       |         |       |               |         |       |       |
+			//   |       |       |       | |/        0 +-------+-------+-------+       1 +-------+-------+-------+       0 +-------+-------+
+			//   |   A   |   C   |   D   | | 1         0       1       2       3   x     |       |       |       |         0       1       2   y
+			//   |       |       |       |/                                              |   A   |   C   |   D   |
+			// 0 |-------|-------|-------|-- x                                           |       |       |       |
+			//   0       1       2       3                                             0 +-------+-------+-------+
+			//                                                                           0       1       2       3   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2, 5);
 			assertThat(result.size()).isEqualTo(1);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
@@ -154,6 +210,20 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 8);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.withMaxGridBoxes(4).build();
+			// <figure>
+			//   z   /-------/-------/-------/-------|   y   z                                         y                                         z
+			//      /   C   /   D   /   G   /   H   /|       1 +-------+-------+-------+-------+       2 +-------+-------+-------+-------+       1 +-------+-------+
+			//   | /-------/-------/-------/-------| | /       |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |/       /       /       /       /| |/        |   A   |   B   |   E   |   F   |         |   C   |   D   |   G   |   H   |         |   F   |   H   |
+			// 1 |-------|-------|-------|-------| | | 2       |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |       |       |       |       | |/        0 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       0 +-------+-------+
+			//   |   A   |   B   |   E   |   F   | | 1         0       1       2       3       4   x     |       |       |       |       |         0       1       2   y
+			//   |       |       |       |       |/                                                      |   A   |   B   |   E   |   F   |
+			// 0 |-------|-------|-------|-------|-- x                                                   |       |       |       |       |
+			//   0       1       2       3       4                                                     0 +-------+-------+-------+-------+
+			//                                                                                           0       1       2       3       4   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2);
 			assertThat(recording.types).containsExactly(1);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
@@ -180,6 +250,27 @@ class VirtualBoxPackagerTest {
 				ContainerItem container = new ContainerItem(container(4, 2, 3), 1);
 				PackagerResult result = wrapper.newResultBuilder().withBoxItems(item).withContainerItems(container)
 						.build();
+				// <figure>
+				//   z   /-------/-------/-------/-------|       z                                         y                                         z
+				//      /   U   /   V   /   W   /   X   /|       3 +-------+-------+-------+-------+       2 +-------+-------+-------+-------+       3 +-------+-------+
+				//   | /-------/-------/-------/-------| |         |       |       |       |       |         |       |       |       |       |         |       |       |
+				//   |/       /       /       /       /| |         |   Q   |   R   |   S   |   T   |         |   U   |   V   |   W   |   X   |         |   T   |   X   |
+				// 3 |-------|-------|-------|-------| | |         |       |       |       |       |         |       |       |       |       |         |       |       |
+				//   |       |       |       |       | |/|       2 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       2 +-------+-------+
+				//   |   Q   |   R   |   S   |   T   | | |         |       |       |       |       |         |       |       |       |       |         |       |       |
+				//   |       |       |       |       |/|P|         |   I   |   J   |   K   |   L   |         |   Q   |   R   |   S   |   T   |         |   L   |   P   |
+				// 2 |-------|-------|-------|-------| | |   y     |       |       |       |       |         |       |       |       |       |         |       |       |
+				//   |       |       |       |       | |/|       1 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       1 +-------+-------+
+				//   |   I   |   J   |   K   |   L   | | | /       |       |       |       |       |         0       1       2       3       4   x     |       |       |
+				//   |       |       |       |       |/|H|/        |   A   |   B   |   C   |   D   |                                                   |   D   |   H   |
+				// 1 |-------|-------|-------|-------| | | 2       |       |       |       |       |                                                   |       |       |
+				//   |       |       |       |       | |/        0 +-------+-------+-------+-------+                                                 0 +-------+-------+
+				//   |   A   |   B   |   C   |   D   | | 1         0       1       2       3       4   x                                               0       1       2   y
+				//   |       |       |       |       |/
+				// 0 |-------|-------|-------|-------|-- x
+				//   0       1       2       3       4
+				// </figure>
+				figure(result);
 				assertThat(recording.counts).containsExactly(1);
 				PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(item));
 				assertThat(item.getCount()).isEqualTo(24);
@@ -207,6 +298,20 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(3, 2, 1, 1), b = item(1, 2, 1, 1);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 2, 1), 1))
 					.build();
+			// <figure>
+			//   z   /-----------------------/-------|   y   z                                         y                                         z
+			//      /                       /       /|       1 +-----------------------+-------+       2 +-----------------------+-------+       1 +---------------+
+			//   | /                       /       / | /       |                       |       |         |                       |       |         |               |
+			//   |/                       /       /  |/        |           A           |   B   |         |                       |       |         |       B       |
+			// 1 |-----------------------|-------|   | 2       |                       |       |         |                       |       |         |               |
+			//   |                       |       |  /        0 +-----------------------+-------+         |           A           |   B   |       0 +---------------+
+			//   |           A           |   B   | /           0                       3       4   x     |                       |       |         0               2   y
+			//   |                       |       |/                                                      |                       |       |
+			// 0 |-----------------------|-------|-- x                                                   |                       |       |
+			//   0                       3       4                                                     0 +-----------------------+-------+
+			//                                                                                           0                       3       4   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 		}
@@ -227,6 +332,19 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxRefinements(0).build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(1, 4);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 			assertThat(a.getCount()).isEqualTo(4);
@@ -250,6 +368,20 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 5);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(3, 2, 1), 1))
 					.build();
+			// <figure>
+			//   z   /-------/-------|           y   z                                 y                                 z
+			//      /   D   /   E   /|               1 +-------+-------+-------+       2 +-------+-------+               1 +-------+-------+
+			//   | /-------/-------/-------|   /       |       |       |       |         |       |       |                 |       |       |
+			//   |/       /       /       /|  /        |   A   |   B   |   C   |         |   D   |   E   |                 |   C   |   E   |
+			// 1 |-------|-------|-------| | / 2       |       |       |       |         |       |       |                 |       |       |
+			//   |       |       |       | |/        0 +-------+-------+-------+       1 +-------+-------+-------+       0 +-------+-------+
+			//   |   A   |   B   |   C   | | 1         0       1       2       3   x     |       |       |       |         0       1       2   y
+			//   |       |       |       |/                                              |   A   |   B   |   C   |
+			// 0 |-------|-------|-------|-- x                                           |       |       |       |
+			//   0       1       2       3                                             0 +-------+-------+-------+
+			//                                                                           0       1       2       3   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(2);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
@@ -270,6 +402,19 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(result.get(0).getStack().getPlacements()).extracting(Placement::getAbsoluteX).containsExactlyInAnyOrder(0, 1, 2, 3);
 		}
@@ -285,6 +430,32 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 2), b = item(1, 1, 1, 2);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a, b).withContainerItems(new ContainerItem(container(2, 1, 1), 2))
 					.withMaxContainerCount(2).build();
+			// <figure>
+			// container 1 of 2
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   A   |   B   |         |   A   |   B   |         |   B   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   A   |   B   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   A   |   B   |         |   A   |   B   |         |   B   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   A   |   B   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			assertThat(result.size()).isEqualTo(2);
 		}
@@ -316,6 +487,19 @@ class VirtualBoxPackagerTest {
 			BoxItemGroup group = new BoxItemGroup("group", List.of(item(1, 1, 1, 2)));
 			PackagerResult result = wrapper.newResultBuilder().withBoxItemGroups(List.of(group))
 					.withContainerItems(new ContainerItem(container(2, 1, 1), 1)).build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   A   |   B   |         |   A   |   B   |         |   B   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   A   |   B   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(recording.groupCounts).containsExactly(1);
 		}
@@ -331,6 +515,19 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxGridBoxes(1).build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(4);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
@@ -369,6 +566,19 @@ class VirtualBoxPackagerTest {
 			BoxItem a = item(1, 1, 1, 4);
 			PackagerResult result = wrapper.newResultBuilder().withBoxItems(a).withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withCompareUngrouped(true).build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(1, 4);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));
 		}
@@ -397,6 +607,93 @@ class VirtualBoxPackagerTest {
 					.withMaxContainerCount(3)
 					.withInterruptDuration(60_000)
 					.build();
+			// <figure>
+			// container 1 of 3
+			//         /---------------/---------------/---------------|       z
+			//        /       P       /       Q       /       R       /|       2 +---------------+---------------+---------------+
+			//   z   /---------------/---------------/---------------| |         |               |               |               |
+			//      /       M       /       N       /       O       /| |         |       J       |       K       |       L       |
+			//   | /---------------/---------------/---------------| | |   y     |               |               |               |
+			//   |/               /               /               /| |/|       1 +---------------+---------------+---------------+
+			// 2 |---------------|---------------|---------------| | | | /       |               |               |               |
+			//   |               |               |               | |/|I|/        |       A       |       B       |       C       |
+			//   |       J       |       K       |       L       | | | | 3       |               |               |               |
+			//   |               |               |               |/|F|/        0 +---------------+---------------+---------------+
+			// 1 |---------------|---------------|---------------| | | 2         0               2               4               6   x
+			//   |               |               |               | |/
+			//   |       A       |       B       |       C       | | 1
+			//   |               |               |               |/
+			// 0 |---------------|---------------|---------------|-- x
+			//   0               2               4               6
+			//
+			// y                                                         z
+			// 3 +---------------+---------------+---------------+       2 +-------+-------+-------+
+			//   |               |               |               |         |       |       |       |
+			//   |       P       |       Q       |       R       |         |   L   |   O   |   R   |
+			//   |               |               |               |         |       |       |       |
+			// 2 +---------------+---------------+---------------+       1 +-------+-------+-------+
+			//   |               |               |               |         |       |       |       |
+			//   |       M       |       N       |       O       |         |   C   |   F   |   I   |
+			//   |               |               |               |         |       |       |       |
+			// 1 +---------------+---------------+---------------+       0 +-------+-------+-------+
+			//   |               |               |               |         0       1       2       3   y
+			//   |       J       |       K       |       L       |
+			//   |               |               |               |
+			// 0 +---------------+---------------+---------------+
+			//   0               2               4               6   x
+			//
+			// container 2 of 3
+			//         /---------------/---------------/---------------|       z
+			//        /       P       /       Q       /       R       /|       2 +---------------+---------------+---------------+
+			//   z   /---------------/---------------/---------------| |         |               |               |               |
+			//      /       M       /       N       /       O       /| |         |       J       |       K       |       L       |
+			//   | /---------------/---------------/---------------| | |   y     |               |               |               |
+			//   |/               /               /               /| |/|       1 +---------------+---------------+---------------+
+			// 2 |---------------|---------------|---------------| | | | /       |               |               |               |
+			//   |               |               |               | |/|I|/        |       A       |       B       |       C       |
+			//   |       J       |       K       |       L       | | | | 3       |               |               |               |
+			//   |               |               |               |/|F|/        0 +---------------+---------------+---------------+
+			// 1 |---------------|---------------|---------------| | | 2         0               2               4               6   x
+			//   |               |               |               | |/
+			//   |       A       |       B       |       C       | | 1
+			//   |               |               |               |/
+			// 0 |---------------|---------------|---------------|-- x
+			//   0               2               4               6
+			//
+			// y                                                         z
+			// 3 +---------------+---------------+---------------+       2 +-------+-------+-------+
+			//   |               |               |               |         |       |       |       |
+			//   |       P       |       Q       |       R       |         |   L   |   O   |   R   |
+			//   |               |               |               |         |       |       |       |
+			// 2 +---------------+---------------+---------------+       1 +-------+-------+-------+
+			//   |               |               |               |         |       |       |       |
+			//   |       M       |       N       |       O       |         |   C   |   F   |   I   |
+			//   |               |               |               |         |       |       |       |
+			// 1 +---------------+---------------+---------------+       0 +-------+-------+-------+
+			//   |               |               |               |         0       1       2       3   y
+			//   |       J       |       K       |       L       |
+			//   |               |               |               |
+			// 0 +---------------+---------------+---------------+
+			//   0               2               4               6   x
+			//
+			// container 3 of 3
+			//   z                             z                         y                         z
+			//                                 2 +---------------+       3 +---------------+       2 +-------+
+			//   | /---------------|---|   y     |               |         |               |         |       |
+			//   |/               /|  /|         |       D       |         |       C       |         |   D   |
+			// 2 |---------------| |-| | /       |               |         |               |         |       |
+			//   |               | |/|C|/      1 +---------------+       2 +---------------+       1 +-------+-------+-------+
+			//   |       D       | | | | 3       |               |         |               |         |       |       |       |
+			//   |               |/|B|/          |       A       |         |       B       |         |   A   |   B   |   C   |
+			// 1 |---------------| | | 2         |               |         |               |         |       |       |       |
+			//   |               | |/          0 +---------------+       1 +---------------+       0 +-------+-------+-------+
+			//   |       A       | | 1           0               2   x     |               |         0       1       2       3   y
+			//   |               |/                                        |       D       |
+			// 0 |---------------|-- x                                     |               |
+			//   0               2                                       0 +---------------+
+			//                                                             0               2   x
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(4);
 			assertThat(recording.types).containsExactly(3);
 			assertThat(result.size()).isEqualTo(3);
@@ -452,6 +749,32 @@ class VirtualBoxPackagerTest {
 					.withMaxContainerCount(2)
 					.withInterruptDuration(60_000)
 					.build();
+			// <figure>
+			// container 1 of 2
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			//
+			// container 2 of 2
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(result);
 			assertThat(result.size()).isEqualTo(2);
 			assertThat(recording.counts).containsExactly(2);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a));

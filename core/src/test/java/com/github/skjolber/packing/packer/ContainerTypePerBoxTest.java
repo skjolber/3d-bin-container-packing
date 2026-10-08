@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -31,6 +32,31 @@ public class ContainerTypePerBoxTest {
 	@Test
 	public void plainPackagerUsesBothContainerTypes() {
 		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesBothContainerTypes(packager);
 		}
 	}
@@ -38,6 +64,31 @@ public class ContainerTypePerBoxTest {
 	@Test
 	public void largestAreaFitFirstPackagerUsesBothContainerTypes() {
 		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesBothContainerTypes(packager);
 		}
 	}
@@ -45,6 +96,31 @@ public class ContainerTypePerBoxTest {
 	@Test
 	public void bruteForcePackagerUsesBothContainerTypes() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesBothContainerTypes(packager);
 		}
 	}
@@ -52,6 +128,31 @@ public class ContainerTypePerBoxTest {
 	@Test
 	public void fastBruteForcePackagerUsesBothContainerTypes() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertUsesBothContainerTypes(packager);
 		}
 	}
@@ -68,6 +169,32 @@ public class ContainerTypePerBoxTest {
 					.withBoxItems(longItem, cube)
 					.withMaxContainerCount(2)
 					.build();
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("big", "small");
 		}
@@ -87,6 +214,7 @@ public class ContainerTypePerBoxTest {
 						new BoxItem(Box.newBuilder().withId("cube").withSize(1, 1, 1).withWeight(1).build(), 1))
 				.withMaxContainerCount(2)
 				.build();
+		figure(result);
 
 		assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("big", "small");
 	}

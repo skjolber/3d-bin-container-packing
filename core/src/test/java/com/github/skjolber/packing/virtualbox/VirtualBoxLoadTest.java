@@ -3,6 +3,7 @@ package com.github.skjolber.packing.virtualbox;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.container;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.item;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,6 +54,27 @@ class VirtualBoxLoadTest {
 					.withBoxItems(original)
 					.withContainerItems(new ContainerItem(container(1, 1, 3), 1))
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     3 +-------+       1 +-------+       3 +-------+
+			//   | /-------|         |       |         |       |         |       |
+			//   |/       /|         |   C   |         |   C   |         |   C   |
+			// 3 |-------| |         |       |         |       |         |       |
+			//   |       | |       2 +-------+       0 +-------+       2 +-------+
+			//   |   C   | |         |       |         0       1   x     |       |
+			//   |       |/|         |   B   |                           |   B   |
+			// 2 |-------| |         |       |                           |       |
+			//   |       | |       1 +-------+                         1 +-------+
+			//   |   B   | |   y     |       |                           |       |
+			//   |       |/|         |   A   |                           |   A   |
+			// 1 |-------| | /       |       |                           |       |
+			//   |       | |/      0 +-------+                         0 +-------+
+			//   |   A   | | 1       0       1   x                       0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 			assertThat(recording.counts).containsExactly(3);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.get(0).getStack().getPlacements()).hasSize(3);
@@ -98,6 +120,19 @@ class VirtualBoxLoadTest {
 						.withMaxDelegateBoxes(1)
 						.withCompareUngrouped(true)
 						.build();
+				// <figure>
+				//   z                                         z                                         y                                         z
+				//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+				//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+				//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+				// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+				//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+				//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+				//   |       |       |       |       |/
+				// 0 |-------|-------|-------|-------|-- x
+				//   0       1       2       3       4
+				// </figure>
+				figure(result);
 				assertThat(recording.counts).containsExactly(4);
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.get(0).getStack().getPlacements()).hasSize(4);

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -66,6 +67,20 @@ public class ContainerObstaclesTest {
 					.withMaxContainerCount(2)
 					.withInterruptDuration(10_000)
 					.build();
+			// <figure>
+			//   z   /-------/-------|   y   z                         y                         z
+			//      /   a   /   c   /|       1 +-------+-------+       2 +-------+-------+       1 +-------+-------+
+			//   | /-------/-------| | /       |#######|       |         |       |       |         |       |       |
+			//   |/#######/       /| |/        |#######|   b   |         |   a   |   c   |         |   b   |   c   |
+			// 1 |-------|-------| | | 2       |#######|       |         |       |       |         |       |       |
+			//   |#######|       | |/        0 +-------+-------+       1 +-------+-------+       0 +-------+-------+
+			//   |#######|   b   | | 1         0       1       2   x     |#######|       |         0       1       2   y
+			//   |#######|       |/                                      |#######|   b   |
+			// 0 |-------|-------|-- x                                   |#######|       |
+			//   0       1       2                                     0 +-------+-------+
+			//                                                           0       1       2   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.isSuccess()).isTrue();
 			for (Container packed : result.getContainers()) {

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -42,6 +43,19 @@ class ApiExtensionTest {
 						.withContainerItems(List.of(new ContainerItem(container("small", 1), 1), new ContainerItem(container("large", 2), 1)))
 						.withBoxItems(new BoxItem(box("a"), 1))
 						.build();
+				// <figure>
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         |   a   |         |   a   |         |   a   |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				// </figure>
+				figure(result);
 
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.getContainers()).extracting(Container::getId).containsExactly("large");
@@ -62,6 +76,32 @@ class ApiExtensionTest {
 						.withMaxContainerCount(2)
 						.withBoxItems(new BoxItem(box("cube"), 3))
 						.build();
+				// <figure>
+				// container 1 of 2: large
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				//
+				// container 2 of 2: small
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         | cube  |         | cube  |         | cube  |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				// </figure>
+				figure(result);
 
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.getContainers()).extracting(Container::getId).containsExactly("large", "small");
@@ -83,6 +123,19 @@ class ApiExtensionTest {
 						.withMaxContainerCount(2)
 						.withBoxItems(new BoxItemGroup("first", List.of(new BoxItem(box("a"), 1))), new BoxItemGroup("second", List.of(new BoxItem(box("b"), 1))))
 						.build();
+				// <figure>
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         |   a   |   b   |         |   a   |   b   |         |   b   |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   |   a   |   b   | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				// </figure>
+				figure(result);
 
 				PackagerResultAssert.assertThat(result).isSuccess();
 				assertThat(result.getContainers()).extracting(Container::getId).containsExactly("large");
@@ -130,6 +183,23 @@ class ApiExtensionTest {
 					.withContainerItems(List.of(new ContainerItem(container, 1)))
 					.withBoxItems(new BoxItem(box("cube"), 2))
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     2 +-------+       1 +-------+       2 +-------+
+			//   | /-------|         |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 2 |-------| |         |       |         |       |         |       |
+			//   |       | |       1 +-------+       0 +-------+       1 +-------+
+			//   | cube  | |   y     |       |         0       1   x     |       |
+			//   |       |/|         | cube  |                           | cube  |
+			// 1 |-------| | /       |       |                           |       |
+			//   |       | |/      0 +-------+                         0 +-------+
+			//   | cube  | | 1       0       1   x                       0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			List<Placement> placements = result.getContainers().get(0).getStack().getPlacements();

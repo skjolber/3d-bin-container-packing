@@ -102,10 +102,8 @@ public final class FigureRecorder {
 	 * @return the stack frame, or null if there is none
 	 */
 	static StackTraceElement getCaller(StackTraceElement[] stack) {
-		String self = FigureRecorder.class.getName();
-
 		int index = 0;
-		while (index < stack.length && stack[index].getClassName().equals(self)) {
+		while (index < stack.length && isRecorder(stack[index].getClassName())) {
 			index++;
 		}
 		if (index == stack.length) {
@@ -115,6 +113,14 @@ public final class FigureRecorder {
 			index++;
 		}
 		return stack[index];
+	}
+
+	/**
+	 * @param className the class of a method
+	 * @return true for this class and the helpers which record figures for the tests which call them
+	 */
+	private static boolean isRecorder(String className) {
+		return className.equals(FigureRecorder.class.getName()) || className.equals(PackagerResultFigures.class.getName());
 	}
 
 	/**

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -22,6 +23,31 @@ public class BruteForceLoadWeightTest {
 	public void bruteForcePackagerFillsTheLoadWeight() {
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
 		try {
+			// <figure>
+			// container 1 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   a   |         |   a   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   a   |         |   a   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
 			assertFillsTheLoadWeight(packager);
 		} finally {
 			packager.close();
@@ -32,6 +58,31 @@ public class BruteForceLoadWeightTest {
 	public void fastBruteForcePackagerFillsTheLoadWeight() {
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 		try {
+			// <figure>
+			// container 1 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   a   |         |   a   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   a   |         |   a   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
 			assertFillsTheLoadWeight(packager);
 		} finally {
 			packager.close();
@@ -73,6 +124,10 @@ public class BruteForceLoadWeightTest {
 				.withBoxItems(List.of(boxItem))
 				.withMaxContainerCount(2)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 
 		String name = packager.getClass().getSimpleName() + " " + dx + " x 1 x 1";
 		assertThat(result.isSuccess()).as(name).isTrue();

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -41,14 +42,62 @@ public class BruteForceReversePermutationsTest {
 				.withMaxContainerCount(1)
 				.withInterruptDuration(10_000)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 		assertThat(result.isSuccess()).as("%s %s", packager.getClass().getSimpleName(), access).isTrue();
 	}
 
 	@Test
 	public void bruteForceSearchesReversePermutationsWithExtractionOrders() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build()) {
+			// <figure>
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   b   |   a   |         |   b   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   b   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
 			assertPacks(packager, 2, 1, ContainerAccess.FRONT);
+			// <figure>
+			//   z                 z                 y                 z
+			//                     2 +-------+       1 +-------+       2 +-------+
+			//   | /-------|         |       |         |       |         |       |
+			//   |/       /|         |   a   |         |   a   |         |   a   |
+			// 2 |-------| |         |       |         |       |         |       |
+			//   |       | |       1 +-------+       0 +-------+       1 +-------+
+			//   |   a   | |   y     |       |         0       1   x     |       |
+			//   |       |/|         |   b   |                           |   b   |
+			// 1 |-------| | /       |       |                           |       |
+			//   |       | |/      0 +-------+                         0 +-------+
+			//   |   b   | | 1       0       1   x                       0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacks(packager, 1, 2, ContainerAccess.ANY);
+			// <figure>
+			//   z                 z                 y                 z
+			//                     2 +-------+       1 +-------+       2 +-------+
+			//   | /-------|         |       |         |       |         |       |
+			//   |/       /|         |   a   |         |   a   |         |   a   |
+			// 2 |-------| |         |       |         |       |         |       |
+			//   |       | |       1 +-------+       0 +-------+       1 +-------+
+			//   |   a   | |   y     |       |         0       1   x     |       |
+			//   |       |/|         |   b   |                           |   b   |
+			// 1 |-------| | /       |       |                           |       |
+			//   |       | |/      0 +-------+                         0 +-------+
+			//   |   b   | | 1       0       1   x                       0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacks(packager, 1, 2, ContainerAccess.TOP);
 		}
 	}
@@ -86,6 +135,23 @@ public class BruteForceReversePermutationsTest {
 						.withMaxContainerCount(1)
 						.withInterruptDuration(10_000)
 						.build();
+				// <figure>
+				//   z                         z                         y                         z
+				//                             2 +-------+               1 +-------+-------+       2 +-------+
+				//   | /-------|                 |       |                 |       |       |         |       |
+				//   |/       /|                 |   n   |                 |   n   |   w   |         |   n   |
+				// 2 |-------| |                 |       |                 |       |       |         |       |
+				//   |       | |               1 +-------+-------+       0 +-------+-------+       1 +-------+
+				//   |   n   | |-------|   y     |               |         0       1       2   x     |       |
+				//   |       |/       /|         |       w       |                                   |   w   |
+				// 1 |-------|-------| | /       |               |                                   |       |
+				//   |               | |/      0 +---------------+                                 0 +-------+
+				//   |       w       | | 1       0       1       2   x                               0       1   y
+				//   |               |/
+				// 0 |---------------|-- x
+				//   0       1       2
+				// </figure>
+				figure(result);
 				assertThat(result.isSuccess()).as(packager.getClass().getSimpleName()).isTrue();
 			}
 		}

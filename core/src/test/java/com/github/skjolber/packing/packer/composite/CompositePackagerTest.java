@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.composite;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +51,71 @@ public class CompositePackagerTest {
 		List<BoxItem> boxItems = squares();
 		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+-----------------------+-----------------+
+			//                           /------------------/--|                          /       |         square-6          |       square-5        |    square-4     |
+			//                          /                  /sq/|                         /      0 +---------------------------+-----------------------+-----------------+
+			//                         /                  /--| |          /--------|    / 12      0                           6    7                  11            14  15   x
+			//                        /                  /sq/|/          /        /|   /
+			//                       /                  /--/------------/        / |  / 11
+			//                      /                  /               / square / /  /
+			//                     /     square-6     /               /        / /  / 10
+			//                    /                  /               /        / /  /
+			//                   /                  /               /--------/--| /
+			//                  /                  /   square-5    /           /|/
+			//                 /                  /               /           / | 8
+			//                /                  /               /           / /
+			//               /------------------/               / square-4  / /
+			//              /                  /               /           / /
+			//             /                  /---------------/           / / 6
+			//            /                  /               /           / /
+			//           /                  /               /-----------| / 5
+			//          /                  /               /           /|/
+			//         /                  /               /           / | 4
+			//        /                  /               /           / /
+			//   z   /                  /               /           / /
+			//      /                  /               /           / /
+			//   | /                  /               /           / /
+			//   |/                  /               /           / /
+			// 1 |------------------|---------------|-----------| /
+			//   |     square-6     |   square-5    | square-4  |/
+			// 0 |------------------|---------------|-----------|-- x
+			//   0                  6              11          15
+			//
+			// y                                                                                z
+			// 12 +---------------------------+---+                                             1 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                                               |       square-4       |       square-4        |    square-3     | sq |
+			//    |                           |   |                                               |                      |                       |                 |    |
+			// 11 |                           +---+                  +-------------+            0 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                  |             |              0                      4     5     6           8           10    11   12   y
+			// 10 |                           +---+------------------+             |
+			//    |                           |                      |  square-3   |
+			//    |         square-6          |                      |             |
+			//    |                           |                      |             |
+			//  8 |                           |                      +-------------+---+
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  6 +---------------------------+                      |    square-4     |
+			//    |                           |                      |                 |
+			//  5 |                           +----------------------+                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  4 |                           |                      +-----------------+
+			//    |                           |                      |                 |
+			//    |         square-6          |                      |                 |
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |    square-4     |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  0 +---------------------------+----------------------+-----------------+
+			//    0                           6   7                  11            14  15   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("larger");
 		}
@@ -64,6 +130,66 @@ public class CompositePackagerTest {
 				.withPackager(FastBruteForcePackager.newBuilder().build())
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withInterruptDuration(INTERRUPT_DURATION).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+------------------+----------------------+
+			//                         /---------------/-------------/------------------| /       |         square-6          |     square-4     |       square-5       |
+			//                        /               /             /                  /|/      0 +---------------------------+------------------+----------------------+
+			//                       /               /             /                  / | 11      0                      5    6             9    10                     15   x
+			//                      /               /             /                  / /
+			//                     /               /  square-4   /                  / /
+			//                    /   square-5    /             /                  / /
+			//                   /               /             /     square-6     / /
+			//                  /               /             /                  / /
+			//                 /               /---/---------/                  / /
+			//                /               / s /         /                  / /
+			//               /---------------/---/         /                  / / 7
+			//              /                   / square- /                  / /
+			//             /                   /         /--/---------------| / 6
+			//            /                   /         /sq/               /|/
+			//           /                   /---------/--/               / | 5
+			//          /                   /            /               / /
+			//         /                   /            /               / / 4
+			//        /                   /            /               / /
+			//   z   /                   /            /               / /
+			//      /                   /            /               / /
+			//   | /                   /            /               / /
+			//   |/                   /            /               / /
+			// 1 |-------------------|------------|---------------| /
+			//   |     square-6      |  square-4  |   square-5    |/
+			// 0 |-------------------|------------|---------------|-- x
+			//   0                   6           10              15
+			//
+			// y                                                                                z
+			// 11 +----------------------+------------------+--------------------------+        1 +-------------------------------+-------------------------------------+
+			//    |                      |                  |                          |          |           square-5            |              square-6               |
+			//    |                      |                  |                          |          |                               |                                     |
+			//    |                      |                  |                          |        0 +-------------------------------+-------------------------------------+
+			//    |                      |     square-4     |                          |          0                         4     5     6      7                        11   y
+			//    |       square-5       |                  |                          |
+			//    |                      |                  |         square-6         |
+			//    |                      |                  |                          |
+			//    |                      |                  |                          |
+			//  7 |                      +----+-------------+                          |
+			//    |                      | sq |             |                          |
+			//  6 +----------------------+----+             |                          |
+			//    |                           |  square-3   |                          |
+			//  5 |                           |             +---+----------------------+
+			//    |                           |             | s |                      |
+			//    |                           |             |   |                      |
+			//  4 |                           +-------------+---+                      |
+			//    |                           |                 |                      |
+			//    |         square-6          |                 |                      |
+			//    |                           |                 |       square-5       |
+			//    |                           |    square-4     |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//  0 +---------------------------+-----------------+----------------------+
+			//    0                      5    6             9   10                     15   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("exact");
 			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
@@ -84,6 +210,19 @@ public class CompositePackagerTest {
 				.withPackager(costly)
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
+			// <figure>
+			//   z                               z                               y                               z
+			//                                   1 +----------+----------+       1 +----------+----------+       1 +----------+
+			//   | /----------/----------|   y     |          |          |         |          |          |         |          |
+			//   |/          /          /|         | square-1 | square-1 |         | square-1 | square-1 |         | square-1 |
+			// 1 |----------|----------| | /       |          |          |         |          |          |         |          |
+			//   |          |          | |/      0 +----------+----------+       0 +----------+----------+       0 +----------+
+			//   | square-1 | square-1 | | 1       0          1          2   x     0          1          2   x     0          1   y
+			//   |          |          |/
+			// 0 |----------|----------|-- x
+			//   0          1          2
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
 					.withContainerItems(containers)
@@ -107,6 +246,71 @@ public class CompositePackagerTest {
 				.withPackager(costly)
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withInterrupt(interrupted::get).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+-----------------------+-----------------+
+			//                           /------------------/--|                          /       |         square-6          |       square-5        |    square-4     |
+			//                          /                  /sq/|                         /      0 +---------------------------+-----------------------+-----------------+
+			//                         /                  /--| |          /--------|    / 12      0                           6    7                  11            14  15   x
+			//                        /                  /sq/|/          /        /|   /
+			//                       /                  /--/------------/        / |  / 11
+			//                      /                  /               / square / /  /
+			//                     /     square-6     /               /        / /  / 10
+			//                    /                  /               /        / /  /
+			//                   /                  /               /--------/--| /
+			//                  /                  /   square-5    /           /|/
+			//                 /                  /               /           / | 8
+			//                /                  /               /           / /
+			//               /------------------/               / square-4  / /
+			//              /                  /               /           / /
+			//             /                  /---------------/           / / 6
+			//            /                  /               /           / /
+			//           /                  /               /-----------| / 5
+			//          /                  /               /           /|/
+			//         /                  /               /           / | 4
+			//        /                  /               /           / /
+			//   z   /                  /               /           / /
+			//      /                  /               /           / /
+			//   | /                  /               /           / /
+			//   |/                  /               /           / /
+			// 1 |------------------|---------------|-----------| /
+			//   |     square-6     |   square-5    | square-4  |/
+			// 0 |------------------|---------------|-----------|-- x
+			//   0                  6              11          15
+			//
+			// y                                                                                z
+			// 12 +---------------------------+---+                                             1 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                                               |       square-4       |       square-4        |    square-3     | sq |
+			//    |                           |   |                                               |                      |                       |                 |    |
+			// 11 |                           +---+                  +-------------+            0 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                  |             |              0                      4     5     6           8           10    11   12   y
+			// 10 |                           +---+------------------+             |
+			//    |                           |                      |  square-3   |
+			//    |         square-6          |                      |             |
+			//    |                           |                      |             |
+			//  8 |                           |                      +-------------+---+
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  6 +---------------------------+                      |    square-4     |
+			//    |                           |                      |                 |
+			//  5 |                           +----------------------+                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  4 |                           |                      +-----------------+
+			//    |                           |                      |                 |
+			//    |         square-6          |                      |                 |
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |    square-4     |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  0 +---------------------------+----------------------+-----------------+
+			//    0                           6   7                  11            14  15   x
+			// </figure>
+			figure(result);
 
 			// the plain packager's result
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("larger");
@@ -127,6 +331,71 @@ public class CompositePackagerTest {
 				.withPackager(costly, 60_000)
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+-----------------------+-----------------+
+			//                           /------------------/--|                          /       |         square-6          |       square-5        |    square-4     |
+			//                          /                  /sq/|                         /      0 +---------------------------+-----------------------+-----------------+
+			//                         /                  /--| |          /--------|    / 12      0                           6    7                  11            14  15   x
+			//                        /                  /sq/|/          /        /|   /
+			//                       /                  /--/------------/        / |  / 11
+			//                      /                  /               / square / /  /
+			//                     /     square-6     /               /        / /  / 10
+			//                    /                  /               /        / /  /
+			//                   /                  /               /--------/--| /
+			//                  /                  /   square-5    /           /|/
+			//                 /                  /               /           / | 8
+			//                /                  /               /           / /
+			//               /------------------/               / square-4  / /
+			//              /                  /               /           / /
+			//             /                  /---------------/           / / 6
+			//            /                  /               /           / /
+			//           /                  /               /-----------| / 5
+			//          /                  /               /           /|/
+			//         /                  /               /           / | 4
+			//        /                  /               /           / /
+			//   z   /                  /               /           / /
+			//      /                  /               /           / /
+			//   | /                  /               /           / /
+			//   |/                  /               /           / /
+			// 1 |------------------|---------------|-----------| /
+			//   |     square-6     |   square-5    | square-4  |/
+			// 0 |------------------|---------------|-----------|-- x
+			//   0                  6              11          15
+			//
+			// y                                                                                z
+			// 12 +---------------------------+---+                                             1 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                                               |       square-4       |       square-4        |    square-3     | sq |
+			//    |                           |   |                                               |                      |                       |                 |    |
+			// 11 |                           +---+                  +-------------+            0 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                  |             |              0                      4     5     6           8           10    11   12   y
+			// 10 |                           +---+------------------+             |
+			//    |                           |                      |  square-3   |
+			//    |         square-6          |                      |             |
+			//    |                           |                      |             |
+			//  8 |                           |                      +-------------+---+
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  6 +---------------------------+                      |    square-4     |
+			//    |                           |                      |                 |
+			//  5 |                           +----------------------+                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  4 |                           |                      +-----------------+
+			//    |                           |                      |                 |
+			//    |         square-6          |                      |                 |
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |    square-4     |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  0 +---------------------------+----------------------+-----------------+
+			//    0                           6   7                  11            14  15   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("larger");
 		}
@@ -143,6 +412,71 @@ public class CompositePackagerTest {
 				.withPackager(BruteForcePackager.newBuilder().build(), 1)
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withInterruptDuration(INTERRUPT_DURATION).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+-----------------------+-----------------+
+			//                           /------------------/--|                          /       |         square-6          |       square-5        |    square-4     |
+			//                          /                  /sq/|                         /      0 +---------------------------+-----------------------+-----------------+
+			//                         /                  /--| |          /--------|    / 12      0                           6    7                  11            14  15   x
+			//                        /                  /sq/|/          /        /|   /
+			//                       /                  /--/------------/        / |  / 11
+			//                      /                  /               / square / /  /
+			//                     /     square-6     /               /        / /  / 10
+			//                    /                  /               /        / /  /
+			//                   /                  /               /--------/--| /
+			//                  /                  /   square-5    /           /|/
+			//                 /                  /               /           / | 8
+			//                /                  /               /           / /
+			//               /------------------/               / square-4  / /
+			//              /                  /               /           / /
+			//             /                  /---------------/           / / 6
+			//            /                  /               /           / /
+			//           /                  /               /-----------| / 5
+			//          /                  /               /           /|/
+			//         /                  /               /           / | 4
+			//        /                  /               /           / /
+			//   z   /                  /               /           / /
+			//      /                  /               /           / /
+			//   | /                  /               /           / /
+			//   |/                  /               /           / /
+			// 1 |------------------|---------------|-----------| /
+			//   |     square-6     |   square-5    | square-4  |/
+			// 0 |------------------|---------------|-----------|-- x
+			//   0                  6              11          15
+			//
+			// y                                                                                z
+			// 12 +---------------------------+---+                                             1 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                                               |       square-4       |       square-4        |    square-3     | sq |
+			//    |                           |   |                                               |                      |                       |                 |    |
+			// 11 |                           +---+                  +-------------+            0 +----------------------+-----------------------+-----------------+----+
+			//    |                           | s |                  |             |              0                      4     5     6           8           10    11   12   y
+			// 10 |                           +---+------------------+             |
+			//    |                           |                      |  square-3   |
+			//    |         square-6          |                      |             |
+			//    |                           |                      |             |
+			//  8 |                           |                      +-------------+---+
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  6 +---------------------------+                      |    square-4     |
+			//    |                           |                      |                 |
+			//  5 |                           +----------------------+                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  4 |                           |                      +-----------------+
+			//    |                           |                      |                 |
+			//    |         square-6          |                      |                 |
+			//    |                           |       square-5       |                 |
+			//    |                           |                      |    square-4     |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//    |                           |                      |                 |
+			//  0 +---------------------------+----------------------+-----------------+
+			//    0                           6   7                  11            14  15   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("larger");
 		}
@@ -162,6 +496,79 @@ public class CompositePackagerTest {
 				.withPackager(FastBruteForcePackager.newBuilder().build())
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
+			// <figure>
+			// container 1 of 2: exact
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+------------------+----------------------+
+			//                         /---------------/-------------/------------------| /       |         square-6          |     square-4     |       square-5       |
+			//                        /               /             /                  /|/      0 +---------------------------+------------------+----------------------+
+			//                       /               /             /                  / | 11      0                      5    6             9    10                     15   x
+			//                      /               /             /                  / /
+			//                     /               /  square-4   /                  / /
+			//                    /   square-5    /             /                  / /
+			//                   /               /             /     square-6     / /
+			//                  /               /             /                  / /
+			//                 /               /---/---------/                  / /
+			//                /               / s /         /                  / /
+			//               /---------------/---/         /                  / / 7
+			//              /                   / square- /                  / /
+			//             /                   /         /--/---------------| / 6
+			//            /                   /         /sq/               /|/
+			//           /                   /---------/--/               / | 5
+			//          /                   /            /               / /
+			//         /                   /            /               / / 4
+			//        /                   /            /               / /
+			//   z   /                   /            /               / /
+			//      /                   /            /               / /
+			//   | /                   /            /               / /
+			//   |/                   /            /               / /
+			// 1 |-------------------|------------|---------------| /
+			//   |     square-6      |  square-4  |   square-5    |/
+			// 0 |-------------------|------------|---------------|-- x
+			//   0                   6           10              15
+			//
+			// y                                                                                z
+			// 11 +----------------------+------------------+--------------------------+        1 +-------------------------------+-------------------------------------+
+			//    |                      |                  |                          |          |           square-5            |              square-6               |
+			//    |                      |                  |                          |          |                               |                                     |
+			//    |                      |                  |                          |        0 +-------------------------------+-------------------------------------+
+			//    |                      |     square-4     |                          |          0                         4     5     6      7                        11   y
+			//    |       square-5       |                  |                          |
+			//    |                      |                  |         square-6         |
+			//    |                      |                  |                          |
+			//    |                      |                  |                          |
+			//  7 |                      +----+-------------+                          |
+			//    |                      | sq |             |                          |
+			//  6 +----------------------+----+             |                          |
+			//    |                           |  square-3   |                          |
+			//  5 |                           |             +---+----------------------+
+			//    |                           |             | s |                      |
+			//    |                           |             |   |                      |
+			//  4 |                           +-------------+---+                      |
+			//    |                           |                 |                      |
+			//    |         square-6          |                 |                      |
+			//    |                           |                 |       square-5       |
+			//    |                           |    square-4     |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//  0 +---------------------------+-----------------+----------------------+
+			//    0                      5    6             9   10                     15   x
+			//
+			// container 2 of 2: single
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | extra |         | extra |         | extra |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | extra | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactlyInAnyOrder("exact", "single");
 			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
@@ -183,6 +590,32 @@ public class CompositePackagerTest {
 				.withPackager(FastBruteForcePackager.newBuilder().build())
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItemGroups(groups).withMaxContainerCount(2).build();
+			// <figure>
+			// container 1 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   a   |         |   a   |   a   |         |   a   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   a   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   b   |   b   |         |   b   |   b   |         |   b   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   b   |   b   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 
 			assertThat(result.size()).isEqualTo(2);
 			for(Container container : result.getContainers()) {
@@ -207,6 +640,32 @@ public class CompositePackagerTest {
 				.withPackager(FastBruteForcePackager.newBuilder().build())
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItemGroups(groups).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			assertThat(result.getContainers())
 					.extracting(c -> c.getId() + ":" + c.getStack().getPlacements().get(0).getStackValue().getBox().getId())
@@ -227,6 +686,19 @@ public class CompositePackagerTest {
 				.withPackager(costly)
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).build();
+			// <figure>
+			//   z                               z                               y                               z
+			//                                   1 +----------+----------+       1 +----------+----------+       1 +----------+
+			//   | /----------/----------|   y     |          |          |         |          |          |         |          |
+			//   |/          /          /|         | square-1 | square-1 |         | square-1 | square-1 |         | square-1 |
+			// 1 |----------|----------| | /       |          |          |         |          |          |         |          |
+			//   |          |          | |/      0 +----------+----------+       0 +----------+----------+       0 +----------+
+			//   | square-1 | square-1 | | 1       0          1          2   x     0          1          2   x     0          1   y
+			//   |          |          |/
+			// 0 |----------|----------|-- x
+			//   0          1          2
+			// </figure>
+			figure(result);
 
 			assertThat(result.isSuccess()).isTrue();
 		}
@@ -256,6 +728,32 @@ public class CompositePackagerTest {
 					.withMaxContainerCount(2)
 					.withInterruptDuration(INTERRUPT_DURATION)
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                    z                    y                    z
+			//                        1 +----------+       1 +----------+       1 +----------+
+			//   | /----------|   y     |          |         |          |         |          |
+			//   |/          /|         | square-1 |         | square-1 |         | square-1 |
+			// 1 |----------| | /       |          |         |          |         |          |
+			//   |          | |/      0 +----------+       0 +----------+       0 +----------+
+			//   | square-1 | | 1       0          1   x     0          1   x     0          1   y
+			//   |          |/
+			// 0 |----------|-- x
+			//   0          1
+			//
+			// container 2 of 2: small
+			//   z                    z                    y                    z
+			//                        1 +----------+       1 +----------+       1 +----------+
+			//   | /----------|   y     |          |         |          |         |          |
+			//   |/          /|         | square-1 |         | square-1 |         | square-1 |
+			// 1 |----------| | /       |          |         |          |         |          |
+			//   |          | |/      0 +----------+       0 +----------+       0 +----------+
+			//   | square-1 | | 1       0          1   x     0          1   x     0          1   y
+			//   |          |/
+			// 0 |----------|-- x
+			//   0          1
+			// </figure>
+			figure(result);
 
 			assertThat(result.isSuccess()).isTrue();
 			assertThat(result.getContainers()).extracting(Container::getId).containsExactly("small", "small");
@@ -272,6 +770,66 @@ public class CompositePackagerTest {
 				.withPackager(FastBruteForcePackager.newBuilder().build())
 				.build()) {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems).withMaxContainerCount(2).withInterruptDuration(INTERRUPT_DURATION).build();
+			// <figure>
+			//                                                                              y   z
+			//                                                                                  1 +---------------------------+------------------+----------------------+
+			//                         /---------------/-------------/------------------| /       |         square-6          |     square-4     |       square-5       |
+			//                        /               /             /                  /|/      0 +---------------------------+------------------+----------------------+
+			//                       /               /             /                  / | 11      0                      5    6             9    10                     15   x
+			//                      /               /             /                  / /
+			//                     /               /  square-4   /                  / /
+			//                    /   square-5    /             /                  / /
+			//                   /               /             /     square-6     / /
+			//                  /               /             /                  / /
+			//                 /               /---/---------/                  / /
+			//                /               / s /         /                  / /
+			//               /---------------/---/         /                  / / 7
+			//              /                   / square- /                  / /
+			//             /                   /         /--/---------------| / 6
+			//            /                   /         /sq/               /|/
+			//           /                   /---------/--/               / | 5
+			//          /                   /            /               / /
+			//         /                   /            /               / / 4
+			//        /                   /            /               / /
+			//   z   /                   /            /               / /
+			//      /                   /            /               / /
+			//   | /                   /            /               / /
+			//   |/                   /            /               / /
+			// 1 |-------------------|------------|---------------| /
+			//   |     square-6      |  square-4  |   square-5    |/
+			// 0 |-------------------|------------|---------------|-- x
+			//   0                   6           10              15
+			//
+			// y                                                                                z
+			// 11 +----------------------+------------------+--------------------------+        1 +-------------------------------+-------------------------------------+
+			//    |                      |                  |                          |          |           square-5            |              square-6               |
+			//    |                      |                  |                          |          |                               |                                     |
+			//    |                      |                  |                          |        0 +-------------------------------+-------------------------------------+
+			//    |                      |     square-4     |                          |          0                         4     5     6      7                        11   y
+			//    |       square-5       |                  |                          |
+			//    |                      |                  |         square-6         |
+			//    |                      |                  |                          |
+			//    |                      |                  |                          |
+			//  7 |                      +----+-------------+                          |
+			//    |                      | sq |             |                          |
+			//  6 +----------------------+----+             |                          |
+			//    |                           |  square-3   |                          |
+			//  5 |                           |             +---+----------------------+
+			//    |                           |             | s |                      |
+			//    |                           |             |   |                      |
+			//  4 |                           +-------------+---+                      |
+			//    |                           |                 |                      |
+			//    |         square-6          |                 |                      |
+			//    |                           |                 |       square-5       |
+			//    |                           |    square-4     |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//    |                           |                 |                      |
+			//  0 +---------------------------+-----------------+----------------------+
+			//    0                      5    6             9   10                     15   x
+			// </figure>
+			figure(result);
 
 			assertThat(result.size()).isEqualTo(1);
 			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()

@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +34,55 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void bruteForcePacksAGroupPerContainer() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   a   |         |   a   |         |   a   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   b   |         |   b   |         |   b   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   b   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 3 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   c   |         |   c   |         |   c   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   c   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 4 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   d   |         |   d   |         |   d   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   d   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksAGroupPerContainer(packager);
 		}
 	}
@@ -40,6 +90,55 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void fastBruteForcePacksAGroupPerContainer() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   a   |         |   a   |         |   a   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   b   |         |   b   |         |   b   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   b   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 3 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   c   |         |   c   |         |   c   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   c   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 4 of 4: cube
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   d   |         |   d   |         |   d   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   d   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksAGroupPerContainer(packager);
 		}
 	}
@@ -54,6 +153,31 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void bruteForcePacksAGroupWhichFitsOneContainerType() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksAGroupWhichFitsOneContainerType(packager);
 		}
 	}
@@ -61,6 +185,31 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void fastBruteForcePacksAGroupWhichFitsOneContainerType() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: big
+			//   z                         z                         y                         z
+			//                             1 +---------------+       1 +---------------+       1 +-------+
+			//   | /---------------|   y     |               |         |               |         |       |
+			//   |/               /|         |     long      |         |     long      |         | long  |
+			// 1 |---------------| | /       |               |         |               |         |       |
+			//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+			//   |     long      | | 1       0               2   x     0               2   x     0       1   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksAGroupWhichFitsOneContainerType(packager);
 		}
 	}
@@ -151,6 +300,10 @@ public class BruteForceBoxItemGroupsTest {
 				.withMaxContainerCount(2)
 				.withInterruptDuration(10_000)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 
 		assertThat(result.getContainers())
 				.extracting(c -> c.getId() + ":" + c.getStack().getPlacements().get(0).getStackValue().getBox().getId())
@@ -178,6 +331,10 @@ public class BruteForceBoxItemGroupsTest {
 				.withMaxContainerCount(4)
 				.withInterruptDuration(10_000)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 
 		assertThat(result.getContainers())
 				.extracting(c -> c.getStack().getPlacements().get(0).getStackValue().getBox().getId())
@@ -227,6 +384,31 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void bruteForceFillsTheFirstContainer() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |  a0   |  a1   |  c0   |  c1   |         |  a0   |  a1   |  c0   |  c1   |         |  c1   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |  a0   |  a1   |  c0   |  c1   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			//
+			// container 2 of 2: row
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |  b0   |  b1   |  b2   |         |  b0   |  b1   |  b2   |         |  b2   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |  b0   |  b1   |  b2   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
 			assertFillsTheFirstContainer(packager);
 		}
 	}
@@ -234,6 +416,31 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void fastBruteForceFillsTheFirstContainer() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |  a0   |  a1   |  c0   |  c1   |         |  a0   |  a1   |  c0   |  c1   |         |  c1   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |  a0   |  a1   |  c0   |  c1   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			//
+			// container 2 of 2: row
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |  b0   |  b1   |  b2   |         |  b0   |  b1   |  b2   |         |  b2   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |  b0   |  b1   |  b2   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
 			assertFillsTheFirstContainer(packager);
 		}
 	}
@@ -273,6 +480,10 @@ public class BruteForceBoxItemGroupsTest {
 				.withMaxContainerCount(3)
 				.withInterruptDuration(10_000)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);
@@ -283,6 +494,47 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void bruteForceSearchesGroupOrders() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                                                 z
+			//                                                     1 +-------+-------+-------+-------+-------+
+			//   | /-------/-------/-------/-------/-------|   y     |       |       |       |       |       |
+			//   |/       /       /       /       /       /|         |  a0   |  a1   |  a2   |  c0   |  c1   |
+			// 1 |-------|-------|-------|-------|-------| | /       |       |       |       |       |       |
+			//   |       |       |       |       |       | |/      0 +-------+-------+-------+-------+-------+
+			//   |  a0   |  a1   |  a2   |  c0   |  c1   | | 1       0       1       2       3       4       5   x
+			//   |       |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-------|-- x
+			//   0       1       2       3       4       5
+			//
+			// y                                                 z
+			// 1 +-------+-------+-------+-------+-------+       1 +-------+
+			//   |       |       |       |       |       |         |       |
+			//   |  a0   |  a1   |  a2   |  c0   |  c1   |         |  c1   |
+			//   |       |       |       |       |       |         |       |
+			// 0 +-------+-------+-------+-------+-------+       0 +-------+
+			//   0       1       2       3       4       5   x     0       1   y
+			//
+			// container 2 of 2: row
+			//   z                                                 z
+			//                                                     1 +-------+-------+-------+-------+-------+
+			//   | /-------/-------/-------/-------/-------|   y     |       |       |       |       |       |
+			//   |/       /       /       /       /       /|         |  b0   |  b1   |  b2   |  d0   |  d1   |
+			// 1 |-------|-------|-------|-------|-------| | /       |       |       |       |       |       |
+			//   |       |       |       |       |       | |/      0 +-------+-------+-------+-------+-------+
+			//   |  b0   |  b1   |  b2   |  d0   |  d1   | | 1       0       1       2       3       4       5   x
+			//   |       |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-------|-- x
+			//   0       1       2       3       4       5
+			//
+			// y                                                 z
+			// 1 +-------+-------+-------+-------+-------+       1 +-------+
+			//   |       |       |       |       |       |         |       |
+			//   |  b0   |  b1   |  b2   |  d0   |  d1   |         |  d1   |
+			//   |       |       |       |       |       |         |       |
+			// 0 +-------+-------+-------+-------+-------+       0 +-------+
+			//   0       1       2       3       4       5   x     0       1   y
+			// </figure>
 			assertSearchesGroupOrders(packager);
 		}
 	}
@@ -290,6 +542,47 @@ public class BruteForceBoxItemGroupsTest {
 	@Test
 	public void fastBruteForceSearchesGroupOrders() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                                                 z
+			//                                                     1 +-------+-------+-------+-------+-------+
+			//   | /-------/-------/-------/-------/-------|   y     |       |       |       |       |       |
+			//   |/       /       /       /       /       /|         |  a0   |  a1   |  a2   |  c0   |  c1   |
+			// 1 |-------|-------|-------|-------|-------| | /       |       |       |       |       |       |
+			//   |       |       |       |       |       | |/      0 +-------+-------+-------+-------+-------+
+			//   |  a0   |  a1   |  a2   |  c0   |  c1   | | 1       0       1       2       3       4       5   x
+			//   |       |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-------|-- x
+			//   0       1       2       3       4       5
+			//
+			// y                                                 z
+			// 1 +-------+-------+-------+-------+-------+       1 +-------+
+			//   |       |       |       |       |       |         |       |
+			//   |  a0   |  a1   |  a2   |  c0   |  c1   |         |  c1   |
+			//   |       |       |       |       |       |         |       |
+			// 0 +-------+-------+-------+-------+-------+       0 +-------+
+			//   0       1       2       3       4       5   x     0       1   y
+			//
+			// container 2 of 2: row
+			//   z                                                 z
+			//                                                     1 +-------+-------+-------+-------+-------+
+			//   | /-------/-------/-------/-------/-------|   y     |       |       |       |       |       |
+			//   |/       /       /       /       /       /|         |  b0   |  b1   |  b2   |  d0   |  d1   |
+			// 1 |-------|-------|-------|-------|-------| | /       |       |       |       |       |       |
+			//   |       |       |       |       |       | |/      0 +-------+-------+-------+-------+-------+
+			//   |  b0   |  b1   |  b2   |  d0   |  d1   | | 1       0       1       2       3       4       5   x
+			//   |       |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-------|-- x
+			//   0       1       2       3       4       5
+			//
+			// y                                                 z
+			// 1 +-------+-------+-------+-------+-------+       1 +-------+
+			//   |       |       |       |       |       |         |       |
+			//   |  b0   |  b1   |  b2   |  d0   |  d1   |         |  d1   |
+			//   |       |       |       |       |       |         |       |
+			// 0 +-------+-------+-------+-------+-------+       0 +-------+
+			//   0       1       2       3       4       5   x     0       1   y
+			// </figure>
 			assertSearchesGroupOrders(packager);
 		}
 	}
@@ -329,6 +622,10 @@ public class BruteForceBoxItemGroupsTest {
 				.withMaxContainerCount(4)
 				.withInterruptDuration(10_000)
 				.build();
+		// parallel brute force picks between equally good packings by thread timing, so its figure would change between runs
+		if (!(packager instanceof ParallelBruteForcePackager)) {
+			figure(result);
+		}
 
 		assertThat(result.isSuccess()).isTrue();
 		assertThat(result.getContainers()).hasSize(2);

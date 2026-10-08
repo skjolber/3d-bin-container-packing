@@ -3,6 +3,7 @@ package com.github.skjolber.packing.virtualbox;
 import static org.assertj.core.api.Assertions.assertThat;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutTest.*;
 import static com.github.skjolber.packing.virtualbox.VirtualBoxLayoutPreparationTest.placement;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -47,6 +48,27 @@ class VirtualBoxEnvelopePackingTest {
 					.withMaxDelegateBoxes(1)
 					.withMaxRefinements(0)
 					.build();
+			// <figure>
+			//   z   /-------/-------/-------/-------|       z                                         y                                         z
+			//      /   U   /   V   /   W   /   X   /|       3 +-------+-------+-------+-------+       2 +-------+-------+-------+-------+       3 +-------+-------+
+			//   | /-------/-------/-------/-------| |         |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |/       /       /       /       /| |         |   Q   |   R   |   S   |   T   |         |   U   |   V   |   W   |   X   |         |   T   |   X   |
+			// 3 |-------|-------|-------|-------| | |         |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |       |       |       |       | |/|       2 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       2 +-------+-------+
+			//   |   Q   |   R   |   S   |   T   | | |         |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |       |       |       |       |/|P|         |   I   |   J   |   K   |   L   |         |   Q   |   R   |   S   |   T   |         |   L   |   P   |
+			// 2 |-------|-------|-------|-------| | |   y     |       |       |       |       |         |       |       |       |       |         |       |       |
+			//   |       |       |       |       | |/|       1 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       1 +-------+-------+
+			//   |   I   |   J   |   K   |   L   | | | /       |       |       |       |       |         0       1       2       3       4   x     |       |       |
+			//   |       |       |       |       |/|H|/        |   A   |   B   |   C   |   D   |                                                   |   D   |   H   |
+			// 1 |-------|-------|-------|-------| | | 2       |       |       |       |       |                                                   |       |       |
+			//   |       |       |       |       | |/        0 +-------+-------+-------+-------+                                                 0 +-------+-------+
+			//   |   A   |   B   |   C   |   D   | | 1         0       1       2       3       4   x                                               0       1       2   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess().isStackedWithinConstraints().placesExactly(List.of(original));
 			assertThat(builder.calculators).hasSize(1);
 			EnvelopeOnlyCalculator calculator = builder.calculators.get(0);
@@ -94,8 +116,66 @@ class VirtualBoxEnvelopePackingTest {
 		packed.getStack().add(envelope);
 		packed.getStack().add(new Placement(packing.getItems().get(1), packing.getItems().get(1).getBox().getStackValue(0), -1, 0, 1, 0, false));
 		PackagerResult delegateResult = new PackagerResult(List.of(packed), 0, false);
+		// <figure>
+		//   z                                             /-------------|       z
+		//                                                /             /|       3                                           +-------------+
+		//   |                                           |-------------| |                                                   |             |
+		//   |                                           |             | |                                                   |             |
+		// 3 |                                           |             | |                                                   |             |
+		//   |                                           |             | |                                                   | Virtual box |
+		//   |                                           | Virtual box | |                                                   |             |
+		//   |                                           |             | |                                                   |             |
+		//   |   /---------------------------|           |             | |   y                                               |             |
+		//   |  /                           /|           |             |/        1 +---------------------------+             +-------------+
+		//   | |---------------------------| |           |-------------|   /       |                           |
+		//   | |                           | |                            /        |             B             |
+		//   | |             B             | |                           / 2       |                           |
+		//   | |                           |/                           /        0 +---------------------------+
+		//   | |---------------------------|                           / 1         0                           2             3             4   x
+		//   |                                                        /
+		// 0 |---------------------------------------------------------- x
+		//   0                                                       4
+		//
+		// y                                                                 z
+		// 2 +---------------------------+             +-------------+       3               +-------------+
+		//   |                           |             |             |                       |             |
+		//   |             B             |             | Virtual box |                       |             |
+		//   |                           |             |             |                       |             |
+		// 1 +---------------------------+             +-------------+                       | Virtual box |
+		//                                                                                   |             |
+		//                                                                                   |             |
+		//                                                                                   |             |
+		// 0                                                                 1               +-------------+
+		//   0                           2             3             4   x                   |             |
+		//                                                                                   |      B      |
+		//                                                                                   |             |
+		//                                                                   0               +-------------+
+		//                                                                     0             1             2   y
+		// </figure>
+		figure(delegateResult);
 		for(int attempt = 0; attempt < 2; attempt++) {
 			PackagerResult expanded = packing.expand(delegateResult, List.of(a, b), System.nanoTime(), true);
+			// <figure>
+			//   z                           /-------|       z                                         y                                         z
+			//                              /       /|       3                         +-------+       2 +---------------+       +-------+       3         +-------+
+			//   |                         |-------| |                                 |       |         |               |       |       |                 |       |
+			//   |                         |       | |                                 |   C   |         |       A       |       |   C   |                 |   C   |
+			// 3 |                         |   C   | |                                 |       |         |               |       |       |                 |       |
+			//   |                         |       |/|       2                         +-------+       1 +---------------+       +-------+       2         +-------+
+			//   |                         |-------| |                                 |       |                                                           |       |
+			//   |                         |       | |                                 |   B   |                                                           |   B   |
+			//   |   /---------------|     |   B   | |   y                             |       |                                                           |       |
+			//   |  /               /|     |       |/        1 +---------------+       +-------+       0                                         1         +-------+
+			//   | |---------------| |     |-------|   /       |               |                         0               2       3       4   x             |       |
+			//   | |               | |                /        |       A       |                                                                           |   A   |
+			//   | |       A       | |               / 2       |               |                                                                           |       |
+			//   | |               |/               /        0 +---------------+                                                                 0         +-------+
+			//   | |---------------|               / 1         0               2       3       4   x                                               0       1       2   y
+			//   |                                /
+			// 0 |---------------------------------- x
+			//   0                               4
+			// </figure>
+			figure(expanded);
 			PackagerResultAssert.assertThat(expanded).isSuccess().isStackedWithinConstraints().placesExactly(List.of(a, b));
 			List<Placement> children = expanded.get(0).getStack().getPlacements();
 			// in insertion order (by height)
@@ -135,6 +215,19 @@ class VirtualBoxEnvelopePackingTest {
 					.withContainerItems(new ContainerItem(container(4, 1, 1), 1))
 					.withMaxDelegateBoxes(1)
 					.build();
+			// <figure>
+			//   z                                         z                                         y                                         z
+			//                                             1 +-------+-------+-------+-------+       1 +-------+-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------/-------|   y     |       |       |       |       |         |       |       |       |       |         |       |
+			//   |/       /       /       /       /|         |   A   |   B   |   C   |   D   |         |   A   |   B   |   C   |   D   |         |   D   |
+			// 1 |-------|-------|-------|-------| | /       |       |       |       |       |         |       |       |       |       |         |       |
+			//   |       |       |       |       | |/      0 +-------+-------+-------+-------+       0 +-------+-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   |   D   | | 1       0       1       2       3       4   x     0       1       2       3       4   x     0       1   y
+			//   |       |       |       |       |/
+			// 0 |-------|-------|-------|-------|-- x
+			//   0       1       2       3       4
+			// </figure>
+			figure(result);
 			// Direct delegation retains the delegate's usual inventory-copying
 			// semantics; there is deliberately no wrapper expansion/remapping.
 			PackagerResultAssert.assertThat(result).isSuccess();

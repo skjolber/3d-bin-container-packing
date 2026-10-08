@@ -33,7 +33,7 @@ Line length 200. Tabs for indentation (see `eclipse-formatter.xml`).
 ## Tests
 
  * Use ASCII art to explain stacking unit tests. Prefer generated figures (`ContainerAsciiArt` and
-   `FigureRecorder` in the `test` module) to hand-drawn ones.
+   `FigureRecorder` in the `test` module; `PackagerResultFigures.figure(result)` for packager results) to hand-drawn ones.
  * Generated figures sit between `// <figure>` and `// </figure>` lines. Do not edit them by hand: run the
    tests with `-Dfigures.record=true` to write or refresh them. They are for humans, so read test files
    without them, for example `sed '/<figure>/,/<\/figure>/d' SomeTest.java`.

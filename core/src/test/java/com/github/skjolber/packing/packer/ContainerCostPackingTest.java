@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -65,6 +66,32 @@ class ContainerCostPackingTest {
 			PackagerResult result = packager.newResultBuilder().withContainerItems(planContainers())
 					.withMaxContainerCount(2).withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(estimates).hasPositiveValue();
 		} finally {
@@ -249,6 +276,19 @@ class ContainerCostPackingTest {
 					.withContainerItems(costedContainers())
 					.withBoxItems(boxItem())
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
@@ -267,6 +307,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -285,6 +351,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -307,6 +399,19 @@ class ContainerCostPackingTest {
 					.withContainerItems(costedContainers())
 					.withBoxItems(boxItem())
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
@@ -334,6 +439,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -354,6 +485,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -382,6 +539,19 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   A   |   B   |         |   A   |   B   |         |   B   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   A   |   B   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -409,6 +579,19 @@ class ContainerCostPackingTest {
 					.withContainerItems(containers)
 					.withBoxItems(boxItem())
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -440,12 +623,64 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 			PackagerResultAssert.assertThat(result).isSuccess();
 			PackagerResult grouped = bruteForce.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
 					.withBoxItems(twoGroups())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(grouped);
 			assertThat(grouped.isSuccess()).isTrue();
 		} finally {
 			packager.close();
@@ -471,6 +706,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -498,6 +759,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: large
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
@@ -517,6 +804,32 @@ class ContainerCostPackingTest {
 					.withBoxItems(new BoxItemGroup("first", List.of(boxItem())),
 							new BoxItemGroup("second", List.of(boxItem())))
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: large
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
@@ -584,6 +897,32 @@ class ContainerCostPackingTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(twoBoxes())
 					.build();
+			// <figure>
+			// container 1 of 2: second
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: first
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)
@@ -662,6 +1001,19 @@ class ContainerCostPackingTest {
 							.withCostCalculator(cost(10)))
 					.withBoxItems(boxItem())
 					.build();
+			// <figure>
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         |   A   |         |   A   |         |   A   |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   |   A   | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()

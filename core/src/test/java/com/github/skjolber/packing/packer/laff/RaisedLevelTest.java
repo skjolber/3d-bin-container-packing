@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.laff;
 
 import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.Arrays;
 import java.util.List;

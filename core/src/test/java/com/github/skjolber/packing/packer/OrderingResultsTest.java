@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -353,6 +354,32 @@ public class OrderingResultsTest {
 						.withBoxItems(items)
 						.withMaxContainerCount(2)
 						.build();
+				// <figure>
+				// container 1 of 2: c
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         | early | early |         | early | early |         | early |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   | early | early | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				//
+				// container 2 of 2: c
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         | early | late  |         | early | late  |         | late  |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   | early | late  | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				// </figure>
+				figure(result);
 
 				String name = packager.getClass().getSimpleName();
 				assertThat(result.isSuccess()).as(name).isTrue();
@@ -391,6 +418,32 @@ public class OrderingResultsTest {
 					.withOrder(Order.CHRONOLOGICAL)
 					.withMaxContainerCount(2)
 					.build();
+			// <figure>
+			// container 1 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | early | early |         | early | early |         | early |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | early | early | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: c
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | early | late  |         | early | late  |         | late  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | early | late  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 			assertThat(result.isSuccess()).isTrue();
 			assertThat(new ContainerPriorityValidator().validate(result.getContainers(), new ArrayList<>())).isTrue();
 		}
@@ -418,6 +471,32 @@ public class OrderingResultsTest {
 						.withMaxContainerCount(2)
 						.withInterruptDuration(10_000)
 						.build();
+				// <figure>
+				// container 1 of 2: c
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         |   a   |   c   |         |   a   |   c   |         |   c   |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   |   a   |   c   | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				//
+				// container 2 of 2: c
+				//   z                         z                         y                         z
+				//                             1 +---------------+       1 +---------------+       1 +-------+
+				//   | /---------------|   y     |               |         |               |         |       |
+				//   |/               /|         |       b       |         |       b       |         |   b   |
+				// 1 |---------------| | /       |               |         |               |         |       |
+				//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+				//   |       b       | | 1       0               2   x     0               2   x     0       1   y
+				//   |               |/
+				// 0 |---------------|-- x
+				//   0               2
+				// </figure>
+				figure(result);
 
 				assertThat(result.isSuccess()).isTrue();
 				assertThat(result.getContainers()).hasSize(2);
@@ -460,6 +539,32 @@ public class OrderingResultsTest {
 						.withMaxContainerCount(2)
 						.withInterruptDuration(10_000)
 						.build();
+				// <figure>
+				// container 1 of 2: c
+				//   z                                 z                                 y                                 z
+				//                                     1 +-----------------------+       1 +-----------------------+       1 +-------+
+				//   | /-----------------------|   y     |                       |         |                       |         |       |
+				//   |/                       /|         |           B           |         |           B           |         |   B   |
+				// 1 |-----------------------| | /       |                       |         |                       |         |       |
+				//   |                       | |/      0 +-----------------------+       0 +-----------------------+       0 +-------+
+				//   |           B           | | 1       0                       3   x     0                       3   x     0       1   y
+				//   |                       |/
+				// 0 |-----------------------|-- x
+				//   0                       3
+				//
+				// container 2 of 2: c
+				//   z                         z                         y                         z
+				//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+				//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+				//   |/       /       /|         |  s1   |  s2   |         |  s1   |  s2   |         |  s2   |
+				// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+				//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+				//   |  s1   |  s2   | | 1       0       1       2   x     0       1       2   x     0       1   y
+				//   |       |       |/
+				// 0 |-------|-------|-- x
+				//   0       1       2
+				// </figure>
+				figure(result);
 
 				String name = packager.getClass().getSimpleName() + (i < 3 ? " most volume" : " most boxes");
 				assertThat(result.isSuccess()).as(name).isTrue();
@@ -652,6 +757,44 @@ public class OrderingResultsTest {
 						.withMaxContainerCount(3)
 						.withInterruptDuration(5_000)
 						.build();
+				// <figure>
+				// container 1 of 3: small
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         |   a   |         |   a   |         |   a   |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				//
+				// container 2 of 3: big
+				//   z                         z                         y                         z
+				//                             1 +---------------+       1 +---------------+       1 +-------+
+				//   | /---------------|   y     |               |         |               |         |       |
+				//   |/               /|         |       B       |         |       B       |         |   B   |
+				// 1 |---------------| | /       |               |         |               |         |       |
+				//   |               | |/      0 +---------------+       0 +---------------+       0 +-------+
+				//   |       B       | | 1       0               2   x     0               2   x     0       1   y
+				//   |               |/
+				// 0 |---------------|-- x
+				//   0               2
+				//
+				// container 3 of 3: small
+				//   z                 z                 y                 z
+				//                     1 +-------+       1 +-------+       1 +-------+
+				//   | /-------|   y     |       |         |       |         |       |
+				//   |/       /|         |   c   |         |   c   |         |   c   |
+				// 1 |-------| | /       |       |         |       |         |       |
+				//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+				//   |   c   | | 1       0       1   x     0       1   x     0       1   y
+				//   |       |/
+				// 0 |-------|-- x
+				//   0       1
+				// </figure>
+				figure(result);
 
 				String name = packager.getClass().getSimpleName();
 				assertThat(result.isSuccess()).as(name).isTrue();

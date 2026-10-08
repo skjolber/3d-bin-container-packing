@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 
@@ -28,6 +29,31 @@ public class BoxItemReuseTest {
 	@Test
 	public void plainPackagerKeepsTheInput() {
 		try (PlainPackager packager = PlainPackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: row
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksTwice(packager);
 		}
 	}
@@ -35,6 +61,31 @@ public class BoxItemReuseTest {
 	@Test
 	public void largestAreaFitFirstPackagerKeepsTheInput() {
 		try (LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: row
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksTwice(packager);
 		}
 	}
@@ -42,6 +93,31 @@ public class BoxItemReuseTest {
 	@Test
 	public void bruteForcePackagerKeepsTheInput() {
 		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: row
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksTwice(packager);
 		}
 	}
@@ -49,6 +125,31 @@ public class BoxItemReuseTest {
 	@Test
 	public void fastBruteForcePackagerKeepsTheInput() {
 		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			// <figure>
+			// container 1 of 2: row
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: row
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
 			assertPacksTwice(packager);
 		}
 	}
@@ -62,6 +163,7 @@ public class BoxItemReuseTest {
 					.withBoxItems(boxItems)
 					.withMaxContainerCount(2)
 					.build();
+			figure(result);
 
 			assertThat(result.getContainers()).extracting(c -> c.getStack().size()).containsExactlyInAnyOrder(2, 1);
 			assertThat(boxItems.get(0).getCount()).isEqualTo(3);

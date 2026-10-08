@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -67,6 +68,35 @@ public class BruteForceFullSupportTest {
 						.withMaxContainerCount(2)
 						.withInterruptDuration(10_000)
 						.build();
+				// <figure>
+				//   z                                                 z
+				//                                                     2                 +-----------------------+
+				//   |                 /-----------------------|                         |                       |
+				//   |                /                       /|                         |           B           |
+				// 2 |               |-----------------------| |                         |                       |
+				//   |               |                       | |       1 +-------+-------+-----------------------+
+				//   | /-------/-----|           B           | |   y     |       |#######|                       |
+				//   |/       /######|                       |/|         |   A   |#######|           C           |
+				// 1 |-------|-------|-----------------------| | /       |       |#######|                       |
+				//   |       |#######|                       | |/      0 +-------+-------+-----------------------+
+				//   |   A   |#######|           C           | | 1       0       1       2                       5   x
+				//   |       |#######|                       |/
+				// 0 |-------|-------|-----------------------|-- x
+				//   0       1       2                       5
+				//
+				// y                                                 z
+				// 1 +-------+-------+-----------------------+       2 +-------+
+				//   |       |#######|                       |         |       |
+				//   |   A   |#######|           B           |         |   B   |
+				//   |       |#######|                       |         |       |
+				// 0 +-------+-------+-----------------------+       1 +-------+
+				//   0       1       2                       5   x     |       |
+				//                                                     |   C   |
+				//                                                     |       |
+				//                                                   0 +-------+
+				//                                                     0       1   y
+				// </figure>
+				figure(result);
 
 				String name = packager.getClass().getSimpleName() + " " + order;
 				assertThat(result.isSuccess()).as(name).isTrue();

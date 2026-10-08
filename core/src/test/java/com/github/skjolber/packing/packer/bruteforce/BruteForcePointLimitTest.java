@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -76,6 +77,19 @@ class BruteForcePointLimitTest {
 					.withContainerItem(new ContainerItem(container, 1))
 					.withBoxItems(new BoxItem(box, 3))
 					.build();
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(invocations).hasValueGreaterThanOrEqualTo(3);

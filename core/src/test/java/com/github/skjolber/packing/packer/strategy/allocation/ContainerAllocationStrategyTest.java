@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.strategy.allocation;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,19 @@ class ContainerAllocationStrategyTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(new BoxItem(box("cube", 1), 2))
 					.build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | cube  | cube  |         | cube  | cube  |         | cube  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | cube  | cube  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).singleElement()
@@ -65,6 +79,32 @@ class ContainerAllocationStrategyTest {
 					.withMaxContainerCount(2)
 					.withBoxItems(new BoxItem(box("cube", 1), 2))
 					.build();
+			// <figure>
+			// container 1 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			//
+			// container 2 of 2: small
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | cube  |         | cube  |         | cube  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | cube  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess();
 			assertThat(result.getContainers()).extracting(Container::getId)

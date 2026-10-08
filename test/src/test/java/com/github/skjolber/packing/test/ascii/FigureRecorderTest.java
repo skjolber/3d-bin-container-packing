@@ -392,6 +392,19 @@ public class FigureRecorderTest {
 	}
 
 	@Test
+	public void testCallerSkipsThePackagerResultHelper() {
+		StackTraceElement[] stack = {
+				frame(RECORDER, "record", 80),
+				frame(PackagerResultFigures.class.getName(), "figure", 60),
+				frame("com.example.MyTest", "test", 12),
+				frame("org.junit.Runner", "run", 1)
+		};
+		StackTraceElement caller = FigureRecorder.getCaller(stack);
+		assertThat(caller.getClassName()).isEqualTo("com.example.MyTest");
+		assertThat(caller.getLineNumber()).isEqualTo(12);
+	}
+
+	@Test
 	public void testCallerIsNullWithoutACaller() {
 		assertThat(FigureRecorder.getCaller(new StackTraceElement[0])).isNull();
 		assertThat(FigureRecorder.getCaller(new StackTraceElement[] { frame(RECORDER, "record", 80) })).isNull();

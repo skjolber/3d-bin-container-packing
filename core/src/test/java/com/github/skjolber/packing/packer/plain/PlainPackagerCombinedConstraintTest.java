@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.plain;
 
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -167,6 +169,58 @@ public class PlainPackagerCombinedConstraintTest extends AbstractPackagerConstra
 					.withMaxContainerCount(2)
 					.withBoxItems(List.of(new BoxItem(bot, 1), new BoxItem(top, 1)))
 					.build();
+			// <figure>
+			// container 1 of 2: container
+			//             /---------------|   y   z                         y                         z
+			//            /               /|       1 +---------------+       5 +---------------+       1 +---------------------------------------+
+			//           /               / | /       |               |         |               |         |                                       |
+			//          /               /  |/        |      bot      |         |               |         |                  bot                  |
+			//         /               /   | 5       |               |         |               |         |                                       |
+			//        /               /   /        0 +---------------+         |               |       0 +---------------------------------------+
+			//   z   /               /   /           0               2   x     |               |         0                                       5   y
+			//      /               /   /                                      |               |
+			//   | /               /   /                                       |               |
+			//   |/               /   /                                        |               |
+			// 1 |---------------|   /                                         |               |
+			//   |               |  /                                          |      bot      |
+			//   |      bot      | /                                           |               |
+			//   |               |/                                            |               |
+			// 0 |---------------|-- x                                         |               |
+			//   0               2                                             |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                               0 +---------------+
+			//                                                                 0               2   x
+			//
+			// container 2 of 2: container
+			//             /---------------|   y   z                         y                         z
+			//            /               /|       1 +---------------+       5 +---------------+       1 +---------------------------------------+
+			//           /               / | /       |               |         |               |         |                                       |
+			//          /               /  |/        |      top      |         |               |         |                  top                  |
+			//         /               /   | 5       |               |         |               |         |                                       |
+			//        /               /   /        0 +---------------+         |               |       0 +---------------------------------------+
+			//   z   /               /   /           0               2   x     |               |         0                                       5   y
+			//      /               /   /                                      |               |
+			//   | /               /   /                                       |               |
+			//   |/               /   /                                        |               |
+			// 1 |---------------|   /                                         |               |
+			//   |               |  /                                          |      top      |
+			//   |      top      | /                                           |               |
+			//   |               |/                                            |               |
+			// 0 |---------------|-- x                                         |               |
+			//   0               2                                             |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                                 |               |
+			//                                                               0 +---------------+
+			//                                                                 0               2   x
+			// </figure>
+			figure(result);
 
 			PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(2);
 		} finally {
