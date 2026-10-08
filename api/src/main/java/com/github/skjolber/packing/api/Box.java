@@ -136,8 +136,6 @@ public class Box {
 
 	public static class Builder extends AbstractBoxBuilder<Builder> {
 
-		protected int CENTER_OF_GRAVITY_MIDDLE = -1;
-
 		protected int dx = -1;
 		protected int dy = -1;
 		protected int dz = -1;
@@ -181,10 +179,6 @@ public class Box {
 			this.rotation = rotation;
 
 			return this;
-		}
-
-		protected boolean isCenterGravity() {
-			return centerOfGravityX == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityY == CENTER_OF_GRAVITY_MIDDLE && centerOfGravityZ == CENTER_OF_GRAVITY_MIDDLE;
 		}
 
 		protected <T> T[] getStackValues() {
@@ -482,6 +476,7 @@ public class Box {
 		 */
 		public Builder withMaxLoadBoxCount(int count) {
 			this.maxLoadBoxCount = count;
+			this.maxLoadIdenticalOnly = false;
 			return (Builder) this;
 		}
 
@@ -522,10 +517,6 @@ public class Box {
 			return (T[]) new BoxStackValue[size];
 		}
 
-		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index) {
-			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, dx / 2, dy / 2, dz / 2);
-		}
-		
 		protected BoxStackValue newStackValue(int dx, int dy, int dz, List<Surface> surfaces, int index, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ) {
 			return new BoxStackValue(dx, dy, dz, surfaces, index, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalOnly, centerOfGravityX, centerOfGravityY, centerOfGravityZ);
 		}
@@ -762,22 +753,14 @@ public class Box {
 		return false;
 	}
 
-	public List<BoxStackValue> getStackValues(Container bound) {
-		List<BoxStackValue> list = new ArrayList<>();
-
-		for (BoxStackValue stackValue : getStackValues()) {
-			if (stackValue.fitsInside3D(bound)) {
-				list.add(stackValue);
-			}
-		}
-
-		return list;
-	}
-
-	public List<BoxStackValue> rotations(Container bound) {
-		return rotations(bound.getLoadDx(), bound.getLoadDy(), bound.getLoadDz());
-	}
-
+	/**
+	 * Get the stack values (rotations) which fit inside the given load size.
+	 *
+	 * @param dx load size in x direction
+	 * @param dy load size in y direction
+	 * @param dz load size in z direction
+	 * @return the stack values which fit, in stack value order; an empty immutable list if none fit
+	 */
 	public List<BoxStackValue> rotations(int dx, int dy, int dz) {
 		// TODO optimize if max is above min bounds
 		BoxStackValue[] rotations = getStackValues();
@@ -797,7 +780,7 @@ public class Box {
 				return fitsInside;
 			}
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	public static BoxStackValue getMinimumArea(BoxStackValue[] rotations) {

@@ -1,11 +1,15 @@
 package com.github.skjolber.packing.api;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -93,6 +97,58 @@ public class BoxTest {
 		Box second = builder.build();
 		assertSame(first, first.getStackValue(0).getBox());
 		assertSame(second, second.getStackValue(0).getBox());
+	}
+
+	/**
+	 * Setting a box count limit replaces an identical-only limit, as on {@link BoxStackValue}'s builder.
+	 */
+	@Test
+	public void maxLoadBoxCountReplacesIdenticalOnlyLimit() {
+		Box identical = Box.newBuilder().withSize(1, 2, 3).withWeight(1).withMaxLoadIdenticalBoxCount(2).build();
+		assertTrue(identical.isLoadIdenticalBoxOnly());
+		assertTrue(identical.getStackValue(0).isLoadIdenticalBoxOnly());
+
+		Box any = Box.newBuilder().withSize(1, 2, 3).withWeight(1).withMaxLoadIdenticalBoxCount(2).withMaxLoadBoxCount(3).build();
+		assertFalse(any.isLoadIdenticalBoxOnly());
+		assertTrue(any.isMaxLoadBoxCount());
+		for (BoxStackValue stackValue : any.getStackValues()) {
+			assertFalse(stackValue.isLoadIdenticalBoxOnly());
+			assertEquals(3, stackValue.getMaxLoadBoxCount());
+		}
+	}
+
+	@Test
+	public void rotationsReturnsTheStackValuesWhichFit() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+
+		// only the stack values with dz = 1 fit, i.e. 2x3x1 and 3x2x1
+		List<BoxStackValue> rotations = box.rotations(3, 3, 1);
+		assertEquals(2, rotations.size());
+		for (BoxStackValue stackValue : rotations) {
+			assertTrue(stackValue.fitsInside3D(3, 3, 1));
+		}
+
+		assertEquals(6, box.rotations(3, 3, 3).size());
+	}
+
+	@Test
+	public void rotationsReturnsAnEmptyImmutableListWhenNothingFits() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+
+		List<BoxStackValue> rotations = box.rotations(1, 1, 1);
+		assertNotNull(rotations);
+		assertTrue(rotations.isEmpty());
+		assertThrows(UnsupportedOperationException.class, () -> rotations.add(box.getStackValue(0)));
+	}
+
+	@Test
+	public void stackValueBuilderSetsCenterOfGravity() {
+		Box box = new Box.LoadBoxBuilder().withRotation(r -> r.withDimensions(3, 4, 5).withCenterOfGravity(1, 2, 3)).withWeight(1).build();
+
+		BoxStackValue stackValue = box.getStackValue(0);
+		assertEquals(1, stackValue.getCenterOfGravityX());
+		assertEquals(2, stackValue.getCenterOfGravityY());
+		assertEquals(3, stackValue.getCenterOfGravityZ());
 	}
 
 	private void assertUniqueValues(BoxStackValue[] stackValues) {

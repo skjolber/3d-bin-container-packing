@@ -18,24 +18,24 @@ public class BoxStackValue {
 
 		protected List<BoxStackValue> stackValues = new ArrayList<>();
 		
-		public ListBuilder withRotate(List<BoxStackValue> stackValues) {
+		public ListBuilder withRotation(List<BoxStackValue> stackValues) {
 			this.stackValues = stackValues;
 			return this;
 		}
 
-		public ListBuilder withRotate(BoxStackValue stackValue) {
+		public ListBuilder withRotation(BoxStackValue stackValue) {
 			this.stackValues.add(stackValue);
 			return this;
 		}
 		
-		public ListBuilder withRotate(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+		public ListBuilder withRotation(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
 			Builder builder = new Builder();
 			stackValue.accept(builder);
 			this.stackValues.add(builder.build());
 			return this;
 		}
 
-		public ListBuilder withRotate2D(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
+		public ListBuilder withRotation2D(Consumer<BoxStackValue.AbstractBuilder> stackValue) {
 			Builder builder = new Builder();
 			stackValue.accept(builder);
 			this.stackValues.add(builder.build());
@@ -67,7 +67,7 @@ public class BoxStackValue {
 		protected int centerOfGravityY = -1;
 		protected int centerOfGravityZ = -1;
 
-		public  T withCenterOfGravityX(int x, int y, int z) {
+		public T withCenterOfGravity(int x, int y, int z) {
 			this.centerOfGravityX = x;
 			this.centerOfGravityY = y;
 			this.centerOfGravityZ = z;
