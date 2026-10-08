@@ -93,8 +93,8 @@ A container strategy decides which containers to use, and in which order. The in
 - Return a `ContainerResult` with the accepted containers and
   `getContainerInventory().getCost()` once no boxes remain, or `null` if the boxes cannot be
   packed.
-- Check the interrupt regularly and throw `PackagerInterruptedException` when it returns true;
-  `attempt` throws it too.
+- Check the interrupt regularly and throw `PackagerInterruptedException` when it returns true (it carries no
+  stack trace, so throwing it is cheap); `attempt` throws it too.
 - `getMaxContainerCount()` is the number of containers which can still be used for the remaining
   boxes.
 - `ContainerInventory` tells what fits: `canLoad(..)`, `getContainers(..)` and `isFeasible(..)`
