@@ -16,6 +16,11 @@ import com.github.skjolber.packing.api.Placement;
  */
 public interface PlacementComparator {
 
+	/**
+	 * @param a a placement
+	 * @param b another placement
+	 * @return a positive number if {@code a} is preferred, a negative number if {@code b} is preferred, zero if they are equally good
+	 */
 	int compare(Placement a, Placement b);
 
 	/**

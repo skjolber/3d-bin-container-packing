@@ -2,7 +2,6 @@ package com.github.skjolber.packing.api.packager.control.point;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.PointSource;
 
@@ -19,25 +18,11 @@ public abstract class AbstractPointControlsBuilder<B extends AbstractPointContro
 	protected Container container;
 	protected BoxItemSource items;
 	protected PointSource points;
-	protected BoxItemGroupSource groups;
 	
 	protected boolean maxLoadWeight;
 	protected boolean maxLoadPressure;
 	protected boolean maxLoadBoxCount;
 	protected boolean loadIdenticalBox;
-	
-	protected boolean fullSupport;
-
-	@Override
-	public PointControlsBuilder withStability(boolean fullSupport) {
-		this.fullSupport = fullSupport;
-		return (B)this;
-	}
-	
-	public B withBoxItemGroups(BoxItemGroupSource groups) {
-		this.groups = groups;
-		return (B)this;
-	}
 	
 	public B withPoints(PointSource points) {
 		this.points = points;

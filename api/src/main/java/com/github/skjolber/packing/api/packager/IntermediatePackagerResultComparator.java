@@ -2,6 +2,8 @@ package com.github.skjolber.packing.api.packager;
 
 /**
  * Compares the results of packing a container, to choose the best.
+ * <p>
+ * Convention: {@code compare(a, b) > 0} means {@code a} is the better result.
  * <br>
  * <br>
  * Compare the results by their load volume, load weight and box count ({@link IntermediatePackagerResult#getLoadVolume()},
@@ -17,8 +19,8 @@ public interface IntermediatePackagerResultComparator {
 
 	/**
 	 * 
-	 * Returns {@linkplain ARGUMENT_2_IS_BETTER} if o1 is less / worse than o2.
-	 * Returns {@linkplain ARGUMENT_1_IS_BETTER} if o1 is more / better than o2.
+	 * Returns {@link #ARGUMENT_2_IS_BETTER} if o1 is less / worse than o2.
+	 * Returns {@link #ARGUMENT_1_IS_BETTER} if o1 is more / better than o2.
 	 * 
 	 * Return 0 otherwise.
 	 */

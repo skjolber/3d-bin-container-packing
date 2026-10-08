@@ -8,6 +8,11 @@ package com.github.skjolber.packing.api;
 @FunctionalInterface
 public interface PackagerResultComparator {
 
+	/**
+	 * @param a a result
+	 * @param b another result
+	 * @return a positive number if {@code a} is better, a negative number if {@code b} is better, zero if they are equally good
+	 */
 	int compare(PackagerResult a, PackagerResult b);
 
 	/**

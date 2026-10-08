@@ -4,6 +4,8 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 
 /**
  * Compares box item groups, for example to choose which group to place next.
+ * <p>
+ * Convention: {@code compare(a, b) > 0} means {@code a} is the better box item group (placed first).
  */
 @FunctionalInterface
 public interface BoxItemGroupComparator {

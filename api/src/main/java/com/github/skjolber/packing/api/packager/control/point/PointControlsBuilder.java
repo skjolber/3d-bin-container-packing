@@ -25,8 +25,6 @@ public interface PointControlsBuilder {
 		
 	PointControlsBuilder withLoadIdenticalBox(boolean loadIdenticalBox);
 
-	PointControlsBuilder withStability(boolean fullSupport);
-
 	PointControls build();
 
 }
