@@ -2,6 +2,8 @@ package com.github.skjolber.packing.api.interrupt;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -28,7 +30,7 @@ public class PackagerInterruptSupplierOwnershipTest {
 	void builderReturnsUserInterruptUnchangedWithoutDeadline() {
 		CountingInterruptSupplier interrupt = new CountingInterruptSupplier();
 
-		assertThat(PackagerInterruptSupplierBuilder.builder().withInterrupt(interrupt).build()).isSameAs(interrupt);
+		assertThat(PackagerInterruptSupplierBuilder.newBuilder().withInterrupt(interrupt).build()).isSameAs(interrupt);
 	}
 
 	@Test
@@ -38,8 +40,8 @@ public class PackagerInterruptSupplierOwnershipTest {
 		try {
 			CountingInterruptSupplier interrupt = new CountingInterruptSupplier();
 
-			PackagerInterruptSupplier supplier = PackagerInterruptSupplierBuilder.builder()
-					.withScheduledThreadPoolExecutor(scheduler)
+			PackagerInterruptSupplier supplier = PackagerInterruptSupplierBuilder.newBuilder()
+					.withScheduledExecutorService(scheduler)
 					.withDeadline(System.currentTimeMillis() + 600_000L)
 					.withInterrupt(interrupt)
 					.build();
@@ -50,6 +52,23 @@ public class PackagerInterruptSupplierOwnershipTest {
 
 			assertThat(scheduler.getQueue()).isEmpty();
 			assertThat(interrupt.closed.get()).isZero();
+		} finally {
+			scheduler.shutdownNow();
+		}
+	}
+
+	@Test
+	void builderAcceptsAnyScheduledExecutorService() {
+		// not a ScheduledThreadPoolExecutor
+		ScheduledExecutorService scheduler = Executors.unconfigurableScheduledExecutorService(new ScheduledThreadPoolExecutor(1));
+		try {
+			PackagerInterruptSupplier supplier = PackagerInterruptSupplierBuilder.newBuilder()
+					.withScheduledExecutorService(scheduler)
+					.withDeadline(System.currentTimeMillis() + 600_000L)
+					.build();
+			assertThat(supplier).isInstanceOf(DeadlineCheckPackagerInterruptSupplier.class);
+			assertThat(supplier.getAsBoolean()).isFalse();
+			supplier.close();
 		} finally {
 			scheduler.shutdownNow();
 		}

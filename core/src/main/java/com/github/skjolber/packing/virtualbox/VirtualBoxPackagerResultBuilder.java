@@ -108,8 +108,8 @@ public class VirtualBoxPackagerResultBuilder extends AbstractPackagerResultBuild
 		long start = System.nanoTime();
 		// One deadline supplier spans preprocessing, refinement and all
 		// delegate attempts. Borrowed views prevent nested builders from closing it.
-		try(PackagerInterruptSupplier stop = PackagerInterruptSupplierBuilder.builder()
-				.withScheduledThreadPoolExecutor(scheduler).withDeadline(deadline)
+		try(PackagerInterruptSupplier stop = PackagerInterruptSupplierBuilder.newBuilder()
+				.withScheduledExecutorService(scheduler).withDeadline(deadline)
 				.withInterrupt(interrupt == null ? null : interrupt::getAsBoolean).build()) {
 			if(stop.getAsBoolean()) {
 				return new PackagerResult(List.of(), VirtualBoxPacking.elapsed(start), true);

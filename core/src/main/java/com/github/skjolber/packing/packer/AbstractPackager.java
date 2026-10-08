@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -24,7 +23,7 @@ import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.DefaultContainerStrategyFactory;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Base class for packagers: fit boxes into one or more containers, i.e. perform bin packing.
  *
  * Thread-safe implementation.
  * 
@@ -149,14 +148,14 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	public PackagerResult pack(PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
 		long start = System.currentTimeMillis();
 
-		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.newBuilder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
-		booleanSupplierBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+		booleanSupplierBuilder.withScheduledExecutorService(scheduledThreadPoolExecutor);
 
 		PackagerInterruptSupplier packagerInterrupt = booleanSupplierBuilder.build();
 		try {
@@ -199,40 +198,6 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 
 	public void close() {
 		scheduledThreadPoolExecutor.shutdownNow();
-	}
-	
-	protected List<BoxItemGroup> getFitsInside(List<BoxItemGroup> inputs, Container container) {
-		List<BoxItemGroup> result = new ArrayList<>(inputs.size());
-		for (BoxItemGroup boxItemGroup : inputs) {
-			if(container.fitsInside(boxItemGroup)) {
-				result.add(boxItemGroup);
-			}
-		}
-		return result;
-	}
-	
-	protected List<BoxItem> getBoxItemsFitsInside(List<BoxItem> inputs, Container container) {
-		List<BoxItem> result = new ArrayList<>(inputs.size());
-		for (BoxItem boxItem : inputs) {
-			if(container.fitsInside(boxItem)) {
-				result.add(boxItem);
-			}
-		}
-		return result;
-	}
-	
-	public List<BoxItem> removeEmpty(List<BoxItem> values) {
-		List<BoxItem> result = new ArrayList<>(values.size());
-		for(int i = 0; i < values.size(); i++) {
-			if(!values.get(i).isEmpty()) {
-				result.add(values.get(i));
-			}
-		}
-		return result;
-	}
-	
-	public ScheduledThreadPoolExecutor getScheduledThreadPoolExecutor() {
-		return scheduledThreadPoolExecutor;
 	}
 	
 	protected abstract IntermediatePackagerResult createEmptyIntermediatePackagerResult();

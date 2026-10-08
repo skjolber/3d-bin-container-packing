@@ -1,7 +1,7 @@
 package com.github.skjolber.packing.api.interrupt;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 public class PackagerInterruptSupplierBuilder {
@@ -11,9 +11,9 @@ public class PackagerInterruptSupplierBuilder {
 
 	private long deadline = Long.MAX_VALUE;
 	private PackagerInterruptSupplier interrupt;
-	private ScheduledThreadPoolExecutor scheduledThreadPoolExecutor;
+	private ScheduledExecutorService scheduledExecutorService;
 
-	public static PackagerInterruptSupplierBuilder builder() {
+	public static PackagerInterruptSupplierBuilder newBuilder() {
 		return new PackagerInterruptSupplierBuilder();
 	}
 
@@ -27,8 +27,8 @@ public class PackagerInterruptSupplierBuilder {
 		return this;
 	}
 	
-	public PackagerInterruptSupplierBuilder withScheduledThreadPoolExecutor(ScheduledThreadPoolExecutor executor) {
-		this.scheduledThreadPoolExecutor = executor;
+	public PackagerInterruptSupplierBuilder withScheduledExecutorService(ScheduledExecutorService executor) {
+		this.scheduledExecutorService = executor;
 		return this;
 	}
 
@@ -47,19 +47,19 @@ public class PackagerInterruptSupplierBuilder {
 			return POSITIVE; // i.e. time is already up
 		}
 
-		if(scheduledThreadPoolExecutor == null) {
+		if(scheduledExecutorService == null) {
 			throw new IllegalStateException("Expected scheduler");
 		}
 				
 		if(interrupt == null) {
 			DeadlineCheckPackagerInterruptSupplier supplier = new DeadlineCheckPackagerInterruptSupplier();
-			ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, delay, TimeUnit.MILLISECONDS);
+			ScheduledFuture<?> schedule = scheduledExecutorService.schedule(supplier, delay, TimeUnit.MILLISECONDS);
 			supplier.setFuture(schedule);
 			return supplier;
 		}
 		
 		DelegateDeadlineCheckPackagerInterruptSupplier supplier = new DelegateDeadlineCheckPackagerInterruptSupplier(interrupt);
-		ScheduledFuture<?> schedule = scheduledThreadPoolExecutor.schedule(supplier, delay, TimeUnit.MILLISECONDS);
+		ScheduledFuture<?> schedule = scheduledExecutorService.schedule(supplier, delay, TimeUnit.MILLISECONDS);
 		supplier.setFuture(schedule);
 		return supplier;
 	}

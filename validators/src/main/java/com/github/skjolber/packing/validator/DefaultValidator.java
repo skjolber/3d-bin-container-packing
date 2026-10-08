@@ -49,8 +49,8 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			}
 			long start = System.currentTimeMillis();
 
-			PackagerInterruptSupplierBuilder interruptBuilder = PackagerInterruptSupplierBuilder.builder();
-			interruptBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+			PackagerInterruptSupplierBuilder interruptBuilder = PackagerInterruptSupplierBuilder.newBuilder();
+			interruptBuilder.withScheduledExecutorService(scheduledThreadPoolExecutor);
 			if(deadline != -1L) {
 				interruptBuilder.withDeadline(deadline);
 			}

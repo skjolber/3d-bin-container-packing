@@ -216,14 +216,14 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 	protected PackagerResult packWithContainerStrategy(AbstractPackager<?> packager, PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
 		long start = System.currentTimeMillis();
 
-		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.newBuilder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
-		booleanSupplierBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+		booleanSupplierBuilder.withScheduledExecutorService(scheduledThreadPoolExecutor);
 
 		PackagerInterruptSupplier packagerInterrupt = booleanSupplierBuilder.build();
 		try {
@@ -263,14 +263,14 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			}
 		}
 
-		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.builder();
+		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.newBuilder();
 		if(deadline != -1L) {
 			booleanSupplierBuilder.withDeadline(deadline);
 		}
 		if(interrupt != null) {
 			booleanSupplierBuilder.withInterrupt(interrupt);
 		}
-		booleanSupplierBuilder.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor);
+		booleanSupplierBuilder.withScheduledExecutorService(scheduledThreadPoolExecutor);
 
 		PackagerInterruptSupplier packagerInterrupt = booleanSupplierBuilder.build();
 		CompositePackagerSession session = null;
@@ -344,10 +344,10 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			PackagerInterruptSupplier stageInterrupt = interrupt;
 			if(!sessions.isEmpty() && stage.budget != -1L) {
 				// the first packager bounds the others, so it has no budget
-				stageInterrupt = PackagerInterruptSupplierBuilder.builder()
+				stageInterrupt = PackagerInterruptSupplierBuilder.newBuilder()
 						.withInterrupt(interrupt)
 						.withDeadline(start + stage.budget)
-						.withScheduledThreadPoolExecutor(scheduledThreadPoolExecutor)
+						.withScheduledExecutorService(scheduledThreadPoolExecutor)
 						.build();
 				stageInterrupts.add(stageInterrupt);
 			}
