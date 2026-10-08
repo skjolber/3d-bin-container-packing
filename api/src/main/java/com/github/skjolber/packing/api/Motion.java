@@ -6,6 +6,18 @@ public class Motion {
 	private Acceleration y;
 	private Acceleration z;
 	
+	public void setX(Acceleration x) {
+		this.x = x;
+	}
+	
+	public void setY(Acceleration y) {
+		this.y = y;
+	}
+	
+	public void setZ(Acceleration z) {
+		this.z = z;
+	}
+	
 	public Acceleration getX() {
 		return x;
 	}

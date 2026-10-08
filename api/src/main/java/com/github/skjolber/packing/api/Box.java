@@ -836,16 +836,6 @@ public class Box {
 		return weight / area;
 	}
 
-	public static BoxStackValue getMinimumPressure(BoxStackValue[] rotations) {
-		BoxStackValue maximumArea = null;
-		for (BoxStackValue boxStackValue : rotations) {
-			if (maximumArea == null || boxStackValue.getArea() > maximumArea.getArea()) {
-				maximumArea = boxStackValue;
-			}
-		}
-		return maximumArea;
-	}
-
 	public static BoxStackValue getMaximumArea(BoxStackValue[] rotations) {
 		BoxStackValue maxArea = null;
 		for (BoxStackValue boxStackValue : rotations) {
@@ -955,8 +945,16 @@ public class Box {
 		return minimumDz;
 	}
 	
+	public int getMaximumDx() {
+		return maximumDx;
+	}
+	
+	public int getMaximumDy() {
+		return maximumDy;
+	}
+
 	public int getMaximumDz() {
 		return maximumDz;
 	}
-	
+
 }

@@ -47,16 +47,6 @@ public interface PackagerResultBuilder {
 		ObstaclesBuilder withObstacle(int x, int y, int z, int dx, int dy, int dz);
 	}
 	
-	public static interface ControlledBoxItemBuilder {
-
-		ControlledBoxItemBuilder withPointControlsBuilderFactory(PointControlsBuilderFactory pointControlsBuilderFactory);
-
-		ControlledBoxItemBuilder withBoxItem(BoxItem boxItem);
-		
-		ControlledBoxItemBuilder withBoxItem(Box box, int count);
-
-	}
-	
 	PackagerResultBuilder withBoxItems(BoxItem... items);
 
 	PackagerResultBuilder withBoxItems(List<BoxItem> items);
