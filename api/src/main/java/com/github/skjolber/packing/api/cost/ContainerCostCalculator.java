@@ -27,7 +27,7 @@ public interface ContainerCostCalculator {
 
 	/**
 	 * A lower bound on {@link #calculateCost(long)} for any supported load weight.
-	 * Branch-and-bound container strategies rely on this value being no greater
+	 * Branch-and-bound container packing strategies rely on this value being no greater
 	 * than the actual cost.
 	 */
 	long getMinimumCost();

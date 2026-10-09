@@ -4,15 +4,22 @@ import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
-import com.github.skjolber.packing.api.packager.BoxItemSource;
-import com.github.skjolber.packing.api.point.PointSource;
 
 /**
- * 
- * Listener for items which are available for load into some particular container.
- * 
- * The filter is expected to maintain underlying {@linkplain BoxItemSource} and {@linkplain PointSource} instances.
- * 
+ * Receives notifications of the packing attempt in some particular container. Implemented by {@link ManifestControls} and by
+ * {@link com.github.skjolber.packing.api.packager.control.point.PointControls}. All methods are optional.
+ * <p>
+ * The notifications about box item groups ({@link #attempt(BoxItemGroup, int, int)}, {@link #attemptSuccess(BoxItemGroup)},
+ * {@link #attemptFailure(BoxItemGroup)}, {@link #filteredGroups(List)} and {@link #undo(List)}) are sent when packing box item
+ * groups only.
+ * <p>
+ * When a group cannot be fitted after some of its box items were placed, the packager first calls {@link #undo(List)} with the
+ * placed box items on the manifest controls and then on the point controls, then
+ * {@link com.github.skjolber.packing.api.packager.control.placement.PlacementControls#undo(List) PlacementControls.undo(..)}
+ * with the placements (the undo calls are skipped if no box items were placed), and finally {@link #attemptFailure(BoxItemGroup)}
+ * on the manifest controls and then on the point controls.
+ * <p>
+ * {@link #attempt(BoxItemGroup, int, int)} is sent to the manifest controls only, not to the point controls.
  */
 
 public interface ManifestListener {
@@ -50,12 +57,6 @@ public interface ManifestListener {
 	}
 
 
-	/**
-	 * 
-	 * 
-	 * @param group {@linkplain BoxItemGroup} to be added.
-	 */
-	
 	/**
 	 * 
 	 * Notify attempting box group. 

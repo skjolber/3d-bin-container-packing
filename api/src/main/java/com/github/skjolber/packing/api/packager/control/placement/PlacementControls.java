@@ -7,10 +7,20 @@ import com.github.skjolber.packing.api.Placement;
 public interface PlacementControls {
 
 	/**
-	 * Get the next placement.
+	 * Get the next placement, selected among the box items in the range. The range is the box items of the current group when
+	 * packing box item groups, otherwise the box items which may be placed in the container now.
+	 * <p>
+	 * The indexes are local indexes into the {@link com.github.skjolber.packing.api.packager.BoxItemSource} which the controls
+	 * were built for: the range is {@code offset} (inclusive) to {@code offset + length} (exclusive), and the indexes change as
+	 * box items are removed from the source.
+	 * <p>
+	 * To honor point controls (filters), take the candidate points of each box item from
+	 * {@link com.github.skjolber.packing.api.packager.control.point.PointControls#getPoints(com.github.skjolber.packing.api.BoxItem)
+	 * PointControls.getPoints(boxItem)}, not directly from the point calculator: point controls have no effect on controls which
+	 * do not consult them.
 	 * 
-	 * @param offset start offset
-	 * @param length length
+	 * @param offset local index of the first box item to consider
+	 * @param length the number of box items to consider
 	 * @return the next placement, or null if not available.
 	 */
 	

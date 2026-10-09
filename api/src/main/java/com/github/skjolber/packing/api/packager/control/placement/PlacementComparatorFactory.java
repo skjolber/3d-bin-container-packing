@@ -14,6 +14,11 @@ import java.util.List;
  * <p>The canonical implementation is {@code com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory}, which provides
  * fluent builder methods for adding dimensions, constraint-based copying via
  * {@code withConstraints}, and an optimized-comparator registry.
+ *
+ * <p><b>Thread-safety:</b> packagers run concurrently, for example with a parallel container packing strategy or a parallel
+ * brute-force packager, so {@link #build(Collection)} may be called from several threads at once. Implementations must be safe
+ * for concurrent use; stateless implementations are. The same holds for the built {@link PlacementComparator}s if the factory
+ * returns shared instances.
  */
 public interface PlacementComparatorFactory {
 

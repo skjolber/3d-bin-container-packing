@@ -10,6 +10,9 @@ package com.github.skjolber.packing.api.packager;
  * {@link IntermediatePackagerResult#getLoadWeight()} and {@link IntermediatePackagerResult#getBoxCount()}) and their
  * container, not by their stacks: the brute-force packagers compare results whose stacks are not built (they share reused
  * placements until a result is accepted), so the stacks of the compared results may show the same placements.
+ * <p>
+ * Packagers run concurrently, for example with a parallel container packing strategy or a parallel brute-force packager:
+ * implementations must be safe for concurrent use; stateless implementations are.
  */
 @FunctionalInterface
 public interface IntermediatePackagerResultComparator {
