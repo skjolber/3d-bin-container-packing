@@ -22,8 +22,8 @@ public class VolumeWeightAreaMinZIntermediatePlacementResultComparator implement
 			return result;
 		}
 
-		// smaller z is better
-		return Integer.compare(o1.getAbsoluteZ(), o2.getAbsoluteZ());
+		// reversed: smaller z is better
+		return Integer.compare(o2.getAbsoluteZ(), o1.getAbsoluteZ());
 	}
 	
 }

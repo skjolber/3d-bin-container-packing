@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Rotation;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.test.assertj.StackAssert;
@@ -647,6 +648,117 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertEquals(2, build.size());
 			org.assertj.core.api.Assertions.assertThat(build.get(0).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("a", "c");
 			org.assertj.core.api.Assertions.assertThat(build.get(1).getStack().getPlacements()).extracting(p -> p.getStackValue().getBox().getId()).containsExactly("b");
+		} finally {
+			packager.close();
+		}
+	}
+
+	/**
+	 * Container 6 x 2 x 2: box A is 2 high and sets the height of the level, boxes B are 1 high. A second box B fits on the floor
+	 * beside the first one or on top of it; the two candidates have the same volume, weight and area, so only their height differs.
+	 * The floor is used before boxes are stacked.
+	 *
+	 * <pre>
+	 * Side view, as expected:                 Not like this:
+	 *
+	 *   z=1 |   A   |       |       |           z=1 |   A   |   B   |       |
+	 *   z=0 |   A   |   B   |   B   |           z=0 |   A   |   B   |       |
+	 *       x=0     x=2     x=4     x=6           x=0     x=2     x=4     x=6
+	 * </pre>
+	 */
+	@Test
+	void testSpreadOnTheFloorBeforeStackingWithinALevel() {
+		Container container = Container.newBuilder().withId("1").withEmptyWeight(1).withSize(6, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(2, 2, 2).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(2, 2, 1).withWeight(1).build(), 2));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItems(new ContainerItem(container, 1)).withBoxItems(products).build();
+			assertTrue(build.isSuccess());
+			assertValid(build);
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(3, placements.size());
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(2, 0, 0).hasBoxItemId("B");
+			assertThat(placements.get(2)).isAt(4, 0, 0).hasBoxItemId("B");
+		} finally {
+			packager.close();
+		}
+	}
+
+	/**
+	 * Container 4 x 2 x 2 with a platform (X) of 2 x 2 x 1 on the floor. The first box of a level fits on the floor beside the platform or on top of it;
+	 * the two candidates have the same volume, weight and area, so only their height differs. The floor is preferred.
+	 *
+	 * <pre>
+	 * Side view, as expected:                 Not like this:
+	 *
+	 *   z=1 |       |       |                   z=1 |   B   |       |
+	 *   z=0 |   X   |   B   |                   z=0 |   X   |       |
+	 *       x=0     x=2     x=4                     x=0     x=2     x=4
+	 * </pre>
+	 */
+	@Test
+	void testFirstPlacementOnTheFloorBeforeOnAnObstacle() {
+		Container container = Container.newBuilder().withId("1").withEmptyWeight(1).withSize(4, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(2, 2, 1).withWeight(1).build(), 1));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem(b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withObstacles(o -> o.withObstacle(0, 0, 0, 2, 2, 1));
+			}).withBoxItems(products).build();
+			assertTrue(build.isSuccess());
+			assertValid(build);
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(1, placements.size());
+			assertThat(placements.get(0)).isAt(2, 0, 0).hasBoxItemId("B");
+		} finally {
+			packager.close();
+		}
+	}
+
+	/**
+	 * Container 6 x 2 x 2 with a platform (X) of 2 x 2 x 1 on the floor. Box A is 2 high and sets the height of the level. Box B fits on the floor beside the platform
+	 * or on top of it; the two candidates have the same volume, weight and area, so only their height differs. The floor is preferred.
+	 *
+	 * <pre>
+	 * Side view, as expected:                 Not like this:
+	 *
+	 *   z=1 |   A   |       |       |           z=1 |   A   |   B   |       |
+	 *   z=0 |   A   |   X   |   B   |           z=0 |   A   |   X   |       |
+	 *       x=0     x=2     x=4     x=6           x=0     x=2     x=4     x=6
+	 * </pre>
+	 */
+	@Test
+	void testNextPlacementOnTheFloorBeforeOnAnObstacle() {
+		Container container = Container.newBuilder().withId("1").withEmptyWeight(1).withSize(6, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(2, 2, 2).withWeight(1).build(), 1));
+			products.add(new BoxItem(Box.newBuilder().withId("B").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(2, 2, 1).withWeight(1).build(), 1));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItem(b -> {
+				b.withContainerItem(new ContainerItem(container, 1));
+				b.withObstacles(o -> o.withObstacle(2, 0, 0, 2, 2, 1));
+			}).withBoxItems(products).build();
+			assertTrue(build.isSuccess());
+			assertValid(build);
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(2, placements.size());
+			assertThat(placements.get(0)).isAt(0, 0, 0).hasBoxItemId("A");
+			assertThat(placements.get(1)).isAt(4, 0, 0).hasBoxItemId("B");
 		} finally {
 			packager.close();
 		}

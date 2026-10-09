@@ -20,7 +20,8 @@ public class LowerZDelegatePlacementComparator implements Comparator<Placement> 
 		// * Prefer lower z
 		// ****************************************
 
-		int compare = Long.compare(o1.getAbsoluteZ(), o2.getAbsoluteZ());
+		// reversed: positive means that the first placement is better, i.e. lower
+		int compare = Long.compare(o2.getAbsoluteZ(), o1.getAbsoluteZ());
 		if(compare != 0) {
 			return compare;
 		}
