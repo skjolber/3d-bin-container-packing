@@ -1,5 +1,12 @@
 # Developer guide
 
+## Extending core
+
+The `api` module is the stable contract: custom controls and strategies (see below) only need it.
+The `core` module deliberately exports all its packages, so that custom algorithms can build on its
+internals (packagers, sessions, iterators and point calculators). Those internals may change in any
+release, without migration notes; extend them at your own risk.
+
 ## Writing your own placement controls
 
 Placement controls choose the next box, permitted orientation and position within
@@ -45,6 +52,13 @@ try (PlainPackager packager = PlainPackager.newBuilder()
 level; configure both when a rule must apply throughout the packing. Brute-force
 packagers use their own point-filter/comparator extension points instead.
 
+For the common case of ranking boxes and positions differently, the plain and LAFF builders also take a consumer:
+`withPlacementControlsBuilderFactory(b -> b.withPlacementComparator(..))` (and
+`withFirstPlacementControlsBuilderFactory(b -> ..)` for LAFF) configure the default controls, including
+`withCalculateSupport(..)` and `withRequireFullSupport(..)`, which have the same effect as the builder options of the same name
+(as long as you do not set your own placement comparator: then rank by support yourself, for example with
+`higherSupportIsBetter()`).
+
 Custom placement controls replace the default ones, so the packager options
 which configure the default controls (`withCalculateSupport(..)`,
 `withRequireFullSupport(..)`) cannot be combined with them: `build()` throws.
@@ -77,12 +91,26 @@ change their box/coordinates during candidate evaluation. Test no-candidate case
 group rollback, repeated attempts and concurrency, and independently validate
 the final layouts when your rules concern load or stability.
 
-## Writing your own container strategy
+Manifest controls (`ManifestControlsBuilderFactory`, set per container with the container item builder) filter by removing
+box items from the shared `BoxItemSource`; point controls (`PointControlsBuilderFactory`) filter the points of each box item,
+and placement controls must ask them for the points (`PointControls.getPoints(boxItem)`) for the filter to have any effect.
+When a group cannot be fitted, `ManifestListener.undo(..)` is called on the manifest controls and the point controls, then
+`PlacementControls.undo(..)`, then `attemptFailure(..)` on the manifest and point controls. `attempt(group, offset, length)`
+is delivered to the manifest controls only.
 
-A container strategy decides which containers to use, and in which order. The interfaces live in
+Packagers reuse the result of a container for another container when the containers' manifest controls and point controls
+factories are equal. Lambdas and method references of different expressions never compare equal, so reuse silently does not
+happen for them: implement `equals(..)` and `hashCode()` on the factory (or use one instance for the containers) to enable it.
+Packagers run concurrently (for example under `ParallelContainerPackingStrategy` and the parallel brute-force packager), so
+factories and comparators you supply (the controls factories, `PlacementComparatorFactory`, `BoxItemComparator`,
+`BoxItemGroupComparator` and `IntermediatePackagerResultComparator`) must be safe for concurrent use; stateless ones are.
+
+## Writing your own container packing strategy
+
+A container packing strategy decides which containers to use, and in which order. The interfaces live in
 `com.github.skjolber.packing.api.packager.strategy`, so a strategy only needs the `api` module.
 
-- Implement `ContainerStrategy.pack(interrupt, session)`. The `PackagerSession` holds the
+- Implement `ContainerPackingStrategy.pack(interrupt, session)`. The `PackagerSession` holds the
   remaining boxes and the available containers (`getContainerInventory()`).
 - `attempt(containerIndex, best, abortOnAnyBoxTooBig)` packs as many of the remaining boxes as
   possible into a container type, without changing the session. `peek(containerIndex, existing)`
@@ -103,23 +131,32 @@ A container strategy decides which containers to use, and in which order. The in
   restarts the packaging operation. Both are independent of the original session, so alternatives
   can be explored in parallel, one thread per session.
 
-Configure the strategy with a `ContainerStrategyFactory`, which is called once per packaging
+Configure the strategy with a `ContainerPackingStrategyFactory`, which is called once per packaging
 operation:
 
 ```java
 try (PlainPackager packager = PlainPackager.newBuilder()
-        .withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy())
+        .withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy())
         .build()) {
     // ...
 }
 ```
 
-All packager builders have `withContainerStrategyFactory(..)`; for `CompositePackager`, the strategy
+`create(inventory, boxItems, boxItemGroups, comparator, emptyResultSupplier)` receives the available containers, the
+remaining box items (null when packing box item groups) or box item groups (null when packing box items), and the
+packager's own `IntermediatePackagerResultComparator` and empty-result supplier. A strategy which compares results, or
+returns an empty result, should use these (the built-in `OrderedContainerPackingStrategy`,
+`LowestCostContainerPackingStrategy` and `ParallelContainerPackingStrategy` take them as constructor arguments), so that
+it follows a custom comparator which the packager was configured with. Return a new strategy for every call (or a
+stateless one): the packager uses a strategy for one packaging operation and does not share it. Packagers are thread-safe,
+so the factory can be called concurrently; implementations must be safe for concurrent use.
+
+All packager builders have `withContainerPackingStrategyFactory(..)`; for `CompositePackager`, the strategy
 also applies to the baseline packagers. `LargestContainerFirstStrategy` and
 `BackToFrontPlacementComparator` in the `test` module (package
 `com.github.skjolber.packing.test.example`) are complete examples which depend on the `api` module
 only. The built-in strategies are in the `core` package
-`com.github.skjolber.packing.packer.strategy`; `DefaultContainerStrategyFactory` chooses between
+`com.github.skjolber.packing.packer.strategy`; `DefaultContainerPackingStrategyFactory` chooses between
 them.
 
 ## Packagers in a composite
@@ -139,5 +176,5 @@ session is accepted by all of them.
   packager cannot pack; the composite then skips it.
 - To let a costly packager skip work, compare results by load volume first and say so with
   `IntermediatePackagerResultComparator.prefersHigherLoadVolume()`: the composite and the ordered container
-  strategy then pass the best result so far to `attempt(..)`.
+  packing strategy then pass the best result so far to `attempt(..)`.
 

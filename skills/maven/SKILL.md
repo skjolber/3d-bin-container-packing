@@ -13,6 +13,7 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 |---|---|
 | `api` | Public interfaces and data model |
 | `points` | Free-space point tracking |
+| `validators` | Result and load validators |
 | `core` | Packager algorithm implementations |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |

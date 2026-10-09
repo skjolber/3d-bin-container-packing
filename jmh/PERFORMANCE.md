@@ -33,8 +33,8 @@ End-to-end packing throughput of 5.0.0 (branch `boxItemConstraints`, commit `c75
   of a later box would fit. 5.0 keeps them (the smallest area over all rotations of the remaining boxes), which is the
   likely reason fast brute force is slower on the small Egy orders.
 - Most benchmarks of 5.0 have no 4.2 counterpart: LAFF, support and full support, load limits
-  (`constraint.*Benchmark`), box item groups (`GroupBruteForceBenchmark`) and container strategies
-  (`ContainerStrategyBenchmark`).
+  (`constraint.*Benchmark`), box item groups (`GroupBruteForceBenchmark`) and container packing strategies
+  (`ContainerPackingStrategyBenchmark`).
 - The gains come from the point calculation, the placement search (point bounds, the support index, comparing
   candidates before validating loads), load validation which visits each placement once, the iterative brute-force
   search with boxes shared instead of copied, and the final optimizations of the 5.0 changes (commits `46e36a07` to

@@ -2,10 +2,10 @@
 
 | Module (`-pl`) | Contents |
 |---|---|
-| `api` | Public model and interfaces: `Box`, `BoxItem`, `BoxStackValue`, `Container`, `Placement`, `Packager`, interrupts, controls, container strategies |
+| `api` | Public model and interfaces: `Box`, `BoxItem`, `BoxStackValue`, `Container`, `Placement`, `Packager`, interrupts, controls, container packing strategies |
 | `points` | Extreme-point / free-space tracking (`ep.points2d`, `ep.points3d`) |
 | `validators` | Result and load validators |
-| `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`), permutation iterators (`iterator`), container strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
+| `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`, `packer.composite`), permutation iterators (`iterator`), container packing strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
 | `visualizer/*` | Visualizer applications |

@@ -82,7 +82,8 @@ where only the level's boxes can support it; a group fails when a later box of i
 
 The composite packager in the table has a plain stage and a fast brute-force stage; it skips stages which reject
 the input. Calculated support (`withCalculateSupport(..)`) and custom placement controls
-(`withPlacementControlsBuilderFactory(..)`) are builder options of the plain and LAFF packagers only.
+(`withPlacementControlsBuilderFactory(..)`, also with a consumer which configures the default controls) are builder options of the
+plain and LAFF packagers only.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
 filled factor grids for repeated items, container-sized grid blocks for counts
@@ -116,8 +117,8 @@ operation directly, retaining the delegate's normal result semantics.
 - Parallel evaluation of eligible container candidates using an application
   supplied executor.
 - Cost estimation and exact cost calculation helpers for box items and groups.
-- Custom container strategies (`withContainerStrategyFactory(..)` on the packager
-  builders), which only need the `api` module.
+- Custom container packing strategies (`withContainerPackingStrategyFactory(..)` on the packager
+  builders), which only need the `api` module. The factory receives the packager's result comparator.
 
 The default strategy chooses an ordered strategy unless cost information is
 available. Cost-aware and heuristic strategies aim for good results; they do
@@ -180,7 +181,7 @@ on which, so results from any packager can be validated.
   validation reasons on the boxes they concern, colour modes for groups,
   support and load, and the centre of gravity.
 - JMH benchmarks for packagers, iterators, point calculators, and container
-  strategies.
+  packing strategies.
 - Thread-safe packager instances; selected algorithms also offer explicit
   parallel execution.
 

@@ -460,7 +460,10 @@ PlainPackager packager = PlainPackager
     .build();
 ```
 
-The LAFF packager builders have the same options. The brute-force packager builders have `withRequireFullSupport(true)`:
+The LAFF packager builders have the same options. The options are also available on the placement controls, with
+`withPlacementControlsBuilderFactory(b -> b.withCalculateSupport(true))` on the plain and LAFF builders (and
+`withFirstPlacementControlsBuilderFactory(..)` for the first placement of a LAFF level), where they have the same effect,
+and which also take a box item comparator and a placement ranking. The brute-force packager builders have `withRequireFullSupport(true)`:
 boxes are placed only where they rest completely on the floor or on the boxes below, at the free points and shifted from
 a free point onto the corner of a box below (as the plain packager does when no free point holds a box fully supported).
 Boxes do not rest on obstacles. Brute force has no `withCalculateSupport(..)`: it keeps the arrangement with the most
@@ -471,10 +474,10 @@ Give container types a cost to prefer cheaper combinations of containers, using
 `ContainerItem.newListBuilder().withContainer(container, count, costCalculator)` with an
 implementation of `ContainerCostCalculator` (see `com.github.skjolber.packing.cost`).
 
-## Container strategies
-A container strategy decides which containers to use, and in which order. By default, containers
+## Container packing strategies
+A container packing strategy decides which containers to use, and in which order. By default, containers
 are tried in the supplied (preference) order, or the cheapest combination is searched for when the
-containers have costs. Supply your own with `withContainerStrategyFactory(..)` on the packager
+containers have costs. Supply your own with `withContainerPackingStrategyFactory(..)` on the packager
 builders; see [DEVELOPER.md](DEVELOPER.md).
 
 ## Combining packagers
@@ -488,10 +491,10 @@ CompositePackager packager = CompositePackager.newBuilder()
 ```
 
 The first packager (or those added with `withBaselinePackager(..)`) first packs the whole order, giving a
-baseline result. Then, for each container the container strategy attempts, the packagers are tried in order
+baseline result. Then, for each container the container packing strategy attempts, the packagers are tried in order
 until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
 The better result is returned (see `PackagerResultComparator`), and the baseline if the deadline passes.
-A container strategy set with `withContainerStrategyFactory(..)` applies to the baseline too.
+A container packing strategy set with `withContainerPackingStrategyFactory(..)` applies to the baseline too.
 
 For random orders in the shipping containers of issue #1158, a plain and fast brute force composite (200 ms budget)
 packed every order, with 2-6 % less container volume than the plain packager, at 10-60 ms per order; brute force alone
@@ -515,6 +518,8 @@ boolean valid = validator.isValid(container.getStack().getPlacements(), reasons)
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
 
 In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
+
+The control and strategy interfaces are part of the `api` module. The classes of `core` can be extended too, but are not a stable contract: they may change in any release (see [DEVELOPER.md](DEVELOPER.md)).
 
 `Controls` must be provided as follows:
 
@@ -599,7 +604,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * 5.0.0: Major release. Breaking changes.
      * Box load constraints: max load weight, pressure, box count and identical boxes only
      * Support calculation + full support for plain and LAFF packagers; full support for the brute-force packagers
-     * Container costs and container strategies (ordered, parallel, allocation), and custom container strategies
+     * Container costs and container packing strategies (ordered, parallel, allocation), and custom container packing strategies
      * `CompositePackager`: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
@@ -622,7 +627,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * The brute-force packagers support a box item order (`Order.CHRONOLOGICAL`, also with skipping: `Order.CHRONOLOGICAL_ALLOW_SKIPPING`) and container priorities; the parallel ones search such inputs on one thread
         * Brute-force packing of box item groups no longer fails with an `ArrayIndexOutOfBoundsException` when the boxes have different numbers of rotations (the group iterator kept the rotations of its last permutation)
         * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
-        * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container strategy)
+        * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container packing strategy)
         * The boxes of a box item group are inserted together, without boxes of other groups between them (previously they could be interleaved with other groups' boxes, by height)
         * The plain and LAFF packagers search all boxes of a box item group (previously a group which did not start at the first remaining box item was searched partly or not at all, so groups were moved to further containers, or packing failed)
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
@@ -637,11 +642,16 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Validators moved to a separate `validators` artifact (package `com.github.skjolber.packing.validator`)
         * `CenterOfGravityStabilityValidator.isPlacementStable(..)` and `CenterOfGravitySupportStabilityValidator.isPlacementStableSupport(..)` take a `SupportGraph`
         * Interrupts / deadlines moved from `core` (`com.github.skjolber.packing.deadline`) to `api` (`com.github.skjolber.packing.api.interrupt`)
-        * `PackagerException` moved from `core` (`com.github.skjolber.packing.packer`) to `api` (`com.github.skjolber.packing.api`); `ParallelBruteForcePackagerException` now extends it
+        * `PackagerException` moved from `core` (`com.github.skjolber.packing.packer`) to `api` (`com.github.skjolber.packing.api`)
         * `PlacementComparator` now compares two `Placement`s (`compare(a, b)`, positive when `a` is better). Comparators are built by a `PlacementComparatorFactory`, by default `DefaultPlacementComparatorFactory` in `core`
         * Decision-making interfaces are in `api`, so that custom behaviour only needs `api`: `PlacementComparator`, `PlacementComparatorFactory` and `PlacementComparatorAttribute` (`com.github.skjolber.packing.api.packager.control.placement`), and `IntermediatePackagerResult` and `IntermediatePackagerResultComparator`, moved from `core` to `com.github.skjolber.packing.api.packager`
-        * Container strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerStrategy`, `ContainerStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
-        * Configure a container strategy with the packager builders' `withContainerStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is removed
+        * Container packing strategies are in `api` (`com.github.skjolber.packing.api.packager.strategy`): `ContainerPackingStrategy`, `ContainerPackingStrategyFactory`, `ContainerResult` and `ContainerItemsResult`. `PackagerAdapter` is renamed to `PackagerSession` (without `reset()`; use `fresh()`), strategies see the containers as a `ContainerInventory`, and `PackagerInterruptedException` moved to `com.github.skjolber.packing.api.interrupt`
+        * Configure a container packing strategy with the packager builders' `withContainerPackingStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is no longer public
+        * Container packing strategies are named consistently: `ContainerStrategy` is renamed to `ContainerPackingStrategy`, `ContainerStrategyFactory` to `ContainerPackingStrategyFactory`, the builder option `withContainerStrategyFactory(..)` to `withContainerPackingStrategyFactory(..)`, and in `core` `FewestContainersFitContainerStrategy`, `LowestCostFitContainerStrategy` and `BruteForceContainerStrategy` to `FewestContainersFitContainerPackingStrategy`, `LowestCostFitContainerPackingStrategy` and `BruteForceContainerPackingStrategy` (and `DefaultContainerStrategyFactory` to `DefaultContainerPackingStrategyFactory`)
+        * `ContainerPackingStrategyFactory.create(..)` also receives the packager's `IntermediatePackagerResultComparator` and its empty-result supplier (`create(inventory, boxItems, boxItemGroups, comparator, emptyResultSupplier)`), which the built-in strategies need, so that a custom factory uses the comparator which the packager was configured with. `DefaultContainerPackingStrategyFactory` is stateless (a no-argument constructor; the constructors taking strategies or a comparator are removed) and creates a new strategy for every call, instead of returning shared instances. The factory may be called concurrently, and a returned strategy is used for one packaging operation only
+        * The extension interfaces document their contracts: factories and comparators supplied to packagers (`ManifestControlsBuilderFactory`, `PointControlsBuilderFactory`, `PlacementControlsBuilderFactory`, `PlacementComparatorFactory`, `BoxItemComparator`, `BoxItemGroupComparator`, `IntermediatePackagerResultComparator` and `ContainerPackingStrategyFactory`) must be safe for concurrent use, as packagers (for example the parallel ones) call them from several threads. Packagers reuse the result of a container for another container only if the containers' manifest controls and point controls factories are equal (`equals(..)`): implement `equals(..)` and `hashCode()` on them (or share one instance), as lambdas never compare equal. `BoxItemSource`, `ManifestControls` and `ManifestListener` (callback order), `PlacementControls` and `PointCalculator` are documented too
+        * `ParallelBruteForcePackagerException` removed: the parallel brute-force builder's `build()` throws `IllegalStateException` for both a thread count combined with an executor service and a custom executor service without a parallelization count (was `IllegalArgumentException` and `ParallelBruteForcePackagerException`); the setters still throw `IllegalArgumentException` for illegal values. The parallel brute-force, plain and LAFF builders no longer change their own state in `build()`, so a builder can build several packagers (previously the second `build()` threw an exception if support or a thread count was set)
+        * `PlainPackager.Builder.PlacementControlsBuilderFactoryBuilder` moved to `com.github.skjolber.packing.packer.PlacementControlsBuilderFactoryBuilder`, and the LAFF builders have the plain builder's consumer overloads `withPlacementControlsBuilderFactory(Consumer)` and `withFirstPlacementControlsBuilderFactory(Consumer)`. Through the consumer, `withCalculateSupport(true)` now also ranks placements by support (as the builder's `withCalculateSupport(true)` does; previously support was calculated but not used for ranking), and a `DefaultPlacementComparatorFactory.Builder` is compiled once instead of for every container
         * `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a result with less load volume than `best`; strategies which pass the best result so far must handle this
         * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
@@ -670,7 +680,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `PackagerInterruptSupplierBuilder`: `builder()` renamed to `newBuilder()`, and `withScheduledThreadPoolExecutor(..)` to `withScheduledExecutorService(..)`, which takes any `ScheduledExecutorService`. `PackagerInterruptedException` carries no stack trace
         * `ContainerItem.MAX_LOAD_VOLUME_COMPARATOR` and `MAX_LOAD_WEIGHT_COMPARATOR` removed
         * Unused types and members removed: `CopyablePackagerInterruptSupplier` (was `ClonablePackagerInterruptSupplier`), `PointSourceBuilder`, `PointSourceBuilderFactory` and `EmptyPointSource`; `PointControlsBuilder.withStability(..)`, `AbstractPointControlsBuilder.withBoxItemGroups(..)` and the box items argument of the `DefaultManifestControls` constructor; `AbstractPackager.getFitsInside(..)`, `getBoxItemsFitsInside(..)`, `removeEmpty(..)` and `getScheduledThreadPoolExecutor()`
-        * Leftover `Stackable` and typo names in the iterators: `BoxItemPermutationRotationIterator.getMinStackableAreaIndex(..)` is renamed to `getMinBoxAreaIndex(..)` and `ParallelBoxItemGroupPermutationRotationIterator.preventOptmisation()` to `preventOptimisation()`. `BinarySearchIterator.reset(..)` takes `(low, high)`, like its constructor (was `(high, low)`)
+        * Leftover `Stackable` names and unused members in the iterators: `BoxItemPermutationRotationIterator.getMinStackableAreaIndex(..)` was removed (it had no callers), and so were `AbstractBoxItemPermutationRotationIterator.getMinStackableArea(int)` (also without callers), `ParallelBoxItemGroupPermutationRotationIterator.preventOptmisation()` and its padding fields `t0` to `t15`. `BinarySearchIterator.reset(..)` takes `(low, high)`, like its constructor (was `(high, low)`)
         * `BruteForceIntermediatePackagerResult.containsLastStackable()` renamed to `containsLastBox()`, and `getSize()` removed (it was the same as `getBoxCount()`)
         * The `ContainerInventory` implementations are renamed: `ContainerItemsCalculator` to `DefaultContainerInventory`, `BoxItemsContainerItemsCalculator` to `BoxItemsContainerInventory` and `BoxItemGroupsContainerItemsCalculator` to `BoxItemGroupsContainerInventory`
         * The sessions of the LAFF packagers are named after them: `AbstractLargestAreaFitFirstPackager.PlainBoxItemSession` and `PlainBoxItemGroupSession` are renamed to `LargestAreaFitFirstBoxItemSession` and `LargestAreaFitFirstBoxItemGroupSession`
