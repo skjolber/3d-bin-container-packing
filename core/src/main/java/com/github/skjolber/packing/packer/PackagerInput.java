@@ -48,7 +48,7 @@ public class PackagerInput {
 	}
 
 	/**
-	 * @return the same input with copies of the container items and boxes, so that a session can change their counts
+	 * @return the same input with copies of the container items and box items (the boxes are shared), so that a session can change their counts
 	 */
 	public PackagerInput withCopies() {
 		List<ContainerItem> containerItemCopies = new ArrayList<>(containerItems.size());

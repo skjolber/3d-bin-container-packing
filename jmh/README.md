@@ -22,12 +22,12 @@ Get familiar with JMH:
  
 Download a profiler like [VisualVM](https://visualvm.github.io/) for drilling down to method level during development.
 
-In this project, there is end-to-end tests in the which touches the most commonly used code paths.
+In this project, there are end-to-end benchmarks which touch the most commonly used code paths: `EgyPackagerBenchmark` (small orders), `TychoBenchmark` and `BouwkampCodeBruteForcePackagerBenchmark`.
 
-Execute `PackagerBenchmark` using the command
+Execute `EgyPackagerBenchmark` using the command
 
 ```
-mvn clean package && java -jar jmh/target/benchmark.jar PackagerBenchmark -rf json
+mvn clean package && java -jar jmh/target/benchmark.jar EgyPackagerBenchmark -rf json
 ```
 
 and view the resulting `jmh-result.json` by dropping the file into a [visualizer](https://jmh.morethan.io).

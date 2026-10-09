@@ -36,7 +36,7 @@ See [AGENTS.md](AGENTS.md) for targeted tests, concurrency options, and failure 
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
-For the previous version, see the [3.x](https://github.com/skjolber/3d-bin-container-packing/tree/3.x) branch.
+For the previous version, see the [4.2.3](https://github.com/skjolber/3d-bin-container-packing/tree/parent-4.2.3) tag.
 
 <details>
   <summary>Maven coordinates</summary>
@@ -135,8 +135,8 @@ if(result.isSuccess()) {
 }
 ```
 
-The placements (`match.getStack().getPlacements()`) refer to copies of the input boxes; identify them by
-`placement.getStackValue().getBox().getId()`.
+The placements (`match.getStack().getPlacements()`) refer to the input `Box` instances themselves (`placement.getBox()`);
+`placement.getBoxItem()` returns the session's copy of the box item, with the same `getGlobalIndex()` as the input's.
 
 Use a maximum number of containers:
 
@@ -151,8 +151,8 @@ PackagerResult result = packager
     .build();
 ```
 
-Note that all `packager` instances are thread-safe. Packing works on copies of the input boxes and containers, so boxes
-can be shared between threads; it only assigns global indexes to box items which have none.
+Note that all `packager` instances are thread-safe. Packing works on copies of the input box items and container items; boxes and their stack values are shared, as they are
+never modified, so boxes can be shared between threads. It only assigns global indexes to box items which have none.
 
 ### Plain packager
 A simple packager
@@ -195,7 +195,16 @@ packager searches a box item order, or box items with container priorities, on o
 be split between threads. For box item groups without a box item order, it splits the orders of the groups between its
 threads (or, for a few groups with many boxes, the permutations of each order), with the same result as on one thread.
 
-Using a deadline is recommended whenever brute-forcing in a real-time application.
+Using a deadline is recommended whenever brute-forcing in a real-time application:
+
+```java
+PackagerResult result = packager
+    .newResultBuilder()
+    .withContainerItems(containerItems)
+    .withBoxItems(products)
+    .withInterruptDuration(1000) // milliseconds from now; or withInterruptDeadline(System.currentTimeMillis() + 1000)
+    .build();
+```
 
 ### Virtual-box preprocessing
 
@@ -527,6 +536,44 @@ The control and strategy interfaces are part of the `api` module. The classes of
     * builder
        * controls
 
+Manifest controls and point controls belong to a container item, so container types can have different rules. Set the
+factories with the container item builder of the result builder:
+
+```java
+Container container = ...;
+ManifestControlsBuilderFactory manifestControls = ...; // your own implementation
+PointControlsBuilderFactory pointControls = ...;       // your own implementation
+
+PackagerResult result = packager
+    .newResultBuilder()
+    .withContainerItem(b -> b
+        .withContainerItem(container, 5)
+        .withManifestControlsBuilderFactory(manifestControls)
+        .withPointControlsBuilderFactory(pointControls))
+    .withBoxItems(products)
+    .withMaxContainerCount(5)
+    .build();
+```
+
+or on a `ContainerItem`, before passing it to `withContainerItems(..)`:
+
+```java
+ContainerItem containerItem = new ContainerItem(container, 5);
+containerItem.setManifestControlsBuilderFactory(manifestControls);
+containerItem.setPointControlsBuilderFactory(pointControls);
+
+PackagerResult result = packager
+    .newResultBuilder()
+    .withContainerItems(containerItem)
+    .withBoxItems(products)
+    .withMaxContainerCount(5)
+    .build();
+```
+
+Placement controls are set on the packager builder instead, with `withPlacementControlsBuilderFactory(..)`. A packager reuses the result
+of one container for another only if their manifest controls and point controls factories are equal; implement `equals(..)`
+and `hashCode()` on them, or share one instance (see [DEVELOPER.md](DEVELOPER.md)).
+
 ### Manifest-controls
 Determines which boxes go into which containers, i.e. in which combinations. 
 
@@ -624,14 +671,14 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Brute-force packagers no longer reduce the counts of the box items passed in when packing uses several containers
         * Packing with several container types no longer gives up when each box fits only some of the types (the feasibility check used box indexes which change during packing)
         * Brute-force packing of box item groups over three or more containers no longer fails with a `NullPointerException`
-        * The brute-force packagers support a box item order (`Order.CHRONOLOGICAL`, also with skipping: `Order.CHRONOLOGICAL_ALLOW_SKIPPING`) and container priorities; the parallel ones search such inputs on one thread
+        * The brute-force packagers support a box item order (`Order.CHRONOLOGICAL`, also with skipping: `Order.CHRONOLOGICAL_ALLOW_SKIPPING`) and container priorities; the parallel one searches such inputs on one thread
         * Brute-force packing of box item groups no longer fails with an `ArrayIndexOutOfBoundsException` when the boxes have different numbers of rotations (the group iterator kept the rotations of its last permutation)
         * Brute-force packagers use the first container type which holds the boxes: when a result was reused for another container type, the copy had no load volume and was never selected, so larger containers were used
         * `FastBruteForcePackager` reports interrupted packings as timeouts, like the other packagers (previously no result, or a `NullPointerException` in the container packing strategy)
         * The boxes of a box item group are inserted together, without boxes of other groups between them (previously they could be interleaved with other groups' boxes, by height)
         * The plain and LAFF packagers search all boxes of a box item group (previously a group which did not start at the first remaining box item was searched partly or not at all, so groups were moved to further containers, or packing failed)
         * Brute-force packing of box item groups no longer fails when a group does not fit some container types (the volume and weight check was inverted). Groups are packed in order: a container takes the remaining groups up to the first which does not fit it
-        * Packing works on copies of the boxes and containers: result placements refer to copies of the input boxes (match them by id), and boxes can be shared between threads
+        * Packing works on copies of the box items and container items: result placements refer to the input boxes themselves (`Placement.getBox()`) and to the session's copy of the box item (`Placement.getBoxItem()`, with the same global index), and boxes can be shared between threads
         * Brute force skips permutations and containers which cannot load more than the best result so far, when the result comparator compares load volume first (`IntermediatePackagerResultComparator.prefersHigherLoadVolume()`); results are unchanged
         * The load and stability validators find which boxes rest on which from the placements' positions (`SupportGraph`), instead of the support links recorded by the packager. Results from packagers without load limits or support, and hand-made results, are now validated too (previously they passed without being checked)
         * A box placed into a gap under boxes which are already there carries part of their weight: the packagers with load limits now record this when the box is accepted, so later placements are checked against the actual loads (previously the relief for the boxes below was assumed when the box was placed, but not recorded, and boxes could be overloaded)
@@ -649,11 +696,11 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * Configure a container packing strategy with the packager builders' `withContainerPackingStrategyFactory(..)`; `AbstractPackager.setContainerPackingStrategyFactory(..)` is no longer public
         * Container packing strategies are named consistently: `ContainerStrategy` is renamed to `ContainerPackingStrategy`, `ContainerStrategyFactory` to `ContainerPackingStrategyFactory`, the builder option `withContainerStrategyFactory(..)` to `withContainerPackingStrategyFactory(..)`, and in `core` `FewestContainersFitContainerStrategy`, `LowestCostFitContainerStrategy` and `BruteForceContainerStrategy` to `FewestContainersFitContainerPackingStrategy`, `LowestCostFitContainerPackingStrategy` and `BruteForceContainerPackingStrategy` (and `DefaultContainerStrategyFactory` to `DefaultContainerPackingStrategyFactory`)
         * `ContainerPackingStrategyFactory.create(..)` also receives the packager's `IntermediatePackagerResultComparator` and its empty-result supplier (`create(inventory, boxItems, boxItemGroups, comparator, emptyResultSupplier)`), which the built-in strategies need, so that a custom factory uses the comparator which the packager was configured with. `DefaultContainerPackingStrategyFactory` is stateless (a no-argument constructor; the constructors taking strategies or a comparator are removed) and creates a new strategy for every call, instead of returning shared instances. The factory may be called concurrently, and a returned strategy is used for one packaging operation only
-        * The extension interfaces document their contracts: factories and comparators supplied to packagers (`ManifestControlsBuilderFactory`, `PointControlsBuilderFactory`, `PlacementControlsBuilderFactory`, `PlacementComparatorFactory`, `BoxItemComparator`, `BoxItemGroupComparator`, `IntermediatePackagerResultComparator` and `ContainerPackingStrategyFactory`) must be safe for concurrent use, as packagers (for example the parallel ones) call them from several threads. Packagers reuse the result of a container for another container only if the containers' manifest controls and point controls factories are equal (`equals(..)`): implement `equals(..)` and `hashCode()` on them (or share one instance), as lambdas never compare equal. `BoxItemSource`, `ManifestControls` and `ManifestListener` (callback order), `PlacementControls` and `PointCalculator` are documented too
+        * The extension interfaces document their contracts: factories and comparators supplied to packagers (`ManifestControlsBuilderFactory`, `PointControlsBuilderFactory`, `PlacementControlsBuilderFactory`, `PlacementComparatorFactory`, `BoxItemComparator`, `BoxItemGroupComparator`, `IntermediatePackagerResultComparator` and `ContainerPackingStrategyFactory`) must be safe for concurrent use, as packagers (for example the parallel brute-force packager and `ParallelContainerPackingStrategy`) call them from several threads. Packagers reuse the result of a container for another container only if the containers' manifest controls and point controls factories are equal (`equals(..)`): implement `equals(..)` and `hashCode()` on them (or share one instance), as lambdas never compare equal. Containers without controls are equal to each other, but a result packed without controls is not reused for a container with controls, which would have ignored them (previously it was). `DefaultPointControlsBuilderFactory` is stateless, so its instances are equal. `BoxItemSource`, `ManifestControls` and `ManifestListener` (callback order), `PlacementControls` and `PointCalculator` are documented too
         * `ParallelBruteForcePackagerException` removed: the parallel brute-force builder's `build()` throws `IllegalStateException` for both a thread count combined with an executor service and a custom executor service without a parallelization count (was `IllegalArgumentException` and `ParallelBruteForcePackagerException`); the setters still throw `IllegalArgumentException` for illegal values. The parallel brute-force, plain and LAFF builders no longer change their own state in `build()`, so a builder can build several packagers (previously the second `build()` threw an exception if support or a thread count was set)
-        * `PlainPackager.Builder.PlacementControlsBuilderFactoryBuilder` moved to `com.github.skjolber.packing.packer.PlacementControlsBuilderFactoryBuilder`, and the LAFF builders have the plain builder's consumer overloads `withPlacementControlsBuilderFactory(Consumer)` and `withFirstPlacementControlsBuilderFactory(Consumer)`. Through the consumer, `withCalculateSupport(true)` now also ranks placements by support (as the builder's `withCalculateSupport(true)` does; previously support was calculated but not used for ranking), and a `DefaultPlacementComparatorFactory.Builder` is compiled once instead of for every container
+        * `PlainPackager.Builder.PlacementControlsBuilderFactoryBuilder` moved to `com.github.skjolber.packing.packer.PlacementControlsBuilderFactoryBuilder`, and the LAFF builders have the plain builder's consumer overloads `withPlacementControlsBuilderFactory(Consumer)` and `withFirstPlacementControlsBuilderFactory(Consumer)`. Through the consumer, `withCalculateSupport(true)` now also ranks placements by support (as the builder's `withCalculateSupport(true)` does; previously support was calculated but not used for ranking), and a `DefaultPlacementComparatorFactory.Builder` is compiled once instead of for every container. The consumer overload for the ranking is `PlacementControlsBuilderFactoryBuilder.withPlacementComparators(Consumer<DefaultPlacementComparatorFactory.Builder>)`, named differently from `withPlacementComparatorFactory(PlacementComparatorFactory)` so that implicit lambdas are not ambiguous
         * `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a result with less load volume than `best`; strategies which pass the best result so far must handle this
-        * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the boxes and containers. `DefaultControlsPackagerResultBuilder` is removed
+        * Packagers create sessions with `AbstractPackager.createSession(PackagerInput, ..)`; subclasses implement `newSession(..)`, and each session works on its own copies of the box items and container items. `DefaultControlsPackagerResultBuilder` is removed
         * `ControlledContainerItem` removed: `ContainerItem` now holds the per-container controls (manifest and point controls, initial points, cost); `PackagerResultBuilder.ControlledContainerItemBuilder` renamed to `ContainerItemBuilder`
         * `clone()` methods renamed to `copy()` (they are copy constructors, not `Object.clone()`), including `Point.copy(maxX, maxY, maxZ)`
         * Builder options which had no effect removed: `withPoints(..)` on the brute-force packager builders and `withFirstBoxItemGroupComparator(..)` on the LAFF builders
@@ -679,12 +726,18 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
         * `Dimension` (`com.github.skjolber.packing.api`) removed: the one-dimensional point calculator takes its direction as `DefaultPointCalculator1D.Axis`
         * `PackagerInterruptSupplierBuilder`: `builder()` renamed to `newBuilder()`, and `withScheduledThreadPoolExecutor(..)` to `withScheduledExecutorService(..)`, which takes any `ScheduledExecutorService`. `PackagerInterruptedException` carries no stack trace
         * `ContainerItem.MAX_LOAD_VOLUME_COMPARATOR` and `MAX_LOAD_WEIGHT_COMPARATOR` removed
-        * Unused types and members removed: `CopyablePackagerInterruptSupplier` (was `ClonablePackagerInterruptSupplier`), `PointSourceBuilder`, `PointSourceBuilderFactory` and `EmptyPointSource`; `PointControlsBuilder.withStability(..)`, `AbstractPointControlsBuilder.withBoxItemGroups(..)` and the box items argument of the `DefaultManifestControls` constructor; `AbstractPackager.getFitsInside(..)`, `getBoxItemsFitsInside(..)`, `removeEmpty(..)` and `getScheduledThreadPoolExecutor()`
+        * Unused types and members removed: `CopyablePackagerInterruptSupplier` (was `ClonablePackagerInterruptSupplier`), `PointSourceBuilder`, `PointSourceBuilderFactory` and `EmptyPointSource`; `PointControlsBuilder.withStability(..)`, `AbstractPointControlsBuilder.withBoxItemGroups(..)` and the box items argument of the `DefaultManifestControls` constructor; `AbstractPackager.getFitsInside(..)`, `getBoxItemsFitsInside(..)`, `removeEmpty(..)` and `getScheduledThreadPoolExecutor()`; `PointCalculator.remove(Predicate)` (it had no callers, and kept the points which the predicate accepted, despite its name)
         * Leftover `Stackable` names and unused members in the iterators: `BoxItemPermutationRotationIterator.getMinStackableAreaIndex(..)` was removed (it had no callers), and so were `AbstractBoxItemPermutationRotationIterator.getMinStackableArea(int)` (also without callers), `ParallelBoxItemGroupPermutationRotationIterator.preventOptmisation()` and its padding fields `t0` to `t15`. `BinarySearchIterator.reset(..)` takes `(low, high)`, like its constructor (was `(high, low)`)
         * `BruteForceIntermediatePackagerResult.containsLastStackable()` renamed to `containsLastBox()`, and `getSize()` removed (it was the same as `getBoxCount()`)
         * The `ContainerInventory` implementations are renamed: `ContainerItemsCalculator` to `DefaultContainerInventory`, `BoxItemsContainerItemsCalculator` to `BoxItemsContainerInventory` and `BoxItemGroupsContainerItemsCalculator` to `BoxItemGroupsContainerInventory`
         * The sessions of the LAFF packagers are named after them: `AbstractLargestAreaFitFirstPackager.PlainBoxItemSession` and `PlainBoxItemGroupSession` are renamed to `LargestAreaFitFirstBoxItemSession` and `LargestAreaFitFirstBoxItemGroupSession`
         * Unused types and members removed: `PackagerBoxItemPermutationRotationIterator`, `LowestCostContainersComparator` and `ParallelBruteForcePackager.shutdown()` (use `close()`, which only shuts down an executor which the builder created, not one passed in by the caller)
+        * The interrupt options of the result builders are renamed: `withDeadline(long)` to `withInterruptDeadline(long)` and `withInterrupt(BooleanSupplier)` to `withInterrupt(PackagerInterruptSupplier)`, and `withInterruptDuration(long)` is added (milliseconds from now). `PackagerInterruptSupplier` does not extend `BooleanSupplier`, so variables typed `BooleanSupplier` no longer compile; lambdas still do
+        * `BoxItem.getIndex()` and `setIndex(int)` are replaced by `getLocalIndex()` / `setLocalIndex(..)` (dense, changes during packing) and `getGlobalIndex()` / `setGlobalIndex(..)` (identifies the box item within a packaging operation, assigned once). The third argument of the three-argument constructor `BoxItem(Box, int, int)` is the local index
+        * The placement controls interfaces lost their type parameter, as they always handle `Placement`: `PlacementControls<R>`, `PlacementControlsBuilder<R>`, `PlacementControlsBuilderFactory<R>`, `AbstractPlacementControls<R>` and `AbstractLargestAreaFitFirstPackagerBuilder<R, B>` are now `PlacementControls`, `PlacementControlsBuilder`, `PlacementControlsBuilderFactory`, `AbstractPlacementControls` and `AbstractLargestAreaFitFirstPackagerBuilder<B>`. `PlacementControlsBuilder.withBoxItems(BoxItemSource, int, int)` is `withBoxItems(BoxItemSource)` (the range is passed to `PlacementControls.getPlacement(offset, length)` only), and the builder has `withMaxLoad(..)`, `withStability(..)` and `withLoadIdenticalBox(..)`, which the packagers use to pass on the load and support options. `PlacementControlsBuilderFactory.supportsLoad()` is added (default false: packagers reject boxes with load limits unless it returns true), and `PlacementControls` has the callbacks `accepted(Placement)` and `undo(List<Placement>)` (no-ops by default)
+        * Placement comparators in `core`: `LowerZDelegatePlacementComparator` and `VolumeWeightAreaMinZIntermediatePlacementResultComparator` are removed (use `comparator.placement.VolumeWeightAreaMinZPlacementComparator`, or `DefaultPlacementComparatorFactory` with for example `lowerZIsBetter()`), and `LargestAreaPlacementComparator` moved from `com.github.skjolber.packing.comparator` to `com.github.skjolber.packing.comparator.placement`
+        * `TooManyContainerIdsReason` is renamed to `UnknownContainerIdReason` (package `com.github.skjolber.packing.validator.reasons`, now in the `validators` artifact)
+        * Return types changed: `Container.getWeight()`, `getMaxWeight()` and `getLoadWeight()` and `Stack.getWeight()` return `long` (were `int`), `Box.getMinimumPressure()` and `getMaximumPressure()` return `double` (were `long`), and the comparator constants of `Point` (`X_COMPARATOR`, `COMPARATOR` and so on) are `Point.PointComparator` (were `java.util.Comparator<Point>`)
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).
  * 4.2.0: Obstacles.
  * 4.1.x: Validator.

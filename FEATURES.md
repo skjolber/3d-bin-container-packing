@@ -37,7 +37,8 @@ same physical container are valid, provide each orientation as a separate
 
 Brute-force packagers enforce box load limits when the boxes have them, can
 require full support (boxes rest completely on the floor or on the boxes below),
-remove duplicate rotations and can skip reverse-equivalent permutations (not when
+remove duplicate rotations; `BruteForcePackager` and `ParallelBruteForcePackager` can also skip
+reverse-equivalent permutations (`withSkipReversePermutations(..)`; not when
 the insertion order matters: extraction orders, container access, obstacles, load
 limits or full support). Without a box item order, they try every order of the box
 item groups for each container; the parallel packager splits the orders between its threads. They are exponential in the number of groups and
@@ -140,7 +141,7 @@ not prove a globally minimum-cost packing for arbitrary inputs.
 - Deliveries: an extraction order per box item or group (the boxes of each stop
   can be taken out without moving the boxes for later stops), and a container
   priority (urgent boxes in the first containers). The parallel brute-force
-  packagers search box items with container priorities on one thread.
+  packager searches box items with container priorities on one thread.
 - Optional stability checks: full support, minimum support percentage,
   centre-of-gravity support, and stack centre of gravity.
 - Deadlines and custom interruption suppliers for cancellable packing and
@@ -179,7 +180,7 @@ on which, so results from any packager can be validated.
 - Three.js-based visualiser intended for inspecting algorithms and results:
   result summaries, comparison of several results (for example packagers),
   validation reasons on the boxes they concern, colour modes for groups,
-  support and load, and the centre of gravity.
+  support, load and extraction order, and the centre of gravity.
 - JMH benchmarks for packagers, iterators, point calculators, and container
   packing strategies.
 - Thread-safe packager instances; selected algorithms also offer explicit

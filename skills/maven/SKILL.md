@@ -60,7 +60,7 @@ mvn spotless:apply          # auto-fix formatting
 ### Maven Shade — fat JAR (jmh module)
 ```bash
 mvn package -pl jmh -am -DskipTests
-java -jar jmh/target/benchmarks.jar
+java -jar jmh/target/benchmark.jar
 ```
 
 ### PiTest — mutation testing

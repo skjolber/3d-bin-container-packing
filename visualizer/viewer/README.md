@@ -14,7 +14,8 @@ then
  * left mouse click + drag: rotate view
  * right mouse click + drag: move view
  * p: show / hide points (free spaces)
- * c: colour mode: box item, group, support, load (relative to the max load weight)
+ * c: colour mode: box item, group, support, load (relative to the max load weight), extraction order
+ * space: fit the camera to the containers
  * r: next result, when comparing several results (or click a row in the comparison table)
- * W ans S : point step
- * 1 ans 2 : rotate in xy plane
+ * W and S : point step
+ * 1 and 2 : rotate in xy plane

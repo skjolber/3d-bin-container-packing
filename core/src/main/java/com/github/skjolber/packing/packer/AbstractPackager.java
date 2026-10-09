@@ -69,7 +69,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	}
 
 	/**
-	 * @param input the boxes and containers, which belong to the new session
+	 * @param input the box items and container items, which belong to the new session (the boxes are shared)
 	 * @param interrupt interrupt for the session's packing attempts
 	 * @return a session at the start of the packaging operation
 	 */

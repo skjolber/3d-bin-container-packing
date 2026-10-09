@@ -57,7 +57,9 @@ For the common case of ranking boxes and positions differently, the plain and LA
 `withFirstPlacementControlsBuilderFactory(b -> ..)` for LAFF) configure the default controls, including
 `withCalculateSupport(..)` and `withRequireFullSupport(..)`, which have the same effect as the builder options of the same name
 (as long as you do not set your own placement comparator: then rank by support yourself, for example with
-`higherSupportIsBetter()`).
+`higherSupportIsBetter()`). Rank with a fixed `PlacementComparator` (`withPlacementComparator(..)`), with a
+`DefaultPlacementComparatorFactory.Builder` (`withPlacementComparators(r -> r.lowerZIsBetter())`) or with your own
+`PlacementComparatorFactory` (`withPlacementComparatorFactory(..)`).
 
 Custom placement controls replace the default ones, so the packager options
 which configure the default controls (`withCalculateSupport(..)`,
@@ -91,15 +93,22 @@ change their box/coordinates during candidate evaluation. Test no-candidate case
 group rollback, repeated attempts and concurrency, and independently validate
 the final layouts when your rules concern load or stability.
 
-Manifest controls (`ManifestControlsBuilderFactory`, set per container with the container item builder) filter by removing
+Manifest controls (`ManifestControlsBuilderFactory`, set per container item) filter by removing
 box items from the shared `BoxItemSource`; point controls (`PointControlsBuilderFactory`) filter the points of each box item,
 and placement controls must ask them for the points (`PointControls.getPoints(boxItem)`) for the filter to have any effect.
 When a group cannot be fitted, `ManifestListener.undo(..)` is called on the manifest controls and the point controls, then
 `PlacementControls.undo(..)`, then `attemptFailure(..)` on the manifest and point controls. `attempt(group, offset, length)`
 is delivered to the manifest controls only.
 
+Wire manifest and point controls per container item: with the result builder's
+`withContainerItem(b -> b.withContainerItem(container, count).withManifestControlsBuilderFactory(..).withPointControlsBuilderFactory(..))`,
+or with `ContainerItem.setManifestControlsBuilderFactory(..)` and `setPointControlsBuilderFactory(..)` on a container item passed to
+`withContainerItems(..)` (see the README, "Packager controls", for an example). The plain and LAFF packagers use them; the brute-force packagers
+do not support controls and reject such inputs (`getUnsupportedReason(..)`).
+
 Packagers reuse the result of a container for another container when the containers' manifest controls and point controls
-factories are equal. Lambdas and method references of different expressions never compare equal, so reuse silently does not
+factories are equal (containers without controls are equal to each other, but a result which was packed without controls is not
+reused for a container with them). Lambdas and method references of different expressions never compare equal, so reuse silently does not
 happen for them: implement `equals(..)` and `hashCode()` on the factory (or use one instance for the containers) to enable it.
 Packagers run concurrently (for example under `ParallelContainerPackingStrategy` and the parallel brute-force packager), so
 factories and comparators you supply (the controls factories, `PlacementComparatorFactory`, `BoxItemComparator`,
@@ -166,8 +175,8 @@ them.
 `createSession(PackagerInput, interrupt)`, and keeps the sessions in sync: a result from one packager's
 session is accepted by all of them.
 
-- A packager implements `newSession(input, interrupt)`. The input's boxes and containers are copies which
-  belong to the new session.
+- A packager implements `newSession(input, interrupt)`. The input's box items and container items are copies which
+  belong to the new session; the boxes are shared, as they are never modified.
 - `accept(..)` must accept results from other packagers' sessions. Box items are identified by their global
   index (`BoxItem.getGlobalIndex()`), which is the same in all sessions for the same input; local indexes
   change during packing.

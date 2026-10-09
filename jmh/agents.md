@@ -4,7 +4,7 @@
 Microbenchmark suite using the OpenJDK JMH framework. Measures throughput and latency of packagers, iterators, and point calculators to detect regressions and guide performance optimisation.
 
 ## Key Packages
-- `com.github.skjolber.packing.jmh` — Packager benchmarks (`PackagerBenchmark`, `DeadlineBenchmark`, `EgyPackagerBenchmark`, `TychoBenchmark`) and shared state classes
+- `com.github.skjolber.packing.jmh` — Packager benchmarks (`EgyPackagerBenchmark`, `TychoBenchmark`, `BouwkampCodeBruteForcePackagerBenchmark`, `GroupBruteForceBenchmark`, `DeadlineBenchmark`) and shared state classes
 - `com.github.skjolber.packing.jmh.iterator` — Iterator benchmarks (`DefaultIteratorBenchmark`, `ParallelIteratorBenchmark`)
 - `com.github.skjolber.packing.jmh.ep` — Enhanced-point calculator benchmarks
 
@@ -28,7 +28,7 @@ mvn package -pl jmh -am -DskipTests
 java -jar jmh/target/benchmark.jar
 
 # Run a specific benchmark with custom settings
-java -jar jmh/target/benchmark.jar PackagerBenchmark -f 1 -wi 3 -i 5 -rf json -rff results.json
+java -jar jmh/target/benchmark.jar EgyPackagerBenchmark -f 1 -wi 3 -i 5 -rf json -rff results.json
 ```
 
 ## Dependencies

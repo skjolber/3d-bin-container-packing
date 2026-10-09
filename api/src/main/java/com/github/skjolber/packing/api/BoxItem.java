@@ -121,8 +121,8 @@ public class BoxItem {
 	}
 
 	/**
-	 * Identify the box item's group. Box items and groups are copied during packing, and a box refers to its latest
-	 * box item copy, so groups are identified by their index, which the copies keep.
+	 * Identify the box item's group. Box items and groups are copied during packing, so groups are identified by
+	 * their index, which the copies keep.
 	 *
 	 * @return the group's index, the group itself if it has no index, or null without a group
 	 */
