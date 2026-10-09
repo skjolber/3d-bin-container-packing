@@ -107,9 +107,16 @@ or with `ContainerItem.setManifestControlsBuilderFactory(..)` and `setPointContr
 do not support controls and reject such inputs (`getUnsupportedReason(..)`).
 
 Packagers reuse the result of a container for another container when the containers' manifest controls and point controls
-factories are equal (containers without controls are equal to each other, but a result which was packed without controls is not
-reused for a container with them). Lambdas and method references of different expressions never compare equal, so reuse silently does not
-happen for them: implement `equals(..)` and `hashCode()` on the factory (or use one instance for the containers) to enable it.
+factories are the same instance or carry the same id (`getId()`; the default is `null`, which never matches another instance).
+Containers without controls match each other, but a result which was packed without controls is not reused for a container with them.
+The id must cover everything which changes the controls' behaviour, so put the configuration in it, for example
+`"heavyItemsOnGroundLevel:" + maxWeight`. A lambda has no id; wrap it to let it take part in reuse:
+
+```java
+PointControlsBuilderFactory factory = PointControlsBuilderFactory.of("heavyItemsOnGroundLevel:" + maxWeight,
+    () -> HeavyItemsOnGroundLevelPointControls.newBuilder().withMaxWeight(maxWeight));
+```
+
 Packagers run concurrently (for example under `ParallelContainerPackingStrategy` and the parallel brute-force packager), so
 factories and comparators you supply (the controls factories, `PlacementComparatorFactory`, `BoxItemComparator`,
 `BoxItemGroupComparator` and `IntermediatePackagerResultComparator`) must be safe for concurrent use; stateless ones are.
