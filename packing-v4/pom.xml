@@ -1,0 +1,152 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+		<artifactId>parent</artifactId>
+		<version>5.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>packing-v4</artifactId>
+	<name>packing-v4</name>
+	<description>Version 4 (api, points and core) with its packages moved to com.github.skjolber.packing.v4, so that tests can compare 5.x with 4.x in one JVM. Not published.</description>
+
+	<properties>
+		<v4.version>4.2.3</v4.version>
+		<!-- no sources of its own -->
+		<maven.javadoc.skip>true</maven.javadoc.skip>
+		<maven.source.skip>true</maven.source.skip>
+		<jacoco.skip>true</jacoco.skip>
+	</properties>
+
+	<dependencies>
+		<!-- optional: shaded into this jar, and not passed on to the modules which use it, where they would clash with 5.x -->
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>api</artifactId>
+			<version>${v4.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>points</artifactId>
+			<version>${v4.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>core</artifactId>
+			<version>${v4.version}</version>
+			<optional>true</optional>
+		</dependency>
+		<!-- used by version 4 and kept under its own package: the same version as 5.x uses -->
+		<dependency>
+			<groupId>org.eclipse.collections</groupId>
+			<artifactId>eclipse-collections</artifactId>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!--
+			The classes are relocated in the process-classes phase and unpacked into target/classes, so that modules
+			which depend on this one get the relocated classes in a build which stops before the package phase
+			(mvn test), where Maven passes them target/classes instead of the jar.
+		 -->
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.4.2</version>
+				<executions>
+					<execution>
+						<!-- the shade plugin needs a main artifact: create it (empty) before the relocation -->
+						<id>default-jar</id>
+						<phase>process-classes</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<executions>
+					<execution>
+						<!-- the inherited execution builds the benchmark jar -->
+						<id>default</id>
+						<phase>none</phase>
+					</execution>
+					<execution>
+						<id>relocate</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<createDependencyReducedPom>false</createDependencyReducedPom>
+							<artifactSet>
+								<includes>
+									<include>com.github.skjolber.3d-bin-container-packing:*</include>
+								</includes>
+							</artifactSet>
+							<relocations>
+								<relocation>
+									<pattern>com.github.skjolber.packing</pattern>
+									<shadedPattern>com.github.skjolber.packing.v4</shadedPattern>
+								</relocation>
+							</relocations>
+							<filters>
+								<filter>
+									<artifact>*:*</artifact>
+									<excludes>
+										<!-- the module descriptors name the 5.x modules and packages -->
+										<exclude>module-info.class</exclude>
+										<exclude>META-INF/maven/**</exclude>
+									</excludes>
+								</filter>
+							</filters>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>unpack-relocated</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
+						<configuration>
+							<target>
+								<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.outputDirectory}">
+									<patternset>
+										<include name="com/**" />
+									</patternset>
+								</unzip>
+							</target>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.moditect</groupId>
+				<artifactId>moditect-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-module-infos</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.sonatype.central</groupId>
+				<artifactId>central-publishing-maven-plugin</artifactId>
+				<configuration>
+					<skipPublishing>true</skipPublishing>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
