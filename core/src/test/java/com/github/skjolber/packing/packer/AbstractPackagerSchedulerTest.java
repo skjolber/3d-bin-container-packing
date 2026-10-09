@@ -44,6 +44,13 @@ public class AbstractPackagerSchedulerTest {
 			}
 			assertThat(packager.scheduledThreadPoolExecutor.getPoolSize()).isEqualTo(1);
 			assertThat(packager.scheduledThreadPoolExecutor.getQueue()).isEmpty();
+
+			// an unclosed packager must not block JVM exit
+			for (Thread thread : Thread.getAllStackTraces().keySet()) {
+				if(thread.getName().equals("packing-packager-deadline")) {
+					assertThat(thread.isDaemon()).isTrue();
+				}
+			}
 		} finally {
 			packager.close();
 		}

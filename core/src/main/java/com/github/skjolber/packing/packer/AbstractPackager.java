@@ -40,8 +40,12 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	protected final boolean prefersHigherLoadVolume;
 	private volatile ContainerPackingStrategyFactory containerPackingStrategyFactory;
 	
-	/** The deadline tasks only flag expiry, so one thread is enough. */
-	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
+	/** The deadline tasks only flag expiry, so one daemon thread is enough. */
+	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, runnable -> {
+		Thread thread = new Thread(runnable, "packing-packager-deadline");
+		thread.setDaemon(true);
+		return thread;
+	});
 
 	public AbstractPackager(IntermediatePackagerResultComparator comparator) {
 		this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);

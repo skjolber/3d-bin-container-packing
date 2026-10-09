@@ -17,6 +17,17 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  */
 class BoxItemSourceTest {
 
+	@Test
+	void emptySourceMinimumsAreLargerThanAnyBox() {
+		DefaultBoxItemSource source = new DefaultBoxItemSource();
+		assertEquals(Long.MAX_VALUE, source.getMinVolume());
+		assertEquals(Long.MAX_VALUE, source.getMinArea());
+
+		ListBoxItemSource empty = new ListBoxItemSource(new ArrayList<>());
+		assertEquals(Long.MAX_VALUE, empty.getMinVolume());
+		assertEquals(Long.MAX_VALUE, empty.getMinArea());
+	}
+
 	private static class ListBoxItemSource implements BoxItemSource {
 
 		private final List<BoxItem> items;
