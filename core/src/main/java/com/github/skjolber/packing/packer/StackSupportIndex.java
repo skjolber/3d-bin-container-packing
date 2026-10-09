@@ -63,7 +63,8 @@ public class StackSupportIndex {
 
 	/**
 	 * Same result as {@link com.github.skjolber.packing.api.packager.control.placement.AbstractPlacementControls#calculateAreaSupport(List, int, int, int, BoxStackValue)}
-	 * (assuming placements in the stack do not overlap).
+	 * (assuming placements in the stack do not overlap). The floor is not counted (returns 0 at {@code minZ == 0}): callers must treat
+	 * {@code minZ == 0} as fully supported.
 	 */
 	public long calculateAreaSupport(List<Placement> stack, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		synchronize(stack);
@@ -97,6 +98,9 @@ public class StackSupportIndex {
 		return sum;
 	}
 
+	/**
+	 * The floor is not counted: callers must treat {@code minZ == 0} as fully supported.
+	 */
 	public boolean isFullSupport(List<Placement> stack, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		return stackValue.getArea() == calculateAreaSupport(stack, minX, minY, minZ, stackValue);
 	}

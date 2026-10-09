@@ -13,6 +13,10 @@ import com.github.skjolber.packing.api.packager.control.placement.PlacementContr
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
 import com.github.skjolber.packing.api.point.PointCalculator;
 
+/**
+ * Builds {@link ComparatorPlacementControls}, or {@link SupportPlacementControls} if the placement comparator reads the supported area
+ * ({@link PlacementComparator#usesSupportedArea()}). Does not support load limits or full support.
+ */
 public class ComparatorPlacementControlsBuilder implements PlacementControlsBuilder {
 
 	protected PlacementComparator placementComparator;
@@ -98,6 +102,10 @@ public class ComparatorPlacementControlsBuilder implements PlacementControlsBuil
 		}
 		if(maxLoadWeight || maxLoadPressure || maxLoadBoxCount || loadIdenticalBox) {
 			throw new IllegalStateException("Max load not supported");
+		}
+		// the supported area is calculated for a comparator which reads it (checked once, not for every candidate)
+		if(placementComparator != null && placementComparator.usesSupportedArea()) {
+			return new SupportPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 		}
 		return new ComparatorPlacementControls(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator, boxItemComparator);
 	}

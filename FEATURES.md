@@ -86,7 +86,8 @@ where only the level's boxes can support it; a group fails when a later box of i
 The composite packager in the table has a plain stage and a fast brute-force stage; it skips stages which reject
 the input. Calculated support (`withCalculateSupport(..)`) and custom placement controls
 (`withPlacementControlsBuilderFactory(..)`, also with a consumer which configures the default controls) are builder options of the
-plain and LAFF packagers only.
+plain and LAFF packagers only. A custom placement ranking which declares that it reads the supported area
+(`PlacementComparator.usesSupportedArea()`, false unless overridden) has it calculated, with or without `withCalculateSupport(..)`.
 
 `VirtualBoxPackager` provides rectangular-assembly preprocessing around packagers:
 filled factor grids for repeated items, container-sized grid blocks for counts

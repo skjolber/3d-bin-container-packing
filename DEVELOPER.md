@@ -57,7 +57,8 @@ For the common case of ranking boxes and positions differently, the plain and LA
 `withFirstPlacementControlsBuilderFactory(b -> ..)` for LAFF) configure the default controls, including
 `withCalculateSupport(..)` and `withRequireFullSupport(..)`, which have the same effect as the builder options of the same name
 (as long as you do not set your own placement comparator: then rank by support yourself, for example with
-`higherSupportIsBetter()`). Rank with a fixed `PlacementComparator` (`withPlacementComparator(..)`), with a
+`higherSupportIsBetter()`; the support of each candidate is calculated for a comparator which reads it). Rank with a
+fixed `PlacementComparator` (`withPlacementComparator(..)`), with a
 `DefaultPlacementComparatorFactory.Builder` (`withPlacementComparators(r -> r.lowerZIsBetter())`) or with your own
 `PlacementComparatorFactory` (`withPlacementComparatorFactory(..)`).
 
@@ -74,10 +75,15 @@ hooks; rejecting a candidate in `createPlacement` returns `null`. For ranking
 alone, use a custom `PlacementComparator`: a positive `compare(a, b)` means
 `a` is preferred. The ranking interfaces (`PlacementComparator`,
 `PlacementComparatorFactory`, `PlacementComparatorAttribute`) are in the `api`
-module. A comparator which does not read the supported area should return false
-from `usesSupportedArea()`, and one which never prefers less support should
-return true from `prefersHigherSupportedArea()`: the controls then skip load
-validation and support calculation for candidates which cannot be selected.
+module. A comparator which reads the supported area (`Placement.getSupportedArea()`) must
+return true from `usesSupportedArea()` (implement the interface; a lambda cannot, and
+defaults to false): the controls then calculate the supported area of each candidate
+before comparing, with a box on the floor fully supported, whether or not
+`withCalculateSupport(..)` is set. Without the declaration the supported area reads as
+zero, and the controls skip the calculation. A comparator which
+never prefers less support should return true from `prefersHigherSupportedArea()`: the
+controls then skip load validation and support calculation for candidates which cannot be
+selected.
 Results of packing attempts are compared with an
 `IntermediatePackagerResultComparator`, also in `api`; it should read the results' load volume, weight and box
 count, not their stacks (the brute-force packagers compare results whose stacks are not built). Support-aware and load-aware implementations in

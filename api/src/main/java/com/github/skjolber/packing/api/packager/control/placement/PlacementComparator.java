@@ -24,14 +24,16 @@ public interface PlacementComparator {
 	int compare(Placement a, Placement b);
 
 	/**
-	 * Whether this comparator reads {@link Placement#getSupportedArea()}. When it does not, placement
-	 * controls can compare a candidate before calculating its support and load, and skip those
-	 * calculations for candidates which would not be selected anyway.
+	 * Whether this comparator reads {@link Placement#getSupportedArea()}. When true, the placement controls
+	 * compute the supported area of each candidate placement before comparing (a candidate on the floor is
+	 * fully supported), whether or not the packager is configured to calculate support. When false (the
+	 * default, also for a lambda), the supported area is not computed and reads as zero: a comparator which
+	 * reads it must declare it here. Leaving it false lets the controls skip the support calculation.
 	 *
-	 * @return true if the comparison depends on the supported area; the default is true, which is always safe
+	 * @return true if the comparison depends on the supported area; the default is false
 	 */
 	default boolean usesSupportedArea() {
-		return true;
+		return false;
 	}
 
 	/**

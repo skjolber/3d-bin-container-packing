@@ -19,7 +19,9 @@ import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparat
  * Unless a placement comparator is set, boxes and positions are ranked by the packager's default ranking (see
  * {@link #build()} and {@link #buildFirst()}): by support first if support is calculated and not required (full support
  * leaves no choice to rank), then by the dimensions of the default ranking. A placement comparator which is set replaces
- * the default ranking, so rank by support yourself then ({@code higherSupportIsBetter()}).
+ * the default ranking, so rank by support yourself then ({@code higherSupportIsBetter()}). The supported area of a candidate is
+ * calculated (a box on the floor is fully supported) if support is calculated, or if the placement comparator reads it
+ * ({@link PlacementComparator#usesSupportedArea()}), whether or not {@link #withCalculateSupport(boolean)} is set.
  */
 public class PlacementControlsBuilderFactoryBuilder {
 
@@ -29,7 +31,8 @@ public class PlacementControlsBuilderFactoryBuilder {
 	private PlacementComparatorFactory comparatorFactory;
 
 	/**
-	 * @param calculateSupport whether to calculate the support of placements
+	 * @param calculateSupport whether to calculate the support of placements, and rank by it unless a placement comparator is set. A
+	 *            placement comparator which reads the supported area has it calculated regardless.
 	 * @return this builder
 	 */
 	public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
@@ -57,7 +60,9 @@ public class PlacementControlsBuilderFactoryBuilder {
 
 	/**
 	 * Wraps a fixed {@link PlacementComparator} via {@link PlacementComparatorFactory#of}
-	 * so it is used as-is for every packing run, ignoring any disabled attributes.
+	 * so it is used as-is for every packing run, ignoring any disabled attributes. If it declares that it reads the supported area
+	 * ({@link PlacementComparator#usesSupportedArea()}, false unless overridden), the placement controls calculate the supported area of
+	 * each candidate before comparing; without the declaration the supported area reads as zero.
 	 *
 	 * @param placementComparator the placement comparator
 	 * @return this builder

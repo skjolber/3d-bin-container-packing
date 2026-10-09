@@ -19,9 +19,9 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.api.point.PointSource;
 
 /**
- * 
- * Load aware placement controls which calculates support area.
- * 
+ * Placement controls which calculate the supported area of each candidate before comparing: a candidate on the floor is fully supported,
+ * otherwise the area resting on the placements below counts. Used when support is calculated, and when the placement comparator reads the
+ * supported area ({@link PlacementComparator#usesSupportedArea()}).
  */
 
 public class SupportPlacementControls extends AbstractComparatorPlacementControls {

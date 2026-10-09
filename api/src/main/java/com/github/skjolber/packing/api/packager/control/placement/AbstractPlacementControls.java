@@ -13,10 +13,16 @@ import com.github.skjolber.packing.api.point.PointCalculator;
 
 public abstract class AbstractPlacementControls implements PlacementControls {
 
+	/**
+	 * The floor is not counted: callers must treat {@code minZ == 0} as fully supported.
+	 */
 	public static boolean isFullSupport(List<Placement> placements, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		return stackValue.getArea() == calculateAreaSupport(placements, minX, minY, minZ, stackValue);
 	}
 
+	/**
+	 * The floor is not counted (returns 0 at {@code minZ == 0}): callers must treat {@code minZ == 0} as fully supported.
+	 */
 	public static long calculateAreaSupport(List<Placement> placements, int minX, int minY, int minZ, BoxStackValue stackValue) {
 		int maxX = minX + stackValue.getDx() - 1; // inclusive
 		int maxY = minY + stackValue.getDy() - 1; // inclusive

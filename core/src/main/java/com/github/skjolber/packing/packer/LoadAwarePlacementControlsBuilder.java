@@ -32,6 +32,10 @@ import com.github.skjolber.packing.api.point.PointCalculator;
  *
  * <p>Subclasses may override {@link #buildComparator(PlacementComparatorFactory, List)} to
  * inspect or extend the disabled-attribute list before the factory produces its comparator.
+ *
+ * <p>The supported area of each candidate is calculated (see {@link SupportPlacementControls}) if support is calculated, or if the
+ * comparator produced for the run reads it ({@link PlacementComparator#usesSupportedArea()}). The comparator is created
+ * once per controls instance, so this is decided once, not per candidate.
  */
 public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuilder {
 
@@ -200,7 +204,8 @@ public class LoadAwarePlacementControlsBuilder implements PlacementControlsBuild
 					container, stack, order, effectiveComparator, boxItemComparator);
 		}
 
-		if (calculateSupport) {
+		// the supported area is calculated on request, and for a comparator which reads it (checked once, not for every candidate)
+		if (calculateSupport || effectiveComparator.usesSupportedArea()) {
 			return new SupportPlacementControls(boxItems, pointControls, pointCalculator,
 					container, stack, order, effectiveComparator, boxItemComparator);
 		}

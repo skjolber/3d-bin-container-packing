@@ -49,10 +49,10 @@ public class PlacementComparatorSupportedAreaTest {
 	}
 
 	@Test
-	public void unknownComparatorUsesSupportedArea() {
+	public void unknownComparatorDoesNotDeclareTheSupportedArea() {
 		PlacementComparator comparator = (a, b) -> 0;
 
-		assertThat(comparator.usesSupportedArea()).isTrue();
+		assertThat(comparator.usesSupportedArea()).isFalse();
 	}
 
 	@Test
