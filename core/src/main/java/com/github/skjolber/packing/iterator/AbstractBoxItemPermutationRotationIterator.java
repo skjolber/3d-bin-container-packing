@@ -58,33 +58,6 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return stackableItems.length;
 	}
 
-	public long getMinStackableArea(int offset) {
-		long minArea = Long.MAX_VALUE;
-		for (int i = offset; i < length(); i++) {
-			BoxStackValue permutationRotation = getStackValue(i);
-			long area = permutationRotation.getArea();
-			if(area < minArea) {
-				minArea = area;
-			}
-		}
-		return minArea;
-	}
-
-	public int getMinBoxAreaIndex(int offset) {
-		long minArea = getStackValue(offset).getArea();
-		int index = offset;
-
-		for (int i = offset + 1; i < length(); i++) {
-			BoxStackValue permutationRotation = getStackValue(i);
-			long area = permutationRotation.getArea();
-			if(area < minArea) {
-				minArea = area;
-				index = i;
-			}
-		}
-		return index;
-	}
-
 	public List<BoxStackValue> get(PermutationRotationState state, int length) {
 		int[] permutations = state.getPermutations();
 		int[] rotations = state.getRotations();

@@ -82,9 +82,6 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			}
 			
 			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, stackValues, excluded);
-			if(workUnits[i].preventOptimisation() != -1L) {
-				throw new RuntimeException();
-			}
 		}
 		
 		this.excluded = excluded;
@@ -259,11 +256,6 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	@Override
 	public long getMinBoxVolume(int index) {
 		return workUnits[workUnitIndex].getMinBoxVolume(index);
-	}
-
-	@Override
-	public int getMinBoxAreaIndex(int index) {
-		return workUnits[workUnitIndex].getMinBoxAreaIndex(index);
 	}
 
 	@Override

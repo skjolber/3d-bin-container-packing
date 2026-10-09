@@ -97,8 +97,6 @@ public interface BoxItemPermutationRotationIterator {
 
 	long[] getMinBoxVolume();
 
-	int getMinBoxAreaIndex(int i);
-	
 	/**
 	 * Get current permutations
 	 * 

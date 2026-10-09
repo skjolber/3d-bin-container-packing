@@ -28,9 +28,6 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		}
 	}
 
-	// try to avoid false sharing by using padding
-	public long t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15 = -1L;
-
 	private int[] lastPermutation;
 	private int lastPermutationMaxIndex = -1;
 	private boolean seenLastPermutationMaxIndex = false;
@@ -58,10 +55,6 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		return new ParallelBoxItemGroupPermutationRotationIterator(this, copyGroupState(this));
 	}
 	
-	public long preventOptimisation() {
-		return t0 + t1 + t2 + t3 + t4 + t5 + t6 + t7 + t8 + t9 + t10 + t11 + t12 + t13 + t14 + t15;
-	}
-
 	public void setReset(int[] reset) {
 		this.reset = reset;
 	}
