@@ -21,15 +21,15 @@ import com.github.skjolber.packing.packer.Version4Orders.Scenario;
  * The contract is aggregate, because "5.x is at least as good as 4.x on every order" is wrong: 5.x enumerates the candidate placements in a
  * different order than 4.x, and where two candidates rank exactly equal (for example the same box turned 2x8x7 or 8x2x7, which is where the layouts
  * of the two versions almost always first diverge) it picks a different one, which later is better or worse for the order as a whole. Over the
- * orders of seeds 0 to 9,999 the largest area fit first packager wins 824 and loses 15 orders, and the fast one wins 745 and loses 8 (with 203 orders
- * left out, see below). Small samples mislead in either direction, so the smoke test only limits the share of losses.
+ * orders of seeds 300 to 10,299 against 4.2.5, the largest area fit first packager wins 824 and loses 11 orders, and the fast one wins 750 and
+ * loses 9. Small samples mislead in either direction, so the smoke test only limits the share of losses.
  * <p>
  * 5.x is not identical to 4.x: when no box fits a new level, it raises the level below to the top of the container (see
  * {@linkplain RaisedLevelTest}), so it packs some orders into fewer containers, or packs them where 4.x does not. Most orders get the
  * same placements.
  * <p>
- * Version 4.2.4 of the fast packager throws a {@code NullPointerException} from its 2D point calculator for some orders; those are
- * left out.
+ * Version 4.2.4 of the fast packager threw a {@code NullPointerException} from its 2D point calculator for some orders (fixed in
+ * 4.2.5); such orders are left out.
  */
 class LargestAreaFitFirstVersion4ComparisonTest {
 

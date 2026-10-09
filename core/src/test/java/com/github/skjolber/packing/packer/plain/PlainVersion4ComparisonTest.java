@@ -19,11 +19,12 @@ import com.github.skjolber.packing.packer.Version4Orders.Scenario;
  * The contract is aggregate, because "5.x is at least as good as 4.x on every order" is wrong: 5.x enumerates the candidate placements in a
  * different order than 4.x, and where two candidates rank exactly equal (for example the same box turned 2x8x7 or 8x2x7, which is where the layouts
  * of the two versions almost always first diverge) it picks a different one, which later is better or worse for the order as a whole. Small
- * samples mislead: over the orders of seeds 0 to 299 the plain packager wins 2 and loses 8 orders (within the tolerance of this test), over those
- * of seeds 0 to 9,999 it wins 160 and loses 120, and ties the remaining 9,720.
+ * samples mislead: over the orders of seeds 0 to 299 against 4.2.5 the plain packager wins 3 and loses 4 orders (within the tolerance of this
+ * test), over those of seeds 300 to 10,299 it wins 229 and loses 89, and ties the remaining 9,682. Against 4.2.4, whose plain ranking had an
+ * inverted z tiebreak which stacked towers, it was 2 against 8, and 160 against 120.
  * <p>
- * Version 4.2.4 of the plain packager threw no exceptions for these orders, so none are left out (the fast largest area fit first packager of
- * 4.2.4 does, see {@code LargestAreaFitFirstVersion4ComparisonTest}).
+ * The 4.x plain packager throws no exceptions for these orders, so none are left out (the fast largest area fit first packager of
+ * 4.2.4 did, see {@code LargestAreaFitFirstVersion4ComparisonTest}).
  */
 class PlainVersion4ComparisonTest {
 

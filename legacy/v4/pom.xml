@@ -12,7 +12,7 @@
 	<description>Version 4 (api, points and core) with its packages moved to com.github.skjolber.packing.v4, so that tests can compare 5.x with 4.x in one JVM. Not published; see README.md.</description>
 
 	<properties>
-		<v4.version>4.2.4</v4.version>
+		<v4.version>4.2.5</v4.version>
 		<!-- no sources of its own -->
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<maven.source.skip>true</maven.source.skip>
