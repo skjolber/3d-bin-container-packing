@@ -1883,7 +1883,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	@Override
 	public void remove(Predicate<Point> test) {
 		for(int i = 0; i < values.size(); i++) {
-			if(!test.test(values.get(i))) {
+			if(test.test(values.get(i))) {
 				values.flag(i);
 			}
 		}

@@ -1972,8 +1972,8 @@ public class DefaultPointCalculator2DTest {
 		ep.add(0, createStackPlacement(0, 0, 6, 7));
 		assertThat(ep.getAll()).hasSize(2);
 
-		// keeps the points which match
-		ep.remove(p -> p.getMinX() > 0);
+		// removes the points which match
+		ep.remove(p -> p.getMinX() == 0);
 
 		assertThat(ep.getAll()).hasSize(1);
 		assertThat(ep.get(0)).isMin(7, 0);

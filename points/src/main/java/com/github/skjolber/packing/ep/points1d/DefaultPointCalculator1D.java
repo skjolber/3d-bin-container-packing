@@ -364,7 +364,7 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	@Override
 	public void remove(Predicate<Point> test) {
 		if(value != null) {
-			if(!test.test(value)) {
+			if(test.test(value)) {
 				value = null;
 			}
 		}

@@ -44,6 +44,21 @@ public class DefaultPointCalculator1DTest {
 	}
 
 	@Test
+	public void testRemoveByPredicateRemovesTheMatchingPoint() {
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		ep.clearToSize(100, 100, 0);
+		ep.add(0, createStackPlacement(0, 0, 10, 10));
+		assertThat(ep.getAll()).hasSize(1);
+
+		// removes the points which match: a point which does not match is kept
+		ep.remove(point -> point.getMinX() == 0);
+		assertThat(ep.getAll()).hasSize(1);
+
+		ep.remove(point -> point.getMinX() == 11);
+		assertThat(ep.getAll()).isEmpty();
+	}
+
+	@Test
 	public void testSinglePointCornerCase() {
 		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
 		ep.clearToSize(100, 100, 0);

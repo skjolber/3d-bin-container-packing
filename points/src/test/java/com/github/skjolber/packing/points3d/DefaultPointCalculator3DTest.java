@@ -1593,8 +1593,8 @@ public class DefaultPointCalculator3DTest {
 		ep.add(0, createStackPlacement(0, 0, 0, 4, 4, 4));
 		assertThat(ep.getAll()).hasSize(3);
 
-		// keeps the points which match
-		ep.remove(p -> p.getMinX() > 0);
+		// removes the points which match
+		ep.remove(p -> p.getMinX() == 0);
 
 		assertThat(ep.getAll()).hasSize(1);
 		assertThat(ep.get(0)).isMin(5, 0, 0);

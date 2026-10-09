@@ -25,6 +25,11 @@ public interface PointCalculator extends PointSource {
 
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
 	
+	/**
+	 * Remove the points which the predicate matches.
+	 *
+	 * @param test matches the points to remove
+	 */
 	void remove(Predicate<Point> test);
 	
 	boolean isEmpty();
