@@ -25,7 +25,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeParser;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 /**
- * The 5.0 brute force search against the reference port of the 4.x recursive one, for one container: they must agree
+ * The 5.0 brute force search against the 4.x one (see {@link Version4Reference}), for one container: they must agree
  * on the quality of the best packing, i.e. the number of packed boxes and their total volume (and weight), not on the
  * placements: equally good placements are chosen differently.
  *

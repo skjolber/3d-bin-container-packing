@@ -20,8 +20,8 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 /**
  * Slow integration test (run with the {@code slow-tests} profile): the two simple perfect squared rectangles of order
  * nine, which the other tests leave out as too slow. Their nine squares are all different, so there are 9! = 362 880
- * permutations, and the squares tile the rectangle without a gap: all squares must be placed, by the reference port
- * of the 4.x recursive search as well as by the 5.0 brute force packager, with and without skipping reverse
+ * permutations, and the squares tile the rectangle without a gap: all squares must be placed, by the 4.x search
+ * (see {@link Version4Reference}) as well as by the 5.0 brute force packager, with and without skipping reverse
  * permutations, and also through the public API.
  * <p>
  * Each search takes about 10 seconds on one core (the reference and 5.0 alike).

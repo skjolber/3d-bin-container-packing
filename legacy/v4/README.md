@@ -15,9 +15,16 @@ The module has no code of its own: the build takes the released 4.x jars from Ma
 
 ## Why
 
-Tests compare 5.x with 4.x on the same input: where 5.x is meant to behave as 4.x did, 4.x is the reference. For example,
-`PointCalculatorVersion4ComparisonTest` in `points` gives both point calculators the same random placements and requires the
-same free points after every placement (and `PointCalculatorVersion4ComparisonIT` many more, with `mvn -P slow-tests verify`).
+Tests compare 5.x with 4.x on the same input: where 5.x is meant to behave as 4.x did, 4.x is the reference.
+
+- `PointCalculatorVersion4ComparisonTest` in `points` gives both point calculators the same random placements and requires
+  the same free points after every placement (and `PointCalculatorVersion4ComparisonIT` many more).
+- The brute force differential tests in `core` (package `packer.bruteforce.reference`) use the 4.x brute force search for a
+  single container and its permutation and rotation iterator as the reference, through `Version4Reference`: the 5.x
+  iterators must enumerate the same states, and the 5.x searches must find packings as good. `ReferenceGoldenMasterTest`
+  pins the reference to known 4.x results.
+
+The `*IT` classes run with `mvn -P slow-tests verify`.
 
 The module is not published. Use it as a `test` dependency only:
 
@@ -43,6 +50,8 @@ locally with `mvn install` on the 4.x branch, override it on the command line:
 ```
 
 Do not commit a snapshot version: the CI build cannot resolve a snapshot which only exists in a local repository.
+After changing the version, run the tests of `points` and `core` with the slow tests; `ReferenceGoldenMasterTest` shows whether
+the brute force results of 4.x changed.
 
 Known difference: 4.2.3 can throw `ArrayIndexOutOfBoundsException` from `DefaultPointCalculator3D.constrainFloatingMax`
 with mutable points (fixed in 4.2.4, #1256). The point comparison ends a random sequence where 4.x fails like that.

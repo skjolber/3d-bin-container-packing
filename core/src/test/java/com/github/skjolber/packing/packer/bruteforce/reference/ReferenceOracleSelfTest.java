@@ -1,9 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce.reference;
 
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.NO_ROTATION;
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.container;
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.interruptAfter;
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.item;
+import static com.github.skjolber.packing.packer.bruteforce.reference.Version4Reference.NO_ROTATION;
+import static com.github.skjolber.packing.packer.bruteforce.reference.Version4Reference.interruptAfter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
@@ -12,16 +10,17 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.api.Placement;
-import com.github.skjolber.packing.api.Rotation;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.v4.api.Box;
+import com.github.skjolber.packing.v4.api.BoxItem;
+import com.github.skjolber.packing.v4.api.Container;
+import com.github.skjolber.packing.v4.api.Rotation;
+import com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.v4.iterator.PermutationRotationState;
+import com.github.skjolber.packing.v4.packer.PackagerInterruptedException;
 
 /**
- * Hand-computable counts and results of the reference implementation. The differential tests are only meaningful
- * if these pass: they pin the oracle itself.
+ * Hand-computable counts and results of the reference: the 4.x iterator and search, run through {@link Version4Reference}. The
+ * differential tests are only meaningful if these pass: they pin the oracle and the adapter.
  */
 class ReferenceOracleSelfTest {
 
@@ -32,14 +31,14 @@ class ReferenceOracleSelfTest {
 		private final List<Integer> rotationStatesPerPermutation = new ArrayList<>();
 		private final List<String> states = new ArrayList<>();
 
-		private static Enumeration of(ReferencePermutationRotationIterator iterator) {
+		private static Enumeration of(DefaultBoxItemPermutationRotationIterator iterator) {
 			Enumeration enumeration = new Enumeration();
 			do {
 				enumeration.permutations.add(Arrays.toString(iterator.getPermutations()));
 				int rotationStates = 0;
 				do {
 					rotationStates++;
-					ReferencePermutationRotationState state = iterator.getState();
+					PermutationRotationState state = iterator.getState();
 					enumeration.states.add(ReferenceSupport.stateKey(state.getPermutations(), state.getRotations()));
 				} while (iterator.nextRotation() != -1);
 				enumeration.rotationStatesPerPermutation.add(rotationStates);
@@ -48,12 +47,20 @@ class ReferenceOracleSelfTest {
 		}
 	}
 
-	private static ReferencePermutationRotationIterator iterator(Container container, BoxItem... items) {
-		return ReferencePermutationRotationIterator.newBuilder()
-				.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-				.withMaxLoadWeight(container.getMaxLoadWeight())
-				.withBoxItems(Arrays.asList(items))
-				.build();
+	private static DefaultBoxItemPermutationRotationIterator iterator(Container container, BoxItem... items) {
+		return Version4Reference.iterator(container, Arrays.asList(items));
+	}
+
+	private static BoxItem item(String id, int dx, int dy, int dz, Rotation rotation, int count) {
+		return Version4Reference.item(id, dx, dy, dz, rotation, 1, count);
+	}
+
+	private static Container container(int dx, int dy, int dz) {
+		return container(dx, dy, dz, ReferenceSupport.WEIGHT_UNLIMITED);
+	}
+
+	private static Container container(int dx, int dy, int dz, int maxLoadWeight) {
+		return Version4Reference.container(dx, dy, dz, maxLoadWeight);
 	}
 
 	private static final Container ROOMY = container(10, 10, 10);
@@ -64,7 +71,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void threeDistinctBoxesWithoutRotationHaveSixPermutationsAndOneRotationStateEach() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 1),
 				item("b", 2, 1, 1, NO_ROTATION, 1),
 				item("c", 3, 1, 1, NO_ROTATION, 1));
@@ -82,7 +89,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void oneTwoDimensionalRotatableNonSquareBoxDoublesTheRotationStates() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("rotatable", 2, 1, 1, Rotation.TWO_D, 1),
 				item("b", 2, 1, 1, NO_ROTATION, 1),
 				item("c", 3, 1, 1, NO_ROTATION, 1));
@@ -99,7 +106,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void aCubeAddsNoRotationStates() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("cube", 1, 1, 1, Rotation.TWO_D, 1),
 				item("b", 2, 1, 1, NO_ROTATION, 1),
 				item("c", 3, 1, 1, NO_ROTATION, 1));
@@ -114,7 +121,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void threeDimensionalRotationOfABoxWithThreeDistinctSidesHasSixRotationStates() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY, item("a", 1, 2, 3, Rotation.THREE_D, 1));
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY, item("a", 1, 2, 3, Rotation.THREE_D, 1));
 
 		assertThat(iterator.countRotations()).isEqualTo(6);
 
@@ -132,21 +139,21 @@ class ReferenceOracleSelfTest {
 	@Test
 	void duplicateBoxesAreMultisetPermutations() {
 		// a, a, b: 3!/2! = 3
-		ReferencePermutationRotationIterator two = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator two = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 2),
 				item("b", 2, 1, 1, NO_ROTATION, 1));
 		assertThat(two.countPermutations()).isEqualTo(3);
 		assertThat(Enumeration.of(two).permutations).containsExactly("[0, 0, 1]", "[0, 1, 0]", "[1, 0, 0]");
 
 		// a, a, b, b: 4!/(2!*2!) = 6
-		ReferencePermutationRotationIterator twoTwo = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator twoTwo = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 2),
 				item("b", 2, 1, 1, NO_ROTATION, 2));
 		assertThat(twoTwo.countPermutations()).isEqualTo(6);
 		assertThat(Enumeration.of(twoTwo).permutations).hasSize(6).doesNotHaveDuplicates();
 
 		// a, a, a, b, c: 5!/3! = 20
-		ReferencePermutationRotationIterator three = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator three = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 3),
 				item("b", 2, 1, 1, NO_ROTATION, 1),
 				item("c", 3, 1, 1, NO_ROTATION, 1));
@@ -154,7 +161,7 @@ class ReferenceOracleSelfTest {
 		assertThat(Enumeration.of(three).permutations).hasSize(20).doesNotHaveDuplicates();
 
 		// a, a, a, b, b, b: 6!/(3!*3!) = 20
-		ReferencePermutationRotationIterator threeThree = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator threeThree = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 3),
 				item("b", 2, 1, 1, NO_ROTATION, 3));
 		assertThat(threeThree.countPermutations()).isEqualTo(20);
@@ -166,7 +173,7 @@ class ReferenceOracleSelfTest {
 	 */
 	@Test
 	void identicalBoxesInSeparateBoxItemsAreNotMerged() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("same", 1, 1, 1, NO_ROTATION, 1),
 				item("same", 1, 1, 1, NO_ROTATION, 1));
 
@@ -181,7 +188,7 @@ class ReferenceOracleSelfTest {
 	@Test
 	void rotationsOfDuplicatesAreEnumeratedIndependently() {
 		// a, a with two rotations each: one permutation, 2*2 rotation states
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY, item("a", 2, 1, 1, Rotation.TWO_D, 2));
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY, item("a", 2, 1, 1, Rotation.TWO_D, 2));
 
 		assertThat(iterator.countPermutations()).isEqualTo(1);
 		assertThat(iterator.countRotations()).isEqualTo(4);
@@ -191,7 +198,7 @@ class ReferenceOracleSelfTest {
 		assertThat(enumeration.states).containsExactly("[0, 0]/[0, 0]", "[0, 0]/[0, 1]", "[0, 0]/[1, 0]", "[0, 0]/[1, 1]");
 
 		// plus b: 3 permutations * 4 rotation states
-		ReferencePermutationRotationIterator withOther = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator withOther = iterator(ROOMY,
 				item("a", 2, 1, 1, Rotation.TWO_D, 2),
 				item("b", 3, 1, 1, NO_ROTATION, 1));
 		assertThat(Enumeration.of(withOther).states).hasSize(12).doesNotHaveDuplicates();
@@ -210,7 +217,7 @@ class ReferenceOracleSelfTest {
 		BoxItem tooHeavy = new BoxItem(Box.newBuilder().withId("tooHeavy").withSize(1, 1, 1).withRotation(NO_ROTATION).withWeight(11).build(), 1);
 		BoxItem alsoFits = item("alsoFits", 2, 1, 1, NO_ROTATION, 1);
 
-		ReferencePermutationRotationIterator iterator = iterator(container, fits, tooBig, tooLong, tooHeavy, alsoFits);
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(container, fits, tooBig, tooLong, tooHeavy, alsoFits);
 
 		assertThat(iterator.getExcluded()).containsExactly(tooBig, tooLong, tooHeavy);
 		assertThat(iterator.length()).isEqualTo(2);
@@ -222,7 +229,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void allBoxesExcludedLeavesNothingToEnumerate() {
-		ReferencePermutationRotationIterator iterator = iterator(container(1, 1, 1), item("tooBig", 2, 2, 2, NO_ROTATION, 3));
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(container(1, 1, 1), item("tooBig", 2, 2, 2, NO_ROTATION, 3));
 
 		assertThat(iterator.length()).isZero();
 		assertThat(iterator.getExcluded()).hasSize(1);
@@ -233,7 +240,7 @@ class ReferenceOracleSelfTest {
 	 */
 	@Test
 	void nextPermutationWithMaxIndexSkipsPermutationsWhichShareThePrefix() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("a", 1, 1, 1, NO_ROTATION, 1),
 				item("b", 2, 1, 1, NO_ROTATION, 1),
 				item("c", 3, 1, 1, NO_ROTATION, 1),
@@ -261,7 +268,7 @@ class ReferenceOracleSelfTest {
 
 	@Test
 	void nextRotationWithMaxIndexOnlyRotatesUpToTheIndex() {
-		ReferencePermutationRotationIterator iterator = iterator(ROOMY,
+		DefaultBoxItemPermutationRotationIterator iterator = iterator(ROOMY,
 				item("a", 2, 1, 1, Rotation.TWO_D, 1),
 				item("b", 3, 1, 1, Rotation.TWO_D, 1),
 				item("c", 4, 1, 1, Rotation.TWO_D, 1));
@@ -285,58 +292,58 @@ class ReferenceOracleSelfTest {
 	// search
 	// ------------------------------------------------------------------------------------------------------------
 
-	private static ReferencePackResult pack(Container container, BoxItem... items) throws PackagerInterruptedException {
-		return new ReferenceRecursiveBruteForcePackager().pack(container, Arrays.asList(items), interruptAfter(10_000));
+	private static Version4Reference.Result pack(Container container, BoxItem... items) throws PackagerInterruptedException {
+		return Version4Reference.pack(container, Arrays.asList(items), interruptAfter(10_000));
 	}
 
 	@Test
 	void twoUnitCubesFitAContainerOfTwoUnits() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(2, 1, 1), item("cube", 1, 1, 1, NO_ROTATION, 2));
+		Version4Reference.Result result = pack(container(2, 1, 1), item("cube", 1, 1, 1, NO_ROTATION, 2));
 
-		assertThat(result.getBoxCount()).isEqualTo(2);
-		assertThat(result.getLoadVolume()).isEqualTo(2);
-		assertThat(result.getLoadWeight()).isEqualTo(2);
+		assertThat(result.boxCount()).isEqualTo(2);
+		assertThat(result.loadVolume()).isEqualTo(2);
+		assertThat(result.loadWeight()).isEqualTo(2);
 
-		List<Placement> placements = result.getPlacements();
+		List<Version4Reference.Placed> placements = result.placements();
 		assertThat(placements).hasSize(2);
 		assertThat(positions(placements)).containsExactlyInAnyOrder("0,0,0", "1,0,0");
 	}
 
 	@Test
 	void eightUnitCubesFitAContainerOfTwoByTwoByTwo() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(2, 2, 2), item("cube", 1, 1, 1, NO_ROTATION, 8));
+		Version4Reference.Result result = pack(container(2, 2, 2), item("cube", 1, 1, 1, NO_ROTATION, 8));
 
-		assertThat(result.getBoxCount()).isEqualTo(8);
-		assertThat(result.getLoadVolume()).isEqualTo(8);
-		assertThat(positions(result.getPlacements())).containsExactlyInAnyOrder("0,0,0", "1,0,0", "0,1,0", "1,1,0", "0,0,1", "1,0,1", "0,1,1", "1,1,1");
+		assertThat(result.boxCount()).isEqualTo(8);
+		assertThat(result.loadVolume()).isEqualTo(8);
+		assertThat(positions(result.placements())).containsExactlyInAnyOrder("0,0,0", "1,0,0", "0,1,0", "1,1,0", "0,0,1", "1,0,1", "0,1,1", "1,1,1");
 	}
 
 	@Test
 	void boxesBeyondTheContainerAreNotPlaced() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(2, 1, 1), item("cube", 1, 1, 1, NO_ROTATION, 3));
+		Version4Reference.Result result = pack(container(2, 1, 1), item("cube", 1, 1, 1, NO_ROTATION, 3));
 
-		assertThat(result.getBoxCount()).isEqualTo(2);
-		assertThat(result.getLoadVolume()).isEqualTo(2);
+		assertThat(result.boxCount()).isEqualTo(2);
+		assertThat(result.loadVolume()).isEqualTo(2);
 	}
 
 	@Test
 	void theMaximumLoadWeightOfTheContainerLimitsTheBoxes() throws PackagerInterruptedException {
 		// room for 3, load weight for 2
-		ReferencePackResult result = pack(container(3, 1, 1, 2), item("cube", 1, 1, 1, NO_ROTATION, 3));
+		Version4Reference.Result result = pack(container(3, 1, 1, 2), item("cube", 1, 1, 1, NO_ROTATION, 3));
 
-		assertThat(result.getBoxCount()).isEqualTo(2);
-		assertThat(result.getLoadWeight()).isEqualTo(2);
+		assertThat(result.boxCount()).isEqualTo(2);
+		assertThat(result.loadWeight()).isEqualTo(2);
 	}
 
 	@Test
 	void aBoxIsRotatedWhenItDoesNotFitOtherwise() throws PackagerInterruptedException {
 		// as given 3x1x1, the container is 1x3x1
-		ReferencePackResult result = pack(container(1, 3, 1), item("long", 3, 1, 1, Rotation.TWO_D, 1));
+		Version4Reference.Result result = pack(container(1, 3, 1), item("long", 3, 1, 1, Rotation.TWO_D, 1));
 
-		assertThat(result.getBoxCount()).isEqualTo(1);
-		Placement placement = result.getPlacements().get(0);
-		assertThat(placement.getStackValue().getDx()).isEqualTo(1);
-		assertThat(placement.getStackValue().getDy()).isEqualTo(3);
+		assertThat(result.boxCount()).isEqualTo(1);
+		Version4Reference.Placed placement = result.placements().get(0);
+		assertThat(placement.dx()).isEqualTo(1);
+		assertThat(placement.dy()).isEqualTo(3);
 	}
 
 	/**
@@ -344,12 +351,12 @@ class ReferenceOracleSelfTest {
 	 */
 	@Test
 	void anotherPermutationCanBeBetter() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(4, 1, 1),
+		Version4Reference.Result result = pack(container(4, 1, 1),
 				item("three", 3, 1, 1, NO_ROTATION, 1),
 				item("two", 2, 1, 1, NO_ROTATION, 2));
 
-		assertThat(result.getBoxCount()).isEqualTo(2);
-		assertThat(result.getLoadVolume()).isEqualTo(4);
+		assertThat(result.boxCount()).isEqualTo(2);
+		assertThat(result.loadVolume()).isEqualTo(4);
 	}
 
 	/**
@@ -358,22 +365,22 @@ class ReferenceOracleSelfTest {
 	 */
 	@Test
 	void resultsOfDifferentPermutationsAreComparedByVolumeBeforeCount() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(5, 1, 1),
+		Version4Reference.Result result = pack(container(5, 1, 1),
 				item("four", 4, 1, 1, NO_ROTATION, 1),
 				item("one", 1, 1, 1, NO_ROTATION, 3));
 
-		assertThat(result.getBoxCount()).isEqualTo(2);
-		assertThat(result.getLoadVolume()).isEqualTo(5);
+		assertThat(result.boxCount()).isEqualTo(2);
+		assertThat(result.loadVolume()).isEqualTo(5);
 	}
 
 	@Test
 	void anEmptyContainerOfBoxesGivesAnEmptyResult() throws PackagerInterruptedException {
-		ReferencePackResult result = pack(container(1, 1, 1), item("tooBig", 2, 2, 2, NO_ROTATION, 1));
+		Version4Reference.Result result = pack(container(1, 1, 1), item("tooBig", 2, 2, 2, NO_ROTATION, 1));
 
 		assertThat(result.isEmpty()).isTrue();
-		assertThat(result.getBoxCount()).isZero();
-		assertThat(result.getLoadVolume()).isZero();
-		assertThat(result.getPlacements()).isEmpty();
+		assertThat(result.boxCount()).isZero();
+		assertThat(result.loadVolume()).isZero();
+		assertThat(result.placements()).isEmpty();
 	}
 
 	@Test
@@ -389,13 +396,13 @@ class ReferenceOracleSelfTest {
 	@Test
 	void anInterruptIsPropagated() {
 		org.junit.jupiter.api.Assertions.assertThrows(PackagerInterruptedException.class,
-				() -> new ReferenceRecursiveBruteForcePackager().pack(container(2, 1, 1), Arrays.asList(item("cube", 1, 1, 1, NO_ROTATION, 2)), () -> true));
+				() -> Version4Reference.pack(container(2, 1, 1), Arrays.asList(item("cube", 1, 1, 1, NO_ROTATION, 2)), () -> true));
 	}
 
-	private static List<String> positions(List<Placement> placements) {
+	private static List<String> positions(List<Version4Reference.Placed> placements) {
 		List<String> positions = new ArrayList<>();
-		for (Placement placement : placements) {
-			positions.add(placement.getAbsoluteX() + "," + placement.getAbsoluteY() + "," + placement.getAbsoluteZ());
+		for (Version4Reference.Placed placement : placements) {
+			positions.add(placement.x() + "," + placement.y() + "," + placement.z());
 		}
 		return positions;
 	}

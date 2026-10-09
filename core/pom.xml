@@ -29,6 +29,13 @@
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>test</artifactId>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- version 4 with relocated packages, the reference of the brute force differential tests -->
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>shadowed-v4</artifactId>
+			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>    
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>

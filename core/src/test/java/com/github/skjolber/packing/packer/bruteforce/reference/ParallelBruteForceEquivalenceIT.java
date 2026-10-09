@@ -15,7 +15,7 @@ import com.github.skjolber.packing.packer.bruteforce.reference.ReferenceComparis
 
 /**
  * Slow integration test (run with the {@code slow-tests} profile): the parallel 5.0 brute force search against the
- * reference port of the 4.x recursive one, on two and four threads, with and without skipping reverse permutations.
+ * 4.x one (see {@link Version4Reference}), on two and four threads, with and without skipping reverse permutations.
  * The parallel search splits the permutations between its threads, so it has to select the best of the results of the
  * threads and, when skipping, start each thread at its first canonical permutation: it must still find a best packing
  * as good as the reference's.
@@ -95,7 +95,7 @@ class ParallelBruteForceEquivalenceIT {
 					partial++;
 				}
 				// the permutations are searched on several threads for more than twice as many permutations as work units
-				ReferencePermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
+				com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
 				if(iterator.length() > 0 && iterator.countPermutations() > 2L * parallelizationCount) {
 					split++;
 				}

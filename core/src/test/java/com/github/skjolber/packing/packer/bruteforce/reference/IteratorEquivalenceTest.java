@@ -21,7 +21,7 @@ import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRo
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 
 /**
- * The 5.0 permutation and rotation iterator against the reference port of the 4.x one: for the same boxes and
+ * The 5.0 permutation and rotation iterator against the 4.x one (relocated, see {@link Version4Reference}): for the same boxes and
  * container, both must enumerate the same permutation and rotation states.
  *
  * <pre>
@@ -88,7 +88,7 @@ class IteratorEquivalenceTest {
 		return builder.toString();
 	}
 
-	private static String boxes(ReferencePermutationRotationIterator iterator) {
+	private static String boxes(com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator) {
 		StringBuilder builder = new StringBuilder();
 		for (int i = 0; i < iterator.length(); i++) {
 			var stackValue = iterator.getStackValue(i);
@@ -100,14 +100,14 @@ class IteratorEquivalenceTest {
 		return builder.toString();
 	}
 
-	private static List<State> enumerate(ReferencePermutationRotationIterator iterator) {
+	private static List<State> enumerate(com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator) {
 		List<State> states = new ArrayList<>();
 		if(iterator.length() == 0) {
 			return states;
 		}
 		do {
 			do {
-				ReferencePermutationRotationState state = iterator.getState();
+				com.github.skjolber.packing.v4.iterator.PermutationRotationState state = iterator.getState();
 				states.add(new State(state.getPermutations(), state.getRotations(), boxes(iterator)));
 			} while (iterator.nextRotation() != -1);
 		} while (iterator.nextPermutation() != -1);
@@ -128,13 +128,8 @@ class IteratorEquivalenceTest {
 		return states;
 	}
 
-	private static ReferencePermutationRotationIterator reference(ReferenceScenario scenario) {
-		Container container = scenario.newContainer();
-		return ReferencePermutationRotationIterator.newBuilder()
-				.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-				.withMaxLoadWeight(container.getMaxLoadWeight())
-				.withBoxItems(scenario.newBoxItems())
-				.build();
+	private static com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator reference(ReferenceScenario scenario) {
+		return scenario.newVersion4Iterator();
 	}
 
 	private static DefaultBoxItemPermutationRotationIterator actual(ReferenceScenario scenario) {
@@ -208,7 +203,7 @@ class IteratorEquivalenceTest {
 			assertThat(scenario.boxCount()).as(scenario.toString()).isLessThanOrEqualTo(MAX_BOXES);
 			assertThat(scenario.countStates()).as(scenario.toString()).isLessThanOrEqualTo(MAX_STATES);
 
-			ReferencePermutationRotationIterator iterator = reference(scenario);
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = reference(scenario);
 			if(!iterator.getExcluded().isEmpty()) {
 				excluded++;
 			}
@@ -236,7 +231,7 @@ class IteratorEquivalenceTest {
 	@Test
 	void sameStatesAsTheReference() {
 		for (ReferenceScenario scenario : scenarios()) {
-			ReferencePermutationRotationIterator reference = reference(scenario);
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator reference = reference(scenario);
 			DefaultBoxItemPermutationRotationIterator actual = actual(scenario);
 
 			assertThat(actual.length()).as(scenario.toString()).isEqualTo(reference.length());
@@ -270,7 +265,7 @@ class IteratorEquivalenceTest {
 	@Test
 	void sameOrderAndMinimumBoxVolumesAsTheReference() {
 		for (ReferenceScenario scenario : scenarios()) {
-			ReferencePermutationRotationIterator reference = reference(scenario);
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator reference = reference(scenario);
 			DefaultBoxItemPermutationRotationIterator actual = actual(scenario);
 			if(reference.length() == 0) {
 				continue;
@@ -279,7 +274,7 @@ class IteratorEquivalenceTest {
 			do {
 				do {
 					String message = scenario + " step " + step++;
-					ReferencePermutationRotationState expectedState = reference.getState();
+					com.github.skjolber.packing.v4.iterator.PermutationRotationState expectedState = reference.getState();
 					PermutationRotationState actualState = actual.getState();
 					assertThat(actualState.getPermutations()).as(message).containsExactly(expectedState.getPermutations());
 					assertThat(actualState.getRotations()).as(message).containsExactly(expectedState.getRotations());
@@ -309,7 +304,7 @@ class IteratorEquivalenceTest {
 	void sameSkippingStepsAsTheReference() {
 		for (ReferenceScenario scenario : scenarios()) {
 			for (int seed = 0; seed < 3; seed++) {
-				ReferencePermutationRotationIterator reference = reference(scenario);
+				com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator reference = reference(scenario);
 				DefaultBoxItemPermutationRotationIterator actual = actual(scenario);
 				if(reference.length() == 0) {
 					continue;
@@ -400,7 +395,7 @@ class IteratorEquivalenceTest {
 	void resetReturnsToTheFirstState() {
 		for (ReferenceScenario scenario : scenarios()) {
 			DefaultBoxItemPermutationRotationIterator actual = actual(scenario);
-			ReferencePermutationRotationIterator reference = reference(scenario);
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator reference = reference(scenario);
 			if(reference.length() == 0) {
 				continue;
 			}

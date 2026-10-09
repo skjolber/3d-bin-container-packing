@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.bruteforce.reference;
 
 import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.NO_ROTATION;
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.interruptAfter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
@@ -9,14 +8,15 @@ import java.util.Arrays;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Rotation;
-import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.v4.iterator.PermutationRotationState;
+import com.github.skjolber.packing.v4.packer.PackagerInterruptedException;
 
 /**
- * Pins the reference implementation to the results of the real 4.x code: the rows below were produced by running
- * the 4.x {@code DefaultBoxItemPermutationRotationIterator} and {@code BruteForcePackager} (master @ e79cf716, the
- * single container attempt of its box item adapter) on the scenarios, outside of this repository. For the same
- * scenarios, the reference port reproduced the placements of 4.x as well (the same boxes, rotations and positions), but
- * those depend on the point calculation, which the reference shares with 5.0, so they are not pinned here.
+ * Pins the reference, the relocated 4.x code run through {@link Version4Reference}, to known results: the rows below were
+ * produced by running the 4.x {@code DefaultBoxItemPermutationRotationIterator} and {@code BruteForcePackager} (master @ e79cf716,
+ * the single container attempt of its box item adapter) on the scenarios, outside of this repository. They guard the relocation,
+ * the adapter and a change of the 4.x version (the property {@code v4.version} of legacy/v4).
  * <p>
  * A row is a scenario, and then the checksum of its enumeration (the hash of every permutation and rotation state, in
  * order), the number of states, and the load volume, load weight and box count of the best packing.
@@ -97,17 +97,13 @@ class ReferenceGoldenMasterTest {
 			String message = row;
 
 			// the enumeration
-			ReferencePermutationRotationIterator iterator = ReferencePermutationRotationIterator.newBuilder()
-					.withLoadSize(scenario.newContainer().getLoadDx(), scenario.newContainer().getLoadDy(), scenario.newContainer().getLoadDz())
-					.withMaxLoadWeight(scenario.newContainer().getMaxLoadWeight())
-					.withBoxItems(scenario.newBoxItems())
-					.build();
+			DefaultBoxItemPermutationRotationIterator iterator = scenario.newVersion4Iterator();
 			long hash = 0;
 			long states = 0;
 			if(iterator.length() > 0) {
 				do {
 					do {
-						ReferencePermutationRotationState state = iterator.getState();
+						PermutationRotationState state = iterator.getState();
 						hash = hash * 31 + Arrays.hashCode(state.getPermutations());
 						hash = hash * 31 + Arrays.hashCode(state.getRotations());
 						states++;
@@ -118,10 +114,10 @@ class ReferenceGoldenMasterTest {
 			assertThat(states).as(message).isEqualTo(Long.parseLong(expected[1]));
 
 			// the search
-			ReferencePackResult result = new ReferenceRecursiveBruteForcePackager().pack(scenario.newContainer(), scenario.newBoxItems(), interruptAfter(20_000));
-			assertThat(result.getLoadVolume()).as(message).isEqualTo(Long.parseLong(expected[2]));
-			assertThat(result.getLoadWeight()).as(message).isEqualTo(Long.parseLong(expected[3]));
-			assertThat(result.getBoxCount()).as(message).isEqualTo(Integer.parseInt(expected[4]));
+			Version4Reference.Result result = Version4Reference.pack(scenario.newVersion4Container(), scenario.newVersion4BoxItems(), Version4Reference.interruptAfter(20_000));
+			assertThat(result.loadVolume()).as(message).isEqualTo(Long.parseLong(expected[2]));
+			assertThat(result.loadWeight()).as(message).isEqualTo(Long.parseLong(expected[3]));
+			assertThat(result.boxCount()).as(message).isEqualTo(Integer.parseInt(expected[4]));
 		}
 	}
 

@@ -27,6 +27,10 @@ final class ReferenceScenario {
 			return new BoxItem(ReferenceSupport.box(id, dx, dy, dz, rotation, weight), count);
 		}
 
+		com.github.skjolber.packing.v4.api.BoxItem newVersion4BoxItem() {
+			return Version4Reference.item(id, dx, dy, dz, Version4Reference.rotation(rotation), weight, count);
+		}
+
 	}
 
 	private final String name;
@@ -71,6 +75,25 @@ final class ReferenceScenario {
 			items.add(spec.newBoxItem());
 		}
 		return items;
+	}
+
+	com.github.skjolber.packing.v4.api.Container newVersion4Container() {
+		return Version4Reference.container(dx, dy, dz, maxLoadWeight);
+	}
+
+	List<com.github.skjolber.packing.v4.api.BoxItem> newVersion4BoxItems() {
+		List<com.github.skjolber.packing.v4.api.BoxItem> items = new ArrayList<>(specs.size());
+		for (Spec spec : specs) {
+			items.add(spec.newVersion4BoxItem());
+		}
+		return items;
+	}
+
+	/**
+	 * @return the 4.x iterator over the permutation and rotation states of the boxes which fit the container
+	 */
+	com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator newVersion4Iterator() {
+		return Version4Reference.iterator(newVersion4Container(), newVersion4BoxItems());
 	}
 
 	/**
@@ -282,11 +305,7 @@ final class ReferenceScenario {
 	 * @return the number of permutation and rotation states of the boxes which fit the container, saturated at {@link Long#MAX_VALUE}
 	 */
 	long countStates() {
-		ReferencePermutationRotationIterator iterator = ReferencePermutationRotationIterator.newBuilder()
-				.withLoadSize(dx, dy, dz)
-				.withMaxLoadWeight(maxLoadWeight)
-				.withBoxItems(newBoxItems())
-				.build();
+		com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = newVersion4Iterator();
 		if(iterator.length() == 0) {
 			return 0;
 		}

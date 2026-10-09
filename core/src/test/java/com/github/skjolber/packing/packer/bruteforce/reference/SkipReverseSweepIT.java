@@ -77,7 +77,7 @@ class SkipReverseSweepIT {
 			String message = scenario.toString();
 
 			// all states of the reference, split into those with a canonical permutation and the reverses of the others
-			ReferencePermutationRotationIterator all = ReferenceComparison.newReferenceIterator(scenario);
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator all = ReferenceComparison.newReferenceIterator(scenario);
 			if(all.length() == 0) {
 				continue;
 			}
@@ -86,7 +86,7 @@ class SkipReverseSweepIT {
 			long count = 0;
 			do {
 				do {
-					ReferencePermutationRotationState state = all.getState();
+					com.github.skjolber.packing.v4.iterator.PermutationRotationState state = all.getState();
 					if(ReferenceSupport.isCanonical(state.getPermutations())) {
 						canonical.add(ReferenceSupport.stateKey(state.getPermutations(), state.getRotations()));
 					} else {
@@ -97,7 +97,7 @@ class SkipReverseSweepIT {
 			} while (all.nextPermutation() != -1);
 
 			// the reference iterator which skips reverse permutations, and the 5.0 iterator
-			ReferencePermutationRotationIterator expected = new ReferenceSkippingPermutationRotationIterator(ReferenceComparison.newReferenceIterator(scenario));
+			com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator expected = new ReferenceSkippingPermutationRotationIterator(ReferenceComparison.newReferenceIterator(scenario));
 			Container container = scenario.newContainer();
 			FilteredReversedBoxItemPermutationRotationIterator actual = new FilteredReversedBoxItemPermutationRotationIterator(
 					DefaultBoxItemPermutationRotationIterator.newBuilder()
@@ -112,7 +112,7 @@ class SkipReverseSweepIT {
 			long step = 0;
 			do {
 				do {
-					ReferencePermutationRotationState expectedState = expected.getState();
+					com.github.skjolber.packing.v4.iterator.PermutationRotationState expectedState = expected.getState();
 					PermutationRotationState actualState = actual.getState();
 					// plain checks, as there are millions of states: the messages are built for a failure only
 					if(!Arrays.equals(actualState.getPermutations(), expectedState.getPermutations()) || !Arrays.equals(actualState.getRotations(), expectedState.getRotations())) {

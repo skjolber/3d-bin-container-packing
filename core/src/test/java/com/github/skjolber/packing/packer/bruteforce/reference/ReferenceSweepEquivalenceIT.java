@@ -14,8 +14,8 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.reference.ReferenceComparison.Quality;
 
 /**
- * Slow integration test (run with the {@code slow-tests} profile): the 5.0 brute force search against the reference
- * port of the 4.x recursive one, over thousands of seeded scenarios. Larger than the fast {@link SearchEquivalenceTest}
+ * Slow integration test (run with the {@code slow-tests} profile): the 5.0 brute force search against the 4.x
+ * one (see {@link Version4Reference}), over thousands of seeded scenarios. Larger than the fast {@link SearchEquivalenceTest}
  * by two orders of magnitude, for the cases which the few hand-picked and seeded instances there do not reach.
  *
  * <pre>
@@ -71,7 +71,7 @@ class ReferenceSweepEquivalenceIT {
 				} else {
 					none++;
 				}
-				ReferencePermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
+				com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
 				if(!iterator.getExcluded().isEmpty()) {
 					oversized++;
 				}
@@ -112,7 +112,7 @@ class ReferenceSweepEquivalenceIT {
 				if(scenario.specs().size() < scenario.boxCount()) {
 					duplicates++;
 				}
-				ReferencePermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
+				com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = ReferenceComparison.newReferenceIterator(scenario);
 				if(iterator.countRotations() > 1) {
 					rotated++;
 				}

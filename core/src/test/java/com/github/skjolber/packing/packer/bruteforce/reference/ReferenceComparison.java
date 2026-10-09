@@ -17,8 +17,8 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
- * Running the reference search and the 5.0 searches on a {@link ReferenceScenario}, and comparing the quality of the best
- * packing they find. Shared by the fast differential test and the slow integration tests.
+ * Running the reference search (the 4.x search, see {@link Version4Reference}) and the 5.0 searches on a {@link ReferenceScenario}, and
+ * comparing the quality of the best packing they find. Shared by the fast differential test and the slow integration tests.
  * <p>
  * All searches take an interrupt duration, so that a regression cannot hang the build.
  */
@@ -45,14 +45,8 @@ final class ReferenceComparison {
 		}
 	}
 
-	static ReferencePermutationRotationIterator newReferenceIterator(ReferenceScenario scenario) {
-		Container container = scenario.newContainer();
-		return ReferencePermutationRotationIterator
-				.newBuilder()
-				.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-				.withBoxItems(scenario.newBoxItems())
-				.withMaxLoadWeight(container.getMaxLoadWeight())
-				.build();
+	static com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator newReferenceIterator(ReferenceScenario scenario) {
+		return scenario.newVersion4Iterator();
 	}
 
 	/**
@@ -69,17 +63,28 @@ final class ReferenceComparison {
 	 * @return the quality of the best packing of the reference search
 	 */
 	static Quality reference(ReferenceScenario scenario, boolean skipReversePermutations, long interruptMillis) throws PackagerInterruptedException {
-		Container container = scenario.newContainer();
-		ReferencePermutationRotationIterator iterator = newReferenceIterator(scenario);
+		com.github.skjolber.packing.v4.api.Container container = scenario.newVersion4Container();
+		com.github.skjolber.packing.v4.iterator.DefaultBoxItemPermutationRotationIterator iterator = newReferenceIterator(scenario);
 		if(skipReversePermutations) {
 			iterator = new ReferenceSkippingPermutationRotationIterator(iterator);
 		}
-		ReferencePackResult result = new ReferenceRecursiveBruteForcePackager().pack(container, iterator, interruptAfter(interruptMillis));
+		Version4Reference.Result result;
+		try {
+			result = Version4Reference.pack(container, iterator, Version4Reference.interruptAfter(interruptMillis));
+		} catch (com.github.skjolber.packing.v4.packer.PackagerInterruptedException e) {
+			throw new PackagerInterruptedException();
+		}
 
-		assertPlacementsAreValid(scenario, container, result.getPlacements());
-		assertThat(result.getPlacements()).as(scenario.toString()).hasSize(result.getBoxCount());
+		for (int i = 0; i < result.placements().size(); i++) {
+			Version4Reference.Placed a = result.placements().get(i);
+			assertThat(a.x() >= 0 && a.y() >= 0 && a.z() >= 0).as("%s: %s", scenario, a).isTrue();
+			assertThat(a.endX() < container.getLoadDx() && a.endY() < container.getLoadDy() && a.endZ() < container.getLoadDz()).as("%s: %s", scenario, a).isTrue();
+			for (int j = i + 1; j < result.placements().size(); j++) {
+				assertThat(a.intersects(result.placements().get(j))).as("%s: %s and %s intersect", scenario, a, result.placements().get(j)).isFalse();
+			}
+		}
 
-		return new Quality(result.getLoadVolume(), result.getLoadWeight(), result.getBoxCount());
+		return new Quality(result.loadVolume(), result.loadWeight(), result.boxCount());
 	}
 
 	/**
