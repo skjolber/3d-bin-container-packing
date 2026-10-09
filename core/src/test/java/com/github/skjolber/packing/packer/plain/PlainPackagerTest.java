@@ -22,6 +22,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -1804,5 +1805,82 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
-	
+	/**
+	 * Two 2x2x1 boxes fit in a 4x2x2 container either side by side on the floor, or on top of each other.
+	 * Floor space is spread before boxes are stacked, so the second box lies beside the first one.
+	 *
+	 * <pre>
+	 * Side view, as expected:        Not like this:
+	 *
+	 *   z=1 |               |          z=1 |   B   |       |
+	 *   z=0 |   A   |   B   |          z=0 |   A   |       |
+	 *       x=0     x=2     x=4            x=0     x=2     x=4
+	 * </pre>
+	 */
+
+	@Test
+	void testSpreadOnTheFloorBeforeStacking() {
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(4, 2, 2).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		PlainPackager packager = PlainPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate2D().withSize(2, 2, 1).withWeight(1).build(), 2));
+
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(container, 1))
+					.withBoxItems(products)
+					.build();
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(2, placements.size());
+
+			Placement first = placements.get(0);
+			assertEquals(0, first.getAbsoluteX());
+			assertEquals(0, first.getAbsoluteY());
+			assertEquals(0, first.getAbsoluteZ());
+
+			Placement second = placements.get(1);
+			assertEquals(2, second.getAbsoluteX());
+			assertEquals(0, second.getAbsoluteY());
+			assertEquals(0, second.getAbsoluteZ());
+		} finally {
+			packager.close();
+		}
+	}
+
+	/**
+	 * Setting only the box item comparator in the consumer path leaves the placement comparator to the default. Two unit boxes in a 2 x 2 x 1 container
+	 * make for two candidate points for the second box, so the placement comparator is needed to choose between them.
+	 */
+
+	@Test
+	void testConsumerPathWithOnlyABoxItemComparatorDefaultsThePlacementComparator() {
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		PlainPackager packager = PlainPackager.newBuilder().withPlacementControlsBuilderFactory( (c) -> {
+			c.withBoxItemComparator(new VolumeThenWeightBoxItemComparator());
+		}).build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(container, 1))
+					.withBoxItems(products)
+					.build();
+			assertTrue(build.isSuccess());
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(2, placements.size());
+		} finally {
+			packager.close();
+		}
+	}
+
+
 }
