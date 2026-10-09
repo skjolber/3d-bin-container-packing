@@ -28,10 +28,16 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 
 	protected final Comparator<IntermediatePackagerResult> intermediatePackagerResultComparator;
 	
-	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(Integer.MAX_VALUE);
+	// a single daemon thread suffices, as deadline tasks only flip a flag
+	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1, runnable -> {
+		Thread thread = new Thread(runnable, "packing-packager-deadline");
+		thread.setDaemon(true);
+		return thread;
+	});
 
 	public AbstractPackager(Comparator<IntermediatePackagerResult> comparator) {
 		this.intermediatePackagerResultComparator = comparator;
+		this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
 	}
 
 	// pack in single container
