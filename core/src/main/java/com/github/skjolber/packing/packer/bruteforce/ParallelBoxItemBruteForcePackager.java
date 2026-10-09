@@ -88,7 +88,10 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 		}
 
 		public ParallelBruteForcePackagerBuilder withAvailableProcessors(int factor) {
-			this.threads = Runtime.getRuntime().availableProcessors() / factor;
+			if(factor < 1) {
+				throw new IllegalArgumentException("Unexpected available processors factor " + factor);
+			}
+			this.threads = Math.max(1, Runtime.getRuntime().availableProcessors() / factor);
 
 			return this;
 		}
@@ -117,7 +120,13 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 					// auto detect
 					if(executorService instanceof ThreadPoolExecutor) {
 						ThreadPoolExecutor threadPoolExecutor = (ThreadPoolExecutor)executorService;
-						parallelizationCount = 16 * threadPoolExecutor.getMaximumPoolSize();
+						long maximumPoolSize = threadPoolExecutor.getMaximumPoolSize();
+						if(maximumPoolSize > (1 << 16)) {
+							// effectively unbounded, i.e. a cached thread pool
+							parallelizationCount = (int)(16L * Runtime.getRuntime().availableProcessors());
+						} else {
+							parallelizationCount = (int)(16L * maximumPoolSize);
+						}
 					} else {
 						throw new ParallelBruteForcePackagerException("Expected a parallelization count for custom exectutor service");
 					}
