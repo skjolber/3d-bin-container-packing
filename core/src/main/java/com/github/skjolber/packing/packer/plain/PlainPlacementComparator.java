@@ -22,7 +22,8 @@ public class PlainPlacementComparator implements Comparator<Placement> {
 			}
 		}
 
-		int result = Integer.compare(referenceResult.getAbsoluteZ(), potentiallyBetterResult.getAbsoluteZ());
+		// lower is better: spread before stacking
+		int result = Integer.compare(potentiallyBetterResult.getAbsoluteZ(), referenceResult.getAbsoluteZ());
 		if(result != 0) {
 			return result;
 		}
