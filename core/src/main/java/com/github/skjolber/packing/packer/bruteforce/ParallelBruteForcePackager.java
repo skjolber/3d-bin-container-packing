@@ -401,6 +401,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(isOrdered()) {
 				return attemptOrdered(i, currentBest);
 			}
+			if(iterators[i].length() == 0) {
+				// no box fits this container on its own
+				return null;
+			}
 			// is there enough work to do parallelization?
 			// run on single thread for a small amount of combinations
 			// the algorithm only splits on permutations
@@ -413,7 +417,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			} else {
 				multithreaded = false;
 			}
-			
+
 			if(multithreaded) {
 				// a previous attempt left the work units at their last permutations
 				parallelIterators[i].reset();

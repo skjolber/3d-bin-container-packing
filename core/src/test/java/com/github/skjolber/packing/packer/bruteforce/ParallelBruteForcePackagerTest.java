@@ -584,4 +584,41 @@ public class ParallelBruteForcePackagerTest extends AbstractBruteForcePackagerTe
 			packager.close();
 		}
 	}
+
+	@Test
+	void attemptReturnsNullWhenNoBoxFitsTheContainer() throws Exception {
+		Container container = Container.newBuilder().withId("container").withSize(2, 2, 2).withMaxLoadWeight(100).build();
+		Box big = Box.newBuilder().withId("big").withSize(3, 3, 3).withRotate3D().withWeight(1).build();
+
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).build();
+		try {
+			com.github.skjolber.packing.api.packager.strategy.PackagerSession session = packager.createSession(
+					new com.github.skjolber.packing.packer.PackagerInput(List.of(new BoxItem(big, 2)), null, List.of(new ContainerItem(container, 1)), 1, com.github.skjolber.packing.api.Order.NONE),
+					() -> false);
+
+			assertThat(session.attempt(0, null, false)).isNull();
+			assertThat(session.attempt(0, null, true)).isNull();
+		} finally {
+			packager.close();
+		}
+	}
+
+	@Test
+	void attemptReturnsNullWhenNoBoxOfAGroupFitsTheContainer() throws Exception {
+		Container container = Container.newBuilder().withId("container").withSize(2, 2, 2).withMaxLoadWeight(100).build();
+		Box big = Box.newBuilder().withId("big").withSize(3, 3, 3).withRotate3D().withWeight(1).build();
+		com.github.skjolber.packing.api.BoxItemGroup group = new com.github.skjolber.packing.api.BoxItemGroup("group", new ArrayList<>(List.of(new BoxItem(big, 2))));
+
+		ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).build();
+		try {
+			com.github.skjolber.packing.api.packager.strategy.PackagerSession session = packager.createSession(
+					new com.github.skjolber.packing.packer.PackagerInput(null, List.of(group), List.of(new ContainerItem(container, 1)), 1, com.github.skjolber.packing.api.Order.NONE),
+					() -> false);
+
+			assertThat(session.attempt(0, null, false)).isNull();
+			assertThat(session.attempt(0, null, true)).isNull();
+		} finally {
+			packager.close();
+		}
+	}
 }
