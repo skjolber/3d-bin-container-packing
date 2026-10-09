@@ -147,19 +147,16 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 			}
 		}
 		
-		if(containerItem.getManifestControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getManifestControlsBuilderFactory(), peek.getManifestControlsBuilderFactory())) {
-				return null;
-			}
+		// the controls of the container which the result was packed for must be those of the container which it is reused for:
+		// no controls equals no controls, but a result packed without controls does not respect the controls of another container
+		if(!Objects.equals(containerItem.getManifestControlsBuilderFactory(), peek.getManifestControlsBuilderFactory())) {
+			return null;
 		}
 
-		if(containerItem.getPointControlsBuilderFactory() != null) {
-			if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
-				return null;
-			}
+		if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
+			return null;
 		}
-		
-		
+
 		return copy(peek, result, containerIndex);
 	}
 	
