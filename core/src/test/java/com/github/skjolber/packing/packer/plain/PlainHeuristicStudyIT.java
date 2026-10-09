@@ -56,7 +56,7 @@ public class PlainHeuristicStudyIT {
 
 	private static final String[] NAMES = {
 			"A  5.x plain, default ranking",
-			"B  5.x plain, 4.x ranking (support, higher z, larger area)",
+			"B  5.x plain, pre-4.2.5 ranking (support, higher z, larger area; the inverted z tiebreak fixed in 4.x by 775cdca6)",
 			"C  4.x plain",
 			"L5 5.x laff",
 			"L4 4.x laff",
@@ -86,6 +86,11 @@ public class PlainHeuristicStudyIT {
 		return result;
 	}
 
+	/**
+	 * The plain ranking of 4.x up to and including 4.2.4: support ratio, then HIGHER z (an inverted tiebreak, fixed in
+	 * 4.x by commit 775cdca6 for 4.2.5), then larger footprint. Kept as the historical baseline of this study; against a
+	 * fixed 4.x (-Dv4.version=4.2.5...) config B no longer matches config C.
+	 */
 	public static final class Version4HeuristicComparator implements PlacementComparator {
 
 		@Override
