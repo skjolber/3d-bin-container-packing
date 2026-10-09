@@ -1,7 +1,7 @@
 module com.github.skjolber.packing.core {
-	requires com.github.skjolber.packing.api;
-	requires com.github.skjolber.packing.ep;
-	requires org.eclipse.collections.api;
+	requires transitive com.github.skjolber.packing.api;
+	requires transitive com.github.skjolber.packing.ep;
+	requires transitive org.eclipse.collections.api;
 	requires org.eclipse.collections.impl;
 
 	exports com.github.skjolber.packing.comparator;
