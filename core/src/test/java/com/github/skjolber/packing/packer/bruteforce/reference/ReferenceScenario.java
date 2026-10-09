@@ -1,12 +1,17 @@
 package com.github.skjolber.packing.packer.bruteforce.reference;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.Rotation;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
+import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 
 /**
  * A container and box items for the differential tests. The box items are created anew for each use, so that the
@@ -161,6 +166,114 @@ final class ReferenceScenario {
 			}
 			scenario.add("box-" + sequence++, 1 + random.nextInt(maxSide), 1 + random.nextInt(maxSide), 1 + random.nextInt(maxSide), rotation, 1 + random.nextInt(3), count);
 			remaining -= count;
+		}
+		return scenario;
+	}
+
+	/**
+	 * Boxes which fill the container exactly, so that a packing of all boxes exists: the container is split recursively
+	 * into two pieces by a plane (guillotine cuts) until there are the wanted number of pieces, and each piece is a box
+	 * in its original orientation. A box can also be rotated by its rotation (the original orientation is always one of
+	 * them), and equal pieces are the same box item, i.e. duplicates.
+	 *
+	 * @param seed seed
+	 * @param maxBoxes maximum number of boxes (sum of the counts), at least 2
+	 * @param maxStates maximum number of permutation and rotation states, a bound on the cost of enumerating them
+	 * @return a scenario in which all boxes fit together
+	 */
+	static ReferenceScenario guillotine(long seed, int maxBoxes, long maxStates) {
+		for (int attempt = 0; attempt < 1000; attempt++) {
+			ReferenceScenario scenario = guillotine(new Random(seed * 1000 + attempt), "guillotine seed " + seed, maxBoxes);
+			if(scenario.countStates() <= maxStates) {
+				return scenario;
+			}
+		}
+		throw new IllegalStateException("No guillotine scenario for seed " + seed);
+	}
+
+	private static ReferenceScenario guillotine(Random random, String name, int maxBoxes) {
+		int[] size = new int[] { 2 + random.nextInt(5), 2 + random.nextInt(5), 1 + random.nextInt(4) };
+		ReferenceScenario scenario = new ReferenceScenario(name, size[0], size[1], size[2]);
+
+		List<int[]> pieces = new ArrayList<>();
+		pieces.add(size);
+
+		int target = 2 + random.nextInt(maxBoxes - 1);
+		while (pieces.size() < target) {
+			// pieces which can be cut: at least one side of two or more
+			List<int[]> cuttable = new ArrayList<>();
+			for (int[] piece : pieces) {
+				if(piece[0] > 1 || piece[1] > 1 || piece[2] > 1) {
+					cuttable.add(piece);
+				}
+			}
+			if(cuttable.isEmpty()) {
+				break;
+			}
+			int[] piece = cuttable.get(random.nextInt(cuttable.size()));
+
+			int axis;
+			do {
+				axis = random.nextInt(3);
+			} while (piece[axis] < 2);
+
+			// half of the cuts in the middle, so that there are equal pieces
+			int at = piece[axis] % 2 == 0 && random.nextBoolean() ? piece[axis] / 2 : 1 + random.nextInt(piece[axis] - 1);
+
+			int[] first = piece.clone();
+			int[] second = piece.clone();
+			first[axis] = at;
+			second[axis] = piece[axis] - at;
+
+			pieces.remove(piece);
+			pieces.add(first);
+			pieces.add(second);
+		}
+
+		// equal pieces with the same rotation are one box item
+		Map<String, Spec> items = new LinkedHashMap<>();
+		Map<String, Integer> counts = new LinkedHashMap<>();
+		for (int[] piece : pieces) {
+			Rotation rotation;
+			switch (random.nextInt(3)) {
+				case 0:
+					rotation = ReferenceSupport.NO_ROTATION;
+					break;
+				case 1:
+					rotation = Rotation.TWO_D;
+					break;
+				default:
+					rotation = Rotation.THREE_D;
+			}
+			String key = piece[0] + "x" + piece[1] + "x" + piece[2] + "/" + (rotation == Rotation.THREE_D ? "3D" : rotation == Rotation.TWO_D ? "2D" : "none");
+			counts.merge(key, 1, Integer::sum);
+			items.putIfAbsent(key, new Spec("box-" + items.size(), piece[0], piece[1], piece[2], rotation, 1, 1));
+		}
+		for (Map.Entry<String, Spec> entry : items.entrySet()) {
+			Spec spec = entry.getValue();
+			scenario.add(spec.id(), spec.dx(), spec.dy(), spec.dz(), spec.rotation(), counts.get(entry.getKey()));
+		}
+		return scenario;
+	}
+
+	/**
+	 * A squared rectangle (in Bouwkamp notation) as squares of height one in a container of height one, with equal squares
+	 * as one box item. All boxes fit together, as the squares tile the rectangle.
+	 *
+	 * @param code the squared rectangle
+	 * @return a scenario
+	 */
+	static ReferenceScenario bouwkamp(BouwkampCode code) {
+		Map<Integer, Integer> frequencies = new TreeMap<>();
+		for (BouwkampCodeLine line : code.getLines()) {
+			for (Integer square : line.getSquares()) {
+				frequencies.merge(square, 1, Integer::sum);
+			}
+		}
+		// as the Bouwkamp tests of the packagers: squares of height one in a container of height one
+		ReferenceScenario scenario = new ReferenceScenario("Bouwkamp " + code.getName() + " (order " + code.getOrder() + ")", code.getWidth(), code.getDepth(), 1);
+		for (Map.Entry<Integer, Integer> entry : frequencies.entrySet()) {
+			scenario.add(Integer.toString(entry.getKey()), entry.getKey(), entry.getKey(), 1, Rotation.THREE_D, entry.getValue());
 		}
 		return scenario;
 	}

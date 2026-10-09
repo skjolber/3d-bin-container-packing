@@ -52,6 +52,34 @@ final class ReferenceSupport {
 	}
 
 	/**
+	 * @return true if the permutation is not after its reverse in lexicographic order: the representative of a permutation and its reverse
+	 */
+	static boolean isCanonical(int[] permutations) {
+		int n = permutations.length;
+		for (int i = 0; i < n / 2; i++) {
+			if(permutations[i] != permutations[n - 1 - i]) {
+				return permutations[i] < permutations[n - 1 - i];
+			}
+		}
+		// a palindrome
+		return true;
+	}
+
+	/**
+	 * @return the key (see {@link #stateKey(int[], int[])}) of the state with the same boxes in the same rotations, in the opposite order
+	 */
+	static String reverseStateKey(int[] permutations, int[] rotations) {
+		int n = permutations.length;
+		int[] reversedPermutations = new int[n];
+		int[] reversedRotations = new int[n];
+		for (int i = 0; i < n; i++) {
+			reversedPermutations[i] = permutations[n - 1 - i];
+			reversedRotations[i] = rotations[n - 1 - i];
+		}
+		return stateKey(reversedPermutations, reversedRotations);
+	}
+
+	/**
 	 * @return the permutation and rotation state as one string, with permutations as the box item indexes, rotations as the
 	 *         indexes within each box's fitting rotations
 	 */

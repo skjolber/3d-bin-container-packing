@@ -1,33 +1,26 @@
 package com.github.skjolber.packing.packer.bruteforce.reference;
 
 import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.NO_ROTATION;
-import static com.github.skjolber.packing.packer.bruteforce.reference.ReferenceSupport.interruptAfter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.junit.jupiter.api.Test;
 
-import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Rotation;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.reference.ReferenceComparison.Quality;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
-import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeParser;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
@@ -48,23 +41,6 @@ class SearchEquivalenceTest {
 	/** Interrupt, so that a regression cannot hang the build; the searches take milliseconds. */
 	private static final long INTERRUPT_MILLIS = 20_000;
 
-	/** The quality of a packing: more is better, in the order of the result comparator. */
-	private record Quality(long loadVolume, long loadWeight, int boxCount) {
-
-		/** @return positive if this packing is better than the other, negative if worse */
-		int compareTo(Quality other) {
-			int compare = Long.compare(loadVolume, other.loadVolume);
-			if(compare != 0) {
-				return compare;
-			}
-			compare = Long.compare(loadWeight, other.loadWeight);
-			if(compare != 0) {
-				return compare;
-			}
-			return Integer.compare(boxCount, other.boxCount);
-		}
-	}
-
 	private static Quality reference(ReferenceScenario scenario) throws PackagerInterruptedException {
 		return reference(scenario, false);
 	}
@@ -73,52 +49,11 @@ class SearchEquivalenceTest {
 	 * @param skipReversePermutations whether to search one of each permutation and its reverse only
 	 */
 	private static Quality reference(ReferenceScenario scenario, boolean skipReversePermutations) throws PackagerInterruptedException {
-		Container container = scenario.newContainer();
-		ReferencePermutationRotationIterator iterator = newReferenceIterator(scenario);
-		if(skipReversePermutations) {
-			iterator = new ReferenceSkippingPermutationRotationIterator(iterator);
-		}
-		ReferencePackResult result = new ReferenceRecursiveBruteForcePackager().pack(container, iterator, interruptAfter(INTERRUPT_MILLIS));
-
-		assertPlacementsAreValid(scenario, container, result.getPlacements());
-		assertThat(result.getPlacements()).as(scenario.toString()).hasSize(result.getBoxCount());
-
-		return new Quality(result.getLoadVolume(), result.getLoadWeight(), result.getBoxCount());
-	}
-
-	private static ReferencePermutationRotationIterator newReferenceIterator(ReferenceScenario scenario) {
-		Container container = scenario.newContainer();
-		return ReferencePermutationRotationIterator
-				.newBuilder()
-				.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-				.withBoxItems(scenario.newBoxItems())
-				.withMaxLoadWeight(container.getMaxLoadWeight())
-				.build();
-	}
-
-	/**
-	 * @return the number of boxes which fit the container on their own (by size and weight)
-	 */
-	private static int fittingBoxCount(ReferenceScenario scenario) {
-		return newReferenceIterator(scenario).length();
+		return ReferenceComparison.reference(scenario, skipReversePermutations, INTERRUPT_MILLIS);
 	}
 
 	private static Quality actual(ReferenceScenario scenario, AbstractPackager<?> packager, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
-		Container container = scenario.newContainer();
-		PackagerInput input = new PackagerInput(scenario.newBoxItems(), null, List.of(new ContainerItem(container, 1)), 1, Order.NONE);
-		PackagerSession session = packager.createSession(input, interruptAfter(INTERRUPT_MILLIS));
-
-		// the best packing into the container, whether or not all boxes fit. Skipping reverse permutations is only
-		// done when the caller asks to abort on boxes which are too big, i.e. when it needs all boxes to fit
-		IntermediatePackagerResult result = session.attempt(0, null, abortOnAnyBoxTooBig);
-		if(result == null || result.isEmpty()) {
-			return new Quality(0, 0, 0);
-		}
-		Stack stack = result.getStack();
-
-		assertPlacementsAreValid(scenario, container, stack.getPlacements());
-
-		return new Quality(stack.getVolume(), stack.getWeight(), stack.size());
+		return ReferenceComparison.actual(scenario, packager, abortOnAnyBoxTooBig, INTERRUPT_MILLIS);
 	}
 
 	/**
@@ -147,22 +82,6 @@ class SearchEquivalenceTest {
 		}
 	}
 
-	/** Placements are inside the container and do not overlap. */
-	private static void assertPlacementsAreValid(ReferenceScenario scenario, Container container, List<Placement> placements) {
-		for (int i = 0; i < placements.size(); i++) {
-			Placement a = placements.get(i);
-			assertThat(a.getAbsoluteX()).as("%s: %s", scenario, a).isGreaterThanOrEqualTo(0);
-			assertThat(a.getAbsoluteY()).as("%s: %s", scenario, a).isGreaterThanOrEqualTo(0);
-			assertThat(a.getAbsoluteZ()).as("%s: %s", scenario, a).isGreaterThanOrEqualTo(0);
-			assertThat(a.getAbsoluteEndX()).as("%s: %s", scenario, a).isLessThan(container.getLoadDx());
-			assertThat(a.getAbsoluteEndY()).as("%s: %s", scenario, a).isLessThan(container.getLoadDy());
-			assertThat(a.getAbsoluteEndZ()).as("%s: %s", scenario, a).isLessThan(container.getLoadDz());
-			for (int j = i + 1; j < placements.size(); j++) {
-				assertThat(a.intersects3D(placements.get(j))).as("%s: %s and %s intersect", scenario, a, placements.get(j)).isFalse();
-			}
-		}
-	}
-
 	/**
 	 * Compare the reference with the 5.0 brute force packager, without and with skipping reverse permutations.
 	 * <p>
@@ -175,23 +94,10 @@ class SearchEquivalenceTest {
 	 * @return the quality of the reference
 	 */
 	private static Quality assertAgree(ReferenceScenario scenario) throws PackagerInterruptedException {
-		Quality reference = reference(scenario);
-
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
-			assertThat(actual(scenario, packager, false)).as("%s", scenario).isEqualTo(reference);
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+				BruteForcePackager skippingPackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build()) {
+			return ReferenceComparison.assertAgree(scenario, packager, skippingPackager, INTERRUPT_MILLIS);
 		}
-		try (BruteForcePackager packager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build()) {
-			Quality skipping = actual(scenario, packager, true);
-
-			assertThat(skipping).as("%s, skipping reverse permutations, against the reference which skips them too", scenario).isEqualTo(reference(scenario, true));
-
-			if(reference.boxCount() == fittingBoxCount(scenario)) {
-				assertThat(skipping).as("%s, skipping reverse permutations, all boxes which fit fit together", scenario).isEqualTo(reference);
-			} else {
-				assertThat(skipping.compareTo(reference)).as("%s, skipping reverse permutations: %s, reference %s", scenario, skipping, reference).isLessThanOrEqualTo(0);
-			}
-		}
-		return reference;
 	}
 
 	private static Quality assertAgreeAndPublicApi(ReferenceScenario scenario) throws PackagerInterruptedException {
@@ -389,21 +295,6 @@ class SearchEquivalenceTest {
 	// squared rectangles
 	// ------------------------------------------------------------------------------------------------------------
 
-	private static ReferenceScenario bouwkamp(BouwkampCode code) {
-		Map<Integer, Integer> frequencies = new TreeMap<>();
-		for (BouwkampCodeLine line : code.getLines()) {
-			for (Integer square : line.getSquares()) {
-				frequencies.merge(square, 1, Integer::sum);
-			}
-		}
-		// as the Bouwkamp tests of the packagers: squares of height one in a container of height one
-		ReferenceScenario scenario = new ReferenceScenario("Bouwkamp " + code.getName() + " (order " + code.getOrder() + ")", code.getWidth(), code.getDepth(), 1);
-		for (Map.Entry<Integer, Integer> entry : frequencies.entrySet()) {
-			scenario.add(Integer.toString(entry.getKey()), entry.getKey(), entry.getKey(), 1, Rotation.THREE_D, entry.getValue());
-		}
-		return scenario;
-	}
-
 	/**
 	 * The smallest squared rectangle of the test data, order 9 with duplicate squares: all boxes must be placed.
 	 */
@@ -414,7 +305,7 @@ class SearchEquivalenceTest {
 
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode code : bouwkampCodes.getCodes()) {
-				ReferenceScenario scenario = bouwkamp(code);
+				ReferenceScenario scenario = ReferenceScenario.bouwkamp(code);
 
 				Quality quality = assertAgree(scenario);
 
@@ -438,7 +329,7 @@ class SearchEquivalenceTest {
 		BouwkampCode square = parser.parseLine("8 5 5 (3,2)(2)(2,1)(1,1,1) * 8 : 5x5A");
 
 		for (BouwkampCode code : List.of(rectangle, square)) {
-			ReferenceScenario scenario = bouwkamp(code);
+			ReferenceScenario scenario = ReferenceScenario.bouwkamp(code);
 
 			Quality quality = assertAgreeAndPublicApi(scenario);
 
