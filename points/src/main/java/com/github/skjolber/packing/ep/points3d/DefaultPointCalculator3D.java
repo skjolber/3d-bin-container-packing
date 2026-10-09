@@ -2,7 +2,6 @@ package com.github.skjolber.packing.ep.points3d;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -2051,18 +2050,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public void clearInitialPoints() {
 		if(initialPoints != null) {
 			initialPoints.reset();
-		}
-	}
-	
-	@Override
-	public void remove(Predicate<Point> test) {
-		for(int i = 0; i < values.size(); i++) {
-			if(!test.test(values.get(i))) {
-				values.flag(i);
-			}
-		}
-		if(values.removeFlagged() > 0) {
-			updateIndexes(values);
 		}
 	}
 

@@ -4,7 +4,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
-import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
@@ -293,12 +292,6 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	public void remove(int index) {
 		ensureOwnValues();
 		super.remove(index);
-	}
-
-	@Override
-	public void remove(Predicate<Point> test) {
-		ensureOwnValues();
-		super.remove(test);
 	}
 
 	@Override

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.eclipse.collections.api.block.function.primitive.BooleanFunction;
 
@@ -350,14 +349,5 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	@Override
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
 		setMinimumAreaLimit(area);
-	}
-
-	@Override
-	public void remove(Predicate<Point> test) {
-		if(value != null) {
-			if(!test.test(value)) {
-				value = null;
-			}
-		}
 	}
 }

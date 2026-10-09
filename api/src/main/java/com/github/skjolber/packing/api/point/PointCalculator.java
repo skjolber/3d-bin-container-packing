@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.api.point;
 
 import java.util.List;
-import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.Placement;
 
@@ -98,14 +97,6 @@ public interface PointCalculator extends PointSource {
 	 * @param volume the smallest volume of the remaining boxes, or zero for no limit
 	 */
 	void setMinimumAreaAndVolumeLimit(long area, long volume);
-
-	/**
-	 * Filter the points: the points which satisfy the test are kept, the others are removed. Despite the name, a
-	 * point is removed when the test returns false.
-	 *
-	 * @param test returns true for the points to keep
-	 */
-	void remove(Predicate<Point> test);
 
 	/**
 	 * @return true if there are no free points
