@@ -1001,9 +1001,6 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			PackagerInterruptSupplier interrupt, LoadPlacementUtility utility, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction,
 			int[] insertAfterCounts, int maxPackableCount, int[] skipEnds, int maxContainerPriority, SkippingBest skipping, int[] rotations) throws PackagerInterruptedException {
 		BruteForceSearchFrames frames = pointCalculator.getSearchFrames();
-		int[] nextPointIndexes = frames.nextPointIndexes;
-		int[] pointCounts = frames.pointCounts;
-		IntIterator[] pointIterators = frames.pointIterators;
 		int[] rotationIndexes = frames.rotationIndexes;
 		int[] freeLoadWeights = frames.freeLoadWeights;
 		boolean[] unplaced = frames.unplaced;
