@@ -22,7 +22,7 @@ public interface BoxItemSource extends Iterable<BoxItem> {
 	BoxItem remove(int index);
 
 	default long getMinVolume() {
-		long minVolume = Integer.MAX_VALUE;
+		long minVolume = Long.MAX_VALUE;
 		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getVolume() < minVolume) {
@@ -33,7 +33,7 @@ public interface BoxItemSource extends Iterable<BoxItem> {
 	}
 	
 	default long getMinArea() {
-		long minArea = Integer.MAX_VALUE;
+		long minArea = Long.MAX_VALUE;
 		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getMinimumArea() < minArea) {
@@ -54,12 +54,18 @@ public interface BoxItemSource extends Iterable<BoxItem> {
 		return maxVolume;
 	}
 	
+	/**
+	 * Get the largest minimum footprint, i.e. the area which the box with the largest footprint needs even in its most favourable orientation.
+	 * 
+	 * @return the largest of the boxes' minimum areas
+	 */
+
 	default long getMaxArea() {
 		long maxArea = Integer.MIN_VALUE;
 		for(BoxItem boxItem : this) {
 			Box box = boxItem.getBox();
 			if(box.getMinimumArea() > maxArea) {
-				maxArea = box.getMaximumArea();
+				maxArea = box.getMinimumArea();
 			}
 		}
 		return maxArea;

@@ -488,4 +488,18 @@ public class ParallelBoxItemBruteForcePackagerTest extends AbstractBruteForcePac
 			packager.close();
 		}
 	}
+
+	@Test
+	void minimumBoxItemVolumeAndAreaAreNotCappedAtIntegerMaxValue() {
+		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(1).build();
+		try {
+			// footprint 50000 * 60000 = 3 * 10^9, above Integer.MAX_VALUE
+			List<BoxItem> items = List.of(new BoxItem(Box.newBuilder().withId("huge").withSize(50000, 60000, 70000).withWeight(1).build(), 1));
+
+			assertEquals(50000L * 60000L * 70000L, packager.getMinBoxItemVolume(items));
+			assertEquals(3_000_000_000L, packager.getMinBoxItemArea(items));
+		} finally {
+			packager.close();
+		}
+	}
 }

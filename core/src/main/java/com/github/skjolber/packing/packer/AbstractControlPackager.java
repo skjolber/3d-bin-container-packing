@@ -267,7 +267,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
-		long maxBoxArea = filteredBoxItems.getMaxVolume();
+		long maxBoxArea = filteredBoxItems.getMaxArea();
 		
 		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
 

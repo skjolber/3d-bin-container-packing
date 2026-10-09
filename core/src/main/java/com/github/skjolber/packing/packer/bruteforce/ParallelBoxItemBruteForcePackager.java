@@ -624,7 +624,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	protected long getMinBoxItemVolume(List<BoxItem> stackables) {
-		long minVolume = Integer.MAX_VALUE;
+		long minVolume = Long.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
 			Box stackable = stackableItem.getBox();
 			if(stackable.getVolume() < minVolume) {
@@ -635,7 +635,7 @@ public class ParallelBoxItemBruteForcePackager extends AbstractBruteForcePackage
 	}
 
 	protected long getMinBoxItemArea(List<BoxItem> stackables) {
-		long minArea = Integer.MAX_VALUE;
+		long minArea = Long.MAX_VALUE;
 		for (BoxItem stackableItem : stackables) {
 			Box stackable = stackableItem.getBox();
 			if(stackable.getMinimumArea() < minArea) {

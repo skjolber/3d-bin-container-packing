@@ -247,8 +247,8 @@ public abstract class Point {
 	}
 
 	public void setMaxZ(int maxZ) {
-		if(maxX < 0) {
-			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minZ + "x" + minY + "x" + minZ);
+		if(maxZ < 0) {
+			throw new RuntimeException("Cannot set max z to " + maxZ + " for " + minX + "x" + minY + "x" + minZ);
 		}
 		this.maxZ = maxZ;
 
