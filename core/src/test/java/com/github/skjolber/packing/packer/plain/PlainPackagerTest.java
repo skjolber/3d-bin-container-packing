@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
@@ -1018,6 +1019,37 @@ public class PlainPackagerTest extends AbstractPackagerTest {
 			assertEquals(2, second.getAbsoluteX());
 			assertEquals(0, second.getAbsoluteY());
 			assertEquals(0, second.getAbsoluteZ());
+		} finally {
+			packager.close();
+		}
+	}
+
+	/**
+	 * Setting only the box item comparator in the consumer path leaves the placement comparator to the default. Two unit boxes in a 2 x 2 x 1 container
+	 * make for two candidate points for the second box, so the placement comparator is needed to choose between them.
+	 */
+
+	@Test
+	void testConsumerPathWithOnlyABoxItemComparatorDefaultsThePlacementComparator() {
+		Container container = Container.newBuilder().withDescription("1").withEmptyWeight(1).withSize(2, 2, 1).withMaxLoadWeight(100).withStack(new ValidatingStack()).build();
+
+		PlainPackager packager = PlainPackager.newBuilder().withPlacementControlsBuilderFactory( (c) -> {
+			c.withBoxItemComparator(new VolumeThenWeightBoxItemComparator());
+		}).build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
+
+			PackagerResult build = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(container, 1))
+					.withBoxItems(products)
+					.build();
+			assertTrue(build.isSuccess());
+			assertValid(build);
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertEquals(2, placements.size());
 		} finally {
 			packager.close();
 		}

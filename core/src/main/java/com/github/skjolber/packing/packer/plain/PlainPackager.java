@@ -169,7 +169,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			if(boxItemComparator == null) {
 				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
 			}
-			if(boxItemComparator == null) {
+			if(placementComparator == null) {
 				placementComparator = new PlainPlacementComparator();
 			}
 			
