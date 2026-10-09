@@ -15,24 +15,19 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
-import com.github.skjolber.packing.api.packager.BoxItemComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
-import com.github.skjolber.packing.api.packager.control.placement.PlacementComparatorFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
 import com.github.skjolber.packing.iterator.AnyOrderBoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.FixedOrderBoxItemGroupIterator;
@@ -42,8 +37,8 @@ import com.github.skjolber.packing.packer.AbstractControlPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
-import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 import com.github.skjolber.packing.packer.PackagerInput;
+import com.github.skjolber.packing.packer.PlacementControlsBuilderFactoryBuilder;
 
 /**
  * Packs each container by repeatedly selecting the box with the highest volume, then placing it into the point with the lowest volume.
@@ -155,7 +150,7 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		protected IntermediatePackagerResultComparator packagerResultComparator;
 		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected PlacementControlsBuilderFactory placementControlsBuilderFactory;
-		protected ContainerStrategyFactory containerStrategyFactory;
+		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		
 		public Builder withCalculateSupport(boolean calculateSupport) {
 			this.calculateSupport = calculateSupport;
@@ -179,15 +174,15 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 		}
 		
 		/**
-		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * Set the factory which selects the container packing strategy: which containers to use, and in which order.
 		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
 		 * (in preference order) which holds the boxes.
 		 *
-		 * @param factory container strategy factory
+		 * @param factory container packing strategy factory
 		 * @return this builder
 		 */
-		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
-			this.containerStrategyFactory = Objects.requireNonNull(factory);
+		public Builder withContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+			this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
@@ -196,106 +191,60 @@ public class PlainPackager extends AbstractControlPackager<Placement, PlainPacka
 			return this;
 		}
 
+		/**
+		 * Configure the placement controls with a consumer, to customize the ranking of boxes and positions without creating the
+		 * controls factory yourself. The consumer's {@code withCalculateSupport(..)} and {@code withRequireFullSupport(..)} have the
+		 * same effect as this builder's options of the same name, which must not be set as well.
+		 *
+		 * @param consumer configures the placement controls
+		 * @return this builder
+		 */
 		public Builder withPlacementControlsBuilderFactory(Consumer<PlacementControlsBuilderFactoryBuilder> consumer) {
 			PlacementControlsBuilderFactoryBuilder b = new PlacementControlsBuilderFactoryBuilder();
 			consumer.accept(b);
-			
-			boolean requireFullSupport = b.requireFullSupport;
-			boolean calculateSupport = b.calculateSupport;
-			BoxItemComparator boxItemComparator = b.boxItemComparator;
-			
-			if(boxItemComparator == null) {
-				boxItemComparator = VolumeThenWeightBoxItemComparator.getInstance();
-			}
-			PlacementComparatorFactory factory = b.comparatorFactory != null
-					? b.comparatorFactory
-					: DefaultPlacementComparatorFactory.newFactory()
-							.higherVolumeIsBetter().higherWeightIsBetter()
-							.lowerAreaIsBetter().lowerZIsBetter().compile();
-			placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(factory, boxItemComparator, calculateSupport, requireFullSupport);
-			
+
+			this.placementControlsBuilderFactory = b.build();
 			return this;
 		}
-		
-		public static class PlacementControlsBuilderFactoryBuilder {
 
-			private boolean requireFullSupport;
-			private boolean calculateSupport;
-			private BoxItemComparator boxItemComparator;
-			private PlacementComparatorFactory comparatorFactory;
-			
-			public PlacementControlsBuilderFactoryBuilder withCalculateSupport(boolean calculateSupport) {
-				this.calculateSupport = calculateSupport;
-				return this;
-			}
-			
-			public PlacementControlsBuilderFactoryBuilder withRequireFullSupport(boolean require) {
-				this.requireFullSupport = require;
-				return this;
-			}
-			
-
-			public PlacementControlsBuilderFactoryBuilder withBoxItemComparator(BoxItemComparator boxItemComparator) {
-				this.boxItemComparator = boxItemComparator;
-				return this;
-			}
-			
-			/**
-			 * Wraps a fixed {@link PlacementComparator} via {@link PlacementComparatorFactory#of}
-			 * so it is used as-is for every packing run, ignoring any disabled attributes.
-			 */
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparator(PlacementComparator placementComparator) {
-				this.comparatorFactory = PlacementComparatorFactory.of(placementComparator);
-				return this;
-			}
-
-			/**
-			 * Configures a {@link DefaultPlacementComparatorFactory.Builder} via a consumer.
-			 * The factory is used dynamically — per-run, only constraint dimensions that
-			 * are active for that run are included. Position dimensions added via the
-			 * consumer are always included.
-			 */
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(Consumer<DefaultPlacementComparatorFactory.Builder> consumer) {
-				DefaultPlacementComparatorFactory.Builder f = DefaultPlacementComparatorFactory.newFactory();
-				consumer.accept(f);
-				this.comparatorFactory = f;
-				return this;
-			}
-
-			/** Sets a pre-configured {@link PlacementComparatorFactory} directly. */
-			public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(PlacementComparatorFactory factory) {
-				this.comparatorFactory = factory;
-				return this;
-			}
-		}
-		
 		public PlainPackager build() {
 			if(placementControlsBuilderFactory != null && (requireFullSupport || calculateSupport)) {
 				throw new IllegalStateException("Support options only apply to the default placement controls: configure support with the placement controls");
 			}
+			IntermediatePackagerResultComparator packagerResultComparator = this.packagerResultComparator;
 			if(packagerResultComparator == null) {
 				packagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
+			PlacementControlsBuilderFactory placementControlsBuilderFactory = this.placementControlsBuilderFactory;
 			if(placementControlsBuilderFactory == null) {
-				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
-				if(!requireFullSupport && calculateSupport) {
-					placementFactory.higherSupportIsBetter();
-				}
-				placementFactory.higherVolumeIsBetter()
-						.higherWeightIsBetter()
-						.lowerAreaIsBetter()
-						.lowerZIsBetter();
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory.compile(), boxItemComparator, calculateSupport, requireFullSupport);
+				placementControlsBuilderFactory = new PlacementControlsBuilderFactoryBuilder()
+						.withCalculateSupport(calculateSupport)
+						.withRequireFullSupport(requireFullSupport)
+						.build();
 			}
+			BoxItemGroupComparator boxItemGroupComparator = this.boxItemGroupComparator;
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
-			PlainPackager packager = new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
-			if(containerStrategyFactory != null) {
-				packager.setContainerStrategyFactory(containerStrategyFactory);
+			PlainPackager packager = createPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
+			if(containerPackingStrategyFactory != null) {
+				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
 			return packager;
+		}
+
+		/**
+		 * Create the packager from the options of this builder, with defaults for the options which are not set. Override to
+		 * create a subclass of the packager which has the same defaults.
+		 *
+		 * @param packagerResultComparator the result comparator
+		 * @param boxItemGroupComparator the box item group comparator
+		 * @param placementControlsBuilderFactory the placement controls
+		 * @return a new packager
+		 */
+		protected PlainPackager createPackager(IntermediatePackagerResultComparator packagerResultComparator, BoxItemGroupComparator boxItemGroupComparator,
+				PlacementControlsBuilderFactory placementControlsBuilderFactory) {
+			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory);
 		}
 		
 	}

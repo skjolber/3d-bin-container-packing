@@ -12,7 +12,10 @@ import org.openjdk.jmh.annotations.State;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
@@ -124,16 +127,15 @@ public class Points2DRecordedState {
 
 	private class RecordingBuilder extends FastLargestAreaFitFirstPackager.Builder {
 		@Override
-		public FastLargestAreaFitFirstPackager build() {
-			try (FastLargestAreaFitFirstPackager defaults = super.build()) {
-				return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory,
-						firstPlacementControlsBuilderFactory) {
-					@Override
-					protected PointCalculator createPointCalculator(BoxItemSource source) {
-						return new RecordingCalculator(source);
-					}
-				};
-			}
+		protected FastLargestAreaFitFirstPackager createPackager(IntermediatePackagerResultComparator intermediatePackagerResultComparator, BoxItemGroupComparator boxItemGroupComparator,
+				PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
+			return new FastLargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory,
+					firstPlacementControlsBuilderFactory) {
+				@Override
+				protected PointCalculator createPointCalculator(BoxItemSource source) {
+					return new RecordingCalculator(source);
+				}
+			};
 		}
 	}
 }

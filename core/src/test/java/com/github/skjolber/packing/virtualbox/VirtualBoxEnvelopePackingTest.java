@@ -17,7 +17,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
@@ -268,18 +271,17 @@ class VirtualBoxEnvelopePackingTest {
 		protected List<EnvelopeOnlyCalculator> calculators = new ArrayList<>();
 
 		@Override
-		public PlainPackager build() {
+		protected PlainPackager createPackager(IntermediatePackagerResultComparator packagerResultComparator, BoxItemGroupComparator boxItemGroupComparator,
+				PlacementControlsBuilderFactory placementControlsBuilderFactory) {
 			// Use the real builder defaults without duplicating placement policy.
-			try(PlainPackager defaults = super.build()) {
-				return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory) {
-					@Override
-					protected PointCalculator createPointCalculator(BoxItemSource source) {
-						EnvelopeOnlyCalculator calculator = new EnvelopeOnlyCalculator(source);
-						calculators.add(calculator);
-						return calculator;
-					}
-				};
-			}
+			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory) {
+				@Override
+				protected PointCalculator createPointCalculator(BoxItemSource source) {
+					EnvelopeOnlyCalculator calculator = new EnvelopeOnlyCalculator(source);
+					calculators.add(calculator);
+					return calculator;
+				}
+			};
 		}
 	}
 }

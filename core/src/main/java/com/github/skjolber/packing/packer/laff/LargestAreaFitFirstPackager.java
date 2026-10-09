@@ -9,12 +9,8 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResultCompar
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.comparator.LargestAreaBoxItemComparator;
-import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
-import com.github.skjolber.packing.comparator.placement.DefaultPlacementComparatorFactory;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
-import com.github.skjolber.packing.packer.LoadAwarePlacementControlsBuilderFactory;
 
 /**
  * Fills each container level by level: the box with the largest ground area starts a level, then the remaining boxes are stacked within the level. Stacks in 3D within each level.
@@ -34,41 +30,30 @@ public class LargestAreaFitFirstPackager extends AbstractLargestAreaFitFirstPack
 
 		public LargestAreaFitFirstPackager build() {
 			checkSupportOptions();
+			IntermediatePackagerResultComparator intermediatePackagerResultComparator = this.intermediatePackagerResultComparator;
 			if(intermediatePackagerResultComparator == null) {
 				intermediatePackagerResultComparator = new DefaultIntermediatePackagerResultComparator();
 			}
+			BoxItemGroupComparator boxItemGroupComparator = this.boxItemGroupComparator;
 			if(boxItemGroupComparator == null) {
 				boxItemGroupComparator = VolumeThenWeightBoxItemGroupComparator.getInstance();
 			}
-			if(placementControlsBuilderFactory == null) {
-				VolumeThenWeightBoxItemComparator boxItemComparator = new VolumeThenWeightBoxItemComparator();
-				DefaultPlacementComparatorFactory.Builder placementFactory = DefaultPlacementComparatorFactory.newFactory();
-				if(!requireFullSupport && calculateSupport) {
-					placementFactory.higherSupportIsBetter();
-				}
-				placementFactory.higherVolumeIsBetter()
-						.higherWeightIsBetter()
-						.lowerAreaIsBetter()
-						.lowerZIsBetter();
-				placementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(placementFactory.compile(), boxItemComparator, calculateSupport, requireFullSupport);
-			}
-			if(firstPlacementControlsBuilderFactory == null) {
-				LargestAreaBoxItemComparator firstBoxItemComparator = new LargestAreaBoxItemComparator();
-				DefaultPlacementComparatorFactory.Builder firstFactory = DefaultPlacementComparatorFactory.newFactory();
-				if(!requireFullSupport && calculateSupport) {
-					firstFactory.higherSupportIsBetter();
-				}
-				firstFactory.lowerZIsBetter()
-						.higherAreaIsBetter()
-						.higherVolumeIsBetter()
-						.higherWeightIsBetter();
-				firstPlacementControlsBuilderFactory = new LoadAwarePlacementControlsBuilderFactory(firstFactory.compile(), firstBoxItemComparator, calculateSupport, requireFullSupport);
-			}
-			LargestAreaFitFirstPackager packager = new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
-			if(containerStrategyFactory != null) {
-				packager.setContainerStrategyFactory(containerStrategyFactory);
+			LargestAreaFitFirstPackager packager = createPackager(intermediatePackagerResultComparator, boxItemGroupComparator,
+					getPlacementControlsBuilderFactory(), getFirstPlacementControlsBuilderFactory());
+			if(containerPackingStrategyFactory != null) {
+				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
 			return packager;
+		}
+
+		/**
+		 * @param placementControlsBuilderFactory the placement controls
+		 * @param firstPlacementControlsBuilderFactory the placement controls of the first placement of a level
+		 * @return a new packager
+		 */
+		protected LargestAreaFitFirstPackager createPackager(IntermediatePackagerResultComparator intermediatePackagerResultComparator, BoxItemGroupComparator boxItemGroupComparator,
+				PlacementControlsBuilderFactory placementControlsBuilderFactory, PlacementControlsBuilderFactory firstPlacementControlsBuilderFactory) {
+			return new LargestAreaFitFirstPackager(intermediatePackagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory, firstPlacementControlsBuilderFactory);
 		}
 	}
 

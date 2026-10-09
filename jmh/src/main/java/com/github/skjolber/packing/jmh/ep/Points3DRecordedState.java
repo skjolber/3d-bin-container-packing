@@ -12,7 +12,10 @@ import org.openjdk.jmh.annotations.State;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.jmh.TychoProducts;
@@ -108,15 +111,14 @@ public class Points3DRecordedState {
 
 	private class RecordingBuilder extends PlainPackager.Builder {
 		@Override
-		public PlainPackager build() {
-			try (PlainPackager defaults = super.build()) {
-				return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory) {
-					@Override
-					protected PointCalculator createPointCalculator(BoxItemSource source) {
-						return new RecordingCalculator(source);
-					}
-				};
-			}
+		protected PlainPackager createPackager(IntermediatePackagerResultComparator packagerResultComparator, BoxItemGroupComparator boxItemGroupComparator,
+				PlacementControlsBuilderFactory placementControlsBuilderFactory) {
+			return new PlainPackager(packagerResultComparator, boxItemGroupComparator, placementControlsBuilderFactory) {
+				@Override
+				protected PointCalculator createPointCalculator(BoxItemSource source) {
+					return new RecordingCalculator(source);
+				}
+			};
 		}
 	}
 }
