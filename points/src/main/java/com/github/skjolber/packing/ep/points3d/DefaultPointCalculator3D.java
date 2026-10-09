@@ -987,11 +987,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
-		/*
-		addXX.ensureAdditionalCapacity(limit);
-		addYY.ensureAdditionalCapacity(limit);
-		addZZ.ensureAdditionalCapacity(limit);
-		*/
+		// each examined point can add at most one clone per direction
+		addedXX.ensureAdditionalCapacity(limit);
+		addedYY.ensureAdditionalCapacity(limit);
+		addedZZ.ensureAdditionalCapacity(limit);
 
 		for (int i = 0; i < limit; i++) {
 			SimplePoint3D point = values.get(i);
@@ -1201,6 +1200,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected void constrainFloatingMax(Placement placement, int limit) {
 
 		Point3DFlagList values = this.values;
+
+		// each examined point can add at most one clone per direction
+		addedXX.ensureAdditionalCapacity(limit);
+		addedYY.ensureAdditionalCapacity(limit);
+		addedZZ.ensureAdditionalCapacity(limit);
 
 		long minAreaLimit = this.minAreaLimit;
 		long minVolumeLimit = this.minVolumeLimit;
