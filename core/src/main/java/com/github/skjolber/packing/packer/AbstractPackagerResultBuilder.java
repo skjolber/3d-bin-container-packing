@@ -154,11 +154,18 @@ public abstract class AbstractPackagerResultBuilder<B extends AbstractPackagerRe
 				packContainerItem.setInitialPoints(ObstaclePoints.getFreePoints(container, obstaclePlacements));
 			} else {
 				packContainerItem = new ContainerItem(containerItem);
-				packContainerItem.setInitialPoints(points);
+				// unset values keep the container item's own configuration
+				if(points != null) {
+					packContainerItem.setInitialPoints(points);
+				}
 			}
 
-			packContainerItem.setManifestControlsBuilderFactory(manifestControlsBuilderFactory);
-			packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			if(manifestControlsBuilderFactory != null) {
+				packContainerItem.setManifestControlsBuilderFactory(manifestControlsBuilderFactory);
+			}
+			if(pointControlsBuilderFactory != null) {
+				packContainerItem.setPointControlsBuilderFactory(pointControlsBuilderFactory);
+			}
 			if(costCalculator != null) {
 				packContainerItem.setCostCalculator(costCalculator);
 			}
