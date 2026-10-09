@@ -2,7 +2,6 @@ package com.github.skjolber.packing.packer.plain.heavy;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
@@ -51,21 +50,12 @@ public class HeavyItemsOnGroundLevelPointControls extends DefaultPointControls {
 			return HeavyItemsOnGroundLevelPointControls.newBuilder().withMaxWeight(maxWeight);
 		}
 
+		/**
+		 * The configuration goes into the id: factories with the same weight limit build the same controls, so a result can be reused.
+		 */
 		@Override
-		public int hashCode() {
-			return Objects.hash(maxWeight);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj)
-				return true;
-			if (obj == null)
-				return false;
-			if (getClass() != obj.getClass())
-				return false;
-			DefaultPointControlsBuilderFactory other = (DefaultPointControlsBuilderFactory) obj;
-			return maxWeight == other.maxWeight;
+		public String getId() {
+			return "heavyItemsOnGroundLevel:" + maxWeight;
 		}
 		
 	}

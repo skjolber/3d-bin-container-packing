@@ -10,6 +10,8 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 
@@ -148,18 +150,29 @@ public abstract class AbstractPackagerSession implements PackagerSession {
 		}
 		
 		// the controls of the container which the result was packed for must be those of the container which it is reused for:
-		// no controls equals no controls, but a result packed without controls does not respect the controls of another container
-		if(!Objects.equals(containerItem.getManifestControlsBuilderFactory(), peek.getManifestControlsBuilderFactory())) {
+		// no controls matches no controls, but a result packed without controls does not respect the controls of another container
+		if(!sameManifestControls(containerItem.getManifestControlsBuilderFactory(), peek.getManifestControlsBuilderFactory())) {
 			return null;
 		}
 
-		if(!Objects.equals(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
+		if(!samePointControls(containerItem.getPointControlsBuilderFactory(), peek.getPointControlsBuilderFactory())) {
 			return null;
 		}
 
 		return copy(peek, result, containerIndex);
 	}
 	
+	/**
+	 * Factories match if they are the same instance (or both absent), or carry the same non-null id.
+	 */
+	private static boolean sameManifestControls(ManifestControlsBuilderFactory a, ManifestControlsBuilderFactory b) {
+		return a == b || (a != null && b != null && a.getId() != null && a.getId().equals(b.getId()));
+	}
+
+	private static boolean samePointControls(PointControlsBuilderFactory a, PointControlsBuilderFactory b) {
+		return a == b || (a != null && b != null && a.getId() != null && a.getId().equals(b.getId()));
+	}
+
 	protected abstract IntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index);
 
 	public int getMaxContainerCount() {

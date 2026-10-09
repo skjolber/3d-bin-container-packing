@@ -8,20 +8,12 @@ public class DefaultPointControlsBuilderFactory implements PointControlsBuilderF
 	}
 
 	/**
-	 * This factory is stateless, so all instances are equal: packagers can reuse the result of a container for another with an equal
-	 * factory (see {@link PointControlsBuilderFactory}).
+	 * This factory is stateless, so all instances carry the same id: packagers can reuse the result of a container for another with
+	 * this factory (see {@link PointControlsBuilderFactory#getId()}).
 	 */
 	@Override
-	public boolean equals(Object obj) {
-		if(this == obj) {
-			return true;
-		}
-		return obj != null && getClass() == obj.getClass();
-	}
-
-	@Override
-	public int hashCode() {
-		return getClass().hashCode();
+	public String getId() {
+		return "default";
 	}
 
 }
