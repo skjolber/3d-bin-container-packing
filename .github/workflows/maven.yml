@@ -6,6 +6,10 @@ name: Java CI with Maven
 on:
   push:
     branches: [ '**' ]
+  workflow_dispatch:
+  schedule:
+    # early Monday morning (UTC)
+    - cron: '23 3 * * 1'
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -36,3 +40,24 @@ jobs:
       with:
         step: restore
 
+  # Slow integration tests (the *IT classes of the slow-tests profile, see skills/maven/SKILL.md): differential
+  # tests against the 4.x reference. On master, on demand and weekly; not on other branches.
+  # Note: on today's 4.x master this job no-ops (there are no *IT classes there); it becomes effective when 5.0 merges.
+  slow-tests:
+    if: github.ref == 'refs/heads/master' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+    needs: build
+    runs-on: ubuntu-latest
+    name: Java 25 slow tests
+    steps:
+    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+    - name: Set up Java
+      uses: actions/setup-java@ad2b38190b15e4d6bdf0c97fb4fca8412226d287 # v5.3.0
+      with:
+        java-version: 25
+        distribution: liberica
+    - name: Restore cache
+      uses: skjolber/maven-cache-github-action@c4a30022e05fa8a86dde82cd8c1e49420d4a45dd # v3.1.2
+      with:
+        step: restore
+    - name: Slow tests with Maven
+      run: ./mvnw -B -ntp -Pdev,slow-tests -Dmaven.build.cache.enabled=false -pl core -am verify

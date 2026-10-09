@@ -45,6 +45,19 @@ mvn test -pl <module> -am
 ```
 Version is `maven-surefire-plugin.version` in root `pom.xml`.
 
+### Slow integration tests — differential verification against the 4.x reference
+The `slow-tests` profile runs the `*IT` classes of `core` with the Failsafe plugin (same version as Surefire). They
+compare the 5.0 brute force packagers with the ported 4.x recursive search, the reference oracle in
+`core/src/test/java/.../packer/bruteforce/reference`, over thousands of seeded scenarios and the order-9 Bouwkamp codes
+which are too slow for the ordinary tests. The profile is off by default: a default build has no Failsafe execution, and
+`*IT` classes are not run by `test`. Run the tier locally, on four cores, with:
+```bash
+taskset -c 0-3 ./mvnw -B -ntp -Pdev,slow-tests -Dmaven.build.cache.enabled=false -pl core -am verify
+```
+It takes a few minutes, and the forked JVM is stopped after 30 minutes. The tier runs on master in CI and weekly
+(`.github/workflows/maven.yml`, job `slow-tests`, also on demand). To run one class while developing, name it with
+Surefire: `-Dtest=BouwkampReferenceIT -Dsurefire.failIfNoSpecifiedTests=false test`.
+
 ### JaCoCo — code coverage
 ```bash
 mvn test jacoco:report -pl <module> -am
@@ -103,7 +116,7 @@ mvn dependency-check:check -pl <module>
 | `assertj.version` | AssertJ |
 | `jmh.version` | JMH framework |
 | `jacoco-maven-plugin.version` | JaCoCo |
-| `maven-surefire-plugin.version` | Surefire |
+| `maven-surefire-plugin.version` | Surefire, and Failsafe for the `slow-tests` profile |
 | `spotless.version` | Spotless formatter |
 | `pitest.version` | PiTest mutation testing |
 | `pitest-junit5-plugin.version` | PiTest JUnit 5 test discovery |

@@ -80,6 +80,9 @@ it does not skip tests. Tests use one fork by default. Override with
 `-Dtest.forkCount=1.5C` when additional CPU and memory are available.
 Avoid `clean` during ordinary iteration to preserve build outputs.
 
+The opt-in `slow-tests` profile runs the failsafe `*IT` classes of `core` (differential tests against the 4.x
+reference, see `skills/maven/SKILL.md`). Never run it during ordinary iteration; it runs on master CI.
+
 ## Build cache
 
 The root POM enables `maven-build-cache-extension`. When inputs are unchanged,
