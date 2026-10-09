@@ -48,14 +48,9 @@ public class PointCalculatorVersion4ComparisonTest {
 	@ParameterizedTest(name = "immutable={0}, largest box={1}")
 	@CsvSource({ "false, 8", "true, 8", "false, 0", "true, 0" })
 	public void calculator3DMatchesVersion4(boolean immutable, int largestBox) {
-		int complete = 0;
 		for(int seed = 0; seed < SEEDS; seed++) {
-			if(compare3D(seed, immutable, largestBox)) {
-				complete++;
-			}
+			compare3D(seed, immutable, largestBox);
 		}
-		// version 4 fails on some seeds, see isVersion4ListOverflow(..)
-		assertThat(complete).isGreaterThanOrEqualTo(SEEDS * 9 / 10);
 	}
 
 	@ParameterizedTest(name = "immutable={0}, largest box={1}")
@@ -68,9 +63,8 @@ public class PointCalculatorVersion4ComparisonTest {
 
 	/**
 	 * @param largestBox the largest box side, or 0 for as large as the free point
-	 * @return true if all the steps were compared, false if version 4 failed with the overflow which 5.x fixed
 	 */
-	static boolean compare3D(long seed, boolean immutable, int largestBox) {
+	static void compare3D(long seed, boolean immutable, int largestBox) {
 		Random random = new Random(seed);
 		DefaultPointCalculator3D calculator = new DefaultPointCalculator3D(immutable, STEPS);
 		com.github.skjolber.packing.v4.ep.points3d.DefaultPointCalculator3D reference = new com.github.skjolber.packing.v4.ep.points3d.DefaultPointCalculator3D(
@@ -116,19 +110,10 @@ public class PointCalculatorVersion4ComparisonTest {
 			history.add("point " + index + ": box " + boxDx + "x" + boxDy + "x" + boxDz + " at " + x + "," + y + "," + z);
 
 			calculator.add(index, placement(boxDx, boxDy, boxDz, x, y, z));
-			try {
-				reference.add(index, placementVersion4(boxDx, boxDy, boxDz, x, y, z));
-			} catch (ArrayIndexOutOfBoundsException e) {
-				if(isVersion4ListOverflow(e)) {
-					// a bug in version 4 which 5.x fixed: there is nothing more to compare with
-					return false;
-				}
-				throw e;
-			}
+			reference.add(index, placementVersion4(boxDx, boxDy, boxDz, x, y, z));
 
 			assertSame3D(calculator, reference, seed, history);
 		}
-		return true;
 	}
 
 	static void compare2D(long seed, boolean immutable, int largestBox) {
@@ -174,20 +159,6 @@ public class PointCalculatorVersion4ComparisonTest {
 
 			assertSame2D(calculator, reference, seed, history);
 		}
-	}
-
-	/**
-	 * Version 4 adds the points constrained by a placement which is not at the corner of its point to a list without growing it
-	 * ({@code constrainFloatingMax}), so more than 16 such points overflow the list. 5.x grows the lists first. Once thrown often, the
-	 * JVM throws this exception without a stack trace, so an exception without one is taken to be the same.
-	 */
-	private static boolean isVersion4ListOverflow(ArrayIndexOutOfBoundsException e) {
-		StackTraceElement[] stack = e.getStackTrace();
-		if(stack.length == 0) {
-			return true;
-		}
-		return stack.length > 1 && stack[0].getClassName().equals(com.github.skjolber.packing.v4.ep.points3d.Point3DList.class.getName())
-				&& stack[1].getMethodName().equals("constrainFloatingMax");
 	}
 
 	private static int largest(int size, int largestBox) {

@@ -46,15 +46,12 @@ The 4.x version is the property `v4.version` in `pom.xml`. To try another 4.x bu
 locally with `mvn install` on the 4.x branch, override it on the command line:
 
 ```sh
-./mvnw -B -ntp -Dmaven.build.cache.enabled=false -Dv4.version=4.2.4-SNAPSHOT -pl points -am test
+./mvnw -B -ntp -Dmaven.build.cache.enabled=false -Dv4.version=4.2.5-SNAPSHOT -pl points -am test
 ```
 
 Do not commit a snapshot version: the CI build cannot resolve a snapshot which only exists in a local repository.
 After changing the version, run the tests of `points` and `core` with the slow tests; `ReferenceGoldenMasterTest` shows whether
 the brute force results of 4.x changed.
-
-Known difference: 4.2.3 can throw `ArrayIndexOutOfBoundsException` from `DefaultPointCalculator3D.constrainFloatingMax`
-with mutable points (fixed in 4.2.4, #1256). The point comparison ends a random sequence where 4.x fails like that.
 
 ## How it is built
 
