@@ -18,7 +18,7 @@ import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 /**
- * Compare the point calculators with those of version 4 (module packing-v4, the 4.x classes with their packages moved to
+ * Compare the point calculators with those of version 4 (module shadowed-v4 in legacy/v4, the 4.x classes with their packages moved to
  * {@code com.github.skjolber.packing.v4}): both get the same seeded random placements, and after each placement they must have the
  * same free points, in the same order, with the same supports.
  *

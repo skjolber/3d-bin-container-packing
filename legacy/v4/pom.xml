@@ -5,11 +5,11 @@
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
 		<version>5.0.0-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
+		<relativePath>../../pom.xml</relativePath>
 	</parent>
-	<artifactId>packing-v4</artifactId>
-	<name>packing-v4</name>
-	<description>Version 4 (api, points and core) with its packages moved to com.github.skjolber.packing.v4, so that tests can compare 5.x with 4.x in one JVM. Not published.</description>
+	<artifactId>shadowed-v4</artifactId>
+	<name>shadowed-v4</name>
+	<description>Version 4 (api, points and core) with its packages moved to com.github.skjolber.packing.v4, so that tests can compare 5.x with 4.x in one JVM. Not published; see README.md.</description>
 
 	<properties>
 		<v4.version>4.2.3</v4.version>
@@ -62,6 +62,12 @@
 						<!-- the shade plugin needs a main artifact: create it (empty) before the relocation -->
 						<id>default-jar</id>
 						<phase>process-classes</phase>
+						<configuration>
+							<!-- not the relocated classes of an earlier build, which would be relocated once more -->
+							<excludes>
+								<exclude>**</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -120,6 +126,8 @@
 						</goals>
 						<configuration>
 							<target>
+								<!-- replace the classes of an earlier build, which may be of another 4.x version -->
+								<delete dir="${project.build.outputDirectory}/com" />
 								<unzip src="${project.build.directory}/${project.build.finalName}.jar" dest="${project.build.outputDirectory}">
 									<patternset>
 										<include name="com/**" />

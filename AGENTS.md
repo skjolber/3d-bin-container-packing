@@ -7,7 +7,7 @@
 | `validators` | Result and load validators |
 | `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`, `packer.composite`), permutation iterators (`iterator`), container packing strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
-| `packing-v4` | Version 4.2.3 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published |
+| `legacy/v4` | `shadowed-v4`: version 4 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published (see its README) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
 | `visualizer/*` | Visualizer applications |
 

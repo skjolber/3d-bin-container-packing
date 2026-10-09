@@ -32,7 +32,7 @@
 		<dependency>
 			<!-- version 4 with relocated packages, to compare the point calculators with -->
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-			<artifactId>packing-v4</artifactId>
+			<artifactId>shadowed-v4</artifactId>
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
