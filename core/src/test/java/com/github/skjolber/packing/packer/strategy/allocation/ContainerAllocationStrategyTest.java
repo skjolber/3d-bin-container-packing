@@ -24,7 +24,7 @@ import com.github.skjolber.packing.packer.DefaultContainerInventory;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
-import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerPackingStrategy;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 class ContainerAllocationStrategyTest {
@@ -32,7 +32,7 @@ class ContainerAllocationStrategyTest {
 	@Test
 	void fewestContainersStrategyChoosesOneLargeContainer() {
 		PlainPackager packager = PlainPackager.newBuilder()
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new FewestContainersFitContainerStrategy())
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new FewestContainersFitContainerPackingStrategy())
 				.build();
 		try {
 			PackagerResult result = packager.newResultBuilder()
@@ -67,7 +67,7 @@ class ContainerAllocationStrategyTest {
 	@Test
 	void lowestCostStrategyChoosesTwoCheapContainers() {
 		PlainPackager packager = PlainPackager.newBuilder()
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new LowestCostFitContainerStrategy())
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new LowestCostFitContainerPackingStrategy())
 				.build();
 		try {
 			Container small = container("small", 1);
@@ -149,7 +149,7 @@ class ContainerAllocationStrategyTest {
 				new ArrayList<>(List.of(new BoxItem(smallBox), new BoxItem(longBox))),
 				attempts, containerQueries);
 
-		ContainerResult result = new BruteForceContainerStrategy().pack(() -> false, session);
+		ContainerResult result = new BruteForceContainerPackingStrategy().pack(() -> false, session);
 
 		assertNotNull(result);
 		assertThat(result.getPackList()).extracting(Container::getId).containsExactly("small", "long");

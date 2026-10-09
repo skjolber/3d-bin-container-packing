@@ -17,7 +17,7 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 /**
  * Interrupting the brute-force packagers at any point gives a timeout result (or a result found before the
  * interrupt), never an exception. The interrupt fires after a number of checks, from 1 and up, so that it hits every
- * point at which the packagers check it. With four container types, the container strategy searches for the
+ * point at which the packagers check it. With four container types, the container packing strategy searches for the
  * smallest container which holds all boxes.
  */
 public class BruteForceInterruptTest {

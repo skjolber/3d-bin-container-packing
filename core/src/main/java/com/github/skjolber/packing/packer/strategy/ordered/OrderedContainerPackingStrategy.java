@@ -12,13 +12,13 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.BinarySearchIterator;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
 /** Packs containers in their preference order. */
-public class OrderedContainerPackingStrategy implements ContainerStrategy {
+public class OrderedContainerPackingStrategy implements ContainerPackingStrategy {
 	@FunctionalInterface
 	public interface SingleContainerPacker {
 		IntermediatePackagerResult packSingle(List<ContainerItem> containerItems, PackagerSession session, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;

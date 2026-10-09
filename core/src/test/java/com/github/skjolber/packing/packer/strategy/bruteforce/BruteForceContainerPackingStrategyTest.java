@@ -22,7 +22,7 @@ import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
 import com.github.skjolber.packing.packer.DefaultContainerInventory;
 
-class BruteForceContainerStrategyTest {
+class BruteForceContainerPackingStrategyTest {
 
 	@Test
 	void forksWithoutMutatingTheSourceOrSiblingState() throws PackagerInterruptedException {
@@ -127,7 +127,7 @@ class BruteForceContainerStrategyTest {
 		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				1, new ArrayList<>(), queries);
 
-		new BruteForceContainerStrategy().pack(() -> false, source);
+		new BruteForceContainerPackingStrategy().pack(() -> false, source);
 
 		assertEquals(List.of(1), attempts);
 		assertEquals(1, queries[0]);
@@ -173,7 +173,7 @@ class BruteForceContainerStrategyTest {
 				return super.getContainers();
 			}
 		};
-		new BruteForceContainerStrategy().pack(() -> false, threeBoxes);
+		new BruteForceContainerPackingStrategy().pack(() -> false, threeBoxes);
 		assertEquals(2, requested[0]);
 		assertEquals(2, threeBoxes.getContainerInventory().getContainerCount());
 
@@ -181,7 +181,7 @@ class BruteForceContainerStrategyTest {
 				new ContainerItem(container, Integer.MAX_VALUE)), Integer.MAX_VALUE);
 		TestSession oneBox = new TestSession(manyContainers, new ArrayList<>(), new ArrayList<>());
 		assertEquals(Integer.MAX_VALUE, oneBox.getContainerInventory().getContainerCount());
-		assertEquals(1, new BruteForceContainerStrategy().pack(() -> false, oneBox).getPackList().size());
+		assertEquals(1, new BruteForceContainerPackingStrategy().pack(() -> false, oneBox).getPackList().size());
 	}
 
 	@Test
@@ -193,7 +193,7 @@ class BruteForceContainerStrategyTest {
 		List<Integer> attempts = new ArrayList<>();
 		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts);
 
-		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
+		ContainerResult result = new BruteForceContainerPackingStrategy(new LowestCostControls()).pack(() -> false, source);
 
 		assertEquals(List.of("cheap"), result.getPackList().stream().map(Container::getId).toList());
 		assertEquals(1, attempts.size());
@@ -210,7 +210,7 @@ class BruteForceContainerStrategyTest {
 		TestSession source = new TestSession(calculator, new ArrayList<>(), attempts,
 				2, new ArrayList<>(), queries);
 
-		ContainerResult result = new BruteForceContainerStrategy(new LowestCostControls()).pack(() -> false, source);
+		ContainerResult result = new BruteForceContainerPackingStrategy(new LowestCostControls()).pack(() -> false, source);
 
 		assertEquals(List.of("cheap", "cheap"), result.getPackList().stream().map(Container::getId).toList());
 		assertEquals(List.of(2, 1), attempts);
@@ -222,14 +222,14 @@ class BruteForceContainerStrategyTest {
 				new FixedContainerCostCalculator(cost, container.getVolume(), null, 0)));
 	}
 
-	private static BruteForceContainerStrategy strategy(Comparator<List<Container>> comparator) {
-		return new BruteForceContainerStrategy(new TestControls(comparator, (best, prefix, state,
+	private static BruteForceContainerPackingStrategy strategy(Comparator<List<Container>> comparator) {
+		return new BruteForceContainerPackingStrategy(new TestControls(comparator, (best, prefix, state,
 				containerIndexes, selected, slots) -> true));
 	}
 
-	private static BruteForceContainerStrategy strategy(Comparator<List<Container>> comparator,
+	private static BruteForceContainerPackingStrategy strategy(Comparator<List<Container>> comparator,
 			AttemptFilter attemptFilter) {
-		return new BruteForceContainerStrategy(new TestControls(comparator, attemptFilter));
+		return new BruteForceContainerPackingStrategy(new TestControls(comparator, attemptFilter));
 	}
 
 	@FunctionalInterface
@@ -238,7 +238,7 @@ class BruteForceContainerStrategyTest {
 				List<Integer> containerIndexes, int selectedContainerIndex, int remainingSlots);
 	}
 
-	private static class TestControls implements BruteForceContainerStrategy.Controls {
+	private static class TestControls implements BruteForceContainerPackingStrategy.Controls {
 
 		private final Comparator<List<Container>> comparator;
 		private final AttemptFilter attemptFilter;

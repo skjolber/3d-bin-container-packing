@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
-import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy.Controls;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerPackingStrategy.Controls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
 

@@ -212,17 +212,17 @@ class ApiExtensionTest {
 
 	private static List<AbstractPackager<?>> largestContainerFirstPackagers() {
 		return List.of(
-				PlainPackager.newBuilder().withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
-				LargestAreaFitFirstPackager.newBuilder().withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
-				BruteForcePackager.newBuilder().withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
-				FastBruteForcePackager.newBuilder().withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
-				FastLargestAreaFitFirstPackager.newBuilder().withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
+				PlainPackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
+				LargestAreaFitFirstPackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
+				BruteForcePackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
+				FastBruteForcePackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
+				FastLargestAreaFitFirstPackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
 				ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2)
-						.withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy()).build(),
+						.withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy()).build(),
 				CompositePackager.newBuilder()
 						.withPackager(PlainPackager.newBuilder().build())
 						.withPackager(FastBruteForcePackager.newBuilder().build(), 1000)
-						.withContainerStrategyFactory((inventory, boxItems, boxItemGroups) -> new LargestContainerFirstStrategy())
+						.withContainerPackingStrategyFactory((inventory, boxItems, boxItemGroups, comparator, emptyResult) -> new LargestContainerFirstStrategy())
 						.build());
 	}
 

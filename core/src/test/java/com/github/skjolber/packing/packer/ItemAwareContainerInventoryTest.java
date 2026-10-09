@@ -28,7 +28,7 @@ class ItemAwareContainerInventoryTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<Class<?>> inventoryTypes = new ArrayList<>();
-			packager.setContainerStrategyFactory((inventory, boxes, groups) -> {
+			packager.setContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> {
 				inventoryTypes.add(inventory.getClass());
 				return (interrupt, session) -> {
 					IntermediatePackagerResult result = session.attempt(0, null, true);

@@ -17,10 +17,10 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
-import com.github.skjolber.packing.packer.strategy.DefaultContainerStrategyFactory;
+import com.github.skjolber.packing.packer.strategy.DefaultContainerPackingStrategyFactory;
 
 /**
  * Base class for packagers: fit boxes into one or more containers, i.e. perform bin packing.
@@ -38,7 +38,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	protected final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 	/** Whether results with less load volume always compare worse, see {@link IntermediatePackagerResultComparator#prefersHigherLoadVolume()} */
 	protected final boolean prefersHigherLoadVolume;
-	private volatile ContainerStrategyFactory containerStrategyFactory;
+	private volatile ContainerPackingStrategyFactory containerPackingStrategyFactory;
 	
 	/** The deadline tasks only flag expiry, so one thread is enough. */
 	protected final ScheduledThreadPoolExecutor scheduledThreadPoolExecutor = new ScheduledThreadPoolExecutor(1);
@@ -47,13 +47,12 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 		this.scheduledThreadPoolExecutor.setRemoveOnCancelPolicy(true);
 		this.intermediatePackagerResultComparator = comparator;
 		this.prefersHigherLoadVolume = comparator != null && comparator.prefersHigherLoadVolume();
-		this.containerStrategyFactory = new DefaultContainerStrategyFactory(comparator,
-				this::createEmptyIntermediatePackagerResult);
+		this.containerPackingStrategyFactory = new DefaultContainerPackingStrategyFactory();
 	}
 
 	/** Used by the builders, before the packager is returned. */
-	protected void setContainerStrategyFactory(ContainerStrategyFactory factory) {
-		this.containerStrategyFactory = factory;
+	protected void setContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+		this.containerPackingStrategyFactory = factory;
 	}
 
 	/**
@@ -138,7 +137,7 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	}
 
 	/**
-	 * Pack the input, using the container strategy.
+	 * Pack the input, using the container packing strategy.
 	 *
 	 * @param input the boxes and containers, supported by this packager (see {@link #supports(PackagerInput)})
 	 * @param deadline deadline in milliseconds, or -1 for none
@@ -192,7 +191,8 @@ public abstract class AbstractPackager<B extends PackagerResultBuilder> implemen
 	}
 
 	public ContainerResult packSession(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {
-		ContainerStrategy strategy = containerStrategyFactory.create(session.getContainerInventory(), session.getRemainingBoxItems(), session.getRemainingBoxItemGroups());
+		ContainerPackingStrategy strategy = containerPackingStrategyFactory.create(session.getContainerInventory(), session.getRemainingBoxItems(), session.getRemainingBoxItemGroups(),
+				intermediatePackagerResultComparator, this::createEmptyIntermediatePackagerResult);
 		return strategy.pack(interrupt, session);
 	}
 

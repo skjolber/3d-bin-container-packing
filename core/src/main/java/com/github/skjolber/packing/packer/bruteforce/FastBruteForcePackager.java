@@ -19,7 +19,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
@@ -74,7 +74,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		protected IntermediatePackagerResultComparator comparator;
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
-		protected ContainerStrategyFactory containerStrategyFactory;
+		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
@@ -110,15 +110,15 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		/**
-		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * Set the factory which selects the container packing strategy: which containers to use, and in which order.
 		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
 		 * (in preference order) which holds the boxes.
 		 *
-		 * @param factory container strategy factory
+		 * @param factory container packing strategy factory
 		 * @return this builder
 		 */
-		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
-			this.containerStrategyFactory = Objects.requireNonNull(factory);
+		public Builder withContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+			this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
@@ -133,8 +133,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			
 			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
-			if(containerStrategyFactory != null) {
-				packager.setContainerStrategyFactory(containerStrategyFactory);
+			if(containerPackingStrategyFactory != null) {
+				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);

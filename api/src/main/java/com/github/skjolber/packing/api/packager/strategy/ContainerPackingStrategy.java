@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
  * first container (in preference order) which holds all boxes, or the lowest cost combination of
  * containers.
  */
-public interface ContainerStrategy {
+public interface ContainerPackingStrategy {
 
 	/**
 	 * @param interrupt checked regularly; stop when it returns true

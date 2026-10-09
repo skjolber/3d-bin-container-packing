@@ -25,7 +25,7 @@ import com.github.skjolber.packing.packer.plain.PlainPackager;
  *   c0 [b][ ]      c1 [b][ ][ ]      c2 ...
  * </pre>
  *
- * With three or more container types, the container strategy searches for it; the packagers then reuse a result in
+ * With three or more container types, the container packing strategy searches for it; the packagers then reuse a result in
  * other containers which also hold it.
  */
 public class FirstFittingContainerTest {

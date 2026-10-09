@@ -14,7 +14,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.DefaultPackagerResultComparator;
@@ -27,14 +27,14 @@ import com.github.skjolber.packing.packer.PackagerInput;
  * Packager which combines other packagers, using costly packagers only where cheaper packagers fall short.
  * <ol>
  * <li>Baseline: the baseline packagers pack the boxes, one after another. The best result is the baseline.</li>
- * <li>Improvement: for each container the container strategy attempts, the packagers are tried in order until one
+ * <li>Improvement: for each container the container packing strategy attempts, the packagers are tried in order until one
  * packs all remaining boxes (see {@link CompositePackagerSession}). A costly packager therefore runs only where the
  * cheaper packagers did not pack all remaining boxes, and it only needs to find results which load more than theirs.
  * Without container costs, the improvement uses at most as many containers as the baseline (if the result comparator
  * prefers fewer containers).</li>
  * </ol>
  * The better of the improvement and the baseline is returned. If the improvement is interrupted, the baseline is
- * returned. With a container strategy set on the builder, the baseline packagers pack with it too, so that both
+ * returned. With a container packing strategy set on the builder, the baseline packagers pack with it too, so that both
  * results follow it.
  *
  * <pre>
@@ -77,7 +77,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		protected final List<Stage> stages = new ArrayList<>();
 		protected IntermediatePackagerResultComparator comparator;
 		protected PackagerResultComparator packagerResultComparator;
-		protected ContainerStrategyFactory containerStrategyFactory;
+		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 
 		/**
 		 * Add a packager for the baseline. Without baseline packagers, the first packager is used.
@@ -136,14 +136,14 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		}
 
 		/**
-		 * Set the factory which selects the container strategy: which containers to use, and in which order. The
+		 * Set the factory which selects the container packing strategy: which containers to use, and in which order. The
 		 * baseline packagers pack with it too (by default, they pack with their own).
 		 *
-		 * @param factory container strategy factory
+		 * @param factory container packing strategy factory
 		 * @return this builder
 		 */
-		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
-			this.containerStrategyFactory = Objects.requireNonNull(factory);
+		public Builder withContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+			this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
@@ -159,8 +159,8 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			}
 			List<AbstractPackager<?>> baseline = baselinePackagers.isEmpty() ? List.of(stages.get(0).packager) : List.copyOf(baselinePackagers);
 			CompositePackager packager = new CompositePackager(comparator, packagerResultComparator, baseline, List.copyOf(stages));
-			if(containerStrategyFactory != null) {
-				packager.setContainerStrategyFactory(containerStrategyFactory);
+			if(containerPackingStrategyFactory != null) {
+				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
 			return packager;
 		}
@@ -201,19 +201,19 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 		return "No packager supports the input: " + stages.get(0).packager.getUnsupportedReason(input);
 	}
 
-	/** Whether a container strategy was set on the builder: the baseline packagers then pack with it too */
-	private boolean customContainerStrategy;
+	/** Whether a container packing strategy was set on the builder: the baseline packagers then pack with it too */
+	private boolean customContainerPackingStrategy;
 
 	@Override
-	protected void setContainerStrategyFactory(ContainerStrategyFactory factory) {
-		super.setContainerStrategyFactory(factory);
-		this.customContainerStrategy = true;
+	protected void setContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+		super.setContainerPackingStrategyFactory(factory);
+		this.customContainerPackingStrategy = true;
 	}
 
 	/**
-	 * Pack the input with a baseline packager's session and this packager's container strategy.
+	 * Pack the input with a baseline packager's session and this packager's container packing strategy.
 	 */
-	protected PackagerResult packWithContainerStrategy(AbstractPackager<?> packager, PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
+	protected PackagerResult packWithContainerPackingStrategy(AbstractPackager<?> packager, PackagerInput input, long deadline, PackagerInterruptSupplier interrupt) {
 		long start = System.currentTimeMillis();
 
 		PackagerInterruptSupplierBuilder booleanSupplierBuilder = PackagerInterruptSupplierBuilder.newBuilder();
@@ -253,7 +253,7 @@ public class CompositePackager extends AbstractPackager<CompositePackager.Compos
 			if(!packager.supports(input)) {
 				continue;
 			}
-			PackagerResult result = customContainerStrategy ? packWithContainerStrategy(packager, input, deadline, interrupt) : packager.pack(input, deadline, interrupt);
+			PackagerResult result = customContainerPackingStrategy ? packWithContainerPackingStrategy(packager, input, deadline, interrupt) : packager.pack(input, deadline, interrupt);
 			if(result.isTimeout()) {
 				// the deadline or interrupt applies to the improvement too
 				return withDuration(baseline != null ? baseline : result, start);

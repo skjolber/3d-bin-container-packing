@@ -6,9 +6,9 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * Selects containers from an item-to-container allocation using the fewest
  * possible containers under individual-fit, volume and weight constraints.
  */
-public final class FewestContainersFitContainerStrategy extends AbstractContainerAllocationStrategy {
+public final class FewestContainersFitContainerPackingStrategy extends AbstractContainerAllocationStrategy {
 
-	public FewestContainersFitContainerStrategy() {
+	public FewestContainersFitContainerPackingStrategy() {
 		super(Objective.FEWEST_CONTAINERS);
 	}
 }

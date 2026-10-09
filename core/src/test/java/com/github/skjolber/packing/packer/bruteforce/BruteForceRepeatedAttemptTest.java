@@ -20,7 +20,7 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
- * A session can attempt the same container more than once, for example when the container strategy first checks
+ * A session can attempt the same container more than once, for example when the container packing strategy first checks
  * whether a single container holds all boxes. Each attempt searches from the first permutation and rotation, and from
  * an empty container.
  */

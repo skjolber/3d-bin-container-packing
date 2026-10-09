@@ -6,9 +6,9 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * Selects containers from the lowest-cost item-to-container allocation,
  * breaking equal-cost ties in favor of fewer containers.
  */
-public final class LowestCostFitContainerStrategy extends AbstractContainerAllocationStrategy {
+public final class LowestCostFitContainerPackingStrategy extends AbstractContainerAllocationStrategy {
 
-	public LowestCostFitContainerStrategy() {
+	public LowestCostFitContainerPackingStrategy() {
 		super(Objective.LOWEST_COST);
 	}
 }

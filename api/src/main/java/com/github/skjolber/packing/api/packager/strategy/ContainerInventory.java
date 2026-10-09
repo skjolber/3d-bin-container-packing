@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.ContainerItem;
 
 /**
- * The containers available to a packaging operation, as seen by a {@link ContainerStrategy}: which
+ * The containers available to a packaging operation, as seen by a {@link ContainerPackingStrategy}: which
  * container types remain, how many containers can still be used, and whether boxes can be loaded.
  * <p>
  * Container-item indexes refer to {@link #getContainerItems()}.

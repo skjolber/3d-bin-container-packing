@@ -11,7 +11,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.iterator.ContainerItemPermutationIterator;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
@@ -24,7 +24,7 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * Packing within a container remains determined by the underlying packager.
  * Instances are one-shot because the controls retain the selected result.
  */
-public class BruteForceContainerStrategy implements ContainerStrategy {
+public class BruteForceContainerPackingStrategy implements ContainerPackingStrategy {
 
 	public interface Controls {
 		/**
@@ -58,11 +58,11 @@ public class BruteForceContainerStrategy implements ContainerStrategy {
 
 	private final Controls controls;
 
-	public BruteForceContainerStrategy() {
+	public BruteForceContainerPackingStrategy() {
 		this(new FewestContainersControls());
 	}
 
-	public BruteForceContainerStrategy(Controls controls) {
+	public BruteForceContainerPackingStrategy(Controls controls) {
 		this.controls = Objects.requireNonNull(controls);
 	}
 

@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.strategy;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -10,8 +9,8 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.packer.strategy.cost.LowestCostContainerPackingStrategy;
 import com.github.skjolber.packing.packer.strategy.ordered.OrderedContainerPackingStrategy;
 
@@ -19,30 +18,20 @@ import com.github.skjolber.packing.packer.strategy.ordered.OrderedContainerPacki
  * Uses cost-aware packing when container costs are present, otherwise input
  * order. For unconstrained inventory it selects an ordered variant which does
  * not repeat allocation planning before every attempted container.
+ * <p>
+ * Stateless: every call creates a new strategy from the arguments, so the factory can be shared freely.
  */
-public class DefaultContainerStrategyFactory implements ContainerStrategyFactory {
-
-	private final OrderedContainerPackingStrategy ordered;
-	private final OrderedContainerPackingStrategy orderedWithoutAllocationFeasibilityCheck;
-	private final LowestCostContainerPackingStrategy lowestCost;
-
-	public DefaultContainerStrategyFactory(IntermediatePackagerResultComparator comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier) {
-		this(new OrderedContainerPackingStrategy(comparator, emptyResultSupplier), new LowestCostContainerPackingStrategy(comparator));
-	}
-
-	public DefaultContainerStrategyFactory(OrderedContainerPackingStrategy ordered, LowestCostContainerPackingStrategy lowestCost) {
-		this.ordered = Objects.requireNonNull(ordered);
-		this.orderedWithoutAllocationFeasibilityCheck = ordered.withoutAllocationFeasibilityCheck();
-		this.lowestCost = Objects.requireNonNull(lowestCost);
-	}
+public class DefaultContainerPackingStrategyFactory implements ContainerPackingStrategyFactory {
 
 	@Override
-	public ContainerStrategy create(ContainerInventory containerInventory, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups) {
+	public ContainerPackingStrategy create(ContainerInventory containerInventory, List<BoxItem> remainingBoxItems, List<BoxItemGroup> boxItemGroups,
+			IntermediatePackagerResultComparator comparator, Supplier<IntermediatePackagerResult> emptyResultSupplier) {
 		if(containerInventory.hasCost()) {
-			return lowestCost;
+			return new LowestCostContainerPackingStrategy(comparator);
 		}
+		OrderedContainerPackingStrategy ordered = new OrderedContainerPackingStrategy(comparator, emptyResultSupplier);
 		if(isAllocationAlwaysFeasible(containerInventory, remainingBoxItems, boxItemGroups)) {
-			return orderedWithoutAllocationFeasibilityCheck;
+			return ordered.withoutAllocationFeasibilityCheck();
 		}
 		return ordered;
 	}

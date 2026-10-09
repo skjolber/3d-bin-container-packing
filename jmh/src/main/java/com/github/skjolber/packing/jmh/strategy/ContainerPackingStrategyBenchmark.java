@@ -17,29 +17,29 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 @Warmup(iterations = 2, time = 10, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 10, timeUnit = TimeUnit.SECONDS)
 @BenchmarkMode(Mode.Throughput)
-public class ContainerStrategyBenchmark {
+public class ContainerPackingStrategyBenchmark {
 
 	@Benchmark
-	public int plainRotatedOrdered(ContainerStrategyBenchmarkState state) {
+	public int plainRotatedOrdered(ContainerPackingStrategyBenchmarkState state) {
 		return pack(state.getOrderedPackager(), state, state.getRotatedContainerItems(), state.getBoxItems(), 1);
 	}
 
 	@Benchmark
-	public int plainRotatedParallel(ContainerStrategyBenchmarkState state) {
+	public int plainRotatedParallel(ContainerPackingStrategyBenchmarkState state) {
 		return pack(state.getParallelPackager(), state, state.getRotatedContainerItems(), state.getBoxItems(), 1);
 	}
 
 	@Benchmark
-	public int bruteForceOrdered(ContainerStrategyBenchmarkState state) {
+	public int bruteForceOrdered(ContainerPackingStrategyBenchmarkState state) {
 		return pack(state.getOrderedBruteForcePackager(), state, state.getContainerItems(), state.getBruteForceBoxItems(), 1);
 	}
 
 	@Benchmark
-	public int bruteForceParallel(ContainerStrategyBenchmarkState state) {
+	public int bruteForceParallel(ContainerPackingStrategyBenchmarkState state) {
 		return pack(state.getParallelBruteForcePackager(), state, state.getContainerItems(), state.getBruteForceBoxItems(), 1);
 	}
 
-	private static int pack(AbstractPackager<?> packager, ContainerStrategyBenchmarkState state,
+	private static int pack(AbstractPackager<?> packager, ContainerPackingStrategyBenchmarkState state,
 			java.util.List<com.github.skjolber.packing.api.ContainerItem> containerItems,
 			java.util.List<com.github.skjolber.packing.api.BoxItem> boxItems, int maxContainerCount) {
 		PackagerResult result = packager.newResultBuilder()

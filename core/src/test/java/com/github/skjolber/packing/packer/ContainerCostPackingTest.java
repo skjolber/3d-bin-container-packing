@@ -24,7 +24,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.cost.FixedContainerCostCalculator;
 import com.github.skjolber.packing.cost.LinearBucketWeightContainerCostCalculator;
@@ -33,7 +33,7 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
-import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerStrategy;
+import com.github.skjolber.packing.packer.strategy.bruteforce.BruteForceContainerPackingStrategy;
 import com.github.skjolber.packing.packer.strategy.bruteforce.LowestCostControls;
 import com.github.skjolber.packing.packer.strategy.cost.ContainerItemsCostCalculator;
 import com.github.skjolber.packing.packer.strategy.cost.EstimatingContainerItemsCostCalculator;
@@ -61,7 +61,7 @@ class ContainerCostPackingTest {
 		};
 		try {
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestCostControls(calculator)));
+					() -> new BruteForceContainerPackingStrategy(new LowestCostControls(calculator)));
 			PackagerResult result = packager.newResultBuilder().withContainerItems(planContainers())
 					.withMaxContainerCount(2).withBoxItems(twoBoxes())
 					.build();
@@ -103,7 +103,7 @@ class ContainerCostPackingTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			List<Boolean> costStatuses = new ArrayList<>();
-			packager.setContainerStrategyFactory((calculator, boxes, groups) -> {
+			packager.setContainerPackingStrategyFactory((calculator, boxes, groups, comparator, emptyResult) -> {
 				costStatuses.add(calculator.hasCost());
 				return (interrupt, session) -> new ContainerResult(0, List.of());
 			});
@@ -123,12 +123,12 @@ class ContainerCostPackingTest {
 	void groupCountLimitsBruteForceContainerSearchDepth() {
 		List<ContainerItem> containers = ContainerItem.newListBuilder()
 				.withContainer(container("group"), 3).build();
-		ContainerStrategy strategy = (interrupt, session) -> {
+		ContainerPackingStrategy strategy = (interrupt, session) -> {
 			assertThat(session.countRemainingBoxes()).isEqualTo(2);
 			assertThat(session.getRemainingBoxItemGroups()).hasSize(1);
 			assertThat(session.getContainerInventory().getContainerCount()).isEqualTo(1);
 			assertThat(session.getMaxContainerCount()).isEqualTo(1);
-			return new BruteForceContainerStrategy().pack(interrupt, session);
+			return new BruteForceContainerPackingStrategy().pack(interrupt, session);
 		};
 		PlainPackager plain = PlainPackager.newBuilder().build();
 		BruteForcePackager brute = BruteForcePackager.newBuilder().build();
@@ -158,7 +158,7 @@ class ContainerCostPackingTest {
 		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
-			ContainerStrategy strategy = this::packFromRecreatedSession;
+			ContainerPackingStrategy strategy = this::packFromRecreatedSession;
 			useStrategy(plain, strategy);
 			useStrategy(laff, strategy);
 			useStrategy(bruteForce, strategy);
@@ -223,7 +223,7 @@ class ContainerCostPackingTest {
 		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		try {
-			ContainerStrategy strategy = this::packAfterPartialRestart;
+			ContainerPackingStrategy strategy = this::packAfterPartialRestart;
 			useStrategy(bruteForce, strategy);
 			useStrategy(fastBruteForce, strategy);
 			useStrategy(parallel, strategy);
@@ -478,7 +478,7 @@ class ContainerCostPackingTest {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestCostControls()));
+					() -> new BruteForceContainerPackingStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(planContainers())
 					.withMaxContainerCount(2)
@@ -532,7 +532,7 @@ class ContainerCostPackingTest {
 					.withContainer(large, 1, cost(80, 2))
 					.build();
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestCostControls()));
+					() -> new BruteForceContainerPackingStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(containers)
 					.withMaxContainerCount(2)
@@ -573,7 +573,7 @@ class ContainerCostPackingTest {
 					.withContainer(fixed, 1, cost(5, 1))
 					.build();
 			useStrategyFactory(packager,
-					() -> new BruteForceContainerStrategy(new LowestCostControls()));
+					() -> new BruteForceContainerPackingStrategy(new LowestCostControls()));
 			PackagerResult result = packager.newResultBuilder()
 					.withContainerItems(containers)
 					.withBoxItems(boxItem())
@@ -606,14 +606,14 @@ class ContainerCostPackingTest {
 		BruteForcePackager bruteForce = BruteForcePackager.newBuilder().build();
 		try {
 			ContainerItemsCostCalculator calculator = new EstimatingContainerItemsCostCalculator();
-			ContainerStrategy strategy = (interrupt, session) -> {
+			ContainerPackingStrategy strategy = (interrupt, session) -> {
 				assertThat(estimateMinimumCost(calculator, session, 2)).isEqualTo(80);
 				PackagerSession branch = session.fork();
 				branch.accept(branch.attempt(1, null, false));
 				assertThat(estimateMinimumCost(calculator, branch, 1)).isEqualTo(40);
 				assertThat(estimateMinimumCost(calculator, session, 2)).isEqualTo(80);
 				assertThat(estimateMinimumCost(calculator, branch.fresh(), 2)).isEqualTo(80);
-				return new BruteForceContainerStrategy(new LowestCostControls(calculator)).pack(interrupt, session);
+				return new BruteForceContainerPackingStrategy(new LowestCostControls(calculator)).pack(interrupt, session);
 			};
 			useStrategy(packager, strategy);
 			useStrategy(bruteForce, strategy);
@@ -748,7 +748,7 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void bruteForceContainerStrategyWorksWithFastBruteForcePackager() {
+	void bruteForceContainerPackingStrategyWorksWithFastBruteForcePackager() {
 		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
 		try {
 			useStrategyFactory(packager, () -> comparisonStrategy((first, second) ->
@@ -792,7 +792,7 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void bruteForceContainerStrategyWorksWithGroups() {
+	void bruteForceContainerPackingStrategyWorksWithGroups() {
 		PlainPackager packager = PlainPackager.newBuilder().build();
 		try {
 			useStrategyFactory(packager, () -> comparisonStrategy((first, second) ->
@@ -837,14 +837,14 @@ class ContainerCostPackingTest {
 	}
 
 	@Test
-	void bruteForceContainerStrategyForksEachPackagerSession() {
+	void bruteForceContainerPackingStrategyForksEachPackagerSession() {
 		BruteForcePackager brute = BruteForcePackager.newBuilder().build();
 		FastBruteForcePackager fast = FastBruteForcePackager.newBuilder().build();
 		ParallelBruteForcePackager parallel = ParallelBruteForcePackager.newBuilder()
 				.withThreads(2).withParallelizationCount(2).build();
 		LargestAreaFitFirstPackager laff = LargestAreaFitFirstPackager.newBuilder().build();
 		try {
-			Supplier<ContainerStrategy> strategyFactory = () -> comparisonStrategy(
+			Supplier<ContainerPackingStrategy> strategyFactory = () -> comparisonStrategy(
 					(first, second) -> Integer.compare(first.size(), second.size()));
 			useStrategyFactory(brute, strategyFactory);
 			useStrategyFactory(fast, strategyFactory);
@@ -941,13 +941,13 @@ class ContainerCostPackingTest {
 		return count;
 	}
 
-	private static void useStrategy(AbstractPackager<?> packager, ContainerStrategy strategy) {
-		packager.setContainerStrategyFactory((calculator, boxes, groups) -> strategy);
+	private static void useStrategy(AbstractPackager<?> packager, ContainerPackingStrategy strategy) {
+		packager.setContainerPackingStrategyFactory((calculator, boxes, groups, comparator, emptyResult) -> strategy);
 	}
 
 	private static void useStrategyFactory(AbstractPackager<?> packager,
-			Supplier<? extends ContainerStrategy> strategyFactory) {
-		packager.setContainerStrategyFactory((calculator, boxes, groups) -> strategyFactory.get());
+			Supplier<? extends ContainerPackingStrategy> strategyFactory) {
+		packager.setContainerPackingStrategyFactory((calculator, boxes, groups, comparator, emptyResult) -> strategyFactory.get());
 	}
 
 	private static long totalCost(Map<String, ContainerCostCalculator> calculators, List<Container> containers) {
@@ -958,11 +958,11 @@ class ContainerCostPackingTest {
 		return total;
 	}
 
-	private static BruteForceContainerStrategy comparisonStrategy(Comparator<List<Container>> comparator) {
-		return new BruteForceContainerStrategy(new ComparisonControls(comparator));
+	private static BruteForceContainerPackingStrategy comparisonStrategy(Comparator<List<Container>> comparator) {
+		return new BruteForceContainerPackingStrategy(new ComparisonControls(comparator));
 	}
 
-	private static class ComparisonControls implements BruteForceContainerStrategy.Controls {
+	private static class ComparisonControls implements BruteForceContainerPackingStrategy.Controls {
 
 		private final Comparator<List<Container>> comparator;
 		private ContainerResult best;

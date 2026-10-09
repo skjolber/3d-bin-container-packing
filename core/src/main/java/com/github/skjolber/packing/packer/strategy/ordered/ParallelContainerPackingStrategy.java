@@ -13,7 +13,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner;
 
@@ -25,7 +25,7 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * This requires sessions to support accepting results produced by another
  * session in the same packaging operation.</p>
  */
-public class ParallelContainerPackingStrategy implements ContainerStrategy {
+public class ParallelContainerPackingStrategy implements ContainerPackingStrategy {
 
 	private final ExecutorService executorService;
 	private final IntermediatePackagerResultComparator comparator;

@@ -16,7 +16,6 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
@@ -31,7 +30,7 @@ class ParallelContainerPackingStrategyTest {
 	void acceptsTheBestResultProducedByASessionFork() {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		PlainPackager packager = PlainPackager.newBuilder()
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator))
 				.build();
 		try {
 
@@ -76,8 +75,8 @@ class ParallelContainerPackingStrategyTest {
 	void bruteForceUsesEachContainerOnce() {
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		List<AbstractPackager<?>> packagers = List.of(
-				BruteForcePackager.newBuilder().withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator())).build(),
-				FastBruteForcePackager.newBuilder().withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator())).build());
+				BruteForcePackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator)).build(),
+				FastBruteForcePackager.newBuilder().withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator)).build());
 		try {
 			for (AbstractPackager<?> packager : packagers) {
 				Container small = Container.newBuilder().withId("small").withSize(1, 1, 1).withMaxLoadWeight(10).build();
@@ -143,7 +142,7 @@ class ParallelContainerPackingStrategyTest {
 	}
 
 	/**
-	 * The parallel container strategy attempts containers in session forks at the same time; with parallel brute force,
+	 * The parallel container packing strategy attempts containers in session forks at the same time; with parallel brute force,
 	 * each attempt splits its permutations between workers. The attempts must not take each other's workers' results.
 	 */
 	@Test
@@ -153,7 +152,7 @@ class ParallelContainerPackingStrategyTest {
 				ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 						.withThreads(4)
 						.withParallelizationCount(2)
-						.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, new DefaultIntermediatePackagerResultComparator()))
+						.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator))
 						.build()) {
 			for (int seed = 0; seed < 20; seed++) {
 				Random random = new Random(seed);

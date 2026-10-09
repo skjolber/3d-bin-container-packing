@@ -17,11 +17,11 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 /** Plans and executes container packing using the lowest observed cost. */
-public class LowestCostContainerPackingStrategy implements ContainerStrategy {
+public class LowestCostContainerPackingStrategy implements ContainerPackingStrategy {
 
 	private final IntermediatePackagerResultComparator intermediatePackagerResultComparator;
 

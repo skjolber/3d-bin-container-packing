@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 
 /**
- * One packaging operation as seen by a {@link ContainerStrategy}: the remaining boxes and the
+ * One packaging operation as seen by a {@link ContainerPackingStrategy}: the remaining boxes and the
  * available containers. A strategy repeatedly tries to pack the remaining boxes into containers
  * ({@link #attempt(int, IntermediatePackagerResult, boolean)}) and keeps the results it prefers
  * ({@link #accept(IntermediatePackagerResult)}), until no boxes remain or no container can be used.

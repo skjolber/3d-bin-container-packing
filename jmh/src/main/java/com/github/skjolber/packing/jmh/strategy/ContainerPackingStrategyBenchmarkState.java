@@ -16,8 +16,6 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
-import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.EmptyIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.strategy.ordered.OrderedContainerPackingStrategy;
@@ -28,7 +26,7 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 
 /** Shared inputs for serial and parallel container-candidate selection. */
 @State(Scope.Benchmark)
-public class ContainerStrategyBenchmarkState {
+public class ContainerPackingStrategyBenchmarkState {
 
 	@Param({"2", "4", "6"})
 	public int containerItemCount;
@@ -47,23 +45,22 @@ public class ContainerStrategyBenchmarkState {
 	public void setup() {
 		executorService = Executors.newFixedThreadPool(Math.min(containerItemCount,
 				Math.max(1, Runtime.getRuntime().availableProcessors())));
-		DefaultIntermediatePackagerResultComparator comparator = new DefaultIntermediatePackagerResultComparator();
 
 		orderedPackager = PlainPackager.newBuilder()
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY))
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new OrderedContainerPackingStrategy(comparator, emptyResult))
 				.build();
 
 		parallelPackager = PlainPackager.newBuilder()
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, comparator))
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator))
 				.build();
 
 		orderedBruteForcePackager = BruteForcePackager.newBuilder()
 				.withSkipReversePermutations(true)
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new OrderedContainerPackingStrategy(comparator, () -> EmptyIntermediatePackagerResult.EMPTY))
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new OrderedContainerPackingStrategy(comparator, emptyResult))
 				.build();
 		parallelBruteForcePackager = BruteForcePackager.newBuilder()
 				.withSkipReversePermutations(true)
-				.withContainerStrategyFactory((inventory, boxes, groups) -> new ParallelContainerPackingStrategy(executorService, comparator))
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator))
 				.build();
 
 		// Unlike 15x11A, all nine squares in 33x32A have distinct sizes.

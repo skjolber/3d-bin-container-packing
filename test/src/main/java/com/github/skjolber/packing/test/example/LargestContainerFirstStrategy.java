@@ -10,14 +10,14 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 /**
- * Example container strategy, which depends on the api module only: fill the largest available container
+ * Example container packing strategy, which depends on the api module only: fill the largest available container
  * (by load volume) with as many boxes as possible, then the next largest, until all boxes are packed.
  */
-public class LargestContainerFirstStrategy implements ContainerStrategy {
+public class LargestContainerFirstStrategy implements ContainerPackingStrategy {
 
 	@Override
 	public ContainerResult pack(PackagerInterruptSupplier interrupt, PackagerSession session) throws PackagerInterruptedException {

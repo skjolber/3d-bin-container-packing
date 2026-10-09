@@ -8,7 +8,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategy;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategy;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Allocation;
 import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocationPlanner.Objective;
@@ -33,10 +33,10 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * infeasible allocation.
  * </p>
  *
- * @see FewestContainersFitContainerStrategy
- * @see LowestCostFitContainerStrategy
+ * @see FewestContainersFitContainerPackingStrategy
+ * @see LowestCostFitContainerPackingStrategy
  */
-abstract class AbstractContainerAllocationStrategy implements ContainerStrategy {
+abstract class AbstractContainerAllocationStrategy implements ContainerPackingStrategy {
 
 	private final Objective objective;
 

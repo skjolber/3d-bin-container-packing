@@ -7,7 +7,7 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerResult;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 
 /** Selects a complete packing using the fewest containers. */
-public final class FewestContainersControls implements BruteForceContainerStrategy.Controls {
+public final class FewestContainersControls implements BruteForceContainerPackingStrategy.Controls {
 
 	private ContainerResult best;
 
