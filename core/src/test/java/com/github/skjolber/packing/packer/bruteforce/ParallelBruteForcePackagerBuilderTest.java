@@ -78,10 +78,52 @@ public class ParallelBruteForcePackagerBuilderTest {
 		ExecutorService executor = Executors.newFixedThreadPool(1);
 		try {
 			assertThatThrownBy(() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withExecutorService(executor).build())
-					.isInstanceOf(IllegalArgumentException.class)
+					.isInstanceOf(IllegalStateException.class)
 					.hasMessage("Not expecting both thread count and executor service");
 		} finally {
 			executor.shutdownNow();
+		}
+	}
+
+	@Test
+	void customExecutorServiceRequiresParallelizationCount() {
+		// not a ThreadPoolExecutor, so the parallelization count cannot be detected
+		ExecutorService executor = Executors.unconfigurableExecutorService(Executors.newFixedThreadPool(2));
+		try {
+			assertThatThrownBy(() -> ParallelBruteForcePackager.newBuilder().withExecutorService(executor).build())
+					.isInstanceOf(IllegalStateException.class)
+					.hasMessage("Expected a parallelization count for custom executor service");
+
+			ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withExecutorService(executor).withParallelizationCount(8).build();
+			try {
+				assertThat(packager.getParallelizationCount()).isEqualTo(8);
+
+				assertPacks(packager);
+			} finally {
+				packager.close();
+			}
+		} finally {
+			executor.shutdownNow();
+		}
+	}
+
+	@Test
+	void builderCanBuildSeveralPackagers() {
+		ParallelBruteForcePackager.Builder builder = ParallelBruteForcePackager.newBuilder().withThreads(2);
+
+		ParallelBruteForcePackager first = builder.build();
+		try {
+			ParallelBruteForcePackager second = builder.build();
+			try {
+				assertThat(second.getParallelizationCount()).isEqualTo(32);
+
+				assertPacks(first);
+				assertPacks(second);
+			} finally {
+				second.close();
+			}
+		} finally {
+			first.close();
 		}
 	}
 

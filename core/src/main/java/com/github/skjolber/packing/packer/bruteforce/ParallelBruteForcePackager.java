@@ -28,7 +28,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.api.packager.strategy.ContainerStrategyFactory;
+import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
@@ -69,7 +69,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		protected IntermediatePackagerResultComparator comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
-		protected ContainerStrategyFactory containerStrategyFactory;
+		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 
 		protected BoxItemGroupComparator boxItemGroupComparator;
 		protected boolean requireFullSupport;
@@ -105,15 +105,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		/**
-		 * Set the factory which selects the container strategy: which containers to use, and in which order.
+		 * Set the factory which selects the container packing strategy: which containers to use, and in which order.
 		 * By default, cost-aware packing is used when the containers have costs, otherwise the first container
 		 * (in preference order) which holds the boxes.
 		 *
-		 * @param factory container strategy factory
+		 * @param factory container packing strategy factory
 		 * @return this builder
 		 */
-		public Builder withContainerStrategyFactory(ContainerStrategyFactory factory) {
-			this.containerStrategyFactory = Objects.requireNonNull(factory);
+		public Builder withContainerPackingStrategyFactory(ContainerPackingStrategyFactory factory) {
+			this.containerPackingStrategyFactory = Objects.requireNonNull(factory);
 			return this;
 		}
 
@@ -167,13 +167,25 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 		
+		/**
+		 * Build the packager. Without an executor service, one with the configured number of threads (by default the
+		 * available processors) is created, and shut down when the packager is closed.
+		 *
+		 * @return the packager
+		 * @throws IllegalStateException if both a thread count and an executor service were set, or if an executor service which
+		 *         is not a {@link ThreadPoolExecutor} was set without a parallelization count
+		 */
 		public ParallelBruteForcePackager build() {
+			IntermediatePackagerResultComparator comparator = this.comparator;
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
+			ExecutorService executorService = this.executorService;
+			int parallelizationCount = this.parallelizationCount;
 			// an executor service created here is shut down when the packager is closed
 			boolean ownExecutorService = executorService == null;
 			if(executorService == null) {
+				int threads = this.threads;
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
 				}
@@ -183,7 +195,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				}
 			} else {
 				if(threads != -1) {
-					throw new IllegalArgumentException("Not expecting both thread count and executor service");
+					throw new IllegalStateException("Not expecting both thread count and executor service");
 				}
 				if(parallelizationCount == -1) {
 					// auto detect
@@ -197,15 +209,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							parallelizationCount = (int)(16L * maximumPoolSize);
 						}
 					} else {
-						throw new ParallelBruteForcePackagerException("Expected a parallelization count for custom executor service");
+						throw new IllegalStateException("Expected a parallelization count for custom executor service");
 					}
 				}
 			}
 			
 			ParallelBruteForcePackager packager = new ParallelBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
 			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
-			if(containerStrategyFactory != null) {
-				packager.setContainerStrategyFactory(containerStrategyFactory);
+			if(containerPackingStrategyFactory != null) {
+				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
 			if(boxItemGroupComparator != null) {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
