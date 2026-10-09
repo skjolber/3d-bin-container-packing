@@ -17,6 +17,7 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.points.ValidatingPointCalculator3D;
 
 public class DefaultPointCalculator3DTest {
 	
@@ -1507,6 +1508,58 @@ public class DefaultPointCalculator3DTest {
 		// yz support is lost
 		assertThat(ep.get(4)).isNoYZSupportAt(9, 9);
 		assertThat(ep.get(4)).isNoYZSupportAt(52, 3);
+	}
+
+	/**
+	 * A placement which is not at the corner of its point moves some points and constrains others in the same step, so it can add
+	 * more points to the lists of new points than there are points. Mutable points went past the end of such a list while it still
+	 * had its initial size of 16. The placements are a random sequence which failed, in a 10 x 19 x 23 container; the expected points
+	 * are those of version 5.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testFloatingPlacementWhichMovesAndConstrainsManyPoints(boolean immutable) {
+		ValidatingPointCalculator3D ep = new ValidatingPointCalculator3D(immutable, 16);
+		ep.clearToSize(10, 19, 23);
+
+		ep.add(0, createStackPlacement(0, 3, 9, 8, 16, 16));
+		ep.add(4, createStackPlacement(9, 0, 0, 9, 17, 18));
+		ep.add(1, createStackPlacement(2, 5, 2, 4, 15, 6));
+		// floating: point 9 starts at 0,18,0
+		ep.add(9, createStackPlacement(1, 18, 1, 2, 18, 21));
+
+		int[][] expected = {
+			{ 0, 0, 0, 8, 2, 22 },
+			{ 0, 0, 0, 0, 18, 8 },
+			{ 0, 0, 0, 1, 17, 8 },
+			{ 0, 0, 0, 1, 18, 0 },
+			{ 0, 0, 0, 8, 4, 8 },
+			{ 0, 0, 0, 8, 17, 1 },
+			{ 0, 0, 0, 8, 18, 0 },
+			{ 0, 0, 7, 8, 17, 8 },
+			{ 0, 0, 17, 0, 18, 22 },
+			{ 0, 0, 17, 8, 17, 22 },
+			{ 0, 0, 19, 9, 17, 22 },
+			{ 0, 0, 22, 9, 18, 22 },
+			{ 0, 16, 0, 8, 17, 8 },
+			{ 0, 17, 0, 0, 18, 22 },
+			{ 0, 17, 0, 8, 17, 22 },
+			{ 0, 18, 0, 9, 18, 0 },
+			{ 3, 0, 0, 8, 18, 1 },
+			{ 3, 0, 7, 8, 18, 8 },
+			{ 3, 0, 17, 8, 18, 22 },
+			{ 3, 0, 19, 9, 18, 22 },
+			{ 3, 16, 0, 8, 18, 8 },
+			{ 3, 17, 0, 8, 18, 22 },
+			{ 3, 18, 0, 9, 18, 22 },
+			{ 5, 0, 0, 8, 18, 8 },
+		};
+		int[][] actual = new int[ep.size()][];
+		for (int i = 0; i < ep.size(); i++) {
+			SimplePoint3D point = ep.get(i);
+			actual[i] = new int[] { point.getMinX(), point.getMinY(), point.getMinZ(), point.getMaxX(), point.getMaxY(), point.getMaxZ() };
+		}
+		assertThat(actual).isEqualTo(expected);
 	}
 
 }
