@@ -55,6 +55,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private volatile boolean interrupted;
 	}
 
+	/** Thread priority marker: leave the threads' priority alone */
+	private static final int NO_THREAD_PRIORITY = -1;
+
 	public static Builder newBuilder() {
 		return new Builder();
 	}
@@ -64,6 +67,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private static final int MAX_BOUNDED_POOL_SIZE = 1 << 16;
 
 		protected int threads = -1;
+		protected int threadPriority = NO_THREAD_PRIORITY;
 		protected int parallelizationCount = -1;
 		protected ExecutorService executorService;
 		protected IntermediatePackagerResultComparator comparator;
@@ -122,6 +126,28 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				throw new IllegalArgumentException("Unexpected thread count " + threads);
 			}
 			this.threads = threads;
+			return this;
+		}
+
+		/**
+		 * Search at a thread priority, for example a low one to leave the CPU to other work. By default, the threads' priority is left alone.
+		 * <br>
+		 * <br>
+		 * The thread priority is a hint to the operating system's scheduler (it may be ignored), and clamped by the maximum priority of the thread group.
+		 * Each packing task sets the priority of the thread which runs it, and restores the thread's original priority when the task is done; this includes
+		 * the pool threads of a {@linkplain #withExecutorService(ExecutorService) supplied executor service}, and the thread which calls the packager.
+		 * An executor service created by this builder also creates its threads at this priority.
+		 *
+		 * @param threadPriority thread priority, from {@linkplain Thread#MIN_PRIORITY} to {@linkplain Thread#MAX_PRIORITY}
+		 * @return this builder
+		 * @throws IllegalArgumentException if the priority is outside the range
+		 */
+
+		public Builder withThreadPriority(int threadPriority) {
+			if(threadPriority < Thread.MIN_PRIORITY || threadPriority > Thread.MAX_PRIORITY) {
+				throw new IllegalArgumentException("Unexpected thread priority " + threadPriority);
+			}
+			this.threadPriority = threadPriority;
 			return this;
 		}
 
@@ -198,7 +224,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				if(threads == -1) {
 					threads = Runtime.getRuntime().availableProcessors();
 				}
-				executorService = Executors.newFixedThreadPool(threads);
+				if(threadPriority == NO_THREAD_PRIORITY) {
+					executorService = Executors.newFixedThreadPool(threads);
+				} else {
+					executorService = Executors.newFixedThreadPool(threads, new DefaultThreadFactory(threadPriority));
+				}
 				if(parallelizationCount == -1) {
 					parallelizationCount = 16 * threads;
 				}
@@ -225,6 +255,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			
 			ParallelBruteForcePackager packager = new ParallelBruteForcePackager(executorService, parallelizationCount, comparator, pointFilter, filterReversePermutations);
 			packager.setShutdownExecutorServiceOnClose(ownExecutorService);
+			packager.setThreadPriority(threadPriority);
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
@@ -240,6 +271,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private final ExecutorService executorService;
 	protected final BruteForcePointIteratorFilter pointFilter;
 	protected final boolean filterReversePermutations;
+
+	/** Priority for the threads which search, or {@linkplain #NO_THREAD_PRIORITY}. Set by the builder, before the packager is returned. */
+	private int threadPriority = NO_THREAD_PRIORITY;
 
 	/** The number of attempts which split the orders of the box item groups between the threads (for tests) */
 	final AtomicInteger groupOrderSplits = new AtomicInteger();
@@ -398,6 +432,20 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			int threadPriority = ParallelBruteForcePackager.this.threadPriority;
+			if(threadPriority == NO_THREAD_PRIORITY) {
+				return search(i, currentBest, abortOnAnyBoxTooBig);
+			}
+			// searching on this thread, too
+			int original = applyThreadPriority(threadPriority);
+			try {
+				return search(i, currentBest, abortOnAnyBoxTooBig);
+			} finally {
+				Thread.currentThread().setPriority(original);
+			}
+		}
+
+		private BruteForceIntermediatePackagerResult search(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(isOrdered()) {
 				return attemptOrdered(i, currentBest);
 			}
@@ -448,7 +496,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 					worker.setInterrupt(booleanSupplier);
 
-					futures.add(executorCompletionService.submit(worker));
+					futures.add(executorCompletionService.submit(withThreadPriority(worker)));
 				}
 
 				try {
@@ -700,7 +748,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 				worker.setInterrupt(booleanSupplier);
 
-				futures.add(executorCompletionService.submit(worker));
+				futures.add(executorCompletionService.submit(withThreadPriority(worker)));
 			}
 
 			try {
@@ -848,7 +896,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				BruteForceWorker worker = runnables[j];
 				// each worker has its own copy of the interrupt
 				PackagerInterruptSupplier interrupt = interrupts[j];
-				futures.add(executorCompletionService.submit(() -> {
+				futures.add(executorCompletionService.submit(withThreadPriority(() -> {
 					for (int unit = next.getAndIncrement(); unit < units && unit < complete.get(); unit = next.getAndIncrement()) {
 						int u = unit;
 						PackagerInterruptSupplier unitInterrupt = () -> localInterrupt.interrupted || complete.get() < u || interrupt.getAsBoolean();
@@ -873,7 +921,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 						}
 					}
 					return null;
-				}));
+				})));
 			}
 			try {
 				for (int j = 0; j < futures.size(); j++) {
@@ -935,6 +983,20 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public BruteForceIntermediatePackagerResult attempt(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+			int threadPriority = ParallelBruteForcePackager.this.threadPriority;
+			if(threadPriority == NO_THREAD_PRIORITY) {
+				return search(i, currentBest, abortOnAnyBoxTooBig);
+			}
+			// searching on this thread, too
+			int original = applyThreadPriority(threadPriority);
+			try {
+				return search(i, currentBest, abortOnAnyBoxTooBig);
+			} finally {
+				Thread.currentThread().setPriority(original);
+			}
+		}
+
+		private BruteForceIntermediatePackagerResult search(int i, IntermediatePackagerResult currentBest, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
 			if(isGroupOrderSearch()) {
 				return attemptGroupOrders(i, currentBest);
 			}
@@ -1109,6 +1171,63 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	protected void setShutdownExecutorServiceOnClose(boolean shutdownExecutorServiceOnClose) {
 		this.shutdownExecutorServiceOnClose = shutdownExecutorServiceOnClose;
+	}
+
+	protected void setThreadPriority(int threadPriority) {
+		this.threadPriority = threadPriority;
+	}
+
+	/**
+	 * @return the thread priority for the threads which search, or -1 for none
+	 */
+	int getThreadPriority() {
+		return threadPriority;
+	}
+
+	/**
+	 * Set the priority of the current thread.
+	 *
+	 * @param threadPriority the new priority
+	 * @return the priority which the thread had, for restoring it when done
+	 */
+	private static int applyThreadPriority(int threadPriority) {
+		Thread thread = Thread.currentThread();
+		int original = thread.getPriority();
+		thread.setPriority(threadPriority);
+		return original;
+	}
+
+	/**
+	 * @param task a task for the executor service
+	 * @return the task itself if there is no thread priority, otherwise one which runs the task at the thread priority
+	 */
+	private <T> Callable<T> withThreadPriority(Callable<T> task) {
+		if(threadPriority == NO_THREAD_PRIORITY) {
+			return task;
+		}
+		return new PrioritizedCallable<>(task, threadPriority);
+	}
+
+	/** Runs a task with the priority of the current thread set, restoring the priority afterwards */
+	private static final class PrioritizedCallable<T> implements Callable<T> {
+
+		private final Callable<T> delegate;
+		private final int threadPriority;
+
+		private PrioritizedCallable(Callable<T> delegate, int threadPriority) {
+			this.delegate = delegate;
+			this.threadPriority = threadPriority;
+		}
+
+		@Override
+		public T call() throws Exception {
+			int original = applyThreadPriority(threadPriority);
+			try {
+				return delegate.call();
+			} finally {
+				Thread.currentThread().setPriority(original);
+			}
+		}
 	}
 
 	@Override

@@ -356,7 +356,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
    * two or more sides have the same length
    * rotations which mutated at a previously unreachable index
  
-There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system.
+There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system. To leave CPU capacity to other work, search at a lower thread priority: `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)`. The priority is a hint to the operating system's scheduler. Each packing task sets it on the thread which runs it (a pool thread of an executor service passed in with `withExecutorService(..)`, or the calling thread) and restores the thread's own priority afterwards; an executor service created by the builder also creates its threads at the priority. By default, the thread priority is left alone.
 
 Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
 
@@ -659,6 +659,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
      * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation: for example plain packing of 93 boxes 12×, fast brute force 2.3-2.6× and plain packing of small orders 1.9× (see [jmh/PERFORMANCE.md](jmh/PERFORMANCE.md))
      * The parallel brute-force packager splits the orders of box item groups between its threads
+     * The parallel brute-force packager can search at a given thread priority (`withThreadPriority(..)`)
      * Packings share the boxes of their input instead of copying them
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity
      * Behaviour changes:
