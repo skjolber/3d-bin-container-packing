@@ -1562,4 +1562,42 @@ public class DefaultPointCalculator3DTest {
 		assertThat(actual).isEqualTo(expected);
 	}
 
+	private static void assertIndexes(DefaultPointCalculator3D ep) {
+		for (int i = 0; i < ep.size(); i++) {
+			assertThat(ep.get(i).getIndex()).isEqualTo(i);
+		}
+	}
+
+	/**
+	 * Placements refer to points by index, so the indexes must follow when points are removed.
+	 */
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testIndexesFollowWhenPointsAreRemoved(boolean immutable) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(immutable, 16);
+		ep.clearToSize(10, 10, 10);
+		ep.add(0, createStackPlacement(0, 0, 0, 4, 4, 4));
+		assertThat(ep.getAll()).hasSize(3);
+
+		ep.remove(0);
+
+		assertThat(ep.getAll()).hasSize(2);
+		assertIndexes(ep);
+	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {true, false})
+	public void testIndexesFollowWhenPointsAreRemovedByPredicate(boolean immutable) {
+		DefaultPointCalculator3D ep = new DefaultPointCalculator3D(immutable, 16);
+		ep.clearToSize(10, 10, 10);
+		ep.add(0, createStackPlacement(0, 0, 0, 4, 4, 4));
+		assertThat(ep.getAll()).hasSize(3);
+
+		// keeps the points which match
+		ep.remove(p -> p.getMinX() > 0);
+
+		assertThat(ep.getAll()).hasSize(1);
+		assertThat(ep.get(0)).isMin(5, 0, 0);
+		assertIndexes(ep);
+	}
 }

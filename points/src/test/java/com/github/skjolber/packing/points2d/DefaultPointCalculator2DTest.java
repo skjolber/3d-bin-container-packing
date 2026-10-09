@@ -1916,4 +1916,67 @@ public class DefaultPointCalculator2DTest {
 		assertThat(ep.get(2)).isMax(99, 99);
 	}
 
+	private static void assertIndexes(DefaultPointCalculator2D ep) {
+		for (int i = 0; i < ep.size(); i++) {
+			assertThat(ep.get(i).getIndex()).isEqualTo(i);
+		}
+	}
+
+	/**
+	 * Placements refer to points by index, so the indexes must follow when points are removed.
+	 *
+	 * <pre>
+	 * y
+	 * 9 |---------------|
+	 *   |       0       |   point 0 is 14 x 2: too small for a minimum area of 56
+	 * 8 |-------|       |
+	 *   |       |   1   |   point 1 is 7 x 10
+	 *   |   A   |       |
+	 * 0 |-------|-------|-- x
+	 *   0       7      13
+	 * </pre>
+	 */
+	@Test
+	public void testIndexesFollowWhenTheMinimumAreaRemovesPoints() {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
+		ep.clearToSize(14, 10, 1);
+		ep.add(0, createStackPlacement(0, 0, 6, 7));
+		assertThat(ep.getAll()).hasSize(2);
+		assertIndexes(ep);
+
+		ep.setMinimumAreaLimit(56);
+
+		assertThat(ep.getAll()).hasSize(1);
+		assertThat(ep.get(0)).isMin(7, 0);
+		assertIndexes(ep);
+	}
+
+	@Test
+	public void testIndexesFollowWhenPointsAreRemoved() {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
+		ep.clearToSize(14, 10, 1);
+		ep.add(0, createStackPlacement(0, 0, 6, 7));
+		assertThat(ep.getAll()).hasSize(2);
+
+		ep.remove(0);
+
+		assertThat(ep.getAll()).hasSize(1);
+		assertThat(ep.get(0)).isMin(7, 0);
+		assertIndexes(ep);
+	}
+
+	@Test
+	public void testIndexesFollowWhenPointsAreRemovedByPredicate() {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
+		ep.clearToSize(14, 10, 1);
+		ep.add(0, createStackPlacement(0, 0, 6, 7));
+		assertThat(ep.getAll()).hasSize(2);
+
+		// keeps the points which match
+		ep.remove(p -> p.getMinX() > 0);
+
+		assertThat(ep.getAll()).hasSize(1);
+		assertThat(ep.get(0)).isMin(7, 0);
+		assertIndexes(ep);
+	}
 }

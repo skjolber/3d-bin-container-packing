@@ -1147,7 +1147,10 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			// keep the point indexes in sync: placements refer to points by index
+			updateIndexes(values);
+		}
 	}
 
 	private boolean canMoveX(Point2D p, int xx) {
@@ -1171,6 +1174,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public void remove(int index) {
 		values.flag(index);
 		values.removeFlagged();
+		updateIndexes(values);
 	}
 
 	@Override
@@ -1351,6 +1355,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			updateIndexes(values);
+		}
 	}
 }

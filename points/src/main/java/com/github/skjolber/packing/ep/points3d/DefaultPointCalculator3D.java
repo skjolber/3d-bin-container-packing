@@ -939,6 +939,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	public void remove(int index) {
 		values.flag(index);
 		values.removeFlagged();
+		updateIndexes(values);
 	}
 	
 	protected void removeEclipsed(int limit) {
@@ -1886,7 +1887,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				values.flag(i);
 			}
 		}
-		values.removeFlagged();
+		if(values.removeFlagged() > 0) {
+			updateIndexes(values);
+		}
 	}
 
 }

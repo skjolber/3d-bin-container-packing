@@ -23,6 +23,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Rotation;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 
@@ -513,5 +514,40 @@ public class FastLargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
-    
+	/**
+	 * Once the first box is placed, the point above it is too small for the second box, and is removed when the minimum area is raised.
+	 * The second box must still be placed at the other point, beside the first: the point indexes follow the removal.
+	 *
+	 * <pre>
+	 * y
+	 * 9 |---------------|
+	 *   |               |   the point above A is 14 x 2, too small for B (7 x 8)
+	 * 8 |-------|       |
+	 *   |       |       |
+	 *   |   A   |   B   |
+	 *   |       |       |
+	 * 0 |-------|-------|-- x
+	 *   0       7      13
+	 * </pre>
+	 */
+	@Test
+	void testSecondBoxAfterTheMinimumAreaRemovesAPoint() {
+		Container container = Container.newBuilder().withId("1").withEmptyWeight(0).withSize(14, 10, 9).withMaxLoadWeight(98).withStack(new ValidatingStack()).build();
+
+		FastLargestAreaFitFirstPackager packager = FastLargestAreaFitFirstPackager.newBuilder().build();
+		try {
+			List<BoxItem> products = new ArrayList<>();
+			products.add(new BoxItem(Box.newBuilder().withId("A").withRotation(Rotation.newBuilder().withBottomAtZeroDegrees().build()).withSize(7, 8, 8).withWeight(4).build(), 2));
+
+			PackagerResult build = packager.newResultBuilder().withContainerItems(new ContainerItem(container, 3)).withBoxItems(products).withMaxContainerCount(1).build();
+			assertValid(build);
+
+			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			assertThat(placements).hasSize(2);
+			assertThat(placements.get(0)).isAt(0, 0, 0);
+			assertThat(placements.get(1)).isAt(7, 0, 0);
+		} finally {
+			packager.close();
+		}
+	}
 }
