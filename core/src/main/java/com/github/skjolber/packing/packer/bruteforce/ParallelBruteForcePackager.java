@@ -162,6 +162,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		/**
+		 * Whether to skip permutations whose reverse has already been searched. A permutation and its reverse produce
+		 * equally good complete packings, but possibly different partial packings (a permutation places a prefix of its
+		 * boxes), so the skip is only applied when an unplaceable box aborts the attempt, i.e. when packing into a
+		 * single container.
+		 *
+		 * @param filterReversePermutations true to skip reverse-equivalent permutations
+		 * @return this builder
+		 */
 		public Builder withSkipReversePermutations(boolean filterReversePermutations) {
 			this.filterReversePermutations = filterReversePermutations;
 			return this;

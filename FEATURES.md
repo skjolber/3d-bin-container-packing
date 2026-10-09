@@ -40,7 +40,9 @@ require full support (boxes rest completely on the floor or on the boxes below),
 remove duplicate rotations; `BruteForcePackager` and `ParallelBruteForcePackager` can also skip
 reverse-equivalent permutations (`withSkipReversePermutations(..)`; not when
 the insertion order matters: extraction orders, container access, obstacles, load
-limits or full support). Without a box item order, they try every order of the box
+limits or full support). A permutation and its reverse give equally good complete
+packings, but can differ on partial packings, so the skip only applies when an
+unplaceable box aborts the attempt (packing into a single container). Without a box item order, they try every order of the box
 item groups for each container; the parallel packager splits the orders between its threads. They are exponential in the number of groups and
 of independently ordered boxes; use an interrupt deadline for production requests.
 
