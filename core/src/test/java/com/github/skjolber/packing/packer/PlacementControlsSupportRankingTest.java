@@ -238,7 +238,8 @@ public class PlacementControlsSupportRankingTest {
 	@Test
 	public void placementComparatorFactoryOfTheConsumerIsCompiledOnce() {
 		PlacementControlsBuilderFactory factory = new PlacementControlsBuilderFactoryBuilder()
-				.withPlacementComparatorFactory((DefaultPlacementComparatorFactory.Builder ranking) -> ranking.lowerZIsBetter())
+				// an implicit lambda: it must not be ambiguous with withPlacementComparatorFactory(PlacementComparatorFactory)
+				.withPlacementComparators(ranking -> ranking.lowerZIsBetter())
 				.build();
 
 		// not the uncompiled builder, which compiles for every container

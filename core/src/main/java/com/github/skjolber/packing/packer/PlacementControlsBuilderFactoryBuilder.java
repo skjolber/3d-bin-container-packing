@@ -72,11 +72,14 @@ public class PlacementControlsBuilderFactoryBuilder {
 	 * The factory is used dynamically — per-run, only constraint dimensions that
 	 * are active for that run are included. Position dimensions added via the
 	 * consumer are always included.
+	 * <p>
+	 * Not an overload of {@link #withPlacementComparatorFactory(PlacementComparatorFactory)}, as an implicit lambda such as
+	 * {@code ranking -> ranking.lowerZIsBetter()} would be ambiguous between the two.
 	 *
 	 * @param consumer configures the factory
 	 * @return this builder
 	 */
-	public PlacementControlsBuilderFactoryBuilder withPlacementComparatorFactory(Consumer<DefaultPlacementComparatorFactory.Builder> consumer) {
+	public PlacementControlsBuilderFactoryBuilder withPlacementComparators(Consumer<DefaultPlacementComparatorFactory.Builder> consumer) {
 		DefaultPlacementComparatorFactory.Builder f = DefaultPlacementComparatorFactory.newFactory();
 		consumer.accept(f);
 		this.comparatorFactory = f;
