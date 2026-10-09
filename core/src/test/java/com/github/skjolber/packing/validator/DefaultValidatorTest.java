@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.validator;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,6 +26,7 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
 
 public class DefaultValidatorTest {
 	
@@ -195,6 +197,59 @@ public class DefaultValidatorTest {
 		} finally {
 			packager.close();
 		}
+	}
+	
+	/**
+	 * Two bars crossing each other, so that each strictly spans the other on a different axis (top view).
+	 * 
+	 * <pre>
+	 *  y\x 0 1 2 3 4 5 6 7 8 9
+	 *   9  . . . B B . . . . .
+	 *   8  . . . B B . . . . .
+	 *   7  . . . B B . . . . .
+	 *   6  . . . B B . . . . .
+	 *   5  . . . B B . . . . .
+	 *   4  A A A X X A A A A A
+	 *   3  A A A X X A A A A A
+	 *   2  . . . B B . . . . .
+	 *   1  . . . B B . . . . .
+	 *   0  . . . B B . . . . .
+	 * </pre>
+	 * 
+	 * X marks the overlap.
+	 */
+
+	@Test
+	void testCrossingPlacementsIntersect() {
+		Box bar1 = Box.newBuilder().withId("bar1").withSize(10, 2, 1).withWeight(1).build();
+		Box bar2 = Box.newBuilder().withId("bar2").withSize(2, 10, 1).withWeight(1).build();
+
+		Container crossing = container("container");
+		crossing.getStack().add(createPlacement(bar1.getStackValue(0), 0, 3, 0));
+		crossing.getStack().add(createPlacement(bar2.getStackValue(0), 3, 0, 0));
+
+		ValidatorResult result = validator.newResultBuilder()
+				.withContainerItem(new ContainerItem(container("container"), 1))
+				.withPackagerResult(new PackagerResult(List.of(crossing), 0, false))
+				.withBoxItems(List.of(new BoxItem(bar1), new BoxItem(bar2)))
+				.build();
+
+		assertFalse(result.isValid());
+		assertEquals(1, result.getReasons().size());
+		assertTrue(result.getReasons().get(0) instanceof BoxesIntersectReason);
+
+		// the same two bars, but with the second on top of the first, are fine
+		Container stacked = container("container");
+		stacked.getStack().add(createPlacement(bar1.getStackValue(0), 0, 3, 0));
+		stacked.getStack().add(createPlacement(bar2.getStackValue(0), 3, 0, 1));
+
+		ValidatorResult valid = validator.newResultBuilder()
+				.withContainerItem(new ContainerItem(container("container"), 1))
+				.withPackagerResult(new PackagerResult(List.of(stacked), 0, false))
+				.withBoxItems(List.of(new BoxItem(bar1), new BoxItem(bar2)))
+				.build();
+
+		assertTrue(valid.isValid());
 	}
 	
 	@Test

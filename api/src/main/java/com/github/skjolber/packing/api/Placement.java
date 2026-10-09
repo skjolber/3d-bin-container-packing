@@ -45,36 +45,15 @@ public class Placement implements Serializable {
 	}
 
 	public boolean intersectsY(Placement placement) {
-		int endY = y + stackValue.getDy() - 1;
-
-		if (y <= placement.getAbsoluteY() && placement.getAbsoluteY() <= endY) {
-			return true;
-		}
-
-		return y <= placement.getAbsoluteY() + placement.getStackValue().getDy() - 1
-				&& placement.getAbsoluteY() + placement.getStackValue().getDy() - 1 <= endY;
+		return y <= placement.getAbsoluteEndY() && placement.getAbsoluteY() <= getAbsoluteEndY();
 	}
 
 	public boolean intersectsX(Placement placement) {
-		int endX = x + stackValue.getDx() - 1;
-
-		if (x <= placement.getAbsoluteX() && placement.getAbsoluteX() <= endX) {
-			return true;
-		}
-
-		return x <= placement.getAbsoluteX() + placement.getStackValue().getDx() - 1
-				&& placement.getAbsoluteX() + placement.getStackValue().getDx() - 1 <= endX;
+		return x <= placement.getAbsoluteEndX() && placement.getAbsoluteX() <= getAbsoluteEndX();
 	}
 
 	public boolean intersectsZ(Placement placement) {
-		int endZ = z + stackValue.getDz() - 1;
-
-		if (z <= placement.getAbsoluteZ() && placement.getAbsoluteZ() <= endZ) {
-			return true;
-		}
-
-		return z <= placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1
-				&& placement.getAbsoluteZ() + placement.getStackValue().getDz() - 1 <= endZ;
+		return z <= placement.getAbsoluteEndZ() && placement.getAbsoluteZ() <= getAbsoluteEndZ();
 	}
 
 	public int getAbsoluteX() {
