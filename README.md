@@ -21,18 +21,6 @@ Bugs, feature suggestions and help requests can be filed with the [issue-tracker
 See [FEATURES.md](FEATURES.md) for a capability overview, including which packager supports which
 feature (generated from the conformance tests), known limitations and non-goals.
 
-## Build from source
-
-Use JDK 25 and the included Maven wrapper (Maven 3.9.16). Library sources target Java 17.
-
-```sh
-./mvnw -B -ntp -Pdev -pl core -am test
-```
-
-This runs the core tests and required modules, with coverage and documentation generation skipped.
-Run `./mvnw -B -ntp verify` for full verification. On Windows, use `mvnw.cmd`.
-See [AGENTS.md](AGENTS.md) for targeted tests, concurrency options, and failure reports.
-
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
@@ -231,6 +219,51 @@ try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
 }
 ```
 
+<details>
+  <summary>Algorithm details</summary>
+
+### Largest Area Fit First algorithm
+The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
+
+The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
+
+When no more boxes fit in a level, the level is incremented and the process repeated. If no box fits the new level,
+the level below is raised to the top of the container instead, so that a box which is too tall for it can stand beside
+its boxes (for example when the boxes of the level cannot carry it). Boxes are rotated, containers not.
+
+ * `LargestAreaFitFirstPackager` stacks in 3D within each level
+ * `FastLargestAreaFitFirstPackager` stacks in 2D within each level
+
+The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
+
+### Plain algorithm
+This algorithm selects the box with the biggest volume, fitting it where it is best supported.
+
+###  Brute-force algorithm
+This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
+
+ * `BruteForcePackager` attempts all box orders, rotations and placement positions.
+ * `FastBruteForcePackager` attempts all box orders and rotations, placing each box at the best free point for its rotation.
+
+The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
+
+The worst case complexity can be estimated using the relevant iterators before packaging is attempted.
+
+The algorithm tries to skip combinations which will obviously not yield a (better) result:
+
+ * permutations
+   * two or more boxes have the same dimensions
+   * permutations which mutated at a previously unreachable index
+ * fewer rotations
+   * two or more sides have the same length
+   * rotations which mutated at a previously unreachable index
+ 
+There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system. To leave CPU capacity to other work, search at a lower thread priority: `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)`. The priority is a hint to the operating system's scheduler. Each packing task sets it on the thread which runs it (a pool thread of an executor service passed in with `withExecutorService(..)`, or the calling thread) and restores the thread's own priority afterwards; an executor service created by the builder also creates its threads at the priority. By default, the thread priority is left alone.
+
+Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
+
+### Virtual-box preprocessing algorithm
+
 The wrapper does not own or close its delegate. Configure packager-specific
 options on the delegate before wrapping it.
 
@@ -316,49 +349,6 @@ modified; expansion creates separate placements at container coordinates.
 equal copies. Expansion mappings use
 operation-global item indexes and stack-value indexes, not IDs or mutable local
 indexes; custom delegate implementations must preserve those indexes.
-
-<details>
-  <summary>Algorithm details</summary>
-
-### Largest Area Fit First algorithm
-The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
-
-The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
-
-When no more boxes fit in a level, the level is incremented and the process repeated. If no box fits the new level,
-the level below is raised to the top of the container instead, so that a box which is too tall for it can stand beside
-its boxes (for example when the boxes of the level cannot carry it). Boxes are rotated, containers not.
-
- * `LargestAreaFitFirstPackager` stacks in 3D within each level
- * `FastLargestAreaFitFirstPackager` stacks in 2D within each level
-
-The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
-
-### Plain algorithm
-This algorithm selects the box with the biggest volume, fitting it where it is best supported.
-
-###  Brute-force algorithm
-This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
-
- * `BruteForcePackager` attempts all box orders, rotations and placement positions.
- * `FastBruteForcePackager` attempts all box orders and rotations, placing each box at the best free point for its rotation.
-
-The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
-
-The worst case complexity can be estimated using the relevant iterators before packaging is attempted.
-
-The algorithm tries to skip combinations which will obviously not yield a (better) result:
-
- * permutations
-   * two or more boxes have the same dimensions
-   * permutations which mutated at a previously unreachable index
- * fewer rotations
-   * two or more sides have the same length
-   * rotations which mutated at a previously unreachable index
- 
-There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system. To leave CPU capacity to other work, search at a lower thread priority: `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)`. The priority is a hint to the operating system's scheduler. Each packing task sets it on the thread which runs it (a pool thread of an executor service passed in with `withExecutorService(..)`, or the calling thread) and restores the thread's own priority afterwards; an executor service created by the builder also creates its threads at the priority. By default, the thread priority is left alone.
-
-Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
 
 </details> 
 
