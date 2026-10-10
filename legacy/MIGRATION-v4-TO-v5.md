@@ -10,8 +10,8 @@ surface of 4.2.6-SNAPSHOT (4.2.5 plus two fixes) with 5.0.0-SNAPSHOT. 5.0 is a m
 
 Reading order: [what stays the same](#what-stays-the-same), the [renames](#renamed-and-replaced), what was [removed](#removed),
 [new concepts](#new-concepts-worth-knowing), [behavior](#behavioral-changes), then the compile error [cookbook](#common-compile-errors).
-See [README.md](README.md#history) (History, 5.0.0) for the complete change list, [FEATURES.md](FEATURES.md) for the capability overview
-and [DEVELOPER.md](DEVELOPER.md) for writing controls and strategies.
+This guide is the complete list of breaking and behavioral changes against 4.x; the History in [README.md](../README.md#history) keeps the feature summary.
+See [FEATURES.md](../FEATURES.md) for the capability overview and [DEVELOPER.md](../DEVELOPER.md) for writing controls and strategies.
 
 ## What stays the same
 
@@ -47,7 +47,7 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 | 4.x | 5.0 |
 | --- | --- |
 | `com.github.skjolber.packing.deadline.*` (`PackagerInterruptSupplier`, `PackagerInterruptSupplierBuilder`, `DefaultPackagerInterrupt`, `DeadlineCheckPackagerInterruptSupplier`, `DelegateDeadlineCheckPackagerInterruptSupplier`, `PositivePackagerInterruptSupplier`, `NegativePackagerInterruptSupplier`) | `com.github.skjolber.packing.api.interrupt.*` (same class names) |
-| `packer.PackagerInterruptedException` | `api.interrupt.PackagerInterruptedException` |
+| `packer.PackagerInterruptedException` | `api.interrupt.PackagerInterruptedException` (it carries no stack trace) |
 | `packer.PackagerException` | `api.PackagerException` |
 | `packer.IntermediatePackagerResult` | `api.packager.IntermediatePackagerResult` |
 | `comparator.IntermediatePackagerResultComparator` | `api.packager.IntermediatePackagerResultComparator` |
@@ -98,14 +98,15 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 | `java.util.Comparator<Placement>` accepted as placement comparator | `api.packager.control.placement.PlacementComparator` |
 | `comparator.VolumeWeightAreaMinZIntermediatePlacementResultComparator` | `comparator.placement.VolumeWeightAreaMinZPlacementComparator` (same ranking) |
 | `ParallelBoxItemBruteForcePackager.shutdown()` | `ParallelBruteForcePackager.close()` (shuts down an executor service only if the builder created it) |
-| `ParallelBruteForcePackagerException` (thrown by the builder) | `IllegalStateException` from `build()`; the setters still throw `IllegalArgumentException` |
+| `ParallelBruteForcePackagerException` (thrown by the builder) | `IllegalStateException` from `build()`; the setters still throw `IllegalArgumentException`. A thread count combined with an executor service, which was an `IllegalArgumentException`, is an `IllegalStateException` from `build()` too |
 
 </details>
 
 ### Adapters are now sessions
 
 The per-operation workers which pack one container at a time were `PackagerAdapter`s; they are `PackagerSession`s (in `api`, for container packing
-strategies). Applications which only call `newResultBuilder()` are not affected.
+strategies). Applications which only call `newResultBuilder()` are not affected. `PackagerSession.attempt(index, best, ..)` may return an empty result instead of a
+result with less load volume than `best`.
 
 <details>
 <summary>Show the 12 entries</summary>
@@ -130,13 +131,15 @@ strategies). Applications which only call `newResultBuilder()` are not affected.
 ### Model (`api`)
 
 <details>
-<summary>Show the 11 entries</summary>
+<summary>Show the 13 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
 | `clone()` on `Box`, `BoxItem`, `BoxItemGroup`, `BoxStackValue`, `Container`, `Point` (`clone(int, int, int)`), `Point1D`/`SimplePoint2D`/`SimplePoint3D`, `Point2DFlagList.clone(boolean)`, `Point3DFlagList.clone(boolean)` | `copy()` (`copy(int, int, int)`, `copy(boolean)`) |
 | `BoxItem.getIndex()`, `setIndex(int)` | `getLocalIndex()`, `setLocalIndex(int)` (dense, changes during packing); `getGlobalIndex()`, `setGlobalIndex(int)` identifies the box item in the operation. The third argument of `BoxItem(Box, int, int)` is the local index |
-| `Box.getBoxItem()`, `Box.Builder.withBoxItem(..)` | `Placement.getBoxItem()` |
+| `Box.getBoxItem()`, `Box.Builder.withBoxItem(..)` | `Placement.getBoxItem()`; placements built by hand pass their box item (`new Placement(boxItem, stackValue, point)`, `Placement.setStackValue(BoxItem, BoxStackValue)`), which container priority, extraction order, groups and identical-box checks use |
+| `new Box(id, description, volume, weight, stackValues, properties, BoxItem)` | `new Box(id, description, volume, weight, stackValues, properties)`; the stack values must belong to no other box (`IllegalArgumentException` otherwise; `BoxStackValue.copy()` belongs to none) |
+| `Box.Builder.newStackValue(int dx, int dy, int dz, List<Surface>, int index)` (protected) | `newStackValue(.., int index, int centerOfGravityX, int centerOfGravityY, int centerOfGravityZ)` |
 | `Container.fitsInside(Box)`, `fitsInside(BoxItem)` | `Container.canLoad(Box)`, `canLoad(BoxItem)` |
 | `Container.fitsInside(BoxItemGroup)` (true if one box fits) | `Container.canLoadAtLeastOneBox(BoxItemGroup)`; `canLoad(BoxItemGroup)` requires every box to fit |
 | `Box.getStackValues(Container)`, `Box.rotations(Container)` | `Box.rotations(int dx, int dy, int dz)` with the container's load size; it returns an empty list, not `null`, when no rotation fits |
@@ -153,7 +156,7 @@ strategies). Applications which only call `newResultBuilder()` are not affected.
 Manifest, point and placement controls already existed in 4.x (the builder factory, builder, controls chain is unchanged). What changed:
 
 <details>
-<summary>Show the 8 entries</summary>
+<summary>Show the 9 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -161,6 +164,7 @@ Manifest, point and placement controls already existed in 4.x (the builder facto
 | `PlacementControls<R extends Placement>`, `PlacementControlsBuilder<R>`, `PlacementControlsBuilderFactory<R>`, `AbstractPlacementControls<R>` | the same types without the type parameter |
 | `PlacementControlsBuilder.withBoxItems(BoxItemSource, int, int)` | `withBoxItems(BoxItemSource)`; the range is passed to `PlacementControls.getPlacement(offset, length)` |
 | `AbstractPlacementControlsBuilder<R>` | removed; implement `PlacementControlsBuilder` |
+| `PointControlsBuilder`, `PlacementControlsBuilder` (interfaces to implement) | gain `withMaxLoad(boolean, boolean, boolean)` and `withLoadIdenticalBox(boolean)`, and `PlacementControlsBuilder` also `withStability(boolean, boolean)`: the packagers use them to pass on the load and support options (`AbstractPointControlsBuilder` implements them) |
 | `PlacementComparator.compare(Box, BoxStackValue, Point, Box, BoxStackValue, Point)` | `compare(Placement, Placement)` |
 | `PlacementControlsBuilderFactoryBuilder.withPlacementComparator(Comparator<Placement>)` | `withPlacementComparator(PlacementComparator)`; `withPlacementComparators(Consumer<DefaultPlacementComparatorFactory.Builder>)` and `withPlacementComparatorFactory(..)` are new |
 | `PlainPlacement.getSupportArea()` | `Placement.getSupportedArea()`, and the comparator must declare `usesSupportedArea()` (see [Behavioral changes](#behavioral-changes)) |
@@ -246,28 +250,28 @@ Removed without a direct replacement, or replaced by a different mechanism:
    `PlacementComparatorAttribute` in `api` (and `DefaultPlacementComparatorFactory` in `core`) to rank placements without writing controls;
    `PlacementControls.accepted(..)` / `undo(..)` callbacks; `PlacementControlsBuilderFactory.supportsLoad()` (default `false`: a packager rejects boxes with load limits
    unless the controls support them). Factories supplied to packagers must be safe for concurrent use. See
-   [DEVELOPER.md](DEVELOPER.md#writing-your-own-placement-controls) and [README.md](README.md#packager-controls).
+   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-placement-controls) and [README.md](../README.md#packager-controls).
  * **Sessions.** A `PackagerSession` packs one container at a time on copies of the box items and container items, and is what a container packing strategy drives
    (`attempt`, `peek`, `accept`, `fresh`, `fork`).
  * **Container packing strategies.** A `ContainerPackingStrategy` (created by a `ContainerPackingStrategyFactory`, set with `withContainerPackingStrategyFactory(..)` on the
    packager builders) decides which containers are used and in which order. The defaults are an ordered strategy, or a cost-aware one when containers have a cost
    (`ContainerItem.newListBuilder().withContainer(container, count, costCalculator)`, `ContainerCostCalculator`). 4.x had no such extension point, so there is nothing to
    migrate; the strategy names (`ContainerPackingStrategy`, `ContainerPackingStrategyFactory`, `ContainerResult`, `ContainerInventory`) are those of 5.0. See
-   [DEVELOPER.md](DEVELOPER.md#writing-your-own-container-packing-strategy) and [README.md](README.md#container-packing-strategies).
+   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-container-packing-strategy) and [README.md](../README.md#container-packing-strategies).
  * **Box item groups.** `BoxItem` and `BoxItemGroup` keep the packing state (remaining count, local and global index), as before, and now also carry a
    container priority and an extraction order (`withContainerPriority(..)`, `withExtractionOrder(..)`). The group API otherwise has the same shape (`copy()` for `clone()`).
    The boxes of a group are inserted together, and without a box item order the brute-force packagers search the order of the groups. The brute-force packagers also
    support a box item order (4.x threw `IllegalStateException("Order not supported for brute force packager")`).
- * **Load constraints, support, insertion order, deliveries.** See [README.md](README.md#load-constraints), [README.md](README.md#insertion-order) and
-   [README.md](README.md#deliveries-extraction-order-and-container-priority). `withCalculateSupport(..)` and `withRequireFullSupport(..)` are options of the plain and LAFF builders.
+ * **Load constraints, support, insertion order, deliveries.** See [README.md](../README.md#load-constraints), [README.md](../README.md#insertion-order) and
+   [README.md](../README.md#deliveries-extraction-order-and-container-priority). `withCalculateSupport(..)` and `withRequireFullSupport(..)` are options of the plain and LAFF builders.
  * **Composite packager and virtual boxes.** `CompositePackager` (cheap packagers first, costly ones only where needed) in `com.github.skjolber.packing.packer.composite`, and
-   `VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` (wraps a packager to pack repeated boxes as assemblies). See [README.md](README.md#combining-packagers) and
-   [README.md](README.md#virtual-box-preprocessing).
+   `VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` (wraps a packager to pack repeated boxes as assemblies). See [README.md](../README.md#combining-packagers) and
+   [README.md](../README.md#virtual-box-preprocessing).
  * **Validators.** The `validators` artifact validates results independently of the packager, including load, stability, insertion and extraction order. See
-   [README.md](README.md#validating-results).
+   [README.md](../README.md#validating-results).
  * **Thread priority.** `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)` searches at a lower thread priority.
  * **Unsupported input is rejected.** Packagers reject an input they cannot honor (`getUnsupportedReason(..)`, thrown as `IllegalStateException` by `build()`) rather than
-   ignoring it, see [FEATURES.md](FEATURES.md#feature-support).
+   ignoring it, see [FEATURES.md](../FEATURES.md#feature-support).
  * **Insertion order of placements.** `PackagerResultBuilder.withInsertionOrder(boolean)`, see [Behavioral changes](#behavioral-changes).
 
 ## Behavioral changes
@@ -278,7 +282,7 @@ Not all of these are visible to the compiler.
    sort orders equal keys. Where two candidates tie exactly (for example the same box turned 2x8x7 or 8x2x7), an individual order can be packed differently from 4.x. In aggregate
    the results are equal or better: over 10,000 random orders (seeds 300 to 10,299) against 4.2.5, the plain packager wins 229 orders and loses 89 (9,682 tied), the LAFF packager
    wins 824 and loses 11, and the fast LAFF packager wins 750 and loses 9. Do not compare placements with 4.x results one by one. See
-   `PlainVersion4ComparisonTest`, `LargestAreaFitFirstVersion4ComparisonTest` and [jmh/PERFORMANCE.md](jmh/PERFORMANCE.md), which also has the performance
+   `PlainVersion4ComparisonTest`, `LargestAreaFitFirstVersion4ComparisonTest` and [jmh/PERFORMANCE.md](../jmh/PERFORMANCE.md), which also has the performance
    figures. LAFF packagers also raise a level to the top of the container when no box fits a new level on top of it.
  * **Plain packager default ranking.** Both versions try the box item with the highest volume, then weight, first. To choose the position, 4.x ranked candidates by supported share, then lower z, then
    larger footprint (`PlainPlacementComparator`), and always calculated the support. The 5.0 default ranks by higher volume, higher weight, lower footprint area and lower z; support is only
@@ -289,7 +293,8 @@ Not all of these are visible to the compiler.
  * **Result comparator contract.** The convention is unchanged: `compare(a, b) > 0` means the first argument is better, for `IntermediatePackagerResultComparator` and for placement comparators (that is how the 4.x
    packagers read them). `IntermediatePackagerResultComparator.prefersHigherLoadVolume()`
    is new (default `false`): return `true` when a lower load volume always compares worse, and the brute-force packagers skip searches that cannot beat the best result. Compare
-   results by `getLoadVolume()`, `getLoadWeight()` and `getBoxCount()`, not by their stacks (a brute-force result does not build its stack until it is accepted).
+   results by `getLoadVolume()`, `getLoadWeight()` and `getBoxCount()`, not by their stacks (a brute-force result does not build its stack until it is accepted; the 4.x
+   `DefaultIntermediatePackagerResultComparator` read the stacks and chose wrong results when given to a brute-force packager).
  * **Supported area is opt-in for placement comparators.** `PlacementComparator.usesSupportedArea()` is honored and defaults to `false` (also for a lambda): the supported area of a
    candidate is not calculated and `Placement.getSupportedArea()` reads zero, unless the comparator overrides `usesSupportedArea()` to return `true`. A custom comparator that relied on the supported
    area (in 4.x through `PlainPlacement.getSupportArea()`) must declare it. `prefersHigherSupportedArea()` is an optional optimization hint.
@@ -297,19 +302,22 @@ Not all of these are visible to the compiler.
    factories of the containers with `equals(..)`. 5.0 reuses a result only when the factories are the same instance, or both return the same non-null `getId()` (default `null`).
    If your factories relied on `equals(..)`, implement `getId()` so that it identifies everything that changes the behavior (for example a weight limit), or wrap a lambda with
    `ManifestControlsBuilderFactory.of(id, factory)` or `PointControlsBuilderFactory.of(id, factory)`. Without an id, results are not shared between factory instances: the
-   packing result is the same, only slower. `DefaultPointControlsBuilderFactory` returns the id `default`.
+   packing result is the same, only slower. Containers without controls match each other, but a result packed without controls is not reused for a container with controls
+   (4.x reused it, so the controls were ignored). `DefaultPointControlsBuilderFactory` returns the id `default`.
  * **Boxes are shared.** Packing works on copies of the box items and container items, while the boxes and stack values are shared with the input and never modified:
-   `placement.getBox()` is the input `Box`, and `placement.getBoxItem()` is the session's copy of the box item (same global index). `Box.getBoxItem()` is gone for that reason.
+   `placement.getBox()` is the input `Box`, and `placement.getBoxItem()` is the session's copy of the box item (same global index). `Box.getBoxItem()` is gone for that reason,
+   and one box can be used by several box items. The permutation iterators keep the rotations which fit the container (`getStackValues(int)`, `getBoxItemStackValues()`) instead of
+   copies of the boxes.
  * **Absorbed 4.x bugs.** 5.0 contains fixes which were also made on the 4.x line: the inverted z tiebreaks of the plain and LAFF placement comparators (the packagers built towers
    instead of spreading boxes on the floor; fixed in 4.2.5), and, after 4.2.5 (so in 4.2.6), the `int` overflow in the sort tie-break for moved points in containers larger than
-   about 1300 per side, and a brute-force peek which could approve a container from another attempt's stack. The 5.0.0 entry in [README.md](README.md#history) lists further behavior changes and fixes.
+   about 1300 per side, and a brute-force peek which could approve a container from another attempt's stack.
  * **`BinarySearchIterator.reset(low, high)`.** The arguments were `(high, low)` in 4.x.
  * **`Box.rotations(dx, dy, dz)`** returns an empty list instead of `null`.
 
 ## Common compile errors
 
 <details>
-<summary>Show the 29 errors and fixes</summary>
+<summary>Show the 30 errors and fixes</summary>
 
 | javac message after the upgrade | Fix |
 | --- | --- |
@@ -323,13 +331,14 @@ Not all of these are visible to the compiler.
 | `cannot find symbol ... class ControlledContainerItemBuilder` or `ControlledContainerItem` | `PackagerResultBuilder.ContainerItemBuilder`, `ContainerItem`. |
 | `cannot find symbol ... method withBoxItemControlsBuilderFactory(..)` / `getBoxItemControlsBuilderFactory()` | `withManifestControlsBuilderFactory(..)` / `getManifestControlsBuilderFactory()`. |
 | `... is not abstract and does not override abstract method createManifestControlsBuilder()`, or `method does not override or implement a method from a supertype` on `createBoxItemControlsBuilder()` | Rename the method to `createManifestControlsBuilder()`. |
-| `... is not abstract and does not override abstract method withMaxLoad(boolean,boolean,boolean)` on a `PointControlsBuilder` | Extend `AbstractPointControlsBuilder`, or implement `withMaxLoad(..)` and `withLoadIdenticalBox(..)`. |
+| `... is not abstract and does not override abstract method withMaxLoad(boolean,boolean,boolean)` on a `PointControlsBuilder` (or `PlacementControlsBuilder`) | Extend `AbstractPointControlsBuilder`, or implement `withMaxLoad(..)` and `withLoadIdenticalBox(..)` (and `withStability(..)` for placement controls). |
 | `type PlacementControls does not take parameters` (also `PlacementControlsBuilder`, `PlacementControlsBuilderFactory`) | Remove the type argument. |
 | errors on `clone()`, for example `clone() has protected access in Object`, on `Box`, `BoxItem`, `BoxItemGroup`, `BoxStackValue`, `Container`, `Point` | `copy()` (`copy(int, int, int)` for `Point`). |
 | `incompatible types: possible lossy conversion from long to int` on `getWeight()`, `getMaxWeight()`, `getLoadWeight()` | Use `long`. |
 | `incompatible types: possible lossy conversion from double to long` on `getMinimumPressure()` / `getMaximumPressure()` | Use `double`. |
 | `cannot find symbol ... method getIndex()` / `setIndex(int)` on `BoxItem` | `getLocalIndex()` / `getGlobalIndex()`, `setLocalIndex(int)`. |
 | `cannot find symbol ... method getBoxItem()` or `withBoxItem(..)` on `Box` | `placement.getBoxItem()`. |
+| `constructor Box in class Box cannot be applied to given types` | Drop the trailing `BoxItem` argument; the stack values must belong to no other box (`BoxStackValue.copy()`), see [Model](#model-api). |
 | `incompatible types: Box cannot be converted to Stack` (also `BoxItem`, `BoxItemGroup`) on `Container.fitsInside(..)` | `canLoad(..)`; `canLoadAtLeastOneBox(BoxItemGroup)` for a group (`fitsInside(Stack)` is unchanged). |
 | `cannot find symbol ... class BruteForcePackagerBuilder` (or `FastBruteForcePackagerBuilder`, `ParallelBruteForcePackagerBuilder`) | `BruteForcePackager.Builder` (and so on). |
 | `cannot find symbol ... class ParallelBoxItemBruteForcePackager` | `ParallelBruteForcePackager`. |

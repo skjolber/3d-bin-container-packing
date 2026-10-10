@@ -13,6 +13,8 @@ com.github.skjolber.packing.v4.ep.points3d.DefaultPointCalculator3D reference;
 
 The module has no code of its own: the build takes the released 4.x jars from Maven Central and relocates them.
 
+To upgrade an application from 4.x to 5.x, see the [migration guide](../MIGRATION-v4-TO-v5.md); this module is for tests only.
+
 ## Why
 
 Tests compare 5.x with 4.x on the same input: where 5.x is meant to behave as 4.x did, 4.x is the reference.
