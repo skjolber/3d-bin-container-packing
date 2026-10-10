@@ -15,6 +15,30 @@ End-to-end packing throughput of 5.0.0 (branch `boxItemConstraints`, commit `c75
 
 \* 4.2 varied by ±4,000 ops/s between iterations.
 
+## Tuning on 2026-10-10 (commits `da7a4132`, `eb1b9fc0`, `2b8e3d6f`)
+
+A benchmark-driven tuning pass (G1 pinned, interleaved A/B runs, results gated on the version-4 oracle suites)
+moved the brute-force family further; measured against the pre-tuning 5.0 on the same machine:
+
+| Benchmark | Before (ops/s) | After (ops/s) | Change | What |
+|---|---|---|---|---|
+| `EgyPackagerBenchmark.parallelPackager` | 2,490 | 27,000 | 10.9× | lazy work units; stop submitting once a unit holds all boxes; allocation 2.46 MB/op → 79 KB/op, a session's live heap 461 KB → 4 KB |
+| `BouwkampCodeBruteForcePackagerBenchmark.fastPackager` | 28.1 | 31.4 | +12 % | skip materializing results below the best; lazy, right-sized point lists; reset without nulling |
+| `BouwkampCodeBruteForcePackagerBenchmark.packager` | 0.182 | 0.187 | +3-5 % | the point list changes; run to run spread is ±2-4 %, so the exact figure is uncertain |
+
+Search results are unchanged: the oracle suites pass unweakened, and differential fuzzes of exact placements
+(fast, 576 instances) and of parallel quality (1,600 comparisons) found no differences.
+
+Measured dead ends, so they are not retried:
+- JIT shaping: no huge methods, no compile skips, no deopt churn, all hot sites monomorphic; the only flag effect
+  (`-XX:InlineSmallCode=4000`) caps the whole avenue at about 2 % on the exhaustive search.
+- Structure-of-arrays for the point scans: maintaining shadow bounds arrays costs more than the scans save,
+  because `merge` rewrites the whole free-point list on every placement while the scans only cover its 3-6
+  (Tycho: ~48) points; measured −13 to −23 %.
+- `jdk.incubator.vector` for the eclipse scan: kernel-level speedup only from about 32 free points upward
+  (2-4× at 64-512, a loss at 8 with 512-bit lanes), so it cannot help these list sizes; C2 already
+  auto-vectorizes the branch-free form of the loop.
+
 ## How it was measured
 
 - Both versions ran their own `jmh` module, so each used its own benchmark code. 4.2's `TychoBenchmark` packed
