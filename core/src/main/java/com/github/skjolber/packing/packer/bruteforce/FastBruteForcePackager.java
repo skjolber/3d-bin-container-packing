@@ -387,8 +387,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, loadPlacementUtility, pointComparator, checkExtraction, insertAfterCounts, maxPackableCount,
 						null, Integer.MAX_VALUE, null, prefix);
 				size = prefix.count;
-				if(size > 0) {
-					bestPermutationResult.setState(prefix.points, getState(iterator, prefix.rotations, size), stackPlacements, stackPlacementCount);
+				// an arrangement with less load volume than the best result always compares worse: do not even build it
+				if(size > 0 && (size == iterator.length() || !prefersHigherLoadVolume || bestResult.isEmpty() || prefix.loadVolume >= bestResult.getLoadVolume())) {
+					bestPermutationResult.setState(prefix.toList(), getState(iterator, prefix.rotations, size), stackPlacements, stackPlacementCount);
 					if(size == iterator.length()) {
 						return bestPermutationResult;
 					}
@@ -448,7 +449,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, loadPlacementUtility, pointComparator, hasExtractionOrders(iterator), null, maxPackableCount,
 				null, Integer.MAX_VALUE, null, prefix);
 		if(prefix.count > 0) {
-			result.setState(prefix.points, getState(iterator, prefix.rotations, prefix.count), stackPlacements, stackPlacementCount);
+			result.setState(prefix.toList(), getState(iterator, prefix.rotations, prefix.count), stackPlacements, stackPlacementCount);
 		}
 		return result;
 	}
@@ -604,7 +605,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 							skipping.offer(pointCalculator.getPoints(), placedPermutations, placedRotations, placedCount);
 						}
 					} else if(placedCount > prefix.count) {
-						prefix.offer(pointCalculator.getPoints(), placedRotations, placedCount);
+						prefix.offer(pointCalculator, placedRotations, placedCount, placedVolume);
 					}
 					level = parents[level];
 					descend = false;
@@ -724,7 +725,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(skipping == null) {
 				// without skipping, the arrangement ends at this box
 				if(placedCount > prefix.count) {
-					prefix.offer(pointCalculator.getPoints(), placedRotations, placedCount);
+					prefix.offer(pointCalculator, placedRotations, placedCount, placedVolumes[level]);
 				}
 				level = parents[level];
 				descend = false;

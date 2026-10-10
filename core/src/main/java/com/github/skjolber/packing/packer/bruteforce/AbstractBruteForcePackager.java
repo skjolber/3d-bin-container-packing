@@ -630,24 +630,37 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 		/** the number of boxes of the best arrangement */
 		protected int count;
-		/** the points of the placed boxes */
-		protected List<Point> points = Collections.emptyList();
+		/** the load volume of the best arrangement */
+		protected long loadVolume;
+		/** the points of the placed boxes (the first {@link #count}), reused between arrangements */
+		protected final Point[] points;
 		/** the rotation of each placement */
 		protected final int[] rotations;
 
 		protected PrefixBest(int length) {
+			this.points = new Point[length];
 			this.rotations = new int[length];
 		}
 
 		protected void reset() {
 			count = 0;
-			points = Collections.emptyList();
+			loadVolume = 0L;
 		}
 
-		protected void offer(List<Point> points, int[] rotations, int count) {
-			this.points = points;
+		protected void offer(FastPointCalculator3DStack pointCalculator, int[] rotations, int count, long loadVolume) {
+			pointCalculator.copyPoints(this.points);
 			this.count = count;
+			this.loadVolume = loadVolume;
 			System.arraycopy(rotations, 0, this.rotations, 0, count);
+		}
+
+		/** @return the points of the best arrangement, as a list which is not reused */
+		protected List<Point> toList() {
+			List<Point> list = new ArrayList<>(count);
+			for (int i = 0; i < count; i++) {
+				list.add(points[i]);
+			}
+			return list;
 		}
 	}
 

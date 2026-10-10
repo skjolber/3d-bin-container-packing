@@ -139,6 +139,13 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		return results;
 	}
 
+	/** Copy the points of the placed boxes into the array, which must have room for them (see {@link #getPoints()}). */
+	void copyPoints(Point[] target) {
+		for (int i = 0; i < stackSize; i++) {
+			target[i] = stackItems[i].point;
+		}
+	}
+
 	@Override
 	public void clearToSize(int dx, int dy, int dz) {
 		stackSize = 0;
