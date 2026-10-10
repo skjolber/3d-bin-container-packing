@@ -37,6 +37,15 @@ public abstract class AbstractBruteForceBoxItemPackagerAdapter extends AbstractP
 		return packagerContainerItems.getContainerItem(index);
 	}
 
+	@Override
+	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			// a later attempt overwrites the shared placements: calculate the stack from the result's own permutation state
+			bruteForceResult.markDirty();
+		}
+		return super.peek(containerIndex, result);
+	}
+
 	protected void removeInventory(List<Integer> p) {
 		// remove adapter inventory
 		for (Integer remove : p) {
