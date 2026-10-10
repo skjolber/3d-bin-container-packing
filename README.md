@@ -143,7 +143,7 @@ Note that all `packager` instances are thread-safe. Packing works on copies of t
 never modified, so boxes can be shared between threads. It only assigns global indexes to box items which have none.
 
 ### Plain packager
-A simple packager
+A simple packager, which places the box with the biggest volume first.
 
 ```java
 PlainPackager packager = PlainPackager
@@ -151,8 +151,10 @@ PlainPackager packager = PlainPackager
     .build();
 ```
 
+Details: [plain packager heuristics](docs/heuristics/plain.md).
+
 ### Largest Area Fit First (LAFF) packager
-A packager using the LAFF algorithm
+A packager using the LAFF algorithm, which fills the container level by level, starting each level with the box which covers the largest ground area. `FastLargestAreaFitFirstPackager` is a faster variant which stacks in 2D within each level.
 
 ```java
 LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
@@ -160,32 +162,20 @@ LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
     .build();
 ```
 
+Details: [LAFF packager heuristics](docs/heuristics/largest-area-fit-first.md).
+
 ### Brute-force packager
 For a low number of packages (like <= 6) the brute force packager might be a good fit. 
+
+See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
+
+Using a deadline is recommended whenever brute-forcing in a real-time application:
 
 ```java
 Packager packager = BruteForcePackager
     .newBuilder()
     .build();
-```
 
-See also the `ParallelBruteForcePackager` and `FastBruteForcePackager`
-packagers. A `BruteForcePointIteratorFilter` can rank fitting points and use a
-different point limit at each placement step.
-
-The brute-force packagers use one search for every order of the boxes: each box in the order is tried in each rotation,
-at each free point (the fast brute-force packager tries each rotation at its best point only), and a container gets the
-best arrangement by the result comparator. Without a box item order (`Order.NONE`), every permutation of the boxes is
-searched this way; with a box item order (`Order.CHRONOLOGICAL`), only that order, each box insertable after the boxes
-before it. With skipping (`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), each box (or box item group) can also be skipped, and
-waits for a later container. With container priorities, they only permute the boxes within each priority. The parallel
-packager searches a box item order, or box items with container priorities, on one thread, as the permutations cannot
-be split between threads. For box item groups without a box item order, it splits the orders of the groups between its
-threads (or, for a few groups with many boxes, the permutations of each order), with the same result as on one thread.
-
-Using a deadline is recommended whenever brute-forcing in a real-time application:
-
-```java
 PackagerResult result = packager
     .newResultBuilder()
     .withContainerItems(containerItems)
@@ -194,15 +184,10 @@ PackagerResult result = packager
     .build();
 ```
 
-### Virtual-box preprocessing
+Details: [brute-force](docs/heuristics/brute-force.md) and [parallel brute-force](docs/heuristics/parallel-brute-force.md) packager heuristics.
 
-`VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` wraps a packager
-and replaces suitable inventories with filled rectangular assemblies. Each
-virtual item stands for one assembly; equal assemblies share one item with a
-count. Its alternative stack values represent different
-layouts of the same original boxes. Returned containers are expanded back into
-original boxes, orientations and identities. Input counts and indexes are not
-changed by the aggregated path or its ungrouped fallback.
+### Virtual-box preprocessing
+Virtual box packaging simplifies packaging when there is more than one of the same box. `VirtualBoxPackager` wraps a packager, packs repeated boxes as filled rectangular assemblies, and expands the result back into the original boxes.
 
 ```java
 try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
@@ -219,138 +204,7 @@ try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
 }
 ```
 
-<details>
-  <summary>Algorithm details</summary>
-
-### Largest Area Fit First algorithm
-The implementation is based on [this paper][2], and is not a traditional [bin packing problem][1] solver.
-
-The box which covers the largest ground area of the container is placed first; its height becomes the level height. Boxes which fill the full remaining height take priority. Subsequent boxes are stacked in the remaining space in at the same level, the boxes with the greatest volume first. If box height is lower than level height, the algorithm attempts to place some there as well. 
-
-When no more boxes fit in a level, the level is incremented and the process repeated. If no box fits the new level,
-the level below is raised to the top of the container instead, so that a box which is too tall for it can stand beside
-its boxes (for example when the boxes of the level cannot carry it). Boxes are rotated, containers not.
-
- * `LargestAreaFitFirstPackager` stacks in 3D within each level
- * `FastLargestAreaFitFirstPackager` stacks in 2D within each level
-
-The algorithm runs reasonably fast, usually in milliseconds. Some customization is possible.
-
-### Plain algorithm
-This algorithm selects the box with the biggest volume, fitting it where it is best supported.
-
-###  Brute-force algorithm
-This algorithm has no logic for selecting the best box or rotation; running through all permutations, for each permutation all rotations:
-
- * `BruteForcePackager` attempts all box orders, rotations and placement positions.
- * `FastBruteForcePackager` attempts all box orders and rotations, placing each box at the best free point for its rotation.
-
-The complexity of this approach is [exponential], and thus there is a limit to the feasible number of boxes which can be packaged within a reasonable time. However, for real-life applications,  a healthy part of for example online shopping orders are within its grasp.
-
-The worst case complexity can be estimated using the relevant iterators before packaging is attempted.
-
-The algorithm tries to skip combinations which will obviously not yield a (better) result:
-
- * permutations
-   * two or more boxes have the same dimensions
-   * permutations which mutated at a previously unreachable index
- * fewer rotations
-   * two or more sides have the same length
-   * rotations which mutated at a previously unreachable index
- 
-There is also a parallel version `ParallelBruteForcePackager` of the brute-force packager, for those wishing to use it on a multi-core system. To leave CPU capacity to other work, search at a lower thread priority: `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)`. The priority is a hint to the operating system's scheduler. Each packing task sets it on the thread which runs it (a pool thread of an executor service passed in with `withExecutorService(..)`, or the calling thread) and restores the thread's own priority afterwards; an executor service created by the builder also creates its threads at the priority. By default, the thread priority is left alone.
-
-Do not attempt this with many boxes of different sizes: the number of combinations grows exponentially, so it will likely not complete in time. The search itself is not recursive, so many identical boxes do not exhaust the thread stack.
-
-### Virtual-box preprocessing algorithm
-
-The wrapper does not own or close its delegate. Configure packager-specific
-options on the delegate before wrapping it.
-
-Preprocessing first constructs factor grids for entire repeated box items:
-`columns * rows * layers == count`. It prefers container axes which are matched
-exactly, or which leave a strip narrower than every box, then compact envelopes.
-Only permitted original orientations are used. Default limits are 10,000 physical
-boxes per grid and eight layouts. Every container type which can hold the grid keeps
-at least one layout of its own, even beyond that limit, so a virtual box always has a
-layout for each container it fits.
-
-If the whole count forms no fitting grid (prime counts, or more boxes than one
-container holds), the item is split into container-sized grids, like a loaded
-container: full blocks, then whole layers, whole rows and a line. For example,
-40 boxes in containers holding 18 become `18 + 18 + 3 + 1`. Equal blocks are
-handed to the delegate as one item with a count, so brute force does not
-enumerate orders of interchangeable blocks. The split prefers block sizes which the
-available containers can hold (container counts and the maximum container count):
-with one large and three small containers, 36 boxes become three small-container
-blocks rather than two large-container blocks. When containers have costs, blocks
-which fit more container types are preferred, so cheaper containers remain usable.
-
-Distinct item types are not combined, even if their dimensions match. This keeps
-preprocessing cheap and preserves original identical-item semantics.
-
-Preprocessing, refinement and delegate attempts share one supplier created
-by `PackagerInterruptSupplierBuilder`, using `withInterruptDeadline(...)` or
-`withInterruptDuration(...)` and any caller-provided interrupt. There are no
-separate preprocessing budgets or reserved time slices. Fallback is
-attempted only while the shared operation deadline has not expired. Set
-`withAggregation(false)` to disable aggregation.
-
-Aggregation can reduce packing flexibility. The wrapper selectively splits a
-large virtual box after failure, or when a successful result might use fewer or
-cheaper containers. Without container costs, a result already at the volume and
-weight lower bound is not refined if all containers have the same volume. A split
-halves the longest axis of the virtual box's grid, so both parts are grids which fit
-the containers the original fitted. All equal copies of that virtual box are split
-in the same step, or as many as the delegate-item limit allows.
-Four refinement steps are allowed by default;
-`withMaxRefinements(0)` disables them. Each split preserves original counts,
-reuses unchanged assemblies, and retains the best valid packing found so far.
-Layouts and unsuccessful grid generations are cached by original inventory and
-counts within the operation; repeated child inventories reuse the same layouts.
-The delegate's outer packing search is restarted with fresh inventory.
-
-`withMaxDelegateBoxes(...)` limits the number of physical items handed to the
-delegate, including refined and ungrouped attempts. The default is unlimited;
-set it when wrapping a brute-force packager. If no permissible representation fits,
-the operation may fail without attempting every original box individually.
-
-If refinement fails, the wrapper retries the original inventory without
-grouping, subject to that count limit and the shared deadline.
-Set `withCompareUngrouped(true)` to
-also try ungrouped packing after success, retaining lower reported cost, then
-fewer containers, then less container volume. This costs another packing
-attempt and is disabled by default.
-
-The standalone grid generator checks internal weight, pressure and stack-depth
-limits before constructing placements. An envelope cannot safely represent loads
-between assemblies, physical stack depth or original box identities. Consequently,
-if any input box has a load constraint, the wrapper bypasses aggregation for the
-whole operation and forwards the original inventory to the delegate. Use a
-load-aware delegate to enforce those constraints during packing. There is no
-post-pack load validation, graph rebuilding or load-validation retry; virtual-box
-refinement and delegate-item limits do not apply to this bypass path.
-
-Groups, chronological ordering, controlled containers, initial points/obstacles,
-motion and existing placements bypass aggregation and retain the delegate's
-ordinary behavior. Delegate-specific callbacks must tolerate synthetic boxes
-when aggregation is enabled.
-
-The standalone `GridVirtualBoxLayoutGenerator` exposes the same fast generation.
-It checks each candidate's internal load limits analytically before creating
-placements. Generated grids skip general overlap validation, create their child
-placements only when first accessed, and do not allocate contact graphs or
-physical search state. `partition(...)` exposes the container-sized split. Refinement reuses
-original orientations without cloning boxes or remapping child placements.
-`VirtualBoxLayout` retains a `List<Placement>` whose coordinates are relative to
-the virtual box origin. The list and its placements are shared and must not be
-modified; expansion creates separate placements at container coordinates.
-`VirtualBox` turns equivalent filled layouts into a delegate item, with a count for
-equal copies. Expansion mappings use
-operation-global item indexes and stack-value indexes, not IDs or mutable local
-indexes; custom delegate implementations must preserve those indexes.
-
-</details> 
+Details: [virtual-box preprocessing](docs/heuristics/virtual-box.md).
 
 # Packager customizations
 
@@ -387,29 +241,7 @@ Container container = Container.newBuilder()
     .build();
 ```
 
-Without a box item order (`Order.NONE`), the packagers put the placements of each result in insertion order after
-packing (`InsertionSequencer`); the placements themselves are unchanged. With an order, only boxes which can be
-inserted after the boxes already there are placed. As boxes are only added on top of, or in front of, the boxes
-already there, the loads never decrease while loading: a result within its load limits is within them at every step
-of loading and unloading. `InsertionOrderValidator` (part of `DefaultValidator`) checks the order.
-
-Putting the placements in insertion order takes time quadratic in the number of boxes per container. When only the
-outcome matters, for example to check whether an order fits during checkout, skip it with
-`withInsertionOrder(false)` on the result builder, and calculate the order later if needed with
-`InsertionSequencer.sequence(result.getContainers(), Order.NONE)`.
-
-Boxes which are already in a container (obstacles, see `withObstacles(..)` on the container item builder) are
-inserted first: the packagers only place boxes where no obstacle rests on them or is in their path, and the result
-containers keep the obstacles (`Container.getObstacles()`), which the validator includes.
-
-The boxes of a box item group are inserted together: no box of another group is inserted between them, so a group
-(for example the parts of one product or order) can be loaded, and unloaded, as a unit. The packagers only place a box
-where no box of an earlier group rests on it or is in its path; `GroupInsertionValidator` (part of `DefaultValidator`)
-checks the order.
-
-`PackagerResult.isInsertionOrder()` tells whether a result is known to be in insertion order: false when it was
-skipped, or when the boxes cannot be loaded in any order (possible through a door, as the packagers place boxes
-without regard to the door when there is no box item order).
+Details: [insertion order](docs/insertion-order.md), including skipping the ordering, obstacles and box item groups.
 
 ## Deliveries: extraction order and container priority
 Two settings on box items (and box item groups) say when boxes leave, as opposed to the box item order (`Order`, see
@@ -430,23 +262,9 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
 
  * **Extraction order**: within a container, no box rests on, or is in the path of (see `withAccess(..)`), a box
    which is extracted earlier, so the boxes of each stop can be taken out without moving the boxes for later stops.
-   Boxes with the same extraction order (by default 0) are not constrained among themselves. The packagers place the
-   boxes which are extracted last first, and the placements of each container are in insertion order: the boxes
-   extracted last are inserted first.
- * **Container priority**: a hard constraint on which boxes go in earlier containers. A box with a lower value is never
-   in a later container than a box with a higher value: the boxes of the next priority start in a container only after
-   all the boxes of the priority before it are placed, in that container or an earlier one. With a box item order,
-   the priorities must not decrease in that order.
+ * **Container priority**: a hard constraint on which boxes go in earlier containers.
 
-The plain, LAFF and brute-force packagers support both, also for groups. Without a box item order, groups go into
-containers lowest container priority first, then the groups which are extracted last, then the largest
-(`withBoxItemGroupComparator(..)`). The brute-force packagers pack groups in an order, permuting the boxes within each
-group, and a container holds the first groups which fit; they try every order of the remaining groups for each
-container (groups of the same container priority change places), skipping the orders which cannot give a better result.
-Each order is searched with the best result so far, so that the permutations which cannot load more are pruned. This is
-exponential in the number of groups; use a deadline.
-Virtual-box preprocessing packs boxes with either setting directly. `DefaultValidator` checks both
-(`ExtractionOrderValidator`, `ContainerPriorityValidator`).
+Details: [deliveries](docs/deliveries.md), including the packager support.
 
 ## Support
 Support (the area resting on boxes below) can be calculated, or full support required:
@@ -459,16 +277,9 @@ PlainPackager packager = PlainPackager
     .build();
 ```
 
-The LAFF packager builders have the same options. The options are also available on the placement controls, with
-`withPlacementControlsBuilderFactory(b -> b.withCalculateSupport(true))` on the plain and LAFF builders (and
-`withFirstPlacementControlsBuilderFactory(..)` for the first placement of a LAFF level), where they have the same effect,
-and which also take a box item comparator and a placement ranking. A placement ranking which declares that it reads the supported area of
-a candidate (`PlacementComparator.usesSupportedArea()`, false unless overridden) gets it calculated, whether or not
-`withCalculateSupport(..)` is set; a box on the floor is fully supported. The brute-force packager builders have `withRequireFullSupport(true)`:
-boxes are placed only where they rest completely on the floor or on the boxes below, at the free points and shifted from
-a free point onto the corner of a box below (as the plain packager does when no free point holds a box fully supported).
-Boxes do not rest on obstacles. Brute force has no `withCalculateSupport(..)`: it keeps the arrangement with the most
-volume, rather than ranking positions.
+The LAFF packager builders have the same options.
+
+Details: [support](docs/support.md), including the placement controls and the brute-force packagers.
 
 ## Container costs
 Give container types a cost to prefer cheaper combinations of containers, using
@@ -494,12 +305,8 @@ CompositePackager packager = CompositePackager.newBuilder()
 The first packager (or those added with `withBaselinePackager(..)`) first packs the whole order, giving a
 baseline result. Then, for each container the container packing strategy attempts, the packagers are tried in order
 until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
-The better result is returned (see `PackagerResultComparator`), and the baseline if the deadline passes.
-A container packing strategy set with `withContainerPackingStrategyFactory(..)` applies to the baseline too.
 
-For random orders in the shipping containers of issue #1158, a plain and fast brute force composite (200 ms budget)
-packed every order, with 2-6 % less container volume than the plain packager, at 10-60 ms per order; brute force alone
-ran out of time for many of the orders. See `CompositeQualityReport` in the `jmh` module.
+Details: [composite packager heuristics](docs/heuristics/composite.md), including a quality comparison.
 
 ## Validating results
 The optional `validators` artifact checks packing results, for example the load constraints:
@@ -520,16 +327,7 @@ The packagers (excluding brute force) can be extended to handle specialized need
 
 In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
 
-The control and strategy interfaces are part of the `api` module. The classes of `core` can be extended too, but are not a stable contract: they may change in any release (see [DEVELOPER.md](DEVELOPER.md)).
-
-`Controls` must be provided as follows:
-
- * builder factory
-    * builder
-       * controls
-
-Manifest controls and point controls belong to a container item, so container types can have different rules. Set the
-factories with the container item builder of the result builder:
+Manifest controls and point controls belong to a container item, so container types can have different rules:
 
 ```java
 Container container = ...;
@@ -547,83 +345,20 @@ PackagerResult result = packager
     .build();
 ```
 
-or on a `ContainerItem`, before passing it to `withContainerItems(..)`:
-
-```java
-ContainerItem containerItem = new ContainerItem(container, 5);
-containerItem.setManifestControlsBuilderFactory(manifestControls);
-containerItem.setPointControlsBuilderFactory(pointControls);
-
-PackagerResult result = packager
-    .newResultBuilder()
-    .withContainerItems(containerItem)
-    .withBoxItems(products)
-    .withMaxContainerCount(5)
-    .build();
-```
-
-Placement controls are set on the packager builder instead, with `withPlacementControlsBuilderFactory(..)`. A packager reuses the result
-of one container for another only if their manifest controls and point controls factories are the same instance or carry the same id:
-implement `getId()` on them, or wrap a lambda with `PointControlsBuilderFactory.of("id", () -> ...)` (see [DEVELOPER.md](DEVELOPER.md)).
-
-### Manifest-controls
-Determines which boxes go into which containers, i.e. in which combinations. 
-
-A classic example would to be to not package both lighters and dynamite in the same container.
-
-### Point-controls
-Determines which points are relevant for a specific box. 
-
-For example, heavy items might be require only points at ground level or flammable items might be required to be stacked in a certain zone.
-
-### Placement-controls
-Determines the best placement for a box. 
-
-Can consider a range of options, like stability, stacking height, structural integrity and so on; even randomization is possible. Note that these features are not necessarily implemented in the packagers within this project.
+Details: [packager controls](docs/packager-controls.md), including placement controls and the manifest, point and placement control types.
 
 # Visualizer
 There is a simple output [visualizer](visualizer) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
 
-### Setup
 ```
 cd visualizer/viewer
 npm install
-```
-
-### Run
-```
 npm start
 ```
 
-The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes. Write it with
-`DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`), for one result or several results of the same order:
+The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes; write it with `DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`).
 
-```java
-Map<String, PackagerResult> results = new LinkedHashMap<>();
-results.put("plain", plainResult);
-results.put("composite", compositeResult);
-new DefaultPackagingResultVisualizerFactory(true) // true: calculate the free points after each placement
-    .visualize(results, validator.newResultBuilder().withContainerItems(containers).withBoxItems(boxItems), file);
-```
-
-The viewer shows:
-
- * a summary of the result: whether it was packed, the time and cost, and the volume and weight used per container
- * a comparison table when there are several results (`r` or click a row to switch)
- * whether the result is valid: the factory validates the boxes' load limits (and the whole result, given the input), logs the reasons, and the viewer outlines the boxes of invalid placements in red
- * colour modes (`c`): box item, group, support, load relative to the max load weight, and extraction order
- * the container's opening (orange), and boxes which are not in a possible insertion order
- * each container's centre of gravity, and for each box its supported area and load
- * the packing steps (`a` / `d`) and the free points after each placement (`p`, `w` / `s`)
-
-To "hot reload" the visualizer during development, make your unit tests write that file. The `*VisualizationTest`
-classes in `visualizer/packaging` are examples (load limits, insertion order, deliveries, groups and support, container
-costs, virtual boxes, and comparing packagers); they are run by hand, for example from the IDE or with
-`./mvnw -B -ntp -Pdev -pl visualizer/packaging -am -Dtest=PackagerComparisonVisualizationTest -Dsurefire.failIfNoSpecifiedTests=false test`.
-
-For a tour of the features, run `ShowcaseVisualizationTest` while the viewer is open: it writes one scenario after
-another, with a delay between them (`-Dshowcase.delay=20` seconds, `-Dshowcase.rounds=3`), and prints what to look
-at. The viewer fits the camera when the containers change size.
+Details: [visualizer](docs/visualizer.md), including the setup, what the viewer shows and the example tests.
 
 ![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
 
@@ -679,12 +414,9 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * 2.1.1: Improve free space calculation performance
  * 2.1.0: Improve brute force iterators, respect deadlines in brute for packagers.
 
-[1]: 				https://en.wikipedia.org/wiki/Bin_packing_problem
-[2]: 				https://www.drupal.org/files/An%20Efficient%20Algorithm%20for%203D%20Rectangular%20Box%20Packing.pdf
 [Apache 2.0]: 		http://www.apache.org/licenses/LICENSE-2.0.html
 [issue-tracker]:	https://github.com/skjolber/3d-bin-container-packing/issues
 [Maven]:			http://maven.apache.org/
 [LinkedIn]:			http://lnkd.in/r7PWDz
 [Github page]:		https://skjolber.github.io
 [NothinRandom]:		https://github.com/NothinRandom
-[exponential]:		https://en.wikipedia.org/wiki/Exponential_function

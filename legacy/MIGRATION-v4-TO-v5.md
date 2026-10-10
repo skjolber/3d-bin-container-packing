@@ -250,7 +250,7 @@ Removed without a direct replacement, or replaced by a different mechanism:
    `PlacementComparatorAttribute` in `api` (and `DefaultPlacementComparatorFactory` in `core`) to rank placements without writing controls;
    `PlacementControls.accepted(..)` / `undo(..)` callbacks; `PlacementControlsBuilderFactory.supportsLoad()` (default `false`: a packager rejects boxes with load limits
    unless the controls support them). Factories supplied to packagers must be safe for concurrent use. See
-   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-placement-controls) and [README.md](../README.md#packager-controls).
+   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-placement-controls) and [docs/packager-controls.md](../docs/packager-controls.md).
  * **Sessions.** A `PackagerSession` packs one container at a time on copies of the box items and container items, and is what a container packing strategy drives
    (`attempt`, `peek`, `accept`, `fresh`, `fork`).
  * **Container packing strategies.** A `ContainerPackingStrategy` (created by a `ContainerPackingStrategyFactory`, set with `withContainerPackingStrategyFactory(..)` on the
@@ -262,11 +262,11 @@ Removed without a direct replacement, or replaced by a different mechanism:
    container priority and an extraction order (`withContainerPriority(..)`, `withExtractionOrder(..)`). The group API otherwise has the same shape (`copy()` for `clone()`).
    The boxes of a group are inserted together, and without a box item order the brute-force packagers search the order of the groups. The brute-force packagers also
    support a box item order (4.x threw `IllegalStateException("Order not supported for brute force packager")`).
- * **Load constraints, support, insertion order, deliveries.** See [README.md](../README.md#load-constraints), [README.md](../README.md#insertion-order) and
-   [README.md](../README.md#deliveries-extraction-order-and-container-priority). `withCalculateSupport(..)` and `withRequireFullSupport(..)` are options of the plain and LAFF builders.
+ * **Load constraints, support, insertion order, deliveries.** See [README.md](../README.md#load-constraints), [docs/insertion-order.md](../docs/insertion-order.md) and
+   [docs/deliveries.md](../docs/deliveries.md). `withCalculateSupport(..)` and `withRequireFullSupport(..)` are options of the plain and LAFF builders.
  * **Composite packager and virtual boxes.** `CompositePackager` (cheap packagers first, costly ones only where needed) in `com.github.skjolber.packing.packer.composite`, and
-   `VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` (wraps a packager to pack repeated boxes as assemblies). See [README.md](../README.md#combining-packagers) and
-   [README.md](../README.md#virtual-box-preprocessing).
+   `VirtualBoxPackager` in `com.github.skjolber.packing.virtualbox` (wraps a packager to pack repeated boxes as assemblies). See [docs/heuristics/composite.md](../docs/heuristics/composite.md) and
+   [docs/heuristics/virtual-box.md](../docs/heuristics/virtual-box.md).
  * **Validators.** The `validators` artifact validates results independently of the packager, including load, stability, insertion and extraction order. See
    [README.md](../README.md#validating-results).
  * **Thread priority.** `ParallelBruteForcePackager.newBuilder().withThreadPriority(Thread.MIN_PRIORITY)` searches at a lower thread priority.

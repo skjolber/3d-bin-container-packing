@@ -109,7 +109,7 @@ is delivered to the manifest controls only.
 Wire manifest and point controls per container item: with the result builder's
 `withContainerItem(b -> b.withContainerItem(container, count).withManifestControlsBuilderFactory(..).withPointControlsBuilderFactory(..))`,
 or with `ContainerItem.setManifestControlsBuilderFactory(..)` and `setPointControlsBuilderFactory(..)` on a container item passed to
-`withContainerItems(..)` (see the README, "Packager controls", for an example). The plain and LAFF packagers use them; the brute-force packagers
+`withContainerItems(..)` (see [Packager controls](docs/packager-controls.md) for an example). The plain and LAFF packagers use them; the brute-force packagers
 do not support controls and reject such inputs (`getUnsupportedReason(..)`).
 
 Packagers reuse the result of a container for another container when the containers' manifest controls and point controls

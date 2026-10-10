@@ -35,6 +35,8 @@ same physical container are valid, provide each orientation as a separate
 | `ParallelBruteForcePackager` | Parallel brute-force search for small inputs with available CPU capacity; optionally at a given thread priority (`withThreadPriority(..)`, a scheduler hint). |
 | `CompositePackager` | Combines packagers: cheap packagers give a baseline and are tried first for each container; costly packagers run only where the cheaper ones do not fit all remaining boxes, optionally with a time budget. |
 
+The implementation details of each packager are in [docs/heuristics](docs/heuristics/).
+
 Brute-force packagers enforce box load limits when the boxes have them, can
 require full support (boxes rest completely on the floor or on the boxes below),
 remove duplicate rotations; `BruteForcePackager` and `ParallelBruteForcePackager` can also skip
