@@ -41,6 +41,9 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 
 ### Packages and types that moved
 
+<details>
+<summary>Show the 8 entries</summary>
+
 | 4.x | 5.0 |
 | --- | --- |
 | `com.github.skjolber.packing.deadline.*` (`PackagerInterruptSupplier`, `PackagerInterruptSupplierBuilder`, `DefaultPackagerInterrupt`, `DeadlineCheckPackagerInterruptSupplier`, `DelegateDeadlineCheckPackagerInterruptSupplier`, `PositivePackagerInterruptSupplier`, `NegativePackagerInterruptSupplier`) | `com.github.skjolber.packing.api.interrupt.*` (same class names) |
@@ -52,7 +55,12 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 | `core`: `com.github.skjolber.packing.validator.*` | `validators` artifact, same package names |
 | `validator.reasons.TooManyContainerIdsReason` | `validator.reasons.UnknownContainerIdReason` (same reason code) |
 
+</details>
+
 ### Request, result builder and interrupts
+
+<details>
+<summary>Show the 11 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -68,7 +76,12 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 | `PackagerInterruptSupplierBuilder.withInterrupt(BooleanSupplier)` | `withInterrupt(PackagerInterruptSupplier)` |
 | `PackagerInterruptSupplierBuilder.withScheduledThreadPoolExecutor(ScheduledThreadPoolExecutor)` | `withScheduledExecutorService(ScheduledExecutorService)` |
 
+</details>
+
 ### Packager builders and comparators
+
+<details>
+<summary>Show the 14 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -87,10 +100,15 @@ Each name in the left column exists in 4.2.6-SNAPSHOT and each name in the right
 | `ParallelBoxItemBruteForcePackager.shutdown()` | `ParallelBruteForcePackager.close()` (shuts down an executor service only if the builder created it) |
 | `ParallelBruteForcePackagerException` (thrown by the builder) | `IllegalStateException` from `build()`; the setters still throw `IllegalArgumentException` |
 
+</details>
+
 ### Adapters are now sessions
 
 The per-operation workers which pack one container at a time were `PackagerAdapter`s; they are `PackagerSession`s (in `api`, for container packing
 strategies). Applications which only call `newResultBuilder()` are not affected.
+
+<details>
+<summary>Show the 12 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -107,7 +125,12 @@ strategies). Applications which only call `newResultBuilder()` are not affected.
 | `packer.ContainerItemsCalculator` | `packer.DefaultContainerInventory`, an implementation of `api.packager.strategy.ContainerInventory` |
 | `BruteForceIntermediatePackagerResult.containsLastStackable()`, `getSize()` | `containsLastBox()`, `getBoxCount()` |
 
+</details>
+
 ### Model (`api`)
+
+<details>
+<summary>Show the 11 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -123,9 +146,14 @@ strategies). Applications which only call `newResultBuilder()` are not affected.
 | `Point.X_COMPARATOR`, `COMPARATOR` and the other `java.util.Comparator<Point>` constants | same names, type `Point.PointComparator` |
 | `BoxItem`, `Placement`, `Stack` implement `Serializable` | they do not |
 
+</details>
+
 ### Controls (`api.packager.control`)
 
 Manifest, point and placement controls already existed in 4.x (the builder factory, builder, controls chain is unchanged). What changed:
+
+<details>
+<summary>Show the 8 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -138,7 +166,12 @@ Manifest, point and placement controls already existed in 4.x (the builder facto
 | `PlainPlacement.getSupportArea()` | `Placement.getSupportedArea()`, and the comparator must declare `usesSupportedArea()` (see [Behavioral changes](#behavioral-changes)) |
 | `AbstractPointControlsBuilder.withBoxItemGroups(..)`, `DefaultManifestControls(BoxItemSource)` | removed; `DefaultManifestControls()` |
 
+</details>
+
 ### Points (`points`)
+
+<details>
+<summary>Show the 6 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -149,7 +182,12 @@ Manifest, point and placement controls already existed in 4.x (the builder facto
 | `Default3DPlanePoint3D`, `DefaultXYPlanePoint3D`, `DefaultXZPlanePoint3D`, `DefaultYZPlanePoint3D`, `DefaultXYPlaneXZPlanePoint3D`, `DefaultXYPlaneYZPlanePoint3D`, `DefaultXZPlaneYZPlanePoint3D`, `XYPlanePoint3D`, `XZPlanePoint3D`, `YZPlanePoint3D` | `DefaultPoint3D` (one implementation, with `getXYPlane()`, `getXZPlane()`, `getYZPlane()`) |
 | `SimplePoint3D.calculateXYSupport(..)`, `calculateXZSupport(..)`, `calculateYZSupport(..)`, `rotate()` | removed (`Point.isSupportedXYPlane(..)` is new) |
 
+</details>
+
 ### Iterators (`core`, `iterator`)
+
+<details>
+<summary>Show the 3 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -157,7 +195,12 @@ Manifest, point and placement controls already existed in 4.x (the builder facto
 | iterator constructors `(BoxItem[], ..)` | iterator constructors also take the stack values which fit the container (`BoxStackValue[][]`); use the builders, which are unchanged |
 | `BinarySearchIterator.reset(int high, int low)` | `reset(int low, int high)`: the signature is the same, so callers compile and silently swap the bounds |
 
+</details>
+
 ### Validators and test utilities
+
+<details>
+<summary>Show the 6 entries</summary>
 
 | 4.x | 5.0 |
 | --- | --- |
@@ -167,6 +210,8 @@ Manifest, point and placement controls already existed in 4.x (the builder facto
 | `test.assertj.AbstractContainerAssert.isStackedWithinContraints()` (so also on `ContainerAssert`) | `isStackedWithinConstraints()` |
 | `test.assertj.AbstractStackAssert.isWithinLoadContraints(Container)` (so also on `StackAssert`) | `isWithinLoadConstraints(Container)` |
 | a hand-written `assertValid(PackagerResult)` helper | `PackagerResultAssert.assertThat(result).isStackedWithinConstraints()` (`com.github.skjolber.packing.test.assertj`) |
+
+</details>
 
 The `assertValid(..)` of the 4.x tests was a helper in the 4.x test sources, not part of the `test` artifact; `PackagerResultAssert` is new.
 
@@ -263,6 +308,9 @@ Not all of these are visible to the compiler.
 
 ## Common compile errors
 
+<details>
+<summary>Show the 29 errors and fixes</summary>
+
 | javac message after the upgrade | Fix |
 | --- | --- |
 | `package com.github.skjolber.packing.deadline does not exist` | Import `com.github.skjolber.packing.api.interrupt.*` instead. |
@@ -294,3 +342,5 @@ Not all of these are visible to the compiler.
 | `cannot find symbol ... method remove(Predicate)` on a `PointCalculator` | No replacement, see [Removed](#removed). |
 | `cannot find symbol ... method isStackedWithinContraints()` / `isWithinLoadContraints(..)` | `isStackedWithinConstraints()` / `isWithinLoadConstraints(..)`. |
 | `cannot find symbol ... method builder()` on `PackagerInterruptSupplierBuilder` | `newBuilder()`. |
+
+</details>
