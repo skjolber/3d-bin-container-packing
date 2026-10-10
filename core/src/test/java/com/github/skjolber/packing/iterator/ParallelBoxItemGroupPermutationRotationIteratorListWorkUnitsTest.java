@@ -190,6 +190,27 @@ public class ParallelBoxItemGroupPermutationRotationIteratorListWorkUnitsTest {
 	}
 
 	@Test
+	void resetRewindsTheListAsASingleIterator() {
+		ParallelBoxItemGroupPermutationRotationIteratorList list = list(3, sixPermutations());
+
+		List<String> first = new ArrayList<>();
+		do {
+			first.add(Arrays.toString(list.getPermutations()));
+		} while (list.nextPermutation() != -1);
+		// the work units follow one another, and split the permutations between them
+		assertThat(first).hasSize(6).doesNotHaveDuplicates();
+
+		// the list is exhausted: reset starts again at the first work unit
+		list.reset();
+
+		List<String> second = new ArrayList<>();
+		do {
+			second.add(Arrays.toString(list.getPermutations()));
+		} while (list.nextPermutation() != -1);
+		assertThat(second).isEqualTo(first);
+	}
+
+	@Test
 	void workUnitsFromAnIteratorAreTheSameAsFromTheBuilder() {
 		DefaultBoxItemGroupPermutationRotationIterator iterator = DefaultBoxItemGroupPermutationRotationIterator.newBuilder()
 				.withLoadSize(10, 30, 1)

@@ -53,6 +53,16 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	private static final class LocalInterrupt {
 		private volatile boolean interrupted;
+		/** The number of boxes of a result which cannot be beaten (the search is then complete), besides one which holds the last box */
+		private final int completeBoxCount;
+
+		private LocalInterrupt() {
+			this(Integer.MAX_VALUE);
+		}
+
+		private LocalInterrupt(int completeBoxCount) {
+			this.completeBoxCount = completeBoxCount;
+		}
 	}
 
 	/** Thread priority marker: leave the threads' priority alone */
@@ -430,7 +440,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				return null;
 			}
 			BruteForceIntermediatePackagerResult result = ParallelBruteForcePackager.this.pack(pointCalculator(), placements(), placementCount, containerItem, containerIndex, iterator, interrupt, pointFilter, best);
-			if(result.containsLastBox()) {
+			if(result.containsLastBox() || result.getBoxCount() >= localInterrupt.completeBoxCount) {
 				// will not match any better than this: stop the work units which did not start yet, and those which did
 				localInterrupt.interrupted = true;
 			}
@@ -808,6 +818,37 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		/**
+		 * Groups are packed in order, so a container holds the groups up to the first which it excludes (because it does
+		 * not fit): a result with all their boxes is the best there is, as for a container which excludes no group a
+		 * result with all the boxes is (see {@link #truncateToWholeGroups} and {@link #truncateToGroup}, which keep
+		 * the same groups). A result of the iterator which holds this many boxes holds these groups, in the first
+		 * permutation positions.
+		 *
+		 * @param iteratorGroups the groups of the work units' iterator, in their order (null if excluded)
+		 * @param wholeGroups see {@link #packMultithreaded}
+		 * @return the number of boxes of the groups which the container can hold, or {@linkplain Integer#MAX_VALUE} if none
+		 */
+		private int getCompleteBoxCount(BoxItemGroup[] iteratorGroups, boolean wholeGroups) {
+			int count = 0;
+			if(wholeGroups) {
+				for (BoxItemGroup group : iteratorGroups) {
+					if(group == null) {
+						break;
+					}
+					count += group.getBoxCount();
+				}
+			} else {
+				for (int k = 0; k < boxItemGroups.size(); k++) {
+					if(iteratorGroups[remainingGroupPositions.get(k)] == null) {
+						break;
+					}
+					count += boxItemGroups.get(k).getBoxCount();
+				}
+			}
+			return count > 0 ? count : Integer.MAX_VALUE;
+		}
+
+		/**
 		 * Search a container's permutations on the threads, split into work units.
 		 *
 		 * @param units the work units
@@ -819,7 +860,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		 */
 		private BruteForceIntermediatePackagerResult packMultithreaded(int i, ParallelBoxItemGroupPermutationRotationIteratorList units, BoxItemGroup[] iteratorGroups, boolean wholeGroups,
 				IntermediatePackagerResult currentBest, boolean filterReverse) throws PackagerInterruptedException {
-			LocalInterrupt localInterrupt = new LocalInterrupt();
+			LocalInterrupt localInterrupt = new LocalInterrupt(getCompleteBoxCount(iteratorGroups, wholeGroups));
 
 			// one per attempt: attempts may run concurrently (session forks), and the futures of an attempt are
 			// cancelled when it is done, after which they would otherwise be taken by the next attempt
@@ -1052,16 +1093,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		}
 
 		@Override
-		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException {
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
+				IntermediatePackagerResult best) throws PackagerInterruptedException {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
-				// split the order's permutations between the threads
-				Container container = getContainerItem(containerIndex).getContainer();
-				ParallelBoxItemGroupPermutationRotationIteratorList units = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-						.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-						.withBoxItemGroups(orderGroups(boxItemGroups, groupOrder))
-						.withMaxLoadWeight(container.getMaxLoadWeight())
-						.withParallelizationCount(parallelizationCount)
-						.build();
+				// split the order's permutations between the threads, which share the iterator's rotations
+				ParallelBoxItemGroupPermutationRotationIteratorList units = ParallelBoxItemGroupPermutationRotationIteratorList.of(iterator, parallelizationCount);
 				return packMultithreaded(containerIndex, units, units.getBoxItemGroups(), true, best, false);
 			}
 			// few permutations: search on this thread

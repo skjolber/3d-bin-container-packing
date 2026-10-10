@@ -16,7 +16,11 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
+import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
  * The work units of a parallel search are only started when they are needed: a search which fits in a single work unit
@@ -275,6 +279,80 @@ public class ParallelBruteForcePackagerWorkUnitsTest {
 		PackagerResult result = packGroups(executor, List.of(new BoxItemGroup("group", boxes)), container(5, 5));
 
 		assertThat(result.isSuccess()).isFalse();
+		assertThat(executor.getTasks()).isEqualTo(PARALLELIZATION_COUNT);
+	}
+
+	/**
+	 * The groups of a container are packed in order, so the container holds the groups before the first which it excludes (because it
+	 * does not fit). The first group has 5! = 120 permutations in 16 work units, and the second group (7 x 1) does not fit the small
+	 * container of 5 x 1, only the large of 8 x 1.
+	 */
+	private static List<BoxItemGroup> groupsWithAnExcludedGroup(List<BoxItem> first) {
+		return List.of(new BoxItemGroup("first", first), new BoxItemGroup("wide", List.of(box("wide", 7, 1))));
+	}
+
+	private static IntermediatePackagerResult attemptSmallContainer(CallingThreadExecutor executor, List<BoxItemGroup> groups, ContainerItem small, ContainerItem large,
+			Container[] accepted) throws Exception {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
+				.withExecutorService(executor)
+				.withParallelizationCount(PARALLELIZATION_COUNT)
+				.build()) {
+			PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(small, large), 2, Order.NONE), () -> false);
+			IntermediatePackagerResult result = session.attempt(0, null, false);
+			if (accepted != null) {
+				accepted[0] = session.accept(result);
+			}
+			return result;
+		}
+	}
+
+	@Test
+	void completeSearchOfTheGroupsBeforeAnExcludedGroupDoesNotStartTheRemainingWorkUnits() throws Exception {
+		CallingThreadExecutor executor = new CallingThreadExecutor();
+
+		// all boxes of the first group fit the small container, so the first work unit finds all that the container can hold
+		Container[] accepted = new Container[1];
+		IntermediatePackagerResult result = attemptSmallContainer(executor, groupsWithAnExcludedGroup(boxes(5)), container(5, 1), container(8, 1), accepted);
+
+		// <figure>
+		//   z                                                 z
+		//                                                     1 +-------+-------+-------+-------+-------+
+		//   | /-------/-------/-------/-------/-------|   y     |       |       |       |       |       |
+		//   |/       /       /       /       /       /|         | box-0 | box-1 | box-2 | box-3 | box-4 |
+		// 1 |-------|-------|-------|-------|-------| | /       |       |       |       |       |       |
+		//   |       |       |       |       |       | |/      0 +-------+-------+-------+-------+-------+
+		//   | box-0 | box-1 | box-2 | box-3 | box-4 | | 1       0       1       2       3       4       5   x
+		//   |       |       |       |       |       |/
+		// 0 |-------|-------|-------|-------|-------|-- x
+		//   0       1       2       3       4       5
+		//
+		// y                                                 z
+		// 1 +-------+-------+-------+-------+-------+       1 +-------+
+		//   |       |       |       |       |       |         |       |
+		//   | box-0 | box-1 | box-2 | box-3 | box-4 |         | box-4 |
+		//   |       |       |       |       |       |         |       |
+		// 0 +-------+-------+-------+-------+-------+       0 +-------+
+		//   0       1       2       3       4       5   x     0       1   y
+		// </figure>
+		figure(new PackagerResult(List.of(accepted[0]), 0, false));
+
+		assertThat(result.getBoxCount()).isEqualTo(5);
+		assertThat(executor.getTasks()).isEqualTo(1);
+	}
+
+	@Test
+	void incompleteSearchOfTheGroupsBeforeAnExcludedGroupStartsAllWorkUnits() throws Exception {
+		CallingThreadExecutor executor = new CallingThreadExecutor();
+
+		// the first group has 7! = 5040 permutations, with a volume of 23 in a container of 25, but two boxes of 3 x 3 do not fit side by
+		// side in 5 x 5, so no work unit finds all of the boxes of the group. The group which the container excludes (7 x 1) is no reason to stop
+		List<BoxItem> boxes = boxes(5);
+		boxes.add(box("large-1", 3, 3));
+		boxes.add(box("large-2", 3, 3));
+		IntermediatePackagerResult result = attemptSmallContainer(executor, groupsWithAnExcludedGroup(boxes), container(5, 5), container(8, 5), null);
+
+		// not even the first group fits whole
+		assertThat(result).isNull();
 		assertThat(executor.getTasks()).isEqualTo(PARALLELIZATION_COUNT);
 	}
 }

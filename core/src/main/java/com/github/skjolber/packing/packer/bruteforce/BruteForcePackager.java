@@ -524,7 +524,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		
 		@Override
-		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException {
+		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
+				IntermediatePackagerResult best) throws PackagerInterruptedException {
 			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, pointFilter, best);
 		}
 

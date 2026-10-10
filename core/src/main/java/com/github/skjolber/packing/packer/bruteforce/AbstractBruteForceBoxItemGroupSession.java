@@ -19,7 +19,6 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
-import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.packer.BoxItemGroupsContainerInventory;
 
@@ -107,7 +106,8 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	@FunctionalInterface
 	protected interface GroupOrderPacker {
 
-		BruteForceIntermediatePackagerResult pack(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
+		BruteForceIntermediatePackagerResult pack(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
+				IntermediatePackagerResult best) throws PackagerInterruptedException;
 	}
 
 	/**
@@ -279,7 +279,8 @@ public abstract class AbstractBruteForceBoxItemGroupSession extends AbstractBrut
 	 * @param iterator the iterator for the groups in the order
 	 * @param groupOrder the order of the remaining groups (see {@link #orderGroups(List, int[])})
 	 */
-	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, BoxItemPermutationRotationIterator iterator, int[] groupOrder, IntermediatePackagerResult best) throws PackagerInterruptedException;
+	protected abstract BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
+			IntermediatePackagerResult best) throws PackagerInterruptedException;
 
 	protected abstract IntermediatePackagerResultComparator getIntermediatePackagerResultComparator();
 
