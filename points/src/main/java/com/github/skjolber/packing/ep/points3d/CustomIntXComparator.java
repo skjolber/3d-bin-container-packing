@@ -28,8 +28,9 @@ public class CustomIntXComparator implements IntComparator {
 		}
 
 		// not exact volume, but good enough for comparison
-		long volume1 = o1.getDy() * o1.getDz() * o1.getMaxX();
-		long volume2 = o2.getDy() * o2.getDz() * o2.getMaxX();
+		// long arithmetic: the int product wraps for containers larger than about 1300 per side
+		long volume1 = (long)o1.getDy() * o1.getDz() * o1.getMaxX();
+		long volume2 = (long)o2.getDy() * o2.getDz() * o2.getMaxX();
 
 		// inline -Long.compare(volume1, volume2)
 		return (volume2 < volume1) ? -1 : ((volume2 == volume1) ? 0 : 1);
