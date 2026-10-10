@@ -143,7 +143,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 			index++;
 		}
 		Arrays.fill(points, offset, previousSize, null);
-		Arrays.fill(flag, offset, previousSize, false);
+		// no flag fill: the loop above has already cleared every flag in [offset, previousSize)
 		size = offset;
 
 		return index - offset;
@@ -428,8 +428,15 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		this.size = i;
 	}
 	
+	/**
+	 * Empty the list, assuming that no flag is set.
+	 * <p>
+	 * The point slots are deliberately not nulled: every reader is bounded by {@link #size()} and every writer
+	 * stores a point into a slot before it makes the slot visible by increasing the size, so a slot at or after the
+	 * size is never read. Such a slot keeps its stale point reference only until the next pass through the list
+	 * overwrites it, so at most {@link #getCapacity()} unreachable points are retained per list.
+	 */
 	public void resetWithoutFlags() {
-		Arrays.fill(points, 0, size, null);
 		this.size = 0;
 	}
 

@@ -537,7 +537,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
-			addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize);
 
 			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
@@ -564,10 +563,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// TODO skip x
 				while (targetIndex < values.size() && SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
-
-					addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize - i);
 				}
 
+				// lists are created on first use, so only the index which receives the point gets capacity
+				addXX.ensurePointAdditionalCapacity(targetIndex, 1);
 				addXX.add(added, targetIndex);
 				addedXX.add(added);
 			}
