@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.iterator;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -73,9 +74,20 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	}	
 	
 	protected int parallelizationCount = -1;
-	
+
 	protected final int[] frequencies;
-	protected ParallelBoxItemPermutationRotationIterator[] workUnits;
+	/** The box items by index, shared with the work units' copies; not modified */
+	private final BoxItem[] boxItems;
+	/** The rotations of each box item which fit the container, by index; not modified */
+	private final BoxStackValue[][] stackValues;
+	/** The work units, each created when first requested (see {@link #getIterator(int)}) */
+	protected final ParallelBoxItemPermutationRotationIterator[] workUnits;
+
+	// the split of the remaining boxes, see calculate()
+	private int count;
+	private long permutationCount;
+	/** The first rotations of the work units: all zero, shared (read-only) between the work units */
+	private int[] reset;
 
 	public ParallelBoxItemPermutationRotationIteratorList(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded, int parallelizationCount) {
 		this.frequencies = new int[boxItems.length];
@@ -85,15 +97,9 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 				frequencies[i] = boxItems[i].getCount();
 			}
 		}
-
-		workUnits = new ParallelBoxItemPermutationRotationIterator[parallelizationCount];
-		for (int i = 0; i < parallelizationCount; i++) {
-			
-			// copy working variables so threads are less of the same
-			// memory area as one another
-			BoxItem[] copy = copy(boxItems);
-			workUnits[i] = new ParallelBoxItemPermutationRotationIterator(copy, stackValues, this);
-		}
+		this.boxItems = boxItems;
+		this.stackValues = stackValues;
+		this.workUnits = new ParallelBoxItemPermutationRotationIterator[parallelizationCount];
 
 		calculate();
 	}
@@ -101,10 +107,13 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	private ParallelBoxItemPermutationRotationIteratorList(ParallelBoxItemPermutationRotationIteratorList source) {
 		this.parallelizationCount = source.parallelizationCount;
 		this.frequencies = source.frequencies.clone();
+		this.boxItems = source.boxItems;
+		this.stackValues = source.stackValues;
+		// the work units are created from the frequencies (they always start at their first permutation)
 		this.workUnits = new ParallelBoxItemPermutationRotationIterator[source.workUnits.length];
-		for(int i = 0; i < workUnits.length; i++) {
-			workUnits[i] = source.workUnits[i].fork(this);
-		}
+		this.count = source.count;
+		this.permutationCount = source.permutationCount;
+		this.reset = source.reset;
 	}
 
 	public ParallelBoxItemPermutationRotationIteratorList fork() {
@@ -138,56 +147,72 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 	 */
 	public void reset() {
 		for (ParallelBoxItemPermutationRotationIterator workUnit : workUnits) {
-			workUnit.reset();
+			if(workUnit != null) {
+				workUnit.reset();
+			}
 		}
 	}
 
+	/**
+	 * Split the remaining boxes between the work units: the work units are discarded, and created again (at their first
+	 * permutation) when requested. This is the only part which is proportional to the box count and not to the work
+	 * unit count.
+	 */
 	private void calculate() {
-		int count = getCount();
+		Arrays.fill(workUnits, null);
 
+		count = getCount();
 		if(count == 0) {
 			return;
 		}
-		
-		int[] reset = new int[count];
 
-		long countPermutations;
+		reset = new int[count];
+
 		int first = firstDuplicate(frequencies);
 		if(first == -1) {
-			countPermutations = getPermutationCount(count);
+			permutationCount = getPermutationCount(count);
 		} else {
-			countPermutations = getPermutationCountWithRepeatedItems(count, first);
+			permutationCount = getPermutationCountWithRepeatedItems(count, first);
 		}
 
-		if(countPermutations == -1L) {
+		if(permutationCount == -1L) {
 			throw new IllegalArgumentException();
 		}
+	}
 
-		int[] copyOfFrequencies = new int[frequencies.length];
-		for (int i = 0; i < workUnits.length; i++) {
-			long rank = (countPermutations * i) / workUnits.length;
-
-			rank++;
-
-			// use more complex n-th lexographical permutation algorithm
-			// which also handles zero frequencies
-			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
-			int[] permutations = kthPermutation(copyOfFrequencies, count, countPermutations, rank);
-
-			workUnits[i].setPermutations(permutations);
-			workUnits[i].setRotations(new int[reset.length]);
-			workUnits[i].setReset(reset);
-			workUnits[i].calculateMinStackableVolume(0);
+	/**
+	 * Create a work unit: it starts at the first permutation of its share of the permutations, and ends at the first
+	 * permutation of the next work unit.
+	 * <br>
+	 * This only reads the state of the list, so different work units can be created from different threads.
+	 */
+	private ParallelBoxItemPermutationRotationIterator createWorkUnit(int index) {
+		// copy working variables so threads are less of the same
+		// memory area as one another
+		ParallelBoxItemPermutationRotationIterator workUnit = new ParallelBoxItemPermutationRotationIterator(copy(boxItems), stackValues, this);
+		if(count == 0) {
+			return workUnit;
 		}
 
-		for (int i = 0; i < workUnits.length - 1; i++) {
-			int[] nextWorkUnitPermutations = workUnits[i + 1].getPermutations();
-			int[] lexiographicalLimit = new int[nextWorkUnitPermutations.length];
+		workUnit.setPermutations(firstPermutation(index));
+		workUnit.setRotations(new int[reset.length]);
+		workUnit.setReset(reset);
+		workUnit.calculateMinStackableVolume(0);
 
-			System.arraycopy(nextWorkUnitPermutations, 0, lexiographicalLimit, 0, lexiographicalLimit.length);
-
-			workUnits[i].setLastPermutation(lexiographicalLimit);
+		if(index < workUnits.length - 1) {
+			workUnit.setLastPermutation(firstPermutation(index + 1));
 		}
+		return workUnit;
+	}
+
+	private int[] firstPermutation(int index) {
+		long rank = (permutationCount * index) / workUnits.length;
+
+		rank++;
+
+		// use more complex n-th lexographical permutation algorithm
+		// which also handles zero frequencies
+		return kthPermutation(frequencies.clone(), count, permutationCount, rank);
 	}
 
 	private int getCount() {
@@ -290,11 +315,29 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 		return result;
 	}
 
+	/**
+	 * @return all work units, creating those which do not exist yet
+	 */
 	public ParallelBoxItemPermutationRotationIterator[] getIterators() {
+		for (int i = 0; i < workUnits.length; i++) {
+			getIterator(i);
+		}
 		return workUnits;
 	}
 
+	/**
+	 * Get a work unit, created when first requested. Different threads can request different work units, as long as the
+	 * remaining boxes are not changed ({@linkplain #removePermutations(List)}) concurrently.
+	 *
+	 * @param i work unit index
+	 * @return the work unit
+	 */
 	public ParallelBoxItemPermutationRotationIterator getIterator(int i) {
-		return workUnits[i];
+		ParallelBoxItemPermutationRotationIterator workUnit = workUnits[i];
+		if(workUnit == null) {
+			workUnit = createWorkUnit(i);
+			workUnits[i] = workUnit;
+		}
+		return workUnit;
 	}
 }

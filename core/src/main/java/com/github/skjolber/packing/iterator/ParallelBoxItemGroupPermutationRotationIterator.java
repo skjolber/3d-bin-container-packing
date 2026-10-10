@@ -352,7 +352,8 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 
 	@Override
 	public PermutationRotationState getState() {
-		return new PermutationRotationState(getRotations(), getPermutations());
+		// copies the padded arrays once
+		return new PermutationRotationState(rotations, permutations, PADDING, permutations.length - PADDING);
 	}
 
 	public void resetRotations() {

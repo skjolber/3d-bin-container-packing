@@ -126,11 +126,6 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 	}
 
 	@Override
-	public PermutationRotationState getState() {
-		return new PermutationRotationState(getRotations(), getPermutations());
-	}
-
-	@Override
 	public void removePermutations(List<Integer> removed) {
 		iterator.removePermutations(removed);
 	}
