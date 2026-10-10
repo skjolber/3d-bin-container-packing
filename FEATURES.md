@@ -130,6 +130,9 @@ The default strategy chooses an ordered strategy unless cost information is
 available. Cost-aware and heuristic strategies aim for good results; they do
 not prove a globally minimum-cost packing for arbitrary inputs.
 
+The strategies are described in [docs/container-packing-strategies.md](docs/container-packing-strategies.md),
+and container costs in [docs/container-costs.md](docs/container-costs.md).
+
 ## Constraints and controls
 
 - Manifest controls and box-item groups for deciding which items may share a

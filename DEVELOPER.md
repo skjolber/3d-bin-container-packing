@@ -179,7 +179,8 @@ also applies to the baseline packagers. `LargestContainerFirstStrategy` and
 `com.github.skjolber.packing.test.example`) are complete examples which depend on the `api` module
 only. The built-in strategies are in the `core` package
 `com.github.skjolber.packing.packer.strategy`; `DefaultContainerPackingStrategyFactory` chooses between
-them.
+them. See [Container packing strategies](docs/container-packing-strategies.md) for what each does, and
+[Container costs](docs/container-costs.md) for the cost calculators.
 
 ## Packagers in a composite
 

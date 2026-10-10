@@ -257,7 +257,8 @@ Removed without a direct replacement, or replaced by a different mechanism:
    packager builders) decides which containers are used and in which order. The defaults are an ordered strategy, or a cost-aware one when containers have a cost
    (`ContainerItem.newListBuilder().withContainer(container, count, costCalculator)`, `ContainerCostCalculator`). 4.x had no such extension point, so there is nothing to
    migrate; the strategy names (`ContainerPackingStrategy`, `ContainerPackingStrategyFactory`, `ContainerResult`, `ContainerInventory`) are those of 5.0. See
-   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-container-packing-strategy) and [README.md](../README.md#container-packing-strategies).
+   [DEVELOPER.md](../DEVELOPER.md#writing-your-own-container-packing-strategy), [docs/container-packing-strategies.md](../docs/container-packing-strategies.md) and
+   [docs/container-costs.md](../docs/container-costs.md).
  * **Box item groups.** `BoxItem` and `BoxItemGroup` keep the packing state (remaining count, local and global index), as before, and now also carry a
    container priority and an extraction order (`withContainerPriority(..)`, `withExtractionOrder(..)`). The group API otherwise has the same shape (`copy()` for `clone()`).
    The boxes of a group are inserted together, and without a box item order the brute-force packagers search the order of the groups. The brute-force packagers also

@@ -119,12 +119,11 @@ PackagerResult result = packager
 if(result.isSuccess()) {
     Container match = result.get(0);
     
+    List<Placement> placements = match.getStack().getPlacements();
+    
     // ...
 }
 ```
-
-The placements (`match.getStack().getPlacements()`) refer to the input `Box` instances themselves (`placement.getBox()`);
-`placement.getBoxItem()` returns the session's copy of the box item, with the same `getGlobalIndex()` as the input's.
 
 Use a maximum number of containers:
 
@@ -140,7 +139,7 @@ PackagerResult result = packager
 ```
 
 Note that all `packager` instances are thread-safe. Packing works on copies of the input box items and container items; boxes and their stack values are shared, as they are
-never modified, so boxes can be shared between threads. It only assigns global indexes to box items which have none.
+never modified, so boxes can be shared between threads (assign global indexes first).
 
 ### Plain packager
 A simple packager, which places the box with the biggest volume first.
@@ -286,11 +285,15 @@ Give container types a cost to prefer cheaper combinations of containers, using
 `ContainerItem.newListBuilder().withContainer(container, count, costCalculator)` with an
 implementation of `ContainerCostCalculator` (see `com.github.skjolber.packing.cost`).
 
+Details: [container costs](docs/container-costs.md), including the calculators and how costs change the choice of containers.
+
 ## Container packing strategies
 A container packing strategy decides which containers to use, and in which order. By default, containers
 are tried in the supplied (preference) order, or the cheapest combination is searched for when the
 containers have costs. Supply your own with `withContainerPackingStrategyFactory(..)` on the packager
 builders; see [DEVELOPER.md](DEVELOPER.md).
+
+Details: [container packing strategies](docs/container-packing-strategies.md), including the built-in strategies and which is the default.
 
 ## Combining packagers
 `CompositePackager` uses costly packagers only where cheaper packagers fall short:
@@ -378,7 +381,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * 5.0.0: Major release. Breaking changes. A ton of new features. 
      * Box load constraints: max load weight, pressure, box count and identical boxes only
      * Support calculation + full support for plain and LAFF packagers; full support for the brute-force packagers
-     * Container costs and container packing strategies (ordered, parallel, allocation), and custom container packing strategies
+     * Container costs and container packing strategies (ordered, parallel, allocation, brute force), and custom container packing strategies
      * Composite packager: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
      * Deliveries: the extraction order (for example the stops of a route) and container priority (for example urgent boxes in the first containers) of box items and groups
