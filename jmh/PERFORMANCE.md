@@ -30,8 +30,13 @@ End-to-end packing throughput of 5.0.0 (branch `boxItemConstraints`, commit `c75
 
 - The packagers do not always do the same work in both versions. 5.0 fixes several cases where 4.2 placed fewer boxes
   than it could, for example fast brute force with 3D rotations: 4.2 discarded free points which only another rotation
-  of a later box would fit. 5.0 keeps them (the smallest area over all rotations of the remaining boxes), which is the
-  likely reason fast brute force is slower on the small Egy orders.
+  of a later box would fit. 5.0 keeps them (the smallest area over all rotations of the remaining boxes).
+- The 4.2 pruning (by the areas of the current rotations) was reimplemented and measured, and it does NOT explain the
+  −8 % of fast brute force on the small Egy orders: with it, the Egy orders run at 225,900 against the default's
+  224,000 ops/s (within noise, JMH, 4 cores), and the 22-box Tycho order is 17 % slower (12,900 against 15,600 ops/s,
+  with the same number of search steps), as the 4.2 limit stays at the smallest area at the start of the descent, also
+  after the smallest box has been placed, and so keeps small free points longer. It also reproduced 4.2's lower box
+  counts (13 orders of 220,000 packed worse), so it was dropped rather than offered as an option.
 - Most benchmarks of 5.0 have no 4.2 counterpart: LAFF, support and full support, load limits
   (`constraint.*Benchmark`), box item groups (`GroupBruteForceBenchmark`) and container packing strategies
   (`ContainerPackingStrategyBenchmark`).
