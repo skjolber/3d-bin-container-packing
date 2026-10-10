@@ -640,19 +640,19 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
- * 5.0.0: Major release. Breaking changes.
+ * 5.0.0: Major release. Breaking changes. A ton of new features. 
      * Box load constraints: max load weight, pressure, box count and identical boxes only
      * Support calculation + full support for plain and LAFF packagers; full support for the brute-force packagers
      * Container costs and container packing strategies (ordered, parallel, allocation), and custom container packing strategies
-     * `CompositePackager`: cheap packagers first, costly packagers only where needed
+     * Composite packager: cheap packagers first, costly packagers only where needed
      * Virtual-box preprocessing
-     * Deliveries: the extraction order (`withExtractionOrder(..)`, for example the stops of a route) and container priority (`withContainerPriority(..)`, for example urgent boxes in the first containers) of box items and groups
+     * Deliveries: the extraction order (for example the stops of a route) and container priority (for example urgent boxes in the first containers) of box items and groups
      * Substantially faster point calculation, placement search, support calculation and load validation: for example plain packing of 93 boxes 12×, fast brute force 2.3-2.6× and plain packing of small orders 1.9× (see [jmh/PERFORMANCE.md](jmh/PERFORMANCE.md))
      * The parallel brute-force packager splits the orders of box item groups between its threads
-     * The parallel brute-force packager can search at a given thread priority (`withThreadPriority(..)`)
+     * The parallel brute-force packager can search at a given thread priority
      * Packings share the boxes of their input instead of copying them
      * Visualizer: result summaries and comparison of several results, validation reasons on the boxes, colour modes for groups, support, load and extraction order, and the centre of gravity
-     * Developed with the help of AI agents. The 4.x implementation is retained for testing (relocated to [`legacy/v4`](legacy/v4/README.md)): 5.0 is verified against it with equivalence and golden-master tests and 10,000-order comparisons
+     * Developed with the help of AI agents. The 4.x implementation is [retained for testing](legacy/v4/README.md): 5.0 is verified against it with equivalence and golden-master tests and 10,000-order comparisons
      * Breaking changes and behaviour changes against 4.x: see [legacy/MIGRATION-v4-TO-v5.md](legacy/MIGRATION-v4-TO-v5.md)
  * 4.2.1: `Placement` can now be added anywhere within a `Point` (not only at the point origin).
  * 4.2.0: Obstacles.
