@@ -36,7 +36,7 @@ See [AGENTS.md](AGENTS.md) for targeted tests, concurrency options, and failure 
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
-For the previous version, see the [4.2.3](https://github.com/skjolber/3d-bin-container-packing/tree/parent-4.2.3) tag.
+For the previous version, see the [4.2.3](https://github.com/skjolber/3d-bin-container-packing/tree/parent-4.2.3) tag. See [MIGRATION.md](MIGRATION.md) for upgrading from 4.x to 5.0.
 
 <details>
   <summary>Maven coordinates</summary>
