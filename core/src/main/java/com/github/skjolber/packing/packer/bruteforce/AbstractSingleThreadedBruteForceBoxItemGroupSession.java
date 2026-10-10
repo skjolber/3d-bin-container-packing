@@ -138,6 +138,7 @@ public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extend
 				return packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
 			}
 		} else {
+			refreshStack(result);
 			Stack stack = result.getStack();
 			AcceptedGroups accepted = getAcceptedGroups(stack);
 			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);

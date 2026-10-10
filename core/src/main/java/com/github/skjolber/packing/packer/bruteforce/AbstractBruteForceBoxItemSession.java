@@ -187,6 +187,26 @@ public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerS
 		return packagerContainerItems.getContainerItem(index);
 	}
 
+	/**
+	 * The placements of the results of a session are the session's own, shared by all of its attempts: the stack of a result
+	 * is valid until the stack of another result is calculated. So place the boxes of a result again (from the result's own
+	 * state) before using its stack after the session has attempted other containers.
+	 *
+	 * @param result a result of this session, or of another packager (which has its own stack)
+	 */
+	protected static void refreshStack(IntermediatePackagerResult result) {
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			bruteForceResult.markDirty();
+		}
+	}
+
+	@Override
+	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
+		// whether the boxes fit another container depends on their positions
+		refreshStack(result);
+		return super.peek(containerIndex, result);
+	}
+
 
 	protected void removeInventory(List<Integer> p) {
 		// remove session inventory
