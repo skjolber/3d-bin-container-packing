@@ -453,6 +453,9 @@ public class ParallelBoxItemGroupPermutationRotationIterator extends AbstractBox
 		
 		if(permutations.length > PADDING) {
 			initMinStackableVolume();
+		} else {
+			// no boxes
+			this.minBoxVolume = new long[permutations.length];
 		}
 		
 		seenLastPermutationMaxIndex = true;

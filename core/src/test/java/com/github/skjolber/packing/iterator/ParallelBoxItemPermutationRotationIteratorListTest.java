@@ -127,6 +127,26 @@ public class ParallelBoxItemPermutationRotationIteratorListTest {
 	}
 
 	@Test
+	public void workUnitsFromAnIteratorAreTheSameAsFromTheBuilder() {
+		DefaultBoxItemPermutationRotationIterator iterator = DefaultBoxItemPermutationRotationIterator.newBuilder()
+				.withLoadSize(10, 30, 1)
+				.withMaxLoadWeight(100)
+				.withBoxItems(boxItems(2, 1, 1))
+				.build();
+
+		ParallelBoxItemPermutationRotationIteratorList fromIterator = ParallelBoxItemPermutationRotationIteratorList.of(iterator, 4);
+
+		assertThat(permutations(fromIterator, 4, 0, 1, 2, 3)).isEqualTo(permutations(list(4, 2, 1, 1), 4, 0, 1, 2, 3));
+
+		// the list has its own boxes
+		iterator.removePermutations(2);
+		assertThat(iterator.length()).isEqualTo(2);
+		assertThat(fromIterator.countPermutations()).isEqualTo(12);
+		fromIterator.reset();
+		assertThat(permutations(fromIterator, 4, 0, 1, 2, 3)).isEqualTo(permutations(list(4, 2, 1, 1), 4, 0, 1, 2, 3));
+	}
+
+	@Test
 	public void tooManyPermutationsAreRejectedWhenSplitting() {
 		// 21! does not fit in a long
 		int[] counts = new int[21];

@@ -13,8 +13,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.IntFunction;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
@@ -319,9 +319,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private class BruteForceWorker implements Callable<BruteForceIntermediatePackagerResult> {
 
 		private ContainerItem containerItem;
-		private BoxItemPermutationRotationIterator iterator;
-		/** The list of work units which holds the iterator, or null if the iterator is set. */
-		private ParallelBoxItemPermutationRotationIteratorList units;
+		/** The iterators of the work units: each is created when its work unit is searched. */
+		private IntFunction<BoxItemPermutationRotationIterator> units;
 		private int unit;
 		private boolean filterReverse;
 		/** Whether the search was found to be complete, i.e. whether the results of the other work units are not needed */
@@ -385,25 +384,19 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return containerItem;
 		}
 
-		public void setIterator(BoxItemPermutationRotationIterator iterator) {
-			this.iterator = iterator;
-			this.units = null;
-		}
-
 		/**
 		 * Search a work unit, whose iterator is created when the search starts.
 		 *
-		 * @param units the work units
+		 * @param units the iterators of the work units
 		 * @param unit index of the work unit
 		 * @param filterReverse whether to skip reverse permutations
 		 * @param localInterrupt whether the search is complete
 		 */
-		public void setWorkUnit(ParallelBoxItemPermutationRotationIteratorList units, int unit, boolean filterReverse, LocalInterrupt localInterrupt) {
+		public void setWorkUnit(IntFunction<BoxItemPermutationRotationIterator> units, int unit, boolean filterReverse, LocalInterrupt localInterrupt) {
 			this.units = units;
 			this.unit = unit;
 			this.filterReverse = filterReverse;
 			this.localInterrupt = localInterrupt;
-			this.iterator = null;
 		}
 
 		public void setInterrupt(PackagerInterruptSupplier interrupt) {
@@ -424,23 +417,20 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 		@Override
 		public BruteForceIntermediatePackagerResult call() throws PackagerInterruptedException {
-			if(units != null) {
-				if(interrupt.getAsBoolean()) {
-					// interrupted before the work unit started: do not create its state
-					if(localInterrupt.interrupted) {
-						// the search is complete, the result is not needed
-						return null;
-					}
-					throw new PackagerInterruptedException();
-				}
-				BoxItemPermutationRotationIterator iterator = filterReversePermutations(units.getIterator(unit), filterReverse);
-				if(iterator == null) {
+			if(interrupt.getAsBoolean()) {
+				// interrupted before the work unit started: do not create its state
+				if(localInterrupt.interrupted) {
+					// the search is complete, the result is not needed
 					return null;
 				}
-				this.iterator = iterator;
+				throw new PackagerInterruptedException();
+			}
+			BoxItemPermutationRotationIterator iterator = filterReversePermutations(units.apply(unit), filterReverse);
+			if(iterator == null) {
+				return null;
 			}
 			BruteForceIntermediatePackagerResult result = ParallelBruteForcePackager.this.pack(pointCalculator(), placements(), placementCount, containerItem, containerIndex, iterator, interrupt, pointFilter, best);
-			if(units != null && result.containsLastBox()) {
+			if(result.containsLastBox()) {
 				// will not match any better than this: stop the work units which did not start yet, and those which did
 				localInterrupt.interrupted = true;
 			}
@@ -600,6 +590,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				ContainerItem containerItem = getContainerItem(i);
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				PackagerInterruptSupplier interrupt = () -> localInterrupt.interrupted || sourceInterrupt.getAsBoolean();
+				IntFunction<BoxItemPermutationRotationIterator> workUnits = parallelIterators[i]::getIterator;
 				for (int j = 0; j < units; j++) {
 					if(localInterrupt.interrupted) {
 						// the search is complete, so the remaining work units are not needed
@@ -611,7 +602,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					worker.setContainerIndex(i);
 					worker.setBest(currentBest);
 					// the work unit's iterator is created when the work unit starts
-					worker.setWorkUnit(parallelIterators[i], j, filterReverse, localInterrupt);
+					worker.setWorkUnit(workUnits, j, filterReverse, localInterrupt);
 					worker.setInterrupt(interrupt);
 
 					futures.add(executorCompletionService.submit(withThreadPriority(worker)));
@@ -836,17 +827,19 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(workers.size());
 			ContainerItem containerItem = getContainerItem(i);
 			PackagerInterruptSupplier interrupt = () -> localInterrupt.interrupted || sourceInterrupt.getAsBoolean();
+			IntFunction<BoxItemPermutationRotationIterator> workUnits = units::getIterator;
 			for (int j = 0; j < workers.size(); j++) {
-				BoxItemPermutationRotationIterator iterator = filterReversePermutations(units.getIterator(j), filterReverse);
-				if(iterator == null) {
-					continue;
+				if(localInterrupt.interrupted) {
+					// the search is complete, so the remaining work units are not needed
+					break;
 				}
 				BruteForceWorker worker = workers.get(j);
 
 				worker.setContainerItem(containerItem);
 				worker.setContainerIndex(i);
 				worker.setBest(currentBest);
-				worker.setIterator(iterator);
+				// the work unit's iterator is created when the work unit starts
+				worker.setWorkUnit(workUnits, j, filterReverse, localInterrupt);
 				worker.setInterrupt(interrupt);
 
 				futures.add(executorCompletionService.submit(withThreadPriority(worker)));
@@ -1341,28 +1334,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		return parallelizationCount;
 	}
 
-	protected long getMinBoxItemVolume(List<BoxItem> stackables) {
-		long minVolume = Long.MAX_VALUE;
-		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getBox();
-			if(stackable.getVolume() < minVolume) {
-				minVolume = stackable.getVolume();
-			}
-		}
-		return minVolume;
-	}
-
-	protected long getMinBoxItemArea(List<BoxItem> stackables) {
-		long minArea = Long.MAX_VALUE;
-		for (BoxItem stackableItem : stackables) {
-			Box stackable = stackableItem.getBox();
-			if(stackable.getMinimumArea() < minArea) {
-				minArea = stackable.getMinimumArea();
-			}
-		}
-		return minArea;
-	}
-
 	@Override
 	protected ParallelSession createBoxItemSession(List<BoxItem> items, List<ContainerItem> containerItems,
 			int containerCount, PackagerInterruptSupplier interrupt) {
@@ -1372,19 +1343,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		for (int i = 0; i < containerItems.size(); i++) {
 			Container container = containerItems.get(i).getContainer();
 
-			parallelIterators[i] = ParallelBoxItemPermutationRotationIteratorList.newBuilder()
-					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-					.withBoxItems(items)
-					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withParallelizationCount(parallelizationCount)
-					.build();
-
 			iterators[i] = DefaultBoxItemPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItems(items)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
+
+			// the work units share the rotations of the iterator
+			parallelIterators[i] = ParallelBoxItemPermutationRotationIteratorList.of(iterators[i], parallelizationCount);
 		}
 
 		int maxIteratorLength = 0;
@@ -1413,19 +1380,15 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		for (int i = 0; i < containerItems.size(); i++) {
 			Container container = containerItems.get(i).getContainer();
 
-			parallelIterators[i] = ParallelBoxItemGroupPermutationRotationIteratorList.newBuilder()
-					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
-					.withBoxItemGroups(itemGroups)
-					.withMaxLoadWeight(container.getMaxLoadWeight())
-					.withParallelizationCount(parallelizationCount)
-					.build();
-
 			iterators[i] = DefaultBoxItemGroupPermutationRotationIterator
 					.newBuilder()
 					.withLoadSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz())
 					.withBoxItemGroups(itemGroups)
 					.withMaxLoadWeight(container.getMaxLoadWeight())
 					.build();
+
+			// the work units share the rotations of the iterator
+			parallelIterators[i] = ParallelBoxItemGroupPermutationRotationIteratorList.of(iterators[i], parallelizationCount);
 		}
 
 		int maxIteratorLength = 0;

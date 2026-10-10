@@ -37,6 +37,14 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 	}
 	
 	protected int getBoxCount() {
+		return getBoxCount(groupsMatrix);
+	}
+
+	/**
+	 * @param groupsMatrix groups by index (null if excluded or removed)
+	 * @return the number of boxes of the groups
+	 */
+	protected static int getBoxCount(BoxItemGroup[] groupsMatrix) {
 		int count = 0;
 		for (BoxItemGroup group : groupsMatrix) {
 			if(group == null) {
@@ -54,6 +62,16 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 	 */
 
 	public long countPermutations() {
+		return countPermutations(groupsMatrix);
+	}
+
+	/**
+	 * Return number of permutations for the boxes of the groups (which are permuted within their group).
+	 *
+	 * @param groupsMatrix groups by index (null if excluded or removed)
+	 * @return permutation count, or -1 if it does not fit in a long
+	 */
+	protected static long countPermutations(BoxItemGroup[] groupsMatrix) {
 		// reduce permutations for boxes which are duplicated
 
 		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually

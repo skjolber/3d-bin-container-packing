@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -10,6 +11,10 @@ import com.github.skjolber.packing.api.BoxStackValue;
 /**
  * 
  * This class is responsible for splitting the work load (as in the permutations) over multiple iterators.
+ * <br>
+ * <br>
+ * The work units are created when first requested (see {@link #getIterator(int)}): the first and the last permutation of
+ * a work unit follow from the remaining boxes and its index alone, so a work unit which is not searched costs nothing.
  * 
  */
 
@@ -47,8 +52,22 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		}
 	}
 	
+	/**
+	 * Work units for the remaining boxes of an iterator. The work units share the iterator's rotations, which are
+	 * computed once for both (see {@linkplain Builder#build()}).
+	 *
+	 * @param iterator the iterator
+	 * @param parallelizationCount the number of work units
+	 * @return the list of work units
+	 */
+	public static ParallelBoxItemGroupPermutationRotationIteratorList of(DefaultBoxItemGroupPermutationRotationIterator iterator, int parallelizationCount) {
+		AbstractBoxItemGroupsPermutationRotationIterator.GroupState state = AbstractBoxItemGroupsPermutationRotationIterator.copyGroupState(iterator);
+		return new ParallelBoxItemGroupPermutationRotationIteratorList(state.groups(), state.boxes(), iterator.stackValues, new ArrayList<>(iterator.excludedBoxItemGroups), parallelizationCount);
+	}
+
 	protected final int[] frequencies;
-	protected ParallelBoxItemGroupPermutationRotationIterator[] workUnits;
+	/** The work units, each created when first requested (see {@link #getIterator(int)}) */
+	protected final ParallelBoxItemGroupPermutationRotationIterator[] workUnits;
 
 	protected int workUnitIndex = 0;
 	
@@ -57,38 +76,32 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	/** The rotations of each box item which fit the container, by index; not modified */
 	protected final BoxStackValue[][] stackValues;
 	protected List<BoxItemGroup> excluded;
-	
+
+	// the split of the remaining boxes, see calculate()
+	private int count;
+	private long permutationCount;
+	/** The first rotations of the work units: all zero, shared (read-only) between the work units */
+	private int[] reset;
+
 	public ParallelBoxItemGroupPermutationRotationIteratorList(BoxItemGroup[] boxItemGroups, BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded, int parallelizationCount) {
 		this.stackValues = stackValues;
-		workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
-		for (int i = 0; i < parallelizationCount; i++) {
-
-			// copy working variables so threads are less of the same
-			// memory area as one another
-			BoxItem[] boxMatrixCopy = new BoxItem[boxItems.length];			
-
-			BoxItemGroup[] groupsMatrixCopy = new BoxItemGroup[boxItemGroups.length];
-			for(int k = 0; k < groupsMatrixCopy.length; k++) {
-				if(boxItemGroups[k] == null) {
-					// excluded, i.e. does not fit the container
-					continue;
-				}
-				groupsMatrixCopy[k] = boxItemGroups[k].copy();
-				
-				for(int l = 0; l < groupsMatrixCopy[k].size(); l++) {
-					BoxItem item =  groupsMatrixCopy[k].get(l);
-					boxMatrixCopy[item.getLocalIndex()] = item;
-				}
-			}
-			
-			workUnits[i] = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, stackValues, excluded);
-		}
-		
+		this.workUnits = new ParallelBoxItemGroupPermutationRotationIterator[parallelizationCount];
 		this.excluded = excluded;
 		this.groupsMatrix = boxItemGroups;
 		this.boxMatrix = boxItems;
-		
-		this.frequencies = workUnits[0].calculateFrequencies();
+
+		// the boxes of the groups
+		this.frequencies = new int[boxItems.length];
+		for(BoxItemGroup group : boxItemGroups) {
+			if(group == null) {
+				// excluded, i.e. does not fit the container
+				continue;
+			}
+			for(int l = 0; l < group.size(); l++) {
+				BoxItem item = group.get(l);
+				frequencies[item.getLocalIndex()] = item.getCount();
+			}
+		}
 
 		calculate();
 	}
@@ -110,9 +123,15 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			}
 		}
 		this.excluded = new ArrayList<>(source.excluded);
+		this.count = source.count;
+		this.permutationCount = source.permutationCount;
+		this.reset = source.reset;
+		// the work units which exist (the others are created from the frequencies, at their first permutation)
 		this.workUnits = new ParallelBoxItemGroupPermutationRotationIterator[source.workUnits.length];
 		for(int i = 0; i < workUnits.length; i++) {
-			workUnits[i] = source.workUnits[i].fork();
+			if(source.workUnits[i] != null) {
+				workUnits[i] = source.workUnits[i].fork();
+			}
 		}
 	}
 
@@ -120,54 +139,94 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		return new ParallelBoxItemGroupPermutationRotationIteratorList(this);
 	}
 	
+	/**
+	 * Back to the first permutations and rotations of the work units which exist, see {@link BoxItemGroupPermutationRotationIterator#reset()}.
+	 */
 	@Override
 	public void reset() {
 		// the work units again from their first permutations
 		for (ParallelBoxItemGroupPermutationRotationIterator workUnit : workUnits) {
-			workUnit.reset();
+			if(workUnit != null) {
+				workUnit.reset();
+			}
 		}
 	}
 
+	/**
+	 * Split the remaining boxes between the work units: the work units are discarded, and created again (at their first
+	 * permutation) when requested. This is the only part which is proportional to the box count and not to the work
+	 * unit count.
+	 */
 	private void calculate() {
-		int count = workUnits[0].getBoxCount();
-		BoxItemGroup[] groups = workUnits[0].getBoxItemGroups();
+		Arrays.fill(workUnits, null);
+
+		count = AbstractBoxItemGroupsPermutationRotationIterator.getBoxCount(groupsMatrix);
+		permutationCount = AbstractBoxItemGroupsPermutationRotationIterator.countPermutations(groupsMatrix);
 
 		if(count == 0) {
 			return;
 		}
-		
-		int[] reset = new int[PADDING + count];
-
-		long permutationCount = workUnits[0].countPermutations();
 
 		if(permutationCount == -1L) {
 			throw new IllegalArgumentException();
 		}
 
-		int[] copyOfFrequencies = new int[frequencies.length];
-		for (int i = 0; i < workUnits.length; i++) {
-			long permutationNumber = (permutationCount * i) / workUnits.length;
+		reset = new int[PADDING + count];
+	}
 
-			permutationNumber++;
+	/**
+	 * Create a work unit: it starts at the first permutation of its share of the permutations, and ends at the first
+	 * permutation of the next work unit (the last work unit ends at the last permutation).
+	 * <br>
+	 * This only reads the state of the list, so different work units can be created from different threads.
+	 */
+	private ParallelBoxItemGroupPermutationRotationIterator createWorkUnit(int index) {
+		// copy working variables so threads are less of the same
+		// memory area as one another
+		BoxItem[] boxMatrixCopy = new BoxItem[boxMatrix.length];			
 
-			System.arraycopy(frequencies, 0, copyOfFrequencies, 0, frequencies.length);
-			int[] permutations = unrank(copyOfFrequencies, count, permutationCount, permutationNumber, groups);
+		BoxItemGroup[] groupsMatrixCopy = new BoxItemGroup[groupsMatrix.length];
+		for(int k = 0; k < groupsMatrixCopy.length; k++) {
+			if(groupsMatrix[k] == null) {
+				// excluded, i.e. does not fit the container
+				continue;
+			}
+			groupsMatrixCopy[k] = groupsMatrix[k].copy();
 			
-			workUnits[i].setPermutations(permutations);
-			workUnits[i].setRotations(new int[reset.length]);
-			workUnits[i].setReset(reset);
-			workUnits[i].initMinStackableVolume();
+			for(int l = 0; l < groupsMatrixCopy[k].size(); l++) {
+				BoxItem item =  groupsMatrixCopy[k].get(l);
+				boxMatrixCopy[item.getLocalIndex()] = item;
+			}
+		}
+		
+		ParallelBoxItemGroupPermutationRotationIterator workUnit = new ParallelBoxItemGroupPermutationRotationIterator(groupsMatrixCopy, boxMatrixCopy, stackValues, excluded);
+		if(count == 0) {
+			// no boxes
+			workUnit.initiatePermutations();
+			return workUnit;
 		}
 
-		for (int i = 0; i < workUnits.length - 1; i++) {
-			int[] nextWorkUnitPermutations = workUnits[i + 1].getPermutations();
-			
-			int[] lexiographicalLimit = new int[PADDING + nextWorkUnitPermutations.length];
+		workUnit.setPermutations(firstPermutation(index));
+		workUnit.setRotations(new int[reset.length]);
+		workUnit.setReset(reset);
+		workUnit.initMinStackableVolume();
 
-			System.arraycopy(nextWorkUnitPermutations, 0, lexiographicalLimit, PADDING, nextWorkUnitPermutations.length);
-
-			workUnits[i].setLastPermutation(lexiographicalLimit);
+		if(index < workUnits.length - 1) {
+			// the first permutation of the next work unit (array with padding)
+			workUnit.setLastPermutation(firstPermutation(index + 1));
 		}
+		return workUnit;
+	}
+
+	/**
+	 * @return the first permutation (array with padding) of a work unit
+	 */
+	private int[] firstPermutation(int index) {
+		long rank = (permutationCount * index) / workUnits.length;
+
+		rank++;
+
+		return unrank(frequencies.clone(), count, permutationCount, rank, groupsMatrix);
 	}
 
 	protected static int[] unrank(int[] frequencies, int elementCount, long permutationCount, long rank,  BoxItemGroup[] groups) {
@@ -211,31 +270,56 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 
 
+	/**
+	 * @return all work units, creating those which do not exist yet
+	 */
 	public ParallelBoxItemGroupPermutationRotationIterator[] getIterators() {
+		for (int i = 0; i < workUnits.length; i++) {
+			getIterator(i);
+		}
 		return workUnits;
 	}
 
+	/**
+	 * Get a work unit, created when first requested. Different threads can request different work units, as long as the
+	 * remaining boxes are not changed ({@linkplain #removePermutations(List)}, {@linkplain #removeGroups(List)}) concurrently.
+	 *
+	 * @param i work unit index
+	 * @return the work unit
+	 */
 	public ParallelBoxItemGroupPermutationRotationIterator getIterator(int i) {
-		return workUnits[i];
+		ParallelBoxItemGroupPermutationRotationIterator workUnit = workUnits[i];
+		if(workUnit == null) {
+			workUnit = createWorkUnit(i);
+			workUnits[i] = workUnit;
+		}
+		return workUnit;
+	}
+
+	/**
+	 * @return the work unit which this list iterates (as a single iterator)
+	 */
+	private ParallelBoxItemGroupPermutationRotationIterator current() {
+		return getIterator(workUnitIndex);
 	}
 
 	public int length() {
-		return workUnits[workUnitIndex].length();
+		return current().length();
 	}
 	
 	@Override
 	public BoxStackValue getStackValue(int index) {
-		return workUnits[workUnitIndex].getStackValue(index);
+		return current().getStackValue(index);
 	}
 
 	@Override
 	public BoxItem getBoxItem(int index) {
-		return workUnits[workUnitIndex].getBoxItem(index);
+		return current().getBoxItem(index);
 	}
 
 	@Override
 	public BoxStackValue[] getStackValues(int index) {
-		return workUnits[workUnitIndex].getStackValues(index);
+		return current().getStackValues(index);
 	}
 
 	@Override
@@ -245,43 +329,43 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	@Override
 	public PermutationRotationState getState() {
-		return workUnits[workUnitIndex].getState();
+		return current().getState();
 	}
 
 	@Override
 	public List<BoxStackValue> get(PermutationRotationState state, int length) {
-		return workUnits[workUnitIndex].get(state, length);
+		return current().get(state, length);
 	}
 
 	@Override
 	public long getMinBoxVolume(int index) {
-		return workUnits[workUnitIndex].getMinBoxVolume(index);
+		return current().getMinBoxVolume(index);
 	}
 
 	@Override
 	public int[] getPermutations() {
-		return workUnits[workUnitIndex].getPermutations();
+		return current().getPermutations();
 	}
 
 	@Override
 	public long countRotations() {
-		return workUnits[workUnitIndex].countRotations();
+		return current().countRotations();
 	}
 
 	@Override
 	public int nextRotation() {
-		return workUnits[workUnitIndex].nextRotation();
+		return current().nextRotation();
 	}
 
 	@Override
 	public int nextRotation(int maxIndex) {
-		return workUnits[workUnitIndex].nextRotation(maxIndex);
+		return current().nextRotation(maxIndex);
 	}
 
 	@Override
 	public int nextPermutation() {
 		while(workUnitIndex < workUnits.length) {
-			int nextPermutation = workUnits[workUnitIndex].nextPermutation();
+			int nextPermutation = current().nextPermutation();
 			
 			if(nextPermutation != -1) {
 				return nextPermutation;
@@ -290,7 +374,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			// compare previous permutation to the next
 			workUnitIndex++;
 			if(workUnitIndex < workUnits.length) {
-				int[] permutations = workUnits[workUnitIndex].getPermutations();
+				int[] permutations = current().getPermutations();
 
 				// TODO how to find the correct index here?
 				for(int i = permutations.length - 2; i >= 0; i--) {
@@ -311,7 +395,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 		
 		iterators:
 		while(workUnitIndex < workUnits.length) {
-			int nextPermutation = workUnits[workUnitIndex].nextPermutation(maxIndex);
+			int nextPermutation = current().nextPermutation(maxIndex);
 			
 			if(nextPermutation != -1) {
 				return nextPermutation;
@@ -319,7 +403,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			// compare previous permutation to the next
 			workUnitIndex++;
 			if(workUnitIndex < workUnits.length) {
-				int[] permutations = workUnits[workUnitIndex].getPermutations();
+				int[] permutations = current().getPermutations();
 
 				// TODO how to find the correct index here?
 				for(int i = permutations.length - 2; i >= 0; i--) {
@@ -341,7 +425,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	@Override
 	public void removePermutations(int count) {
-		int[] permutations = workUnits[workUnitIndex].getPermutations();
+		int[] permutations = current().getPermutations();
 		
 		List<Integer> removed = new ArrayList<>(permutations.length);
 		
@@ -353,16 +437,13 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 	}
 	
 	public void removePermutations(List<Integer> removed) {
+		// the work units are created again from the remaining boxes (see calculate())
 		for (Integer integer : removed) {
 			if(frequencies[integer] > 0) {
 				frequencies[integer]--;
 			}
 		}
 
-		for (ParallelBoxItemGroupPermutationRotationIterator unit : workUnits) {
-			unit.removePermutations(removed);
-		}
-		
 		for (Integer integer : removed) {
 			BoxItem item = boxMatrix[integer];
 			
@@ -389,17 +470,17 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	@Override
 	public long countPermutations() {
-		return workUnits[0].countPermutations();
+		return permutationCount;
 	}
 
 	@Override
 	public long[] getMinBoxVolume() {
-		return workUnits[workUnitIndex].getMinBoxVolume();
+		return current().getMinBoxVolume();
 	}
 
 	@Override
 	public BoxItem[] getBoxItems() {
-		return workUnits[workUnitIndex].getBoxItems();
+		return current().getBoxItems();
 	}
 
 	@Override
@@ -414,10 +495,6 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 
 	@Override
 	public int removeGroups(List<Integer> removed) {
-		for (int i = 0; i < workUnits.length; i++) {
-			workUnits[i].removeGroups(removed);
-		}
-		
 		int count = 0;
 		for (Integer i : removed) {
 			BoxItemGroup boxItemGroup = groupsMatrix[i];
@@ -431,7 +508,7 @@ public class ParallelBoxItemGroupPermutationRotationIteratorList implements BoxI
 			}
 			groupsMatrix[i] = null;
 		}
-		// split the permutations of the remaining groups between the work units
+		// split the permutations of the remaining groups between the work units (created again when requested)
 		calculate();
 		return count;
 	}

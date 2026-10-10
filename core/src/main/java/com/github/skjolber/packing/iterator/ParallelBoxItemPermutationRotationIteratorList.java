@@ -73,6 +73,18 @@ public class ParallelBoxItemPermutationRotationIteratorList {
 
 	}	
 	
+	/**
+	 * Work units for the remaining boxes of an iterator. The work units share the iterator's rotations, which are
+	 * computed once for both (see {@linkplain Builder#build()}).
+	 *
+	 * @param iterator the iterator
+	 * @param parallelizationCount the number of work units
+	 * @return the list of work units
+	 */
+	public static ParallelBoxItemPermutationRotationIteratorList of(DefaultBoxItemPermutationRotationIterator iterator, int parallelizationCount) {
+		return new ParallelBoxItemPermutationRotationIteratorList(AbstractBoxItemPermutationRotationIterator.copyBoxItems(iterator.stackableItems), iterator.stackValues, iterator.getExcluded(), parallelizationCount);
+	}
+
 	protected int parallelizationCount = -1;
 
 	protected final int[] frequencies;
