@@ -33,7 +33,8 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * Packs each container by trying every box permutation, rotation and point exhaustively.
  * <br>
  * <br>
- * Note: The brute force algorithm uses a recursive algorithm. It is not intended for more than 10 boxes.
+ * Note: the search is exhaustive, so the feasible number of boxes of different sizes is limited (roughly 10 per container);
+ * many identical boxes are fine, as the search is iterative and skips equivalent permutations and rotations.
  * <br>
  * <br>
  * Thread-safe implementation. Packing works on copies of the input boxes and containers; it only assigns global indexes
