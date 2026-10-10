@@ -14,6 +14,10 @@ import com.github.skjolber.packing.ep.PlacementList;
 /**
  * 
  * Implementation of so-called extreme points in 3D.
+ * <p>
+ * The points which are moved past a placement are processed in a canonical total order (see {@linkplain CustomIntXComparator}, {@linkplain CustomIntYComparator} and
+ * {@linkplain CustomIntZComparator}), so the free points after a placement only depend on the free points before it, not on the sorting algorithm. Each move adds only the
+ * maximal moved points, and of moved points which are geometrically identical the one with the richest supports.
  *
  */
 
@@ -532,8 +536,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	/** Move points in the x direction, past the placement; the moved points are inserted at or after endIndex. */
 	private void moveX(Point3DFlagList values, Placement placement, int endIndex, int xx) {
 		if(!moveToXX.isEmpty()) {
-			xxComparator.setValues(values);
-			moveToXX.sortThis(xxComparator);
+			xxComparator.setValues(values, xx);
+			// the order is total: the sorting algorithm does not matter. Insertion sort is better when items are already close to ordered
+			moveToXX.insertionSortThis(xxComparator);
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
@@ -578,8 +583,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	/** Move points in the y direction, past the placement. */
 	private void moveY(Point3DFlagList values, Placement placement, int yy) {
 		if(!moveToYY.isEmpty()) {
-			yyComparator.setValues(values);
-			moveToYY.sortThis(yyComparator);
+			yyComparator.setValues(values, yy);
+			moveToYY.insertionSortThis(yyComparator);
 
 			int moveToYYSize = moveToYY.size();
 			add: for (int i = 0; i < moveToYYSize; i++) {
@@ -626,10 +631,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	/** Move points in the z direction, past the placement. */
 	private void moveZ(Point3DFlagList values, Placement placement, int zz) {
 		if(!moveToZZ.isEmpty()) {
-			zzComparator.setValues(values);
-			
-		    // insertion sort: Better when items are already close to ordered
-		    // which should be the case here, i.e. sorted by x, y, z.
+			zzComparator.setValues(values, zz);
+
+			// insertion sort: Better when items are already close to ordered
+			// which should be the case here, i.e. sorted by x, y, z.
 			moveToZZ.insertionSortThis(zzComparator);
 
 			int moveToZZSize = moveToZZ.size();

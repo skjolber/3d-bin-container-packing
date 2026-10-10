@@ -19,8 +19,25 @@ import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 
 /**
  * Compare the point calculators with those of version 4 (module shadowed-v4 in legacy/v4, the 4.x classes with their packages moved to
- * {@code com.github.skjolber.packing.v4}): both get the same seeded random placements, and after each placement they must have the
- * same free points, in the same order, with the same supports.
+ * {@code com.github.skjolber.packing.v4}): both get the same seeded random placements.
+ * <p>
+ * The 2D calculator must have the same free points as version 4, in the same order, with the same supports, after each placement.
+ * <p>
+ * Exact point parity with version 4 ended for the 3D calculator: it processes the points which it moves in a canonical total order (see
+ * {@linkplain com.github.skjolber.packing.ep.points3d.CustomIntXComparator}), where version 4 left ties to a quicksort, in an arbitrary order. The tie order decides which of several
+ * moved points that eclipse each other remain, so the points of the two differ: this version has fewer redundant points, and may tile the same free space into different maximal
+ * points. The 3D calculator is pinned by its own checksums ({@linkplain PointCalculatorGoldenMasterTest}) and its order by {@code CustomIntComparatorsTest}.
+ * <p>
+ * What is compared with version 4 is the free space. After every placement, every free point of version 4 must be covered by the union of the free points of this version: the
+ * free space is identical, but may be tiled into different points, so a point of version 4 may be covered by several points of this version, not by a single one. (A single covering
+ * point is checked first, as it is cheap; otherwise the point is subtracted by the points of this version, exactly, and nothing may remain.) This version may have more free
+ * space than version 4, where version 4 lost a maximal point; that direction is not checked.
+ * <p>
+ * Free points of version 4 which are below the limits in force are not required: a point with an area (size x times size y) less than the minimum area, or a volume less than the
+ * minimum volume, cannot hold any remaining box. Version 4 keeps some such points, and this version may have dropped them, or tiled their space differently, so that their space is
+ * not in its points (see {@linkplain PointCalculatorVersion4ComparisonIT} for how often). Other safety nets against version 4 are {@code ReferenceGoldenMasterTest} and the aggregate
+ * tests with many orders ({@code PlainVersion4ComparisonIT} and {@code LargestAreaFitFirstVersion4ComparisonIT} in core). The placements are chosen among the points which both
+ * calculators have, in a canonical order, so both get the same placements whatever their internal order.
  *
  * <pre>
  *   +-----------------------+        each step: pick a free point, place a box at its corner
@@ -41,13 +58,13 @@ public class PointCalculatorVersion4ComparisonTest {
 	private static final int STEPS = 300;
 
 	/** The coordinates and supports of a point: min x, y, z, max x, y, z, then six supports */
-	private static final int POINT_3D = 12;
+	private static final int POINT_3D = CanonicalPoints3D.POINT;
 	/** min x, y, max x, y, then two supports */
 	private static final int POINT_2D = 6;
 
 	@ParameterizedTest(name = "immutable={0}, largest box={1}")
 	@CsvSource({ "false, 8", "true, 8", "false, 0", "true, 0" })
-	public void calculator3DMatchesVersion4(boolean immutable, int largestBox) {
+	public void calculator3DCoversTheFreeSpaceOfVersion4(boolean immutable, int largestBox) {
 		for(int seed = 0; seed < SEEDS; seed++) {
 			compare3D(seed, immutable, largestBox);
 		}
@@ -78,7 +95,7 @@ public class PointCalculatorVersion4ComparisonTest {
 
 		List<String> history = new ArrayList<>();
 		history.add("container " + dx + "x" + dy + "x" + dz);
-		assertSame3D(calculator, reference, seed, history);
+		int[] points = assertCovers3D(calculator, reference, seed, history);
 
 		for(int step = 0; step < STEPS && !calculator.isEmpty(); step++) {
 			if(random.nextInt(10) == 0) {
@@ -87,13 +104,22 @@ public class PointCalculatorVersion4ComparisonTest {
 				calculator.setMinimumAreaAndVolumeLimit(area, volume);
 				reference.setMinimumAreaAndVolumeLimit(area, volume);
 				history.add("limits area " + area + " volume " + volume);
-				assertSame3D(calculator, reference, seed, history);
+				points = assertCovers3D(calculator, reference, seed, history);
 				if(calculator.isEmpty()) {
 					// the limits removed the last points
 					break;
 				}
 			}
-			int index = random.nextInt(calculator.size());
+			// choose among the points which both calculators have, in canonical order, then look the point up in each calculator
+			// (the order of the points within a calculator is not part of the comparison)
+			int[] referencePoints = CanonicalPoints3D.flatten(reference);
+			int[][] common = CanonicalPoints3D.common(CanonicalPoints3D.canonical(points), CanonicalPoints3D.canonical(referencePoints));
+			if(common.length == 0) {
+				break;
+			}
+			int[] row = common[random.nextInt(common.length)];
+			int index = CanonicalPoints3D.indexOf(points, row);
+			int referenceIndex = CanonicalPoints3D.indexOf(referencePoints, row);
 			SimplePoint3D point = calculator.get(index);
 			int boxDx = 1 + random.nextInt(largest(point.getDx(), largestBox));
 			int boxDy = 1 + random.nextInt(largest(point.getDy(), largestBox));
@@ -107,12 +133,12 @@ public class PointCalculatorVersion4ComparisonTest {
 				y += random.nextInt(point.getDy() - boxDy + 1);
 				z += random.nextInt(point.getDz() - boxDz + 1);
 			}
-			history.add("point " + index + ": box " + boxDx + "x" + boxDy + "x" + boxDz + " at " + x + "," + y + "," + z);
+			history.add("point " + Arrays.toString(row) + ": box " + boxDx + "x" + boxDy + "x" + boxDz + " at " + x + "," + y + "," + z);
 
 			calculator.add(index, placement(boxDx, boxDy, boxDz, x, y, z));
-			reference.add(index, placementVersion4(boxDx, boxDy, boxDz, x, y, z));
+			reference.add(referenceIndex, placementVersion4(boxDx, boxDy, boxDz, x, y, z));
 
-			assertSame3D(calculator, reference, seed, history);
+			points = assertCovers3D(calculator, reference, seed, history);
 		}
 	}
 
@@ -165,23 +191,29 @@ public class PointCalculatorVersion4ComparisonTest {
 		return largestBox == 0 ? size : Math.min(size, largestBox);
 	}
 
-	private static void assertSame3D(DefaultPointCalculator3D calculator, com.github.skjolber.packing.v4.ep.points3d.DefaultPointCalculator3D reference, long seed,
+	/**
+	 * Every free point of version 4 (which is not below the limits) must be covered by the union of the free points of this version.
+	 *
+	 * @return the points of the calculator, in its own order
+	 */
+	private static int[] assertCovers3D(DefaultPointCalculator3D calculator, com.github.skjolber.packing.v4.ep.points3d.DefaultPointCalculator3D reference, long seed,
 			List<String> history) {
-		int[] actual = new int[calculator.size() * POINT_3D];
-		for(int i = 0; i < calculator.size(); i++) {
-			SimplePoint3D p = calculator.get(i);
-			put(actual, i * POINT_3D, p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
-			put(actual, i * POINT_3D + 6, p.isSupportedXYPlane(), p.isSupportedXZPlane(), p.isSupportedYZPlane(), p.isSupportedXYPlane(p.getMaxX(), p.getMaxY()),
-					p.isSupportedXZPlane(p.getMaxX(), p.getMaxZ()), p.isSupportedYZPlane(p.getMaxY(), p.getMaxZ()));
+		int[] actual = CanonicalPoints3D.flatten(calculator);
+		int[][] actualRows = CanonicalPoints3D.canonical(actual);
+		int[][] expectedRows = CanonicalPoints3D.canonical(CanonicalPoints3D.flatten(reference));
+
+		// the points which both have are covered, so only the others need to be checked
+		int[] uncovered = CanonicalPoints3D.firstUncovered(CanonicalPoints3D.difference(expectedRows, actualRows), actualRows, calculator.getMinAreaLimit(),
+				calculator.getMinVolumeLimit());
+		if(uncovered != null) {
+			List<String> missing = new ArrayList<>();
+			for(int[] part : CanonicalPoints3D.remainder(uncovered, actualRows)) {
+				missing.add(Arrays.toString(part));
+			}
+			assertThat(describe(uncovered, POINT_3D)).as(() -> "seed " + seed + ", after\n" + String.join("\n", history) + "\nlimits area " + calculator.getMinAreaLimit() + " volume "
+					+ calculator.getMinVolumeLimit() + "\nparts of the free space of version 4 which are not covered: " + missing + "\nfree point of version 4:").isEmpty();
 		}
-		int[] expected = new int[reference.size() * POINT_3D];
-		for(int i = 0; i < reference.size(); i++) {
-			com.github.skjolber.packing.v4.ep.points3d.SimplePoint3D p = reference.get(i);
-			put(expected, i * POINT_3D, p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ());
-			put(expected, i * POINT_3D + 6, p.isSupportedXYPlane(), p.isSupportedXZPlane(), p.isSupportedYZPlane(), p.isSupportedXYPlane(p.getMaxX(), p.getMaxY()),
-					p.isSupportedXZPlane(p.getMaxX(), p.getMaxZ()), p.isSupportedYZPlane(p.getMaxY(), p.getMaxZ()));
-		}
-		assertSame(actual, expected, POINT_3D, seed, history);
+		return actual;
 	}
 
 	private static void assertSame2D(DefaultPointCalculator2D calculator, com.github.skjolber.packing.v4.ep.points2d.DefaultPointCalculator2D reference, long seed,

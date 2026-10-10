@@ -17,8 +17,13 @@ The module has no code of its own: the build takes the released 4.x jars from Ma
 
 Tests compare 5.x with 4.x on the same input: where 5.x is meant to behave as 4.x did, 4.x is the reference.
 
-- `PointCalculatorVersion4ComparisonTest` in `points` gives both point calculators the same random placements and requires
-  the same free points after every placement (and `PointCalculatorVersion4ComparisonIT` many more).
+- `PointCalculatorVersion4ComparisonTest` in `points` gives both point calculators the same random placements and requires,
+  after every placement, the same free points in 2D, and in 3D that the union of the 5.x points covers every free point
+  of 4.x (and `PointCalculatorVersion4ComparisonIT` many more). Exact 3D point parity ended when the moved points got a
+  canonical total order (see `CustomIntXComparator`): 4.x left the order of equal keys to a quicksort. The free space is
+  identical, but may be tiled into different maximal points; a 4.x point can be covered by several 5.x points, not by one.
+  4.x points below the minimum area or volume limit in force are exempt, as no remaining box fits into them (4.x keeps some,
+  and 5.x may have dropped them: in 4,000 random sequences, 28 checks in 2 sequences, always below the limits).
 - The brute force differential tests in `core` (package `packer.bruteforce.reference`) use the 4.x brute force search for a
   single container and its permutation and rotation iterator as the reference, through `Version4Reference`: the 5.x
   iterators must enumerate the same states, and the 5.x searches must find packings as good. `ReferenceGoldenMasterTest`

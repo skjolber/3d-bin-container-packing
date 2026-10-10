@@ -25,9 +25,21 @@ moved the brute-force family further; measured against the pre-tuning 5.0 on the
 | `EgyPackagerBenchmark.parallelPackager` | 2,490 | 27,000 | 10.9× | lazy work units; stop submitting once a unit holds all boxes; allocation 2.46 MB/op → 79 KB/op, a session's live heap 461 KB → 4 KB |
 | `BouwkampCodeBruteForcePackagerBenchmark.fastPackager` | 28.1 | 31.4 | +12 % | skip materializing results below the best; lazy, right-sized point lists; reset without nulling |
 | `BouwkampCodeBruteForcePackagerBenchmark.packager` | 0.182 | 0.187 | +3-5 % | the point list changes; run to run spread is ±2-4 %, so the exact figure is uncertain |
+| `TychoBenchmark.fastPackager` (`boxes=22`) | 15,622 | 16,589 | +6.2 % | canonical total order of the moved points (see below) and an insertion sort for the x and y moves; measured against the tree before it, 4 interleaved pairs, all positive |
 
 Search results are unchanged: the oracle suites pass unweakened, and differential fuzzes of exact placements
 (fast, 576 instances) and of parallel quality (1,600 comparisons) found no differences.
+
+The last row comes with a definition instead of a library accident: the 3D point calculator now processes the points it
+moves past a placement in a canonical total order (`CustomIntXComparator` and its y and z counterparts), which is
+monotone with eclipsing and breaks ties by the richest supports, so that the free points no longer depend on how a
+quicksort happens to order equal keys. Exact 4.x point parity ended with it (tied redundant points are suppressed by
+construction, and the same free space may be tiled into different points: over 1.3 million random checks the union of
+the 5.0 points covers every 4.x free point which meets the minimum area and volume limit in force, and only 4.x points
+below those limits, which hold no remaining box, are sometimes not covered; in 0.07 % of 118,000 random placements with
+boxes as large as the free point 5.0 keeps a free point which 4.x lost); the quality contracts against 4.x are unchanged. The same change on the
+other benchmarks, against the tree before it: fast Bouwkamp +1.9 %, parallel Bouwkamp +3.4 %, parallel Egy +1.7 %,
+Egy `packager` +2.1 %, Egy `fastPackager` −1.5 %, brute-force Bouwkamp −0.4 %: all inside their run to run spread.
 
 Measured dead ends, so they are not retried:
 - JIT shaping: no huge methods, no compile skips, no deopt churn, all hot sites monomorphic; the only flag effect
