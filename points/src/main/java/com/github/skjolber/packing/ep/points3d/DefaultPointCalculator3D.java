@@ -848,23 +848,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// check if one of the existing values contains the new value
 		
 		final int pointMinX = point.getMinX();
-		final long pointVolume = point.getVolume();
-		final long pointArea = point.getArea();
 		final Point3DFlagList otherValues = this.otherValues;
 
 		// otherValues is sorted by x. Scan backwards: an eclipsing point is most often
 		// one of the last merged points. The result does not depend on the scan order.
+		// There is no volume / area pre-filter: containment implies it, and the pre-filter measured as
+		// more expensive than the early-exit containment test it guards.
 		int index = otherValues.size() - 1;
 		while (index >= 0 && otherValues.get(index).getMinX() > pointMinX) {
 			index--;
 		}
 		for (; index >= 0; index--) {
-			SimplePoint3D otherValue = otherValues.get(index);
-			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
-				if(otherValue.eclipses(point)) {
-					// discard 
-					return true;
-				}
+			if(otherValues.get(index).eclipses(point)) {
+				// discard 
+				return true;
 			}
 		}
 		return false;
@@ -872,20 +869,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
 		// check if one of the existing values contains the new value
-		final long pointVolume = point.getVolume();
-		final long pointArea = point.getArea();
-		
+
 		// otherValues is sorted by x
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
 			}
-			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
-				if(otherValue.eclipses(point)) {
-					// discard 
-					return true;
-				}
+			if(otherValue.eclipses(point)) {
+				// discard 
+				return true;
 			}
 		}
 		return false;
@@ -1143,13 +1136,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					// at this index or later
 					break;
 				}
-				if(unsorted.getVolume() <= sorted.getVolume() && unsorted.getArea() <= sorted.getArea()) {
-					if(sorted.eclipses(unsorted)) {
-						// discard unsorted
-						values.flag(i);
+				if(sorted.eclipses(unsorted)) {
+					// discard unsorted
+					values.flag(i);
 
-						continue added;
-					}
+					continue added;
 				}
 			}
 
@@ -1250,7 +1241,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
 					// is the point now eclipsed by current points?
-					long copyVolume = (long)point.getDy() * (long)point.getDz() * (placement.getAbsoluteX() - point.getMinX());
 					int copyMaxX = placement.getAbsoluteX() - 1;
 
 					for (int j = 0; j < i - 1; j++) {
@@ -1262,10 +1252,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
-								break addX;
-							}
+						if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
+							break addX;
 						}
 					}
 
@@ -1273,10 +1261,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedXX.size(); j++) {
 						SimplePoint3D point3d = addedXX.get(j);
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
-								break addX;
-							}
+						if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
+							break addX;
 						}
 					}
 
@@ -1290,7 +1276,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
 					// is the point now eclipsed by current points?
-					long copyVolume = (long)point.getDx() * (long)point.getDz() * (placement.getAbsoluteY() - point.getMinY());
 					int copyMaxY = placement.getAbsoluteY() - 1;
 
 					for (int j = 0; j < i - 1; j++) {
@@ -1302,10 +1287,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
-								break addY;
-							}
+						if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
+							break addY;
 						}
 					}
 
@@ -1313,10 +1296,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedYY.size(); j++) {
 						SimplePoint3D point3d = addedYY.get(j);
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
-								break addY;
-							}
+						if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
+							break addY;
 						}
 					}
 
@@ -1331,7 +1312,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
 					// is the point now eclipsed by current points?
 					
-					long copyVolume = point.getArea() * (placement.getAbsoluteZ() - point.getMinZ());
 					int copyMaxZ = placement.getAbsoluteZ() - 1;
 					
 					for (int j = 0; j < i - 1; j++) {
@@ -1343,10 +1323,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 							break;
 						}
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
-								break addZ;
-							}
+						if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
+							break addZ;
 						}
 					}
 
@@ -1354,10 +1332,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					for (int j = 0; j < addedZZ.size(); j++) {
 						SimplePoint3D point3d = addedZZ.get(j);
 
-						if(point3d.getVolume() >= copyVolume) {
-							if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
-								break addZ;
-							}
+						if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
+							break addZ;
 						}
 					}
 					SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), copyMaxZ);
@@ -1519,12 +1495,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1533,12 +1507,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddXX; j < addedXX.size(); j++) {
 							SimplePoint3D point3d = addedXX.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}
@@ -1564,12 +1536,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1578,12 +1548,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddYY; j < addedYY.size(); j++) {
 							SimplePoint3D point3d = addedYY.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}
@@ -1610,12 +1578,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1624,12 +1590,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddZZ; j < addedZZ.size(); j++) {
 							SimplePoint3D point3d = addedZZ.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}

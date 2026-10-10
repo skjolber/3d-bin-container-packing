@@ -26,6 +26,7 @@ moved the brute-force family further; measured against the pre-tuning 5.0 on the
 | `BouwkampCodeBruteForcePackagerBenchmark.fastPackager` | 28.1 | 31.4 | +12 % | skip materializing results below the best; lazy, right-sized point lists; reset without nulling |
 | `BouwkampCodeBruteForcePackagerBenchmark.packager` | 0.182 | 0.187 | +3-5 % | the point list changes; run to run spread is ±2-4 %, so the exact figure is uncertain |
 | `TychoBenchmark.fastPackager` (`boxes=22`) | 15,622 | 16,589 | +6.2 % | canonical total order of the moved points (see below) and an insertion sort for the x and y moves; measured against the tree before it, 4 interleaved pairs, all positive |
+| `TychoBenchmark.fastPackager` (`boxes=22`), on top of the above | | | +6.9 % | the volume / area pre-filter of the eclipse scans dropped: containment implies it, and it measured as more expensive than the early-exit containment test it guards (brute-force Bouwkamp +3.8 %, the rest within noise) |
 
 Search results are unchanged: the oracle suites pass unweakened, and differential fuzzes of exact placements
 (fast, 576 instances) and of parallel quality (1,600 comparisons) found no differences.
