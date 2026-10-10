@@ -1152,11 +1152,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	protected void constrainFloatingMaxWithCopy(Placement placement, int limit) {
-		// each examined point can add at most one copy per direction
-		addedXX.ensureAdditionalCapacity(limit);
-		addedYY.ensureAdditionalCapacity(limit);
-		addedZZ.ensureAdditionalCapacity(limit);
-
+		// A copy is not checked against the free points here: merge(..) checks every copy against the points before it,
+		// which are the points which stay and the copies which this check would have compared it with (and more), and
+		// discards an eclipsed copy. A check here only saves the allocation of a copy which is discarded, and costs a scan
+		// of the list for every copy which is kept. No moved point can eclipse a copy: a moved point starts behind the
+		// placement in the direction of the copy, and the copy ends before the placement.
 		for (int i = 0; i < limit; i++) {
 			SimplePoint3D point = values.get(i);
 
@@ -1238,108 +1238,24 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			//    *---------------|--------------
 			//             
 
-			addX: if(point.getMinX() < placement.getAbsoluteX()) {
-				if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-					// is the point now eclipsed by current points?
-					int copyMaxX = placement.getAbsoluteX() - 1;
-
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
-							break addX;
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedXX.size(); j++) {
-						SimplePoint3D point3d = addedXX.get(j);
-
-						if(point3d.eclipsesConstrainedX(point, copyMaxX)) {
-							break addX;
-						}
-					}
-
-					SimplePoint3D copy = point.copy(copyMaxX, point.getMaxY(), point.getMaxZ());
-
-					addedXX.add(copy);
-					constrainXX.set(copy, i);
+			if(point.getMinX() < placement.getAbsoluteX()) {
+				int copyMaxX = placement.getAbsoluteX() - 1;
+				if(!isConstrainedAtMaxX(point, copyMaxX)) {
+					constrainXX.set(point.copy(copyMaxX, point.getMaxY(), point.getMaxZ()), i);
 				}
 			}
 
-			addY: if(point.getMinY() < placement.getAbsoluteY()) {
-				if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-					// is the point now eclipsed by current points?
-					int copyMaxY = placement.getAbsoluteY() - 1;
-
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
-							break addY;
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedYY.size(); j++) {
-						SimplePoint3D point3d = addedYY.get(j);
-
-						if(point3d.eclipsesConstrainedY(point, copyMaxY)) {
-							break addY;
-						}
-					}
-
-					SimplePoint3D copy = point.copy(point.getMaxX(), copyMaxY, point.getMaxZ());
-
-					addedYY.add(copy);
-					constrainYY.set(copy, i);
+			if(point.getMinY() < placement.getAbsoluteY()) {
+				int copyMaxY = placement.getAbsoluteY() - 1;
+				if(!isConstrainedAtMaxY(point, copyMaxY)) {
+					constrainYY.set(point.copy(point.getMaxX(), copyMaxY, point.getMaxZ()), i);
 				}
 			}
 
-			addZ: if(point.getMinZ() < placement.getAbsoluteZ()) {
-				if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-					// is the point now eclipsed by current points?
-					
-					int copyMaxZ = placement.getAbsoluteZ() - 1;
-					
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
-							break addZ;
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedZZ.size(); j++) {
-						SimplePoint3D point3d = addedZZ.get(j);
-
-						if(point3d.eclipsesConstrainedZ(point, copyMaxZ)) {
-							break addZ;
-						}
-					}
-					SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), copyMaxZ);
-
-					addedZZ.add(copy);
-					constrainZZ.set(copy, i);
+			if(point.getMinZ() < placement.getAbsoluteZ()) {
+				int copyMaxZ = placement.getAbsoluteZ() - 1;
+				if(!isConstrainedAtMaxZ(point, copyMaxZ)) {
+					constrainZZ.set(point.copy(point.getMaxX(), point.getMaxY(), copyMaxZ), i);
 				}
 			}
 			values.flag(i);
