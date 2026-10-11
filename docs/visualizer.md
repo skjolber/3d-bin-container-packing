@@ -80,18 +80,6 @@ box which would be inserted after it (`InsertedBeforeSupporterReason`), and anot
 *A van with a door at the end (orange), loaded for three stops (the second result: the first, without stops, is invalid as the boxes of the
 first stop are blocked). `c` colours the boxes by their extraction order.*
 
-### Earlier captures
-
-These were taken before the summary panel and the colour modes were added: the 3D view is the same.
-
-![Two containers of one result, next to each other on the grid](../visualizer/viewer/images/view.png)
-
-*Two containers of one result, each outlined in orange, on the grid.*
-
-![A tall container with many boxes](../visualizer/viewer/images/screenshot.png)
-
-*A tall container (green outline) with stacked, translucent boxes on a blue floor.*
-
 ## Hot reload and examples
 
 To "hot reload" the visualizer during development, make your unit tests write that file. The `*VisualizationTest`
