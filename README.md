@@ -141,7 +141,7 @@ PackagerResult result = packager
 Note that all `packager` instances are thread-safe.
 
 ### Plain packager
-A simple packager, which places the box with the biggest volume first.
+A [simple packager](docs/heuristics/plain.md), which places the box with the biggest volume first.
 
 ```java
 PlainPackager packager = PlainPackager
@@ -149,10 +149,8 @@ PlainPackager packager = PlainPackager
     .build();
 ```
 
-Details: [plain packager heuristics](docs/heuristics/plain.md).
-
 ### Largest Area Fit First (LAFF) packager
-A packager using the LAFF algorithm, which fills the container level by level, starting each level with the box which covers the largest ground area. `FastLargestAreaFitFirstPackager` is a faster variant which stacks in 2D within each level.
+A [packager](docs/heuristics/largest-area-fit-first.md) using the LAFF algorithm, which fills the container level by level, starting each level with the box which covers the largest ground area. `FastLargestAreaFitFirstPackager` is a faster variant which stacks in 2D within each level.
 
 ```java
 LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
@@ -160,10 +158,8 @@ LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager
     .build();
 ```
 
-Details: [LAFF packager heuristics](docs/heuristics/largest-area-fit-first.md).
-
 ### Brute-force packager
-For a low number of packages (like <= 6) the brute force packager might be a good fit. 
+For a low number of packages (like <= 6) the [brute-force packager](docs/heuristics/brute-force.md) might be a good fit. 
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
@@ -182,10 +178,8 @@ PackagerResult result = packager
     .build();
 ```
 
-Details: [brute-force](docs/heuristics/brute-force.md) and [parallel brute-force](docs/heuristics/parallel-brute-force.md) packager heuristics.
-
 ### Virtual-box preprocessing
-Virtual box packaging simplifies packaging when there is more than one of the same box. `VirtualBoxPackager` wraps a packager, packs repeated boxes as filled rectangular assemblies, and expands the result back into the original boxes.
+[Virtual box packaging](docs/heuristics/virtual-box.md) simplifies packaging when there is more than one of the same box. `VirtualBoxPackager` wraps a packager, packs repeated boxes as filled rectangular assemblies, and expands the result back into the original boxes.
 
 ```java
 try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
@@ -201,8 +195,6 @@ try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
         .build();
 }
 ```
-
-Details: [virtual-box preprocessing](docs/heuristics/virtual-box.md).
 
 # Packager customizations
 
@@ -236,8 +228,8 @@ Container container = Container.newBuilder()
     .build();
 ```
 
-## [Extraction order and container priority](docs/deliveries.md)
-Examples
+## Extraction order and container priority
+[Delivery](docs/deliveries.md) details can be specified:
 
 ```java
 // the stops of a delivery route: lower values are extracted first
@@ -256,8 +248,8 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
    which is extracted earlier, so the boxes of each stop can be taken out without moving the boxes for later stops.
  * **Container priority**: a hard constraint on which boxes go in earlier containers.
 
-## [Support](docs/support.md)
-Support (the area resting on boxes below) can be calculated, or full support required:
+## Support
+[Support](docs/support.md) (the area resting on boxes below) can be calculated, or full support required:
 
 ```java
 PlainPackager packager = PlainPackager
@@ -294,8 +286,8 @@ the containers are left empty, insertion and extraction order, and the load cons
 
 The validator result says what was validated: `isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()` (if false, the load validation had nothing to check).
 
-## [Packager controls](docs/packager-controls.md)
-The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
+## Packager controls
+The packagers (excluding brute force) can be extended to handle specialized needs via various [packager controls](docs/packager-controls.md) (plugins) types. 
 
 In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
 
@@ -317,8 +309,8 @@ PackagerResult result = packager
     .build();
 ```
 
-## [Combining packagers](docs/heuristics/composite.md)
-`CompositePackager` uses costly packagers only where cheaper packagers fall short:
+## Combining packagers
+[CompositePackager](docs/heuristics/composite.md) uses costly packagers only where cheaper packagers fall short:
 
 ```java
 CompositePackager packager = CompositePackager.newBuilder()
