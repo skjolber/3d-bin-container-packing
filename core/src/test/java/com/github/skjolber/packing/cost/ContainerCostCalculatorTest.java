@@ -10,7 +10,7 @@ import com.github.skjolber.packing.api.cost.ContainerCostCalculator;
 class ContainerCostCalculatorTest {
 
 	@Test
-	void calculatesBucketCostAndRatiosWithoutIntegerTruncation() {
+	void calculatesBucketCost() {
 		BucketContainerCostCalculator calculator = BucketContainerCostCalculator.newBuilder()
 				.withVolume(1_000)
 				.withFixedCost(250)
@@ -19,10 +19,7 @@ class ContainerCostCalculatorTest {
 				.build();
 
 		assertEquals(10_250L, calculator.calculateCost(500));
-		assertEquals(10.25d, calculator.getCostPerVolume(500));
-		assertEquals(20.5d, calculator.getCostPerWeight(500));
 		assertEquals(10_250L, calculator.getMinimumCost());
-		assertEquals(12_750L, calculator.getMaximumCost());
 		assertThrows(IllegalArgumentException.class, () -> calculator.calculateCost(2_000));
 	}
 
@@ -52,7 +49,6 @@ class ContainerCostCalculatorTest {
 				.build();
 
 		assertEquals(12_000L, calculator.getMinimumCost());
-		assertEquals(14_000L, calculator.getMaximumCost());
 		assertEquals(12_000L, calculator.calculateCost(1_250));
 		assertEquals(12_000L, calculator.calculateCost(2_500));
 		assertEquals(13_000L, calculator.calculateCost(3_500));

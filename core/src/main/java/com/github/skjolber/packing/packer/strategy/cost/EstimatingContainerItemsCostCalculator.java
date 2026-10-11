@@ -1,6 +1,5 @@
 package com.github.skjolber.packing.packer.strategy.cost;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
@@ -12,6 +11,22 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerInventory;
  * priced fractionally using the most cost-effective available capacity first.
  */
 public class EstimatingContainerItemsCostCalculator extends AbstractContainerItemsCostCalculator {
+
+	/** Cheapest cost for each unit of volume first; capacities with no volume last. */
+	private static final CostCapacityComparator VOLUME_COST_EFFICIENCY = (first, second) -> {
+		if(first.volume == 0 || second.volume == 0) {
+			return Long.compare(second.volume, first.volume);
+		}
+		return Double.compare((double)first.minimumCost / first.volume, (double)second.minimumCost / second.volume);
+	};
+
+	/** Cheapest cost for each unit of weight first; capacities with no weight last. */
+	private static final CostCapacityComparator WEIGHT_COST_EFFICIENCY = (first, second) -> {
+		if(first.weight == 0 || second.weight == 0) {
+			return Long.compare(second.weight, first.weight);
+		}
+		return Double.compare((double)first.minimumCost / first.weight, (double)second.minimumCost / second.weight);
+	};
 
 	@Override
 	public long getMinimumCost(ContainerInventory containers, List<BoxItem> boxes, int maxCount) {
@@ -58,16 +73,7 @@ public class EstimatingContainerItemsCostCalculator extends AbstractContainerIte
 		if(target == 0) {
 			return 0;
 		}
-		List<CostCapacity> sorted = new ArrayList<>(capacities);
-		sorted.sort((first, second) -> {
-			long firstCapacity = volume ? first.volume : first.weight;
-			long secondCapacity = volume ? second.volume : second.weight;
-			if(firstCapacity == 0 || secondCapacity == 0) {
-				return Long.compare(secondCapacity, firstCapacity);
-			}
-			return Double.compare((double)first.minimumCost / firstCapacity,
-					(double)second.minimumCost / secondCapacity);
-		});
+		CostCapacity[] sorted = sorted(capacities, volume ? VOLUME_COST_EFFICIENCY : WEIGHT_COST_EFFICIENCY);
 		long remaining = target;
 		double cost = 0;
 		for(CostCapacity capacity : sorted) {

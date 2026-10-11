@@ -55,7 +55,6 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	protected final long maximumWeight;
 
 	protected final long minimumCost;
-	protected final long maximumCost;
 
 	protected final long volume;
 	protected final List<Bucket> buckets;
@@ -83,17 +82,14 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		}
 
 		long minCost = Long.MAX_VALUE;
-		long maxCost = Long.MIN_VALUE;
 		for(Bucket bucket : copy) {
 			minCost = Math.min(minCost, bucket.cost);
-			maxCost = Math.max(maxCost, bucket.cost);
 		}
 
 		this.buckets = Collections.unmodifiableList(copy);
 		this.minimumWeight = copy.get(0).minWeight;
 		this.maximumWeight = copy.get(copy.size() - 1).maxWeight;
 		this.minimumCost = Math.addExact(minCost, fixedCost);
-		this.maximumCost = Math.addExact(maxCost, fixedCost);
 		this.fixedCost = fixedCost;
 		this.volume = volume;
 		this.id = id;
@@ -113,30 +109,6 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 	}
 
 	@Override
-	public long getMaximumCost() {
-		return maximumCost;
-	}
-
-	@Override
-	public double getCostPerVolume(long weight) {
-		return calculateCost(weight) / (double)volume;
-	}
-
-	@Override
-	public double getCostPerWeight(long weight) {
-		long cost = calculateCost(weight);
-		if(weight == 0) {
-			return cost == 0 ? 0.0d : Double.POSITIVE_INFINITY;
-		}
-		return cost / (double)weight;
-	}
-
-	@Override
-	public long getFixedCost() {
-		return fixedCost;
-	}
-
-	@Override
 	public long calculateCost(long weight) {
 		if(weight < 0 || weight >= maximumWeight) {
 			throw new IllegalArgumentException("Weight " + weight + " is outside supported range 0-" + maximumWeight + " for calculator id=" + id);
@@ -152,10 +124,5 @@ public abstract class AbstractBucketWeightContainerCostCalculator implements Con
 		}
 
 		throw new IllegalStateException("No cost bucket matched weight " + weight + " for calculator id=" + id);
-	}
-
-	@Override
-	public String getId() {
-		return id;
 	}
 }

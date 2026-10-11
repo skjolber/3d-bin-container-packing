@@ -40,9 +40,8 @@ Either every container item has a calculator or none: the default strategy facto
 
  * `calculateCost(weight)` is the cost of a container loaded with the given weight: the total weight of the boxes in it, without the container's own weight (`Container.getLoadWeight()`). Costs are whole numbers in units of your choice, and must not be negative.
  * `getMinimumCost()` is a lower bound on `calculateCost(..)` for any load the calculator supports. The strategies which search for a minimum use it as a bound, so it must not exceed the actual cost.
- * `getMaximumCost()`, `getFixedCost()`, `getCostPerVolume(weight)`, `getCostPerWeight(weight)` and `getId()` are for the caller: the built-in strategies only call `calculateCost(..)` and `getMinimumCost()`.
 
-The calculators of `com.github.skjolber.packing.cost` in `core` (all take the volume of the container, for the per-volume ratios, an optional id and a fixed cost which is added to every price):
+The calculators of `com.github.skjolber.packing.cost` in `core` (all take the volume of the container, which only the volumetric weight calculator uses, an optional id, which appears in error messages, and a fixed cost which is added to every price):
 
 | Calculator | Cost |
 | --- | --- |

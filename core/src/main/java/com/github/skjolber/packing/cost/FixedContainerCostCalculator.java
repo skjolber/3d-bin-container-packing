@@ -36,35 +36,6 @@ public class FixedContainerCostCalculator implements ContainerCostCalculator {
 	}
 
 	@Override
-	public double getCostPerVolume(long weight) {
-		return calculateCost(weight) / (double)volume;
-	}
-
-	@Override
-	public double getCostPerWeight(long weight) {
-		long calculatedCost = calculateCost(weight);
-		if(weight == 0) {
-			return calculatedCost == 0 ? 0.0d : Double.POSITIVE_INFINITY;
-		}
-		return calculatedCost / (double)weight;
-	}
-
-	@Override
-	public String getId() {
-		return id;
-	}
-
-	@Override
-	public long getFixedCost() {
-		return fixedCost;
-	}
-
-	@Override
-	public long getMaximumCost() {
-		return totalCost;
-	}
-
-	@Override
 	public long getMinimumCost() {
 		return totalCost;
 	}

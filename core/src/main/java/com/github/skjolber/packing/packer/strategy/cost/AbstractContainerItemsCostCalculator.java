@@ -34,6 +34,34 @@ abstract class AbstractContainerItemsCostCalculator implements ContainerItemsCos
 		}
 	}
 
+	/**
+	 * Orders capacities; a custom interface rather than {@link java.util.Comparator}. A negative number means the first
+	 * capacity sorts first, as for the other comparators which sort (for example {@code Point2DComparator}).
+	 */
+	@FunctionalInterface
+	interface CostCapacityComparator {
+
+		int compare(CostCapacity first, CostCapacity second);
+	}
+
+	/**
+	 * Stable insertion sort of a copy of the capacities: there are as many capacities as container types, so only a few.
+	 */
+	static CostCapacity[] sorted(List<CostCapacity> capacities, CostCapacityComparator comparator) {
+		CostCapacity[] sorted = capacities.toArray(new CostCapacity[0]);
+		for(int i = 1; i < sorted.length; i++) {
+			CostCapacity capacity = sorted[i];
+			int j = i - 1;
+			// move past the capacities which sort strictly after, so that equal capacities keep their order
+			while(j >= 0 && comparator.compare(sorted[j], capacity) > 0) {
+				sorted[j + 1] = sorted[j];
+				j--;
+			}
+			sorted[j + 1] = capacity;
+		}
+		return sorted;
+	}
+
 	protected List<CostCapacity> costCapacities(ContainerInventory containers) {
 		List<CostCapacity> capacities = new ArrayList<>(containers.getContainerItemCount());
 		for(ContainerItem item : containers.getContainerItems()) {

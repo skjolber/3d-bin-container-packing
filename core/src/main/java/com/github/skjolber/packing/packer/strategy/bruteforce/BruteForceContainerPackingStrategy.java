@@ -28,12 +28,6 @@ public class BruteForceContainerPackingStrategy implements ContainerPackingStrat
 
 	public interface Controls {
 		/**
-		 * Create an independent snapshot for a parallel search branch. Mutable
-		 * result state must not be shared between branches.
-		 */
-		Controls copy();
-
-		/**
 		 * Check whether to attempt packaging the selected container.
 		 *
 		 * @return false if not

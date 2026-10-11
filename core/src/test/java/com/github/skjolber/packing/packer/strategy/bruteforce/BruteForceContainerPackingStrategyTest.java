@@ -250,13 +250,6 @@ class BruteForceContainerPackingStrategyTest {
 		}
 
 		@Override
-		public TestControls copy() {
-			TestControls copy = new TestControls(comparator, attemptFilter);
-			copy.best = best;
-			return copy;
-		}
-
-		@Override
 		public boolean attempt(List<Container> containers, PackagerSession state,
 				List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 			return best == null || attemptFilter.attempt(best.getPackList(), containers, state,

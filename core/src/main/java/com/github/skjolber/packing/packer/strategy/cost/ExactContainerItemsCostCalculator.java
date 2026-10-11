@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer.strategy.cost;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -30,6 +29,25 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 			this.canLoad = canLoad;
 		}
 	}
+
+	/**
+	 * Orders cost units; a custom interface rather than {@link java.util.Comparator}. A negative number means the first
+	 * unit sorts first, as for the other comparators which sort (for example {@code Point2DComparator}).
+	 */
+	@FunctionalInterface
+	private interface CostUnitComparator {
+
+		int compare(CostUnit first, CostUnit second);
+	}
+
+	/** Largest volume first, then largest weight: the units which are hardest to place are assigned first. */
+	private static final CostUnitComparator LARGEST_FIRST = (first, second) -> {
+		int compare = Long.compare(second.volume, first.volume);
+		if(compare != 0) {
+			return compare;
+		}
+		return Long.compare(second.weight, first.weight);
+	};
 
 	private static final class OpenContainer {
 		private final int type;
@@ -87,8 +105,7 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 		if(estimate.getMinimumCost(containers, volume, weight, maxCount, capacities) == Long.MAX_VALUE) {
 			return Long.MAX_VALUE;
 		}
-		units.sort(Comparator.comparingLong((CostUnit unit) -> unit.volume).reversed()
-				.thenComparing(Comparator.comparingLong((CostUnit unit) -> unit.weight).reversed()));
+		sort(units, LARGEST_FIRST);
 		for(CostUnit unit : units) {
 			if(unit.fits != null) {
 				continue;
@@ -110,6 +127,46 @@ public class ExactContainerItemsCostCalculator extends AbstractContainerItemsCos
 			available[i] = capacities.get(i).count;
 		}
 		return search(units, 0, capacities, available, new ArrayList<>(), maxCount, 0, Long.MAX_VALUE);
+	}
+
+	/**
+	 * Stable merge sort (a unit for each box of a box item, so there can be many units).
+	 */
+	private static void sort(List<CostUnit> units, CostUnitComparator comparator) {
+		CostUnit[] sorted = units.toArray(new CostUnit[0]);
+		mergeSort(sorted, new CostUnit[sorted.length], 0, sorted.length, comparator);
+		for(int i = 0; i < sorted.length; i++) {
+			units.set(i, sorted[i]);
+		}
+	}
+
+	/** Sort the range [from, to), using the buffer for the left half when merging. */
+	private static void mergeSort(CostUnit[] units, CostUnit[] buffer, int from, int to, CostUnitComparator comparator) {
+		if(to - from < 2) {
+			return;
+		}
+		int mid = (from + to) >>> 1;
+		mergeSort(units, buffer, from, mid, comparator);
+		mergeSort(units, buffer, mid, to, comparator);
+		if(comparator.compare(units[mid - 1], units[mid]) <= 0) {
+			// the halves are already in order
+			return;
+		}
+		System.arraycopy(units, from, buffer, from, mid - from);
+		int left = from;
+		int right = mid;
+		int target = from;
+		while(left < mid && right < to) {
+			// take from the left on ties, for stability
+			if(comparator.compare(units[right], buffer[left]) < 0) {
+				units[target++] = units[right++];
+			} else {
+				units[target++] = buffer[left++];
+			}
+		}
+		while(left < mid) {
+			units[target++] = buffer[left++];
+		}
 	}
 
 	private static long search(List<CostUnit> units, int unitIndex, List<CostCapacity> capacities,

@@ -972,13 +972,6 @@ class ContainerCostPackingTest {
 		}
 
 		@Override
-		public ComparisonControls copy() {
-			ComparisonControls copy = new ComparisonControls(comparator);
-			copy.best = best;
-			return copy;
-		}
-
-		@Override
 		public boolean attempt(List<Container> containers, PackagerSession state,
 				List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 			return true;

@@ -32,16 +32,6 @@ public final class LowestCostControls implements Controls {
 		this.costCalculator = Objects.requireNonNull(costCalculator);
 	}
 
-	private LowestCostControls(ContainerItemsCostCalculator costCalculator, ContainerResult best) {
-		this.costCalculator = costCalculator;
-		this.best = best;
-	}
-
-	@Override
-	public LowestCostControls copy() {
-		return new LowestCostControls(costCalculator, best);
-	}
-
 	@Override
 	public boolean attempt(List<Container> containers, PackagerSession state, List<Integer> availableContainerIndexes, int selectedContainerIndex) {
 		if(best == null) {

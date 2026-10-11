@@ -1,12 +1,11 @@
 package com.github.skjolber.packing.packer.strategy.cost;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
@@ -73,6 +72,99 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 			this.depth = depth;
 			this.nextIndex = nextIndex;
 			this.currentTypeCount = currentTypeCount;
+		}
+	}
+
+	/**
+	 * Orders plan nodes; a custom interface rather than {@link java.util.Comparator}. A negative number means the first node is
+	 * expanded first, as for the other comparators which sort (for example {@code Point2DComparator}).
+	 */
+	@FunctionalInterface
+	protected interface CostPackingPlanNodeComparator {
+
+		int compare(CostPackingPlanNode first, CostPackingPlanNode second);
+	}
+
+	/** Expand the cheapest node first; on equal cost, the node which covers the most boxes, volume and weight, then the shallowest. */
+	private static final CostPackingPlanNodeComparator PLAN_NODE_COMPARATOR = (first, second) -> {
+		int compare = Long.compare(first.cost, second.cost);
+		if(compare != 0) {
+			return compare;
+		}
+		compare = Integer.compare(second.count, first.count);
+		if(compare != 0) {
+			return compare;
+		}
+		compare = Long.compare(second.volume, first.volume);
+		if(compare != 0) {
+			return compare;
+		}
+		compare = Long.compare(second.weight, first.weight);
+		if(compare != 0) {
+			return compare;
+		}
+		return Integer.compare(first.depth, second.depth);
+	};
+
+	/**
+	 * Binary min-heap of plan nodes. This is the algorithm of {@link java.util.PriorityQueue} (which takes a {@link java.util.Comparator}
+	 * only), step for step, so that nodes which compare equal are polled in the same order.
+	 */
+	private static final class CostPackingPlanQueue {
+
+		private final CostPackingPlanNodeComparator comparator;
+		private CostPackingPlanNode[] nodes = new CostPackingPlanNode[16];
+		private int size;
+
+		private CostPackingPlanQueue(CostPackingPlanNodeComparator comparator) {
+			this.comparator = comparator;
+		}
+
+		private boolean isEmpty() {
+			return size == 0;
+		}
+
+		private void add(CostPackingPlanNode node) {
+			if(size == nodes.length) {
+				nodes = Arrays.copyOf(nodes, size * 2);
+			}
+			// sift up
+			int index = size++;
+			while(index > 0) {
+				int parent = (index - 1) >>> 1;
+				if(comparator.compare(node, nodes[parent]) >= 0) {
+					break;
+				}
+				nodes[index] = nodes[parent];
+				index = parent;
+			}
+			nodes[index] = node;
+		}
+
+		private CostPackingPlanNode poll() {
+			CostPackingPlanNode result = nodes[0];
+			int last = --size;
+			CostPackingPlanNode node = nodes[last];
+			nodes[last] = null;
+			if(last > 0) {
+				// sift down
+				int index = 0;
+				int half = last >>> 1;
+				while(index < half) {
+					int child = 2 * index + 1;
+					int right = child + 1;
+					if(right < last && comparator.compare(nodes[child], nodes[right]) > 0) {
+						child = right;
+					}
+					if(comparator.compare(node, nodes[child]) <= 0) {
+						break;
+					}
+					nodes[index] = nodes[child];
+					index = child;
+				}
+				nodes[index] = node;
+			}
+			return result;
 		}
 	}
 
@@ -214,27 +306,7 @@ public class LowestCostContainerPackingStrategy implements ContainerPackingStrat
 	 * that the first complete node has the lowest total cost.
 	 */
 	protected List<CostPacking> planLowestCost(List<CostPacking> packings, int limit, int targetCount, long targetVolume, long targetWeight, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
-		Comparator<CostPackingPlanNode> comparator = (first, second) -> {
-			int compare = Long.compare(first.cost, second.cost);
-			if(compare != 0) {
-				return compare;
-			}
-			compare = Integer.compare(second.count, first.count);
-			if(compare != 0) {
-				return compare;
-			}
-			compare = Long.compare(second.volume, first.volume);
-			if(compare != 0) {
-				return compare;
-			}
-			compare = Long.compare(second.weight, first.weight);
-			if(compare != 0) {
-				return compare;
-			}
-			return Integer.compare(first.depth, second.depth);
-		};
-
-		PriorityQueue<CostPackingPlanNode> queue = new PriorityQueue<>(comparator);
+		CostPackingPlanQueue queue = new CostPackingPlanQueue(PLAN_NODE_COMPARATOR);
 		queue.add(new CostPackingPlanNode(null, null, 0L, 0L, 0L, 0, 0, 0, 0));
 		Map<CostPackingPlanKey, Long> bestCosts = new HashMap<>();
 

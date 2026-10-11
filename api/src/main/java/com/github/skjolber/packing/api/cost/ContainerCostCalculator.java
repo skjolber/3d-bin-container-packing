@@ -9,18 +9,6 @@ public interface ContainerCostCalculator {
 
 	/**
 	 * @param weight load weight
-	 * @return cost per unit of container load volume
-	 */
-	double getCostPerVolume(long weight);
-
-	/**
-	 * @param weight load weight
-	 * @return cost per unit of load weight
-	 */
-	double getCostPerWeight(long weight);
-
-	/**
-	 * @param weight load weight
 	 * @return total cost for the container
 	 */
 	long calculateCost(long weight);
@@ -31,10 +19,4 @@ public interface ContainerCostCalculator {
 	 * than the actual cost.
 	 */
 	long getMinimumCost();
-
-	long getMaximumCost();
-
-	long getFixedCost();
-
-	String getId();
 }
