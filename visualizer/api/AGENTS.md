@@ -13,7 +13,7 @@ JSON data types for packing results, written by `visualizer/packaging` and read 
 ## Architecture Notes
 - Plain Jackson beans; the field names are the JSON format.
 - The viewer parses the JSON in `visualizer/viewer/src/model.ts` (`parsePackaging`). When changing the format, update the parser and regenerate the shared sample
-  (see `visualizer/packaging/agents.md`). Backwards compatibility is not needed: the viewer runs locally, from the same checkout.
+  (see `visualizer/packaging/AGENTS.md`). Backwards compatibility is not needed: the viewer runs locally, from the same checkout.
 
 ## Dependencies
 | Scope   | Artifact |
