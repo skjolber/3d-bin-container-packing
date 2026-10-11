@@ -65,6 +65,80 @@ class ParallelContainerPackingStrategyTest {
 		}
 	}
 
+	/**
+	 * Two container types of the same size, so that every attempt packs the same result and the comparator cannot tell the
+	 * candidates apart. The container items are in preference order, so the more preferred container type (A) must be used,
+	 * as {@linkplain OrderedContainerPackingStrategy} does.
+	 *
+	 * <p>The outcome does not depend on which task finishes first: {@linkplain ParallelContainerPackingStrategy} submits one
+	 * task for each candidate, and then collects the results by waiting for the futures in container item order (not in the order
+	 * the tasks finish), comparing each result with the best so far. Every task packs its own fork of the session, so its result
+	 * does not depend on the others either. The ties are therefore always decided in preference order, and the test repeats the
+	 * packaging to show it.</p>
+	 */
+	@Test
+	void equalResultsKeepTheMostPreferredContainer() {
+		//  two unit cubes, A and B are the same size: both cubes go to A, one in each container
+		//
+		//   A [a]   A [b]
+		//
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		PlainPackager parallel = PlainPackager.newBuilder()
+				.withContainerPackingStrategyFactory((inventory, boxes, groups, comparator, emptyResult) -> new ParallelContainerPackingStrategy(executorService, comparator))
+				.build();
+		PlainPackager ordered = PlainPackager.newBuilder().build();
+		try {
+			Container a = Container.newBuilder().withId("A").withSize(1, 1, 1).withMaxLoadWeight(1).build();
+			Container b = Container.newBuilder().withId("B").withSize(1, 1, 1).withMaxLoadWeight(1).build();
+			Box boxA = Box.newBuilder().withId("a").withSize(1, 1, 1).withWeight(1).build();
+			Box boxB = Box.newBuilder().withId("b").withSize(1, 1, 1).withWeight(1).build();
+
+			for (int i = 0; i < 20; i++) {
+				for (PlainPackager packager : List.of(parallel, ordered)) {
+					PackagerResult result = packager.newResultBuilder()
+							.withContainerItems(List.of(new ContainerItem(a, 2), new ContainerItem(b, 2)))
+							.withMaxContainerCount(2)
+							.withBoxItems(new BoxItem(boxA, 1), new BoxItem(boxB, 1))
+							.withInterruptDuration(10_000)
+							.build();
+					// <figure>
+					// container 1 of 2: A
+					//   z                 z                 y                 z
+					//                     1 +-------+       1 +-------+       1 +-------+
+					//   | /-------|   y     |       |         |       |         |       |
+					//   |/       /|         |   a   |         |   a   |         |   a   |
+					// 1 |-------| | /       |       |         |       |         |       |
+					//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+					//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+					//   |       |/
+					// 0 |-------|-- x
+					//   0       1
+					//
+					// container 2 of 2: A
+					//   z                 z                 y                 z
+					//                     1 +-------+       1 +-------+       1 +-------+
+					//   | /-------|   y     |       |         |       |         |       |
+					//   |/       /|         |   b   |         |   b   |         |   b   |
+					// 1 |-------| | /       |       |         |       |         |       |
+					//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+					//   |   b   | | 1       0       1   x     0       1   x     0       1   y
+					//   |       |/
+					// 0 |-------|-- x
+					//   0       1
+					// </figure>
+					figure(result);
+
+					PackagerResultAssert.assertThat(result).isSuccess();
+					assertThat(result.getContainers()).extracting(Container::getId).as(packager == parallel ? "parallel" : "ordered").containsExactly("A", "A");
+				}
+			}
+		} finally {
+			parallel.close();
+			ordered.close();
+			executorService.shutdownNow();
+		}
+	}
+
 	//
 	//  four unit cubes; one large container (2 x 1 x 1) and four small (1 x 1 x 1). The results of the session forks are
 	//  accepted on the session itself, which must count the large container as used:

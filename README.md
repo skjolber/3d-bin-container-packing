@@ -289,9 +289,10 @@ Details: [container costs](docs/container-costs.md), including the calculators a
 
 ## Container packing strategies
 A container packing strategy decides which containers to use, and in which order. By default, containers
-are tried in the supplied (preference) order, or the cheapest combination is searched for when the
-containers have costs. Supply your own with `withContainerPackingStrategyFactory(..)` on the packager
-builders; see [DEVELOPER.md](DEVELOPER.md).
+are tried in the supplied (preference) order when more than one container may be used
+(`withMaxContainerCount(..)`, default 1; otherwise the result comparator picks), or the cheapest combination
+is searched for when the containers have costs. Supply your own with `withContainerPackingStrategyFactory(..)`
+on the packager builders; see [DEVELOPER.md](DEVELOPER.md).
 
 Details: [container packing strategies](docs/container-packing-strategies.md), including the built-in strategies and which is the default.
 

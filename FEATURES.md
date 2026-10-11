@@ -114,7 +114,8 @@ operation directly, retaining the delegate's normal result semantics.
 
 ## Container selection and allocation
 
-- Ordered selection for the supplied container order.
+- Ordered selection for the supplied container order, when more than one container may be used
+  (`withMaxContainerCount(..)`, default 1; otherwise the result comparator picks).
 - Cost-aware selection when container cost calculators are supplied.
 - Brute-force container-sequence search for small container-choice spaces.
 - Allocation planning that rejects states in which remaining items cannot be

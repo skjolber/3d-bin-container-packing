@@ -24,6 +24,10 @@ import com.github.skjolber.packing.packer.strategy.allocation.ContainerAllocatio
  * packing state. The selected result is then accepted by the original session.
  * This requires sessions to support accepting results produced by another
  * session in the same packaging operation.</p>
+ *
+ * <p>The results are compared in container item order, whichever task finishes first,
+ * so among equal results the most preferred container wins, as in
+ * {@linkplain OrderedContainerPackingStrategy}.</p>
  */
 public class ParallelContainerPackingStrategy implements ContainerPackingStrategy {
 
@@ -95,7 +99,8 @@ public class ParallelContainerPackingStrategy implements ContainerPackingStrateg
 					throw new PackagerInterruptedException();
 				}
 				IntermediatePackagerResult result = get(future);
-				if(result != null && !result.isEmpty() && (best == null || comparator.compare(best, result) <= 0)) {
+				// the futures are in container item order, i.e. preference order: on a tie, keep the earlier (more preferred) result
+				if(result != null && !result.isEmpty() && (best == null || comparator.compare(best, result) < 0)) {
 					best = result;
 				}
 			}
