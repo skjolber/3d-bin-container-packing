@@ -26,7 +26,9 @@ Line length 200. Tabs for indentation (see `eclipse-formatter.xml`).
 ## Java code
 
  * Improved performance translates to better results in real life
-   * Do not use `Comparator`. Rather create custom `XXXComparator` interfaces.
+   * Create custom `XXXComparator` interfaces instead of `java.util.Comparator` when this improves the API for a human,
+     or performance in the most intense parts of the critical path. Elsewhere `java.util.Comparator` is fine: a custom
+     comparator which forces a hand-written heap or sort is not an improvement.
      * Do not inline optimizations that use instance checks on known static comparators.
    * Do not use streams instead of a for-loop.
    * Check arguments in builders etc, not in constructors etc on the critical path.
