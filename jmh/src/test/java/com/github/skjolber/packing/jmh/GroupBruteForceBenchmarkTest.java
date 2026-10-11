@@ -21,9 +21,9 @@ public class GroupBruteForceBenchmarkTest {
 		state.init();
 		try {
 			long start = System.nanoTime();
-			int bruteForce = GroupBruteForceBenchmark.pack(state.getBruteForcePackager(), state);
+			int bruteForce = GroupBruteForceBenchmark.pack(state.getBruteForcePackager(), state, 60_000);
 			long middle = System.nanoTime();
-			int parallel = GroupBruteForceBenchmark.pack(state.getParallelBruteForcePackager(), state);
+			int parallel = GroupBruteForceBenchmark.pack(state.getParallelBruteForcePackager(), state, 60_000);
 			long end = System.nanoTime();
 			System.out.println(groups + " groups: brute force " + bruteForce + " containers in " + (middle - start) / 1_000_000 + " ms, parallel " + parallel + " containers in " + (end - middle) / 1_000_000 + " ms");
 			assertTrue(bruteForce > 1);

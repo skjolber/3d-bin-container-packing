@@ -5,7 +5,8 @@ JSON data types for packing results, written by `visualizer/packaging` and read 
 
 ## Key Packages
 - `com.github.skjolber.packing.visualizer.api.packaging`:
-  - `PackagingResultVisualizer`: the root object (`toJson()`), a list of containers
+  - `PackagingResultsVisualizer`: the root object (`toJson()`), one or more results under a top-level `results` array
+  - `PackagingResultVisualizer`: one result, a list of containers
   - `ContainerVisualizer`, `StackVisualizer`, `StackPlacementVisualizer`, `BoxVisualizer`: a container, its stack, the placements and their boxes
   - `PointVisualizer`: a free point (extreme point) after a placement
 - `com.github.skjolber.packing.visualizer.api.VisualizerPlugin`: extension point for extra data

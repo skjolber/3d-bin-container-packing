@@ -3,6 +3,10 @@ package com.github.skjolber.packing.comparator;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 
+/**
+ * Ranks placements by their supported area share; the delegate only breaks ties. Use it to put support
+ * first in an existing ranking without rewriting it.
+ */
 public class SupportDelegateComparator implements PlacementComparator {
 
 	private final PlacementComparator delegate;
@@ -18,7 +22,8 @@ public class SupportDelegateComparator implements PlacementComparator {
 
 	@Override
 	public boolean prefersHigherSupportedArea() {
-		return delegate.prefersHigherSupportedArea();
+		// the primary key of this comparator, regardless of the delegate's own preference
+		return true;
 	}
 
 	@Override

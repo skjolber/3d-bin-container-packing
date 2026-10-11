@@ -45,4 +45,21 @@ public class GroupBruteForceBenchmark {
 		}
 		return result.size();
 	}
+
+	/** Bounded variant for the smoke test, so that a search regression cannot hang the build. */
+	static int pack(AbstractPackager<?> packager, GroupBruteForceBenchmarkState state, long interruptDuration) {
+		PackagerResult result = packager.newResultBuilder()
+				.withContainerItems(state.getContainerItems())
+				.withMaxContainerCount(GroupBruteForceBenchmarkState.CONTAINERS)
+				.withBoxItemGroups(state.getBoxItemGroups())
+				.withInterruptDuration(interruptDuration)
+				.build();
+		if(result.isTimeout()) {
+			throw new IllegalStateException("Timeout after " + interruptDuration + "ms");
+		}
+		if(!result.isSuccess()) {
+			throw new IllegalStateException("Expected the groups to fit");
+		}
+		return result.size();
+	}
 }
