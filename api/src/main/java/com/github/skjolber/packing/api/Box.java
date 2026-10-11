@@ -468,11 +468,12 @@ public class Box {
 		}
 
 		/**
-		 * Sets the maximum number of boxes of any type that may be placed on top of this box.
+		 * Sets the maximum number of levels of boxes, of any type, that may rest on top of this box:
+		 * the longest chain of boxes carried through the support graph, not the total number of boxes.
 		 * Applies to all orientations unless overridden per {@link BoxStackValue}.
 		 * -1 means no limit.
 		 *
-		 * @param count max number of boxes on top
+		 * @param count max levels of boxes on top
 		 */
 		public Builder withMaxLoadBoxCount(int count) {
 			this.maxLoadBoxCount = count;
@@ -481,11 +482,13 @@ public class Box {
 		}
 
 		/**
-		 * Sets the maximum number of boxes of the same type that may be placed on top of this box.
+		 * Sets the maximum number of levels of boxes that may rest on top of this box (the longest
+		 * chain of boxes carried through the support graph, not the total number of boxes), and
+		 * restricts them to the same type as this box.
 		 * Applies to all orientations unless overridden per {@link BoxStackValue}.
-		 * -1 means no limit.
+		 * -1 means no limit on the levels, but still restricted to identical boxes.
 		 *
-		 * @param count max number of same-type boxes on top
+		 * @param count max levels of same-type boxes on top
 		 */
 		public Builder withMaxLoadIdenticalBoxCount(int count) {
 			this.maxLoadBoxCount = count;

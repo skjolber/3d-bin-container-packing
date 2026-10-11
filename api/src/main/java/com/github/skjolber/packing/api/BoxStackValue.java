@@ -110,16 +110,17 @@ public class BoxStackValue {
 			return (T) this;
 		}
 
-		/** Sets max total boxes allowed on top. -1 means no limit. */
+		/** Sets max levels of boxes allowed on top (the longest carried chain, not the total count). -1 means no limit. */
 		public T withMaxLoadBoxCount(int count) {
 			this.maxLoadBoxCount = count;
 			this.maxLoadIdenticalOnly = false;
 			return (T) this;
 		}
 
-		/** 
-		 * Sets max boxes allowed on top, and restricts them to be of the same type. 
-		 * -1 means no limit on count, but still restricted to identical boxes.
+		/**
+		 * Sets max levels of boxes allowed on top (the longest carried chain, not the total count),
+		 * and restricts them to be of the same type.
+		 * -1 means no limit on the levels, but still restricted to identical boxes.
 		 */
 		public T withMaxLoadIdenticalBoxCount(int count) {
 			this.maxLoadBoxCount = count;
