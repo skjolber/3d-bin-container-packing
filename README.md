@@ -322,14 +322,6 @@ CompositePackager packager = CompositePackager.newBuilder()
 # Visualizer
 There is a simple output [visualizer](docs/visualizer.md) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
 
-```
-cd visualizer/viewer
-npm install
-npm start
-```
-
-The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes; write it with `DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`).
-
 ![Four results of one order compared in the viewer](docs/images/visualizer-compare-results.gif)
 
 # Get involved
