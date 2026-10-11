@@ -443,43 +443,64 @@ class PlacementRulesExampleTest {
 	}
 
 	/**
-	 * Container 5 x 1 x 5 with an obstacle at x = 4, and all the rules at once. What is left is 4 x 1 x 5. The cabinet is placed first, then
-	 * the crate beside it, then the board, which is wider than the floor left next to the crate, and hangs over it if placed on the crate:
-	 * it is placed on the cabinet. The drum, which may only be on the floor, takes the floor next to the crate, and the tray is stacked on
-	 * it. The cup is not stacked on the tray, which carries identical boxes only, but on the crate. Full support is required, and holds.
+	 * Container 5 x 1 x 8 with an obstacle at x = 4, and all the rules at once. What is left is 4 x 1 x 8. The cabinet (2 wide, 6 high) is
+	 * placed first, then the crate (1 wide, 5 high) beside it, then the board, which is wider than the crate and so hangs over the floor
+	 * next to it if placed on the crate: with full support required, it is placed on the cabinet. The drum, which may only be on the floor,
+	 * takes the floor next to the crate, and the four trays are stacked on it. The trays carry identical boxes only, and two levels at
+	 * most: the first tray carries the second and the third, but not the fourth, which is placed on the crate instead (without the
+	 * constraint, the tower is four trays high, and the cup is on the crate). The cup is not placed on a tray, neither on the tower nor on
+	 * the tray on the crate, but on the board.
+	 * <p>
+	 * The rules which are binding, as the layout differs without them: full support (the board is one level higher), the identical boxes
+	 * with the maximum count (the tower is three trays high, one tray is on the crate, and the cup is on the board), and the obstacle (the
+	 * column is not available to the boxes: without it, the board fits on the floor next to the crate). The ground-only drum is not
+	 * binding: it is on the floor without the rule too (see {@linkplain #groundOnlyBoxIsPlacedOnTheFloor()}).
 	 */
 	@Test
 	void theRulesCanBeCombined() {
-		Container container = container(5, 1, 5);
-		List<BoxItem> boxItems = List.of(
-				new BoxItem(box("cabinet", 2, 1, 4, 4), 1),
-				new BoxItem(box("crate", 1, 1, 3, 3), 1),
-				new BoxItem(box("board", 2, 1, 1, 1), 1),
-				new BoxItem(cube("drum", 3), 1),
-				new BoxItem(Box.newBuilder().withId("tray").withSize(1, 1, 1).withWeight(2).withMaxLoadIdenticalBoxCount(-1).build(), 1),
-				new BoxItem(cube("cup"), 1));
+		Container container = container(5, 1, 8);
+		int[] obstacle = column(container, 4, 0);
+		BoxItem cabinet = new BoxItem(box("cabinet", 2, 1, 6, 6), 1);
+		BoxItem crate = new BoxItem(box("crate", 1, 1, 5, 4), 1);
+		BoxItem board = new BoxItem(box("board", 2, 1, 1, 1), 1);
+		BoxItem drum = new BoxItem(cube("drum", 3), 1);
+		BoxItem cup = new BoxItem(cube("cup"), 1);
 
-		PackagerResult result = pack(true, groundLevelDrums(), container, column(container, 4, 0), boxItems.toArray(new BoxItem[0]));
+		BoxItem plainTrays = new BoxItem(cube("tray", 2), 4);
+		PackagerResult unconstrained = pack(true, groundLevelDrums(), container, obstacle, cabinet, crate, board, drum, plainTrays, cup);
+		// without the load constraint of the trays, they are stacked four high on the drum, and the cup is on the crate
 		// <figure>
 		//   z                                                 z
-		//                                                     5 +---------------+               +-------+
-		//   | /---------------|               /-------|         |               |               |#######|
-		//   |/               /|              /#######/|         |     board     |               |#######|
-		// 5 |---------------| |             |-------|#|         |               |               |#######|
-		//   |               | |             |#######|#|       4 +---------------+-------+       |#######|
+		//                                                     8                                 +-------+
+		//   |                                 /-------|                                         |#######|
+		//   |                                /#######/|                                         |#######|
+		// 8 |                               |-------|#|                                         |#######|
+		//   |                               |#######|#|       7 +---------------+               |#######|
+		//   | /---------------|             |#######|#|         |               |               |#######|
+		//   |/               /|             |#######|#|         |     board     |               |#######|
+		// 7 |---------------| |             |#######|#|         |               |               |#######|
+		//   |               | |             |#######|#|       6 +---------------+-------+       |#######|
 		//   |     board     | |-------|     |#######|#|         |               |       |       |#######|
 		//   |               |/       /|     |#######|#|         |               |  cup  |       |#######|
-		// 4 |---------------|-------| |     |#######|#|         |               |       |       |#######|
-		//   |               |       | |     |#######|#|       3 |               +-------+       |#######|
-		//   |               |  cup  | |     |#######|#|         |               |       |       |#######|
-		//   |               |       |/|     |#######|#|         |               |       |       |#######|
-		// 3 |               |-------| |     |#######|#|         |               |       |       |#######|
-		//   |               |       | |     |#######|#|       2 |    cabinet    |       +-------+#######|
-		//   |               |       | |-----|#######|#|         |               |       |       |#######|
-		//   |               |       |/      |#######|#|         |               | crate | tray  |#######|
-		// 2 |    cabinet    |       |-------|#######|#|         |               |       |       |#######|
+		// 6 |---------------|-------| |     |#######|#|         |               |       |       |#######|
+		//   |               |       | |     |#######|#|       5 |               +-------+-------+#######|
+		//   |               |  cup  | |-----|#######|#|         |               |       |       |#######|
+		//   |               |       |/      |#######|#|         |               |       | tray  |#######|
+		// 5 |               |-------|-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       4 |               |       +-------+#######|
+		//   |               |       | tray  |#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               |       | tray  |#######|
+		// 4 |               |       |-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       3 |    cabinet    |       +-------+#######|
+		//   |               |       | tray  |#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               | crate | tray  |#######|
+		// 3 |    cabinet    |       |-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       2 |               |       +-------+#######|
+		//   |               | crate | tray  |#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               |       | tray  |#######|
+		// 2 |               |       |-------|#######|#|         |               |       |       |#######|
 		//   |               |       |       |#######|#|       1 |               |       +-------+#######|
-		//   |               | crate | tray  |#######|#|   y     |               |       |       |#######|
+		//   |               |       | tray  |#######|#|   y     |               |       |       |#######|
 		//   |               |       |       |#######|#|         |               |       | drum  |#######|
 		// 1 |               |       |-------|#######|#| /       |               |       |       |#######|
 		//   |               |       |       |#######|#|/      0 +---------------+-------+-------+-------+
@@ -489,12 +510,109 @@ class PlacementRulesExampleTest {
 		//   0               2       3       4       5
 		//
 		// y                                                 z
-		// 1 +---------------+-------+-------+-------+       5 +-------+
+		// 1 +---------------+-------+-------+-------+       8 +-------+
 		//   |               |       |       |#######|         |#######|
 		//   |     board     |  cup  | tray  |#######|         |#######|
 		//   |               |       |       |#######|         |#######|
-		// 0 +---------------+-------+-------+-------+       4 |#######|
+		// 0 +---------------+-------+-------+-------+       7 |#######|
 		//   0               2       3       4       5   x     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   6 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   5 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   4 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   3 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   2 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   1 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   0 +-------+
+		//                                                     0       1   y
+		// </figure>
+		figure(unconstrained);
+
+		PackagerResultAssert.assertThat(unconstrained).isSuccess().hasContainerCount(1).hasStackSize(0, 9);
+		assertThat(placements(unconstrained, "tray")).extracting(Placement::getAbsoluteZ).containsExactlyInAnyOrder(1, 2, 3, 4);
+		assertThat(levelsOnTrays(unconstrained)).isEqualTo(3);
+
+		BoxItem trays = new BoxItem(tray(2), 4);
+		PackagerResult result = pack(true, groundLevelDrums(), container, obstacle, cabinet, crate, board, drum, trays, cup);
+		// the trays carry identical boxes only, and two levels at most: three are stacked, the fourth is on the crate, and the cup is on the board
+		// <figure>
+		//   z                                                 z
+		//                                                     8 +-------+                       +-------+
+		//   | /-------|                       /-------|         |       |                       |#######|
+		//   |/       /|                      /#######/|         |  cup  |                       |#######|
+		// 8 |-------| |                     |-------|#|         |       |                       |#######|
+		//   |       | |                     |#######|#|       7 +-------+-------+               |#######|
+		//   |  cup  | |-------|             |#######|#|         |               |               |#######|
+		//   |       |/       /|             |#######|#|         |     board     |               |#######|
+		// 7 |-------|-------| |             |#######|#|         |               |               |#######|
+		//   |               | |             |#######|#|       6 +---------------+-------+       |#######|
+		//   |     board     | |-------|     |#######|#|         |               |       |       |#######|
+		//   |               |/       /|     |#######|#|         |               | tray  |       |#######|
+		// 6 |---------------|-------| |     |#######|#|         |               |       |       |#######|
+		//   |               |       | |     |#######|#|       5 |               +-------+       |#######|
+		//   |               | tray  | |     |#######|#|         |               |       |       |#######|
+		//   |               |       |/|     |#######|#|         |               |       |       |#######|
+		// 5 |               |-------| |     |#######|#|         |               |       |       |#######|
+		//   |               |       | |     |#######|#|       4 |               |       +-------+#######|
+		//   |               |       | |-----|#######|#|         |               |       |       |#######|
+		//   |               |       |/      |#######|#|         |               |       | tray  |#######|
+		// 4 |               |       |-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       3 |    cabinet    |       +-------+#######|
+		//   |               |       | tray  |#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               | crate | tray  |#######|
+		// 3 |    cabinet    |       |-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       2 |               |       +-------+#######|
+		//   |               | crate | tray  |#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               |       | tray  |#######|
+		// 2 |               |       |-------|#######|#|         |               |       |       |#######|
+		//   |               |       |       |#######|#|       1 |               |       +-------+#######|
+		//   |               |       | tray  |#######|#|   y     |               |       |       |#######|
+		//   |               |       |       |#######|#|         |               |       | drum  |#######|
+		// 1 |               |       |-------|#######|#| /       |               |       |       |#######|
+		//   |               |       |       |#######|#|/      0 +---------------+-------+-------+-------+
+		//   |               |       | drum  |#######|#| 1       0       1       2       3       4       5   x
+		//   |               |       |       |#######|/
+		// 0 |---------------|-------|-------|-------|-- x
+		//   0       1       2       3       4       5
+		//
+		// y                                                 z
+		// 1 +-------+-------+-------+-------+-------+       8 +-------+
+		//   |       |       |       |       |#######|         |#######|
+		//   |  cup  | board | tray  | tray  |#######|         |#######|
+		//   |       |       |       |       |#######|         |#######|
+		// 0 +-------+-------+-------+-------+-------+       7 |#######|
+		//   0       1       2       3       4       5   x     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   6 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   5 |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                     |#######|
+		//                                                   4 |#######|
+		//                                                     |#######|
 		//                                                     |#######|
 		//                                                     |#######|
 		//                                                   3 |#######|
@@ -514,16 +632,22 @@ class PlacementRulesExampleTest {
 		// </figure>
 		figure(result);
 
-		PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1).hasStackSize(0, 6);
-		// these positions differ without the rules (the validator also sees them: the obstacle in the result container, the identical-only
-		// tray in the stack values and the support from the stability validator)
-		assertThat(placement(result, "board").getAbsoluteZ()).isEqualTo(4);
-		assertThat(placement(result, "cup").getAbsoluteZ()).isEqualTo(3);
+		PackagerResultAssert.assertThat(result).isSuccess().hasContainerCount(1).hasStackSize(0, 9);
+		// these positions differ without the rules (the validator also sees them: the obstacle in the result container, the load
+		// constraints of the trays in the stack values and the support from the stability validator)
+		assertThat(placement(result, "board").getAbsoluteZ()).isEqualTo(6);
 		assertThat(result.get(0).getObstacles()).hasSize(1);
+		// the tower is three trays high, the fourth tray is on the crate, and the cup is on the board: the trays are no place for it
+		assertThat(placements(result, "tray")).extracting(Placement::getAbsoluteZ).containsExactlyInAnyOrder(1, 2, 3, 5);
+		assertThat(placement(result, "cup").getAbsoluteZ()).isEqualTo(7);
+		// the trays do carry trays, and trays only (in the support graph which the validator uses), and the most levels on top of a tray are
+		// the maximum
+		assertThat(boxesOnTrays(result)).isNotEmpty().extracting(placement -> placement.getBox().getId()).containsOnly("tray");
+		assertThat(levelsOnTrays(result)).isEqualTo(2);
 		// the drum is on the floor (the validator does not know this rule, and it would be there without it too: a rule which keeps a box on
 		// the floor can only make a layout impossible, see groundOnlyBoxIsPlacedOnTheFloor)
 		assertThat(placement(result, "drum").getAbsoluteZ()).isZero();
-		PackagerResultAssert.assertThat(result).isAcceptedBy(validation(container, true, boxItems.toArray(new BoxItem[0])));
+		PackagerResultAssert.assertThat(result).isAcceptedBy(validation(container, true, cabinet, crate, board, drum, trays, cup));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------------------------
