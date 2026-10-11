@@ -31,12 +31,9 @@ public class BinarySearchIterator {
 		return low <= high;
 	}
 
-	/**
-	 * Note: the arguments are (high, low), the reverse of the constructor's (low, high).
-	 */
-	public void reset(int high, int low) {
-		this.high = high;
+	public void reset(int low, int high) {
 		this.low = low;
+		this.high = high;
 	}
 
 }

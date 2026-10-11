@@ -1,9 +1,9 @@
 package com.github.skjolber.packing.test.bouwkamp;
 
+import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
-import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
@@ -19,9 +19,15 @@ public class BouwkampCodeConverter {
 		}
 
 		@Override
-		public Point clone(int maxX, int maxY, int maxZ) {
+		public Point copy(int maxX, int maxY, int maxZ) {
 			return new BouwkampPoint(minX,  minY,  minZ, maxX, maxY, maxZ);
 		}
+		
+		@Override
+		public boolean isSupportedXYPlane(int x, int y) {
+			return false;
+		}
+
 	}
 	
 	private boolean throwException;
@@ -37,8 +43,7 @@ public class BouwkampCodeConverter {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		return new Placement(stackValue, new BouwkampPoint(x, y, z, 0, 0, 0));
 	}

@@ -1,18 +1,17 @@
 package com.github.skjolber.packing.packer;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControlsBuilderFactory;
 
-public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory<Placement>  {
+public class ComparatorPlacementControlsBuilderFactory implements PlacementControlsBuilderFactory  {
 
-	protected final Comparator<Placement> placementComparator;
-	protected final Comparator<BoxItem> boxItemComparator;
+	protected final PlacementComparator placementComparator;
+	protected final BoxItemComparator boxItemComparator;
 	
-	public ComparatorPlacementControlsBuilderFactory(Comparator<Placement> placementComparator,
-			Comparator<BoxItem> boxItemComparator) {
+	public ComparatorPlacementControlsBuilderFactory(PlacementComparator placementComparator,
+			BoxItemComparator boxItemComparator) {
 		super();
 		this.placementComparator = placementComparator;
 		this.boxItemComparator = boxItemComparator;

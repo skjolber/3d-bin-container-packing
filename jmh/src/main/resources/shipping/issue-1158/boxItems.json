@@ -1,0 +1,210 @@
+{
+    "boxItems": [
+        {
+            "count": 4,
+            "box": {
+                "weight": 1100,
+                "stackValues": [
+                    {
+                        "dx": 96250,
+                        "dy": 38750,
+                        "dz": 5000,
+                        "area": 3729687500,
+                        "surfaces": [
+                            {
+                                "label": "BOTTOM",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 0
+                    },
+                    {
+                        "dx": 38750,
+                        "dy": 96250,
+                        "dz": 5000,
+                        "area": 3729687500,
+                        "surfaces": [
+                            {
+                                "label": "BOTTOM",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 1
+                    },
+                    {
+                        "dx": 96250,
+                        "dy": 5000,
+                        "dz": 38750,
+                        "area": 481250000,
+                        "surfaces": [
+                            {
+                                "label": "REAR",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 2
+                    },
+                    {
+                        "dx": 5000,
+                        "dy": 96250,
+                        "dz": 38750,
+                        "area": 481250000,
+                        "surfaces": [
+                            {
+                                "label": "REAR",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 3
+                    },
+                    {
+                        "dx": 5000,
+                        "dy": 38750,
+                        "dz": 96250,
+                        "area": 193750000,
+                        "surfaces": [
+                            {
+                                "label": "LEFT",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 4
+                    },
+                    {
+                        "dx": 38750,
+                        "dy": 5000,
+                        "dz": 96250,
+                        "area": 193750000,
+                        "surfaces": [
+                            {
+                                "label": "LEFT",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 18648437500000,
+                        "index": 5
+                    }
+                ],
+                "volume": 18648437500000,
+                "minimumArea": 193750000,
+                "maximumArea": 3729687500,
+                "minimumPressure": 0,
+                "maximumPressure": 0,
+                "id": "HIP1-CH-HG",
+                "description": null
+            },
+            "index": -1,
+            "volume": 74593750000000,
+            "empty": false,
+            "weight": 4400
+        },
+        {
+            "count": 1,
+            "box": {
+                "weight": 1600,
+                "stackValues": [
+                    {
+                        "dx": 90000,
+                        "dy": 35000,
+                        "dz": 10000,
+                        "area": 3150000000,
+                        "surfaces": [
+                            {
+                                "label": "BOTTOM",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 0
+                    },
+                    {
+                        "dx": 35000,
+                        "dy": 90000,
+                        "dz": 10000,
+                        "area": 3150000000,
+                        "surfaces": [
+                            {
+                                "label": "BOTTOM",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 1
+                    },
+                    {
+                        "dx": 90000,
+                        "dy": 10000,
+                        "dz": 35000,
+                        "area": 900000000,
+                        "surfaces": [
+                            {
+                                "label": "REAR",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 2
+                    },
+                    {
+                        "dx": 10000,
+                        "dy": 90000,
+                        "dz": 35000,
+                        "area": 900000000,
+                        "surfaces": [
+                            {
+                                "label": "REAR",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 3
+                    },
+                    {
+                        "dx": 10000,
+                        "dy": 35000,
+                        "dz": 90000,
+                        "area": 350000000,
+                        "surfaces": [
+                            {
+                                "label": "LEFT",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 4
+                    },
+                    {
+                        "dx": 35000,
+                        "dy": 10000,
+                        "dz": 90000,
+                        "area": 350000000,
+                        "surfaces": [
+                            {
+                                "label": "LEFT",
+                                "attributes": {}
+                            }
+                        ],
+                        "volume": 31500000000000,
+                        "index": 5
+                    }
+                ],
+                "volume": 31500000000000,
+                "minimumArea": 350000000,
+                "maximumArea": 3150000000,
+                "minimumPressure": 0,
+                "maximumPressure": 0,
+                "id": "HIP1-RO-CR-NU",
+                "description": null
+            },
+            "index": -1,
+            "volume": 31500000000000,
+            "empty": false,
+            "weight": 1600
+        }
+    ]
+}

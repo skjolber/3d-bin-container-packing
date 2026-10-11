@@ -1,13 +1,9 @@
 package com.github.skjolber.packing.api.packager.control.manifest;
 
-import com.github.skjolber.packing.api.packager.BoxItemSource;
+/**
+ * Manifest controls which do not filter anything.
+ */
 
 public class DefaultManifestControls implements ManifestControls {
-
-	protected BoxItemSource filteredBoxItems;
-	
-	public DefaultManifestControls(BoxItemSource filteredBoxItems) {
-		this.filteredBoxItems = filteredBoxItems;
-	}
 
 }

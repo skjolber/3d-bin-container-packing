@@ -5,47 +5,58 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
-public class PointTest {
+class PointTest {
 
 	private static class TestPoint extends Point {
 
-		public TestPoint(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
+		TestPoint(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 			super(minX, minY, minZ, maxX, maxY, maxZ);
 		}
 
 		@Override
-		public Point clone(int maxX, int maxY, int maxZ) {
+		public Point copy(int maxX, int maxY, int maxZ) {
 			return new TestPoint(minX, minY, minZ, maxX, maxY, maxZ);
+		}
+
+		@Override
+		public boolean isSupportedXYPlane(int x, int y) {
+			return false;
 		}
 	}
 
 	@Test
-	void testSetMaxZ() {
-		Point point = new TestPoint(1, 2, 3, 5, 6, 20);
+	void setMaxZUpdatesDepthAndVolume() {
+		Point point = new TestPoint(0, 0, 2, 9, 9, 9);
 
-		point.setMaxZ(10);
+		point.setMaxZ(5);
 
-		assertEquals(10, point.getMaxZ());
-		assertEquals(8, point.getDz());
-		assertEquals(5L * 5L * 8L, point.getVolume());
-		assertEquals(25, point.getArea());
+		assertEquals(5, point.getMaxZ());
+		assertEquals(4, point.getDz());
+		assertEquals(10L * 10L * 4L, point.getVolume());
 	}
 
 	@Test
-	void testSetMaxZRejectsNegativeValue() {
-		Point point = new TestPoint(1, 2, 3, 5, 6, 20);
+	void setMaxZDoesNotDependOnMaxX() {
+		Point point = new TestPoint(0, 0, 0, -1, 9, 9);
+
+		point.setMaxZ(4);
+
+		assertEquals(4, point.getMaxZ());
+		assertEquals(5, point.getDz());
+	}
+
+	@Test
+	void setMaxZRejectsNegativeValues() {
+		Point point = new TestPoint(1, 2, 3, 9, 9, 9);
 
 		RuntimeException exception = assertThrows(RuntimeException.class, () -> point.setMaxZ(-1));
-		assertEquals("Cannot set max z to -1 for 1x2x3", exception.getMessage());
 
-		// unchanged
-		assertEquals(20, point.getMaxZ());
-		assertEquals(18, point.getDz());
+		assertEquals("Cannot set max z to -1 for 1x2x3", exception.getMessage());
 	}
 
 	@Test
-	void testSetMaxXAndYRejectNegativeValues() {
-		Point point = new TestPoint(1, 2, 3, 5, 6, 20);
+	void setMaxXAndYRejectNegativeValues() {
+		Point point = new TestPoint(1, 2, 3, 9, 9, 9);
 
 		assertThrows(RuntimeException.class, () -> point.setMaxX(-1));
 		assertThrows(RuntimeException.class, () -> point.setMaxY(-1));

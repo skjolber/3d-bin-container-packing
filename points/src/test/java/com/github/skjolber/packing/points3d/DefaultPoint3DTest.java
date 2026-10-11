@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
-import com.github.skjolber.packing.ep.points3d.DefaultXZPlanePoint3D;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 
 public class DefaultPoint3DTest {
 
@@ -22,21 +22,15 @@ public class DefaultPoint3DTest {
 	}
 
 	@Test
-	public void testRotate() {
-		DefaultPoint3D rotate = point.rotate().rotate().rotate();
-		assertEquals(rotate, point);
-	}
-
-	@Test
-	public void testClone() {
-		DefaultPoint3D clone = point.clone();
+	public void testCopy() {
+		DefaultPoint3D copy = point.copy();
 		
-		assertEquals(point.getMinX(), clone.getMinX());
-		assertEquals(point.getMinY(), clone.getMinY());
-		assertEquals(point.getMinZ(), clone.getMinZ());
-		assertEquals(point.getMaxX(), clone.getMaxX());
-		assertEquals(point.getMaxY(), clone.getMaxY());
-		assertEquals(point.getMaxZ(), clone.getMaxZ());
+		assertEquals(point.getMinX(), copy.getMinX());
+		assertEquals(point.getMinY(), copy.getMinY());
+		assertEquals(point.getMinZ(), copy.getMinZ());
+		assertEquals(point.getMaxX(), copy.getMaxX());
+		assertEquals(point.getMaxY(), copy.getMaxY());
+		assertEquals(point.getMaxZ(), copy.getMaxZ());
 	}
 
 	@Test

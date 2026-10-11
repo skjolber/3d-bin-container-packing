@@ -1,0 +1,47 @@
+package com.github.skjolber.packing.comparator.placement;
+
+import com.github.skjolber.packing.api.BoxStackValue;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+
+public class LargestAreaPlacementComparator implements PlacementComparator {
+
+	@Override
+	public boolean usesSupportedArea() {
+		return false;
+	}
+
+	@Override
+	public boolean prefersHigherSupportedArea() {
+		return true;
+	}
+
+	@Override
+	public int compare(Placement o1, Placement o2) {
+		
+		// ****************************************
+		// * Prefer the highest area
+		// ****************************************
+
+		BoxStackValue o1StackValue = o1.getStackValue();
+		BoxStackValue o2StackValue = o2.getStackValue();
+		
+		int compare = Long.compare(o1StackValue.getArea(), o2StackValue.getArea());
+		if(compare != 0) {
+			return compare;
+		}
+
+		compare = Long.compare(o1StackValue.getVolume(), o2StackValue.getVolume());
+		if(compare != 0) {
+			return compare;
+		}
+		
+		compare = Long.compare(o1.getBox().getWeight(), o2.getBox().getWeight());
+		if(compare != 0) {
+			return compare;
+		}
+
+		return 0;
+	}
+	
+}

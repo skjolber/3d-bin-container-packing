@@ -1,11 +1,8 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.eclipse.collections.api.block.comparator.primitive.IntComparator;
 import org.eclipse.collections.impl.list.mutable.primitive.IntArrayList;
@@ -52,9 +49,9 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	protected long minAreaLimit = 0;
 
-	protected final boolean cloneOnConstrain;
+	protected final boolean copyOnConstrain;
 
-	protected List<SimplePoint2D> initialPoints = Collections.emptyList();
+	protected Point2DList initialPoints;
 
 	private IntComparator COMPARATOR_MOVE_TO_YY = (a, b) -> {
 		return Point2D.COMPARATOR_MOVE_YY.compare(values.get(a), values.get(b));
@@ -65,7 +62,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	};
 	
 	public DefaultPointCalculator2D(boolean immutablePoints, BoxItemSource boxItemSource) {
-		this.cloneOnConstrain = immutablePoints;
+		this.copyOnConstrain = immutablePoints;
 		
 		int count = 0;
 		for(int i = 0; i < boxItemSource.size(); i++) {
@@ -76,23 +73,27 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	}
 
 	public DefaultPointCalculator2D(boolean immutablePoints, int capacity) {
-		this.cloneOnConstrain = immutablePoints;
+		this.copyOnConstrain = immutablePoints;
 		this.placements = new PlacementList(capacity);
 	}	
 
 	@SuppressWarnings("unchecked")
 	public void setSize(int dx, int dy, int dz) {
+		if(containerPlacement != null && containerMaxX == dx - 1 && containerMaxY == dy - 1 && containerMaxZ == dz - 1) {
+			// unchanged: keep the container placement, as the 3D calculator does
+			return;
+		}
 		this.containerMaxX = dx - 1;
 		this.containerMaxY = dy - 1;
 		this.containerMaxZ = dz - 1;
 
 		BoxStackValue stackValue = new BoxStackValue(dx, dy, dz, null, -1);
 		
-		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1));
+		this.containerPlacement = new Placement(stackValue, new DefaultPoint2D(0, 0, 0, dx - 1, dy - 1, dz - 1), false);
 	}
 
-	private DefaultXYSupportPoint2D createContainerPoint() {
-		DefaultXYSupportPoint2D point = new DefaultXYSupportPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
+	private DefaultPoint2D createContainerPoint() {
+		DefaultPoint2D point = new DefaultPoint2D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement);
 		point.setIndex(0);
 		return point;
 	}
@@ -124,7 +125,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	
 
 	public boolean add(int index, Placement placement) {
-		Point2D point = values.get(index);
+		SimplePoint2D point = values.get(index);
 		
 		// check supported planes when placement is not placed at point
 		boolean xSupport = point.getMinY() == placement.getAbsoluteY() && point.isXSupport(placement.getAbsoluteX());
@@ -147,7 +148,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			
 			if(fits2D(point, placement)) {
 				// check supported planes when placement is not placed at point
@@ -260,7 +261,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		int endIndex = values.binarySearchPlusMinX(index + 1, placement.getAbsoluteEndX());
 
 		for (int i = pointIndex; i < endIndex; i++) {
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 
 			if(point.getMinY() > placement.getAbsoluteEndY()) {
 				// 
@@ -373,7 +374,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addXX.size(); k++) {
-					Point2D add = addXX.get(k);
+					SimplePoint2D add = addXX.get(k);
 					if(add.eclipsesMovedX(p, xx)) {
 						continue add;
 					}
@@ -399,7 +400,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				// add point on the other side
 				// with x support
 				for (int k = 0; k < addYY.size(); k++) {
-					Point2D add = addYY.get(k);
+					SimplePoint2D add = addYY.get(k);
 					if(add.eclipsesMovedY(p, yy)) {
 						continue add;
 					}
@@ -438,8 +439,8 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			// so only those points between 0 and minY 
 			// and between minX and maxX need to be constrained
 
-			if(cloneOnConstrain) {
-				constrainMaxYWithClone(placement, pointIndex, endIndex);
+			if(copyOnConstrain) {
+				constrainMaxYWithCopy(placement, pointIndex, endIndex);
 			} else {
 				constrainMaxY(placement, pointIndex, endIndex);
 			}
@@ -460,14 +461,14 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			// so only those points between 0 and minX (inclusive)
 			// and between minY and maxY need to be constrained
 
-			if(cloneOnConstrain) {
-				constrainMaxXWithClone(placement, 0, endIndex);
+			if(copyOnConstrain) {
+				constrainMaxXWithCopy(placement, 0, endIndex);
 			} else {
 				constrainMaxX(placement, 0, endIndex);
 			}
 		} else {
-			if(cloneOnConstrain) {
-				constrainFloatingMaxWithClone(placement, endIndex);
+			if(copyOnConstrain) {
+				constrainFloatingMaxWithCopy(placement, endIndex);
 			} else {
 				constrainFloatingMax(placement, endIndex);
 			}
@@ -513,20 +514,20 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		return !values.isEmpty();
 	}
 
-	private void constrainMaxXWithClone(Placement placement, int pointIndex, int endIndex) {
+	private void constrainMaxXWithCopy(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
 				if(point.getMaxX() >= placement.getAbsoluteX()) {
 					int limitX = placement.getAbsoluteX() - 1;
 					if(!isConstrainedAtMaxX(point, limitX)) {
-						Point2D clone = point.clone(limitX, point.getMaxY());
+						SimplePoint2D copy = point.copy(limitX, point.getMaxY());
 
-						addXX.add(clone);
+						addXX.add(copy);
 					}
 
 					values.flag(i);
@@ -535,20 +536,20 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 	}
 
-	private void constrainMaxYWithClone(Placement placement, int pointIndex, int endIndex) {
+	private void constrainMaxYWithCopy(Placement placement, int pointIndex, int endIndex) {
 		for (int i = pointIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
 				if(point.getMaxY() >= placement.getAbsoluteY()) {
 					int limitY = placement.getAbsoluteY() - 1;
 					if(!isConstrainedAtMaxY(point, limitY)) {
-						Point2D clone = point.clone(point.getMaxX(), limitY);
+						SimplePoint2D copy = point.copy(point.getMaxX(), limitY);
 
-						addXX.add(clone);
+						addXX.add(copy);
 					}
 					values.flag(i);
 				}
@@ -562,7 +563,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			if(point.getMinX() < placement.getAbsoluteX() && withinY(point.getMinY(), placement)) {
 				if(point.getMaxX() >= placement.getAbsoluteX()) {
 					point.setMaxX(placement.getAbsoluteX() - 1);
@@ -580,7 +581,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			if(point.getMinY() < placement.getAbsoluteY() && withinX(point.getMinX(), placement)) {
 				if(point.getMaxY() >= placement.getAbsoluteY()) {
 					point.setMaxY(placement.getAbsoluteY() - 1);
@@ -598,7 +599,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		final long area = (long)(maxX - minX + 1) * (maxY - minY + 1);
 		final Point2DFlagList values = this.values;
 		for (int i = searchFrom; i < values.size(); i++) {
-			Point2D o = values.get(i);
+			SimplePoint2D o = values.get(i);
 			if (o.getMinX() > minX) break;
 			if (values.isFlag(i)) continue;
 			if (area <= o.getArea()) {
@@ -630,7 +631,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			if(values.isFlag(i)) {
 				continue;
 			}
-			Point2D unsorted = values.get(i);
+			SimplePoint2D unsorted = values.get(i);
 			final int unsortedMinX = unsorted.getMinX();
 			final long unsortedArea = unsorted.getArea();
 
@@ -638,7 +639,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				if(values.isFlag(index)) {
 					continue;
 				}
-				Point2D sorted = values.get(index);
+				SimplePoint2D sorted = values.get(index);
 				if(sorted.getMinX() > unsortedMinX) {
 					// so sorted cannot contain unsorted
 					// at this index or later
@@ -659,7 +660,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
+	protected void constrainFloatingMaxWithCopy(Placement placement, int limit) {
 
 		Point2DFlagList values = this.values;
 		Point2DList addXX = this.addXX;
@@ -673,7 +674,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndY() < point.getMinY() ||
@@ -734,20 +735,20 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			addX: if(point.getMinX() < placement.getAbsoluteX()) {
 				int limitX = placement.getAbsoluteX() - 1;
 				if(!isConstrainedAtMaxX(point, limitX)) {
-					Point2D clone = point.clone(limitX, point.getMaxY());
+					SimplePoint2D copy = point.copy(limitX, point.getMaxY());
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D point3d = values.get(j);
-						if(point3d.getMinX() > clone.getMinX()) {
+						SimplePoint2D point3d = values.get(j);
+						if(point3d.getMinX() > copy.getMinX()) {
 							break;
 						}
 
-						if(point3d.getArea() >= clone.getArea()) {
-							if(point3d.eclipses(clone)) {
+						if(point3d.getArea() >= copy.getArea()) {
+							if(point3d.eclipses(copy)) {
 								break addX;
 							}
 						}
@@ -755,36 +756,36 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addXX.size(); j++) {
-						Point2D point3d = addXX.get(j);
+						SimplePoint2D point3d = addXX.get(j);
 
-						if(point3d.getArea() >= clone.getArea()) {
-							if(point3d.eclipses(clone)) {
+						if(point3d.getArea() >= copy.getArea()) {
+							if(point3d.eclipses(copy)) {
 								break addX;
 							}
 						}
 					}
 
-					addXX.add(clone);
+					addXX.add(copy);
 				}
 			}
 
 			addY: if(point.getMinY() < placement.getAbsoluteY()) {
 				int limitY = placement.getAbsoluteY() - 1;
 				if(!isConstrainedAtMaxY(point, limitY)) {
-					Point2D clone = point.clone(point.getMaxX(), limitY);
+					SimplePoint2D copy = point.copy(point.getMaxX(), limitY);
 
 					// is the point now eclipsed by current points?
 					for (int j = 0; j < i - 1; j++) {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D point3d = values.get(j);
-						if(point3d.getMinX() > clone.getMinX()) {
+						SimplePoint2D point3d = values.get(j);
+						if(point3d.getMinX() > copy.getMinX()) {
 							break;
 						}
 
-						if(point3d.getArea() >= clone.getArea()) {
-							if(point3d.eclipses(clone)) {
+						if(point3d.getArea() >= copy.getArea()) {
+							if(point3d.eclipses(copy)) {
 								break addY;
 							}
 						}
@@ -792,16 +793,16 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 					// is the point now eclipsed by new points?
 					for (int j = 0; j < addYY.size(); j++) {
-						Point2D point3d = addYY.get(j);
+						SimplePoint2D point3d = addYY.get(j);
 
-						if(point3d.getArea() >= clone.getArea()) {
-							if(point3d.eclipses(clone)) {
+						if(point3d.getArea() >= copy.getArea()) {
+							if(point3d.eclipses(copy)) {
 								break addY;
 							}
 						}
 					}
 
-					addYY.add(clone);
+					addYY.add(copy);
 				}
 			}
 
@@ -830,7 +831,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				continue;
 			}
 
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 
 			if(
 				placement.getAbsoluteEndY() < point.getMinY() ||
@@ -857,7 +858,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D point3d = values.get(j);
+						SimplePoint2D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -874,7 +875,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					if(splitXX) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddXX; j < addXX.size(); j++) {
-							Point2D point3d = addXX.get(j);
+							SimplePoint2D point3d = addXX.get(j);
 
 							if(point3d.getArea() >= point.getArea()) {
 								if(point3d.eclipses(point)) {
@@ -908,7 +909,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 						if(values.isFlag(j)) {
 							continue;
 						}
-						Point2D point3d = values.get(j);
+						SimplePoint2D point3d = values.get(j);
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
@@ -925,7 +926,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 					if(splitYY) {
 						// is the point now eclipsed by new points?
 						for (int j = startAddYY; j < addYY.size(); j++) {
-							Point2D point3d = addYY.get(j);
+							SimplePoint2D point3d = addYY.get(j);
 
 							if(point3d.getArea() >= point.getArea()) {
 								if(point3d.eclipses(point)) {
@@ -1011,14 +1012,14 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			//             
 
 			if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				Point2D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY());
-				addXX.add(clone);
+				SimplePoint2D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY());
+				addXX.add(copy);
 
 				splitXX = true;
 			}
 			if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				Point2D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1);
-				addYY.add(clone);
+				SimplePoint2D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1);
+				addYY.add(copy);
 
 				splitYY = true;
 			}
@@ -1075,7 +1076,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public int getMinY() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 
 			if(point.getMinY() < values.get(min).getMinY()) {
 				min = i;
@@ -1087,7 +1088,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public int getMinX() {
 		int min = 0;
 		for (int i = 1; i < values.size(); i++) {
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 
 			if(point.getMinX() < values.get(min).getMinX()) {
 				min = i;
@@ -1103,7 +1104,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	public long getMaxArea() {
 		long maxPointArea = -1L;
 		for (int i = 0; i < values.size(); i++) {
-			Point2D point = values.get(i);
+			SimplePoint2D point = values.get(i);
 			if(maxPointArea < point.getArea()) {
 				maxPointArea = point.getArea();
 			}
@@ -1124,7 +1125,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	public int findPoint(int x, int y) {
 		for (int i = 0; i < values.size(); i++) {
-			Point2D point2d = values.get(i);
+			SimplePoint2D point2d = values.get(i);
 			if(point2d.getMinX() == x && point2d.getMinY() == y) {
 				return i;
 			}
@@ -1141,14 +1142,14 @@ public class DefaultPointCalculator2D implements PointCalculator {
 
 	private void filterMinimums() {
 		for (int i = 0; i < values.size(); i++) {
-			Point2D p = values.get(i);
+			SimplePoint2D p = values.get(i);
 
 			if(p.getArea() < minAreaLimit) {
 				values.flag(i);
 			}
 		}
 		if(values.removeFlagged() > 0) {
-			// keep the point indexes in sync: placements refer to points by index
+			// keep point indexes in sync: placements refer to points by index
 			updateIndexes(values);
 		}
 	}
@@ -1193,14 +1194,16 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		values.clear();
 		placements.clear();
 		
-		if(initialPoints.isEmpty()) {
+		Point2DList initialPoints = this.initialPoints;
+		if(initialPoints == null || initialPoints.isEmpty()) {
 			SimplePoint2D origin = createContainerPoint();
 			values.add(origin);
 		} else {
-			for (SimplePoint2D simplePoint3D : initialPoints) {
-				SimplePoint2D clone = simplePoint3D.clone();
-				clone.setIndex(values.size());
-				values.add(clone);
+			for (int i = 0; i < initialPoints.size(); i++) {
+				SimplePoint2D simplePoint3D = initialPoints.get(i);
+				SimplePoint2D copy = simplePoint3D.copy();
+				copy.setIndex(values.size());
+				values.add(copy);
 			}
 		}
 		minAreaLimit = 0;
@@ -1227,7 +1230,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	
 	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point2DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			boolean yzPlane = p.getMinX() == 0; // ySupport
@@ -1240,11 +1243,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 				throw new IllegalArgumentException();
 			}
 			if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYSupportPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), null, containerPlacement));
 			} else {
 				initialPoints.add(new DefaultPoint2D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 			}
@@ -1259,7 +1262,7 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	// set points, but limit to a specific box
 	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point2DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			
@@ -1302,11 +1305,11 @@ public class DefaultPointCalculator2D implements PointCalculator {
 			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
 			
 			if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYSupportPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement));
+				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, null, containerPlacement));
 			} else {
 				initialPoints.add(new DefaultPoint2D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ));
 			}
@@ -1317,6 +1320,16 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		}
 		
 		return !initialPoints.isEmpty();
+	}
+
+	private Point2DList prepareInitialPoints(int size) {
+		if(initialPoints == null) {
+			initialPoints = new Point2DList(size);
+		} else {
+			initialPoints.reset();
+			initialPoints.ensureCapacity(size);
+		}
+		return initialPoints;
 	}
 
 	protected void updateIndexes(Point2DFlagList values) {
@@ -1346,17 +1359,5 @@ public class DefaultPointCalculator2D implements PointCalculator {
 	@Override
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
 		setMinimumAreaLimit(area);
-	}
-
-	@Override
-	public void remove(Predicate<Point> test) {
-		for(int i = 0; i < values.size(); i++) {
-			if(test.test(values.get(i))) {
-				values.flag(i);
-			}
-		}
-		if(values.removeFlagged() > 0) {
-			updateIndexes(values);
-		}
 	}
 }

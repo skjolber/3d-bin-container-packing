@@ -1,0 +1,39 @@
+# JMH Benchmarks Module
+
+## Purpose
+Microbenchmark suite using the OpenJDK JMH framework. Measures throughput and latency of packagers, iterators, and point calculators to detect regressions and guide performance optimisation.
+
+## Key Packages
+- `com.github.skjolber.packing.jmh` — Packager benchmarks (`EgyPackagerBenchmark`, `TychoBenchmark`, `BouwkampCodeBruteForcePackagerBenchmark`, `GroupBruteForceBenchmark`, `DeadlineBenchmark`) and shared state classes
+- `com.github.skjolber.packing.jmh.iterator` — Iterator benchmarks (`DefaultIteratorBenchmark`, `ParallelIteratorBenchmark`)
+- `com.github.skjolber.packing.jmh.ep` — Enhanced-point calculator benchmarks
+
+## Architecture Notes
+- `@State(Scope.Benchmark)` classes set up packagers and test data once per benchmark run.
+- `BouwkampConverter` bridges test-module Bouwkamp codes into JMH benchmark inputs.
+- The Maven Shade plugin produces a fat JAR (`benchmark.jar`) for running benchmarks in isolation.
+- JMH requires that benchmark methods are **not** inlined by the JIT — annotate with `@Benchmark`, never call them directly.
+- Output JSON results can be visualised at https://jmh.morethan.io.
+
+## Experiments
+See [EXPERIMENTS.md](EXPERIMENTS.md) for optimizations which were measured and did not work,
+and how changes were measured (CPU boost off, interleaved A/B on a busy machine).
+
+## Running Benchmarks
+```bash
+# Build the fat JAR
+mvn package -pl jmh -am -DskipTests
+
+# Run all benchmarks
+java -jar jmh/target/benchmark.jar
+
+# Run a specific benchmark with custom settings
+java -jar jmh/target/benchmark.jar EgyPackagerBenchmark -f 1 -wi 3 -i 5 -rf json -rff results.json
+```
+
+## Dependencies
+| Scope   | Artifact |
+|---------|----------|
+| compile | core, points |
+| test    | test module, commons-io |
+| provided | jmh-core, jmh-generator-annprocess |

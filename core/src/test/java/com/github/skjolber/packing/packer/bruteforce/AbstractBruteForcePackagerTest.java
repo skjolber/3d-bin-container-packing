@@ -4,6 +4,7 @@ import static com.github.skjolber.packing.test.assertj.StackPlacementAssert.asse
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,8 +21,59 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTest {
+
+	@Test
+	void packsMaximumWeightPrefixBeforeMovingToNextContainer() {
+		Container container = Container.newBuilder()
+				.withSize(3, 1, 1)
+				.withMaxLoadWeight(2)
+				.build();
+		Box box = Box.newBuilder()
+				.withId("unit")
+				.withSize(1, 1, 1)
+				.withWeight(1)
+				.build();
+
+		try(AbstractBruteForcePackager packager = createPackager()) {
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItem(new ContainerItem(container, 2))
+					.withMaxContainerCount(2)
+					.withBoxItems(new BoxItem(box, 3))
+					.build();
+			// <figure>
+			// container 1 of 2
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         | unit  | unit  |         | unit  | unit  |         | unit  |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   | unit  | unit  | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2
+			//   z                 z                 y                 z
+			//                     1 +-------+       1 +-------+       1 +-------+
+			//   | /-------|   y     |       |         |       |         |       |
+			//   |/       /|         | unit  |         | unit  |         | unit  |
+			// 1 |-------| | /       |       |         |       |         |       |
+			//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+			//   | unit  | | 1       0       1   x     0       1   x     0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(result);
+
+			PackagerResultAssert.assertThat(result).isSuccess();
+			assertThat(result.getContainers()).extracting(c -> c.getStack().size()).containsExactly(2, 1);
+		}
+	}
 
 	@Test
 	public void testImpossible1() throws Exception {
@@ -158,6 +210,85 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				.withBoxItems(thinBox, thickBox)
 				.withMaxContainerCount(2)
 				.build();
+			// <figure>
+			// container 1 of 2: 1
+			//                 /--------------------------------------------------------|       z
+			//                /                                                        /|       2 +---------------------------------------------------------------------+
+			//               /                                                        / |   y     |                                 b1                                  |
+			//              /                                                        /  |         |                                                                     |
+			//             /                                                        /  /| /     1 +---------------------------------------------------------------------+
+			//            /                                                        /  / |/        |                                                                     |
+			//           /                                                        /  /  | 10      |                                 b1                                  |
+			//          /                                                        /  /  /          |                                                                     |
+			//         /                                                        /  /  /         0 +---------------------------------------------------------------------+
+			//        /                                                        /  /  /            0                                                                     10   x
+			//   z   /                                                        /  /  /
+			//      /                                                        /  /  /
+			//   | /                                                        /  /  /
+			//   |/                                                        /  /  /
+			// 2 |--------------------------------------------------------|  /  /
+			//   |                           b1                           | /  /
+			//   |                                                        |/  /
+			// 1 |--------------------------------------------------------|  /
+			//   |                           b1                           | /
+			//   |                                                        |/
+			// 0 |--------------------------------------------------------|-- x
+			//   0                                                       10
+			//
+			// y                                                                                z
+			// 10 +--------------------------------------------------------------------+        2 +---------------------------------------------------------------------+
+			//    |                                                                    |          |                                 b1                                  |
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |        1 +---------------------------------------------------------------------+
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |          |                                 b1                                  |
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |        0 +---------------------------------------------------------------------+
+			//    |                                                                    |          0                                                                     10   y
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                 b1                                 |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//  0 +--------------------------------------------------------------------+
+			//    0                                                                    10   x
+			//
+			// container 2 of 2: 1
+			//   z                      z                     y                     z
+			//      /-----------|       3 +-----------+       3 +-----------+       3 +-----------+
+			//   | /           /|         |           |         |           |         |           |
+			//   |/           / |   y     |           |         |           |         |           |
+			// 3 |-----------|  |         |    b1     |         |    b1     |         |    b1     |
+			//   |           |  | /       |           |         |           |         |           |
+			//   |           |  |/        |           |         |           |         |           |
+			//   |    b1     |  | 3     0 +-----------+       0 +-----------+       0 +-----------+
+			//   |           | /          0           3   x     0           3   x     0           3   y
+			//   |           |/
+			// 0 |-----------|-- x
+			//   0           3
+			// </figure>
+			figure(build);
 			
 			assertTrue(build.isSuccess());		
 		} finally {
@@ -224,6 +355,85 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 				.withBoxItems(thinBox1, thickBox, thinBox2)
 				.withMaxContainerCount(2)
 				.build();
+			// <figure>
+			// container 1 of 2: 1
+			//                 /--------------------------------------------------------|       z
+			//                /                                                        /|       2 +---------------------------------------------------------------------+
+			//               /                                                        / |   y     |                                 b1                                  |
+			//              /                                                        /  |         |                                                                     |
+			//             /                                                        /  /| /     1 +---------------------------------------------------------------------+
+			//            /                                                        /  / |/        |                                                                     |
+			//           /                                                        /  /  | 10      |                                 b1                                  |
+			//          /                                                        /  /  /          |                                                                     |
+			//         /                                                        /  /  /         0 +---------------------------------------------------------------------+
+			//        /                                                        /  /  /            0                                                                     10   x
+			//   z   /                                                        /  /  /
+			//      /                                                        /  /  /
+			//   | /                                                        /  /  /
+			//   |/                                                        /  /  /
+			// 2 |--------------------------------------------------------|  /  /
+			//   |                           b1                           | /  /
+			//   |                                                        |/  /
+			// 1 |--------------------------------------------------------|  /
+			//   |                           b1                           | /
+			//   |                                                        |/
+			// 0 |--------------------------------------------------------|-- x
+			//   0                                                       10
+			//
+			// y                                                                                z
+			// 10 +--------------------------------------------------------------------+        2 +---------------------------------------------------------------------+
+			//    |                                                                    |          |                                 b1                                  |
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |        1 +---------------------------------------------------------------------+
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |          |                                 b1                                  |
+			//    |                                                                    |          |                                                                     |
+			//    |                                                                    |        0 +---------------------------------------------------------------------+
+			//    |                                                                    |          0                                                                     10   y
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                 b1                                 |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//    |                                                                    |
+			//  0 +--------------------------------------------------------------------+
+			//    0                                                                    10   x
+			//
+			// container 2 of 2: 1
+			//   z                      z                     y                     z
+			//      /-----------|       3 +-----------+       3 +-----------+       3 +-----------+
+			//   | /           /|         |           |         |           |         |           |
+			//   |/           / |   y     |           |         |           |         |           |
+			// 3 |-----------|  |         |    b2     |         |    b2     |         |    b2     |
+			//   |           |  | /       |           |         |           |         |           |
+			//   |           |  |/        |           |         |           |         |           |
+			//   |    b2     |  | 3     0 +-----------+       0 +-----------+       0 +-----------+
+			//   |           | /          0           3   x     0           3   x     0           3   y
+			//   |           |/
+			// 0 |-----------|-- x
+			//   0           3
+			// </figure>
+			figure(build);
 			
 			assertTrue(build.isSuccess());		
 		} finally {
@@ -256,8 +466,21 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems)
 					.withBoxItemGroups(groups).build();
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(build);
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 			assertThat(placements).size().isEqualTo(3);
@@ -299,10 +522,36 @@ public abstract class AbstractBruteForcePackagerTest extends AbstractPackagerTes
 					.withBoxItemGroups(groups)
 					.withMaxContainerCount(5)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   A   |   A   |         |   A   |   A   |         |   A   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   A   |   A   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: 1
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   B   |   B   |         |   B   |   B   |         |   B   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   B   |   B   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(build);
 	
 			List<Container> packList = build.getContainers();
 	
-			assertValid(packList);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			assertThat(packList).hasSize(2);
 	
 			Container container1 = packList.get(0);

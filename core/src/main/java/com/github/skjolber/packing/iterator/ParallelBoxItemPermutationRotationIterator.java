@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPermutationRotationIterator {
 
@@ -14,10 +15,24 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 	// parent iterator
 	private ParallelBoxItemPermutationRotationIteratorList iterator;
 
-	public ParallelBoxItemPermutationRotationIterator(BoxItem[] boxItems, ParallelBoxItemPermutationRotationIteratorList iterator) {
-		super(boxItems, Collections.emptyList());
+	public ParallelBoxItemPermutationRotationIterator(BoxItem[] boxItems, BoxStackValue[][] stackValues, ParallelBoxItemPermutationRotationIteratorList iterator) {
+		super(boxItems, stackValues, Collections.emptyList());
 
 		this.iterator = iterator;
+	}
+
+	private ParallelBoxItemPermutationRotationIterator(ParallelBoxItemPermutationRotationIterator source,
+			ParallelBoxItemPermutationRotationIteratorList parent) {
+		super(source);
+		this.iterator = parent;
+		this.lastPermutation = source.lastPermutation == null ? null : source.lastPermutation.clone();
+		this.firstPermutation = source.firstPermutation == null ? null : source.firstPermutation.clone();
+		this.lastPermutationMaxIndex = source.lastPermutationMaxIndex;
+		this.checkLastPermutation = source.checkLastPermutation;
+	}
+
+	public ParallelBoxItemPermutationRotationIterator fork(ParallelBoxItemPermutationRotationIteratorList parent) {
+		return new ParallelBoxItemPermutationRotationIterator(this, parent);
 	}
 
 	/** The first permutation of the work unit */
@@ -30,6 +45,10 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 
 	@Override
 	public void reset() {
+		if(firstPermutation == null) {
+			// no boxes
+			return;
+		}
 		// back to the first permutation of the work unit
 		System.arraycopy(firstPermutation, 0, permutations, 0, permutations.length);
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
@@ -104,11 +123,6 @@ public class ParallelBoxItemPermutationRotationIterator extends DefaultBoxItemPe
 		}
 
 		return resultIndex;
-	}
-
-	@Override
-	public PermutationRotationState getState() {
-		return new PermutationRotationState(getRotations(), getPermutations());
 	}
 
 	@Override

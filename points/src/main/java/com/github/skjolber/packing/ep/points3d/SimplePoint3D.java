@@ -138,15 +138,7 @@ public abstract class SimplePoint3D extends Point {
 
 	public abstract SimplePoint3D moveZ(int z, Placement xySupport);
 	
-	public abstract SimplePoint3D clone(int maxX, int maxY, int maxZ);
+	public abstract SimplePoint3D copy(int maxX, int maxY, int maxZ);
 
-	public abstract long calculateXYSupport(int dx, int dy);
-
-	public abstract long calculateXZSupport(int dx, int dz);
-
-	public abstract long calculateYZSupport(int dy, int dz);
-
-	public abstract Point rotate();
-
-	public abstract SimplePoint3D clone();
+	public abstract SimplePoint3D copy();
 }

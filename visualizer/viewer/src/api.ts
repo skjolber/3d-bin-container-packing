@@ -3,6 +3,8 @@ import { Color, Mesh, Object3D, Scene } from "three";
 import randomColor from "randomcolor";
 import { TextGeometry } from "three/examples/jsm/geometries/TextGeometry";
 import { Font } from "three/examples/jsm/loaders/FontLoader";
+import { getSupportedFraction } from "./colorModes";
+import { Box, Container, Point, StackPlacement, Stackable } from "./model";
 
 const helvetiker = require( 'three/examples/fonts/droid/droid_sans_mono_regular.typeface.json');
 const font = new Font( helvetiker );
@@ -12,119 +14,7 @@ const textMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
 const CONTAINER_BOX_COLOR = 0x888888;
 const CONTAINER_BOX_OPACITY = 0.15;
 const CONTAINER_EDGE_COLOR = 0x444444;
-
-export class Point {
-    
-    x : number;
-    y : number;
-    z : number;
-    
-    dx : number;
-    dy : number;
-    dz : number;
-
-    constructor(x : number, y : number, z: number, dx : number, dy : number, dz: number) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
-
-        this.dx = dx;
-        this.dy = dy;
-        this.dz = dz;
-    }
-}
-
-export class Stackable {
-
-    dx : number;
-    dy : number;
-    dz : number;
-
-    name: string;
-    id: string;
-
-    step : number;
-    
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
-        this.name = name;
-        this.id = id;
-        this.step = step;
-        this.dx = dx;
-        this.dy = dy;
-        this.dz = dz;
-    }
-
-}
-
-export class Box extends Stackable {
-
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number) {
-        super(name, id, step, dx, dy, dz);
-    }
-    
-}
-
-export class Container extends Stackable {
-
-    loadDx : number;
-    loadDy : number;
-    loadDz : number;
-    
-    stack : Stack;
-
-    constructor(name : string, id : string, step: number, dx : number, dy : number, dz: number, loadDx : number, loadDy : number, loadDz: number) {
-        super(name, id, step, dx, dy, dz);
-
-        this.loadDx = loadDx;
-        this.loadDy = loadDy;
-        this.loadDz = loadDz;
-
-        this.stack = new Stack(step);
-    }
-    
-    add(stackPlacement : StackPlacement) {
-        this.stack.add(stackPlacement);
-    }
-}
-
-export class StackPlacement {
-
-    stackable : Stackable;
-    x : number;
-    y : number;
-    z : number;
-
-    step : number;
-
-    points : Array<Point>;
-
-    constructor(stackable : Stackable, step : number, x : number, y : number, z: number, points: Array<Point>) {
-        this.stackable = stackable;
-        this.step = step;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.points = points;
-    }
-
-}
-
-export class Stack {
-
-    placements : Array<StackPlacement>;
-
-    step : number;
-
-    constructor(step : number) {
-        this.step = step;
-        this.placements = new Array();
-    }
-
-    add(placement : StackPlacement) {
-        this.placements.push(placement);
-    }
-
-}
+const INVALID_EDGE_COLOR = 0xff3333;
 
 export class ContainerControls {
 
@@ -269,6 +159,44 @@ export class StackableRenderer {
             parent.add(containerGroup);
             containerGroup.add(containerLoad);
 
+            for (const o of containerStackable.obstacles) {
+                // boxes which are already in the container: dark grey
+                var obstacleGeometry = new THREE.BoxGeometry(o.dy, o.dz, o.dx);
+                var obstacle = new THREE.Mesh(obstacleGeometry, new THREE.MeshStandardMaterial({ color: 0x555555, opacity: 0.8, transparent: true }));
+                obstacle.position.set(o.y + o.dy / 2 + offsetX, o.z + o.dz / 2 + offsetY, o.x + o.dx / 2 + offsetZ);
+                obstacle.add(new THREE.LineSegments(new THREE.EdgesGeometry(obstacleGeometry), new THREE.LineBasicMaterial({ color: 0x222222 })));
+                obstacle.userData = { type: "obstacle" };
+                containerLoad.add(obstacle);
+            }
+
+            if(containerStackable.access === "FRONT" || containerStackable.access === "TOP") {
+                // the opening: a translucent orange plane on the door (x = dx) or top face of the load space
+                var front = containerStackable.access === "FRONT";
+                var openingGeometry = front
+                    ? new THREE.PlaneGeometry(containerStackable.loadDy, containerStackable.loadDz)
+                    : new THREE.PlaneGeometry(containerStackable.loadDy, containerStackable.loadDx);
+                var opening = new THREE.Mesh(openingGeometry, new THREE.MeshBasicMaterial({ color: 0xffa726, opacity: 0.25, transparent: true, side: THREE.DoubleSide, depthWrite: false }));
+                if(front) {
+                    // three.js z is the container x axis
+                    opening.position.set(0, 0, containerStackable.loadDx / 2);
+                } else {
+                    opening.rotation.x = Math.PI / 2;
+                    opening.position.set(0, containerStackable.loadDz / 2, 0);
+                }
+                opening.userData = { type: "opening" };
+                containerLoad.add(opening);
+            }
+
+            if(containerStackable.centerOfGravity) {
+                // centre of gravity of the load: a small white sphere
+                var cog = containerStackable.centerOfGravity;
+                var radius = Math.max(containerStackable.dx, containerStackable.dy, containerStackable.dz) / 80;
+                var cogMesh = new THREE.Mesh(new THREE.SphereGeometry(radius, 16, 12), new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x444444 }));
+                cogMesh.position.set(cog.y + offsetX, cog.z + offsetY, cog.x + offsetZ);
+                cogMesh.userData = { type: "cog" };
+                containerLoad.add(cogMesh);
+            }
+
             var nextColorScheme = colorScheme.getColorScheme(containerStackable);
             for (let s of containerStackable.stack.placements) {
                 this.add(containerLoad, nextColorScheme, s, offsetX, offsetY, offsetZ);
@@ -307,7 +235,12 @@ export class StackableRenderer {
                 step: boxStackable.step,
                 type: "box",
                 source: stackPlacement,
+                // the box item colour, restored when switching back from another colour mode
+                baseColor: material.color.clone(),
                 box: {
+                    reasons: stackPlacement.reasons.map(reason => reason.message),
+                    supportedPercent: Math.round(getSupportedFraction(stackPlacement) * 100),
+                    loadWeight: stackPlacement.loadWeight,
                     id: boxStackable.id,
                     name: boxStackable.name,
                     dimensions: {
@@ -320,7 +253,15 @@ export class StackableRenderer {
                         y: stackPlacement.y,
                         z: stackPlacement.z
                     },
-                    step: boxStackable.step
+                    step: boxStackable.step,
+                    boxItemKey: boxStackable.boxItemKey,
+                    weight: boxStackable.weight,
+                    maxLoadWeight: boxStackable.maxLoadWeight,
+                    maxLoadPressure: boxStackable.maxLoadPressure,
+                    maxLoadBoxCount: boxStackable.maxLoadBoxCount,
+                    maxLoadIdenticalOnly: boxStackable.maxLoadIdenticalOnly,
+                    containerPriority: boxStackable.containerPriority,
+                    extractionOrder: boxStackable.extractionOrder,
                 }
             };
     
@@ -342,6 +283,13 @@ export class StackableRenderer {
                 yLabelMesh.rotation.z = -Math.PI / 2;
                 yLabelMesh.position.set( -yLabelMesh.scale.x / 2, 0, -yLabelMesh.scale.y / 2);
                 box.add( yLabelMesh );
+            }
+
+            if(stackPlacement.reasons.length > 0) {
+                // invalid placement: red outline
+                var invalidEdges = new THREE.LineSegments(new THREE.EdgesGeometry(geometry), new THREE.LineBasicMaterial({ color: INVALID_EDGE_COLOR }));
+                invalidEdges.userData = { type: "invalid" };
+                box.add(invalidEdges);
             }
 
             parent.add(box);
@@ -422,4 +370,3 @@ export class StackableRenderer {
 
 	}
 }    
-

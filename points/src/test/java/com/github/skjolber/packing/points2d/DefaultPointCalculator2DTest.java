@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.points2d;
 
+import java.util.Collections;
+
 import static com.github.skjolber.packing.points2d.assertj.SimplePoint2DAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +15,6 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
-import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
 import com.github.skjolber.packing.ep.points2d.DefaultPointCalculator2D;
 import com.github.skjolber.packing.ep.points2d.Point2D;
 import com.github.skjolber.packing.ep.points2d.SimplePoint2D;
@@ -28,8 +29,7 @@ public class DefaultPointCalculator2DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		BoxItem boxItem = new BoxItem(box, 1);
 		
@@ -43,14 +43,12 @@ public class DefaultPointCalculator2DTest {
 		ep.add(0, createStackPlacement(0, 0, 10, 10));
 		assertThat(ep.getAll()).hasSize(2);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(11);
+		assertThat(ep.get(0)).isMin(0, 11);
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isMaxXSupport(10);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(11);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(11, 0);
 		assertThat(ep.get(1)).isMax(99, 99);
 		assertThat(ep.get(1)).isMaxXSupport(99);
 		assertThat(ep.get(1)).isMaxYSupport(10);
@@ -63,14 +61,12 @@ public class DefaultPointCalculator2DTest {
 		ep.add(0, createStackPlacement(0, 0, 0, 0));
 		assertThat(ep.getAll()).hasSize(2);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(1);
+		assertThat(ep.get(0)).isMin(0, 1);
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isMaxXSupport(0);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(1);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(1, 0);
 		assertThat(ep.get(1)).isMax(99, 99);
 		assertThat(ep.get(1)).isMaxXSupport(99);
 		assertThat(ep.get(1)).isMaxYSupport(0);
@@ -83,8 +79,7 @@ public class DefaultPointCalculator2DTest {
 		ep.add(0, createStackPlacement(0, 0, 99, 10));
 		assertThat(ep.getAll()).hasSize(1);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(11);
+		assertThat(ep.get(0)).isMin(0, 11);
 	}
 
 	@Test
@@ -94,8 +89,7 @@ public class DefaultPointCalculator2DTest {
 		ep.add(0, createStackPlacement(0, 0, 10, 99));
 		assertThat(ep.getAll()).hasSize(1);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(11);
-		assertThat(ep.get(0).getMinY()).isEqualTo(0);
+		assertThat(ep.get(0)).isMin(11, 0);
 	}
 
 	@Test
@@ -112,30 +106,25 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(50);
+		assertThat(ep.get(0)).isMin(0, 50);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 
 		ep.add(1, createStackPlacement(10, 0, 19, 24));
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(50);
+		assertThat(ep.get(0)).isMin(0, 50);
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isMaxXSupport(9);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(25);
+		assertThat(ep.get(1)).isMin(10, 25);
 		assertThat(ep.get(1)).isMax(99, 99);
 		assertThat(ep.get(1)).isMaxXSupport(19);
 		assertThat(ep.get(1)).isMaxYSupport(49);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(20, 0);
 		assertThat(ep.get(2)).isMax(99, 99);
 		assertThat(ep.get(2)).isMaxXSupport(99);
 		assertThat(ep.get(2)).isMaxYSupport(24);
@@ -161,26 +150,21 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(50);
+		assertThat(ep.get(0)).isMin(0, 50);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 
 		ep.add(0, createStackPlacement(0, 50, 4, 74));
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(75);
+		assertThat(ep.get(0)).isMin(0, 75);
 		assertThat(ep.get(0)).isMax(99, 99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(5);
-		assertThat(ep.get(1).getMinY()).isEqualTo(50);
+		assertThat(ep.get(1)).isMin(5, 50);
 		assertThat(ep.get(1)).isMax(99, 99);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(10);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(10, 0);
 		assertThat(ep.get(2)).isMax(99, 99);
 
 	}
@@ -201,25 +185,21 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 		assertThat(ep.getAll()).hasSize(2);
 
 		ep.add(1, createStackPlacement(10, 0, 19, 9));
 
 		assertThat(ep.getAll()).hasSize(2);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isMaxXSupport(9); // XXX support is not extended to 19
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(20);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(20, 0);
 		assertThat(ep.get(1)).isMax(99, 99);
 		assertThat(ep.get(1)).isMaxXSupport(99);
 		assertThat(ep.get(1)).isMaxYSupport(9);
@@ -245,24 +225,20 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 
 		ep.add(0, createStackPlacement(0, 10, 9, 19));
 
 		assertThat(ep.getAll()).hasSize(2);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(20);
+		assertThat(ep.get(0)).isMin(0, 20);
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isMaxXSupport(9);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 		assertThat(ep.get(1)).isMax(99, 99);
 		assertThat(ep.get(1)).isMaxXSupport(99);
 		assertThat(ep.get(1)).isMaxYSupport(9); // XXX support is not extended to 19
@@ -286,31 +262,26 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 
 		ep.add(1, createStackPlacement(10, 0, 19, 19));
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 		assertThat(ep.get(0).getMaxY()).isEqualTo(99);
 		assertThat(ep.get(0).getMaxX()).isEqualTo(9);
 		assertThat(ep.get(0)).isMaxXSupport(9);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(20);
+		assertThat(ep.get(1)).isMin(0, 20);
 		assertThat(ep.get(1)).isMaxYSupport(99);
 		assertThat(ep.get(1)).isXSupport(10);
 		assertThat(ep.get(1)).isNoXSupport(0);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(20, 0);
 		assertThat(ep.get(2)).isMaxXSupport(99);
 		assertThat(ep.get(2)).isMaxYSupport(19);
 	}
@@ -334,11 +305,9 @@ public class DefaultPointCalculator2DTest {
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 9));
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 
 		assertThat(ep.getAll()).hasSize(2);
 
@@ -346,20 +315,17 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(20);
+		assertThat(ep.get(0)).isMin(0, 20);
 		assertThat(ep.get(0)).isMaxXSupport(19);
 		assertThat(ep.get(0)).isMaxYSupport(99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 		assertThat(ep.get(1).getMaxX()).isEqualTo(99);
 		assertThat(ep.get(1).getMaxY()).isEqualTo(9);
 		assertThat(ep.get(1)).isMaxXSupport(99);
 		assertThat(ep.get(1)).isMaxYSupport(9);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(20, 0);
 		assertThat(ep.get(2)).isNoYSupport(0);
 		assertThat(ep.get(2)).isYSupport(10);
 		assertThat(ep.get(2)).isMaxXSupport(99);
@@ -466,26 +432,22 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(4);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(10);
+		assertThat(ep.get(0)).isMin(0, 10);
 		assertThat(ep.get(0)).isMax(9, 99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(20);
+		assertThat(ep.get(1)).isMin(0, 20);
 		assertThat(ep.get(1)).isMax(19, 99);
 		assertThat(ep.get(1)).isNoXSupport(0);
 		assertThat(ep.get(1)).isXSupport(19);
 		assertThat(ep.get(1)).isMaxYSupport(99);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(0);
-		assertThat(ep.get(2).getMinY()).isEqualTo(25);
+		assertThat(ep.get(2)).isMin(0, 25);
 		assertThat(ep.get(2)).isMax(99, 99);
 		assertThat(ep.get(2)).isNoXSupport(0);
 		assertThat(ep.get(2)).isXSupport(24);
 		assertThat(ep.get(2)).isMaxYSupport(99);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(25);
-		assertThat(ep.get(3).getMinY()).isEqualTo(0);
+		assertThat(ep.get(3)).isMin(25, 0);
 		assertThat(ep.get(3)).isMax(99, 99);
 
 		ep.add(0, createStackPlacement(0, 10, 4, 29));
@@ -508,23 +470,19 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(5);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(30);
+		assertThat(ep.get(0)).isMin(0, 30);
 		assertThat(ep.get(0)).isMax(99, 99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(5);
-		assertThat(ep.get(1).getMinY()).isEqualTo(10);
+		assertThat(ep.get(1)).isMin(5, 10);
 		assertThat(ep.get(1)).isXSupport(9);
 		assertThat(ep.get(1)).isMaxYSupport(29);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(5);
-		assertThat(ep.get(2).getMinY()).isEqualTo(20);
+		assertThat(ep.get(2)).isMin(5, 20);
 		assertThat(ep.get(2)).isNoXSupport(0);
 		assertThat(ep.get(2)).isXSupport(19);
 		assertThat(ep.get(2)).isMaxYSupport(29);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(5);
-		assertThat(ep.get(3).getMinY()).isEqualTo(25);
+		assertThat(ep.get(3)).isMin(5, 25);
 		assertThat(ep.get(3)).isMax(99, 99);
 		assertThat(ep.get(3)).isNoXSupport(0);
 		assertThat(ep.get(3)).isXSupport(24);
@@ -632,12 +590,9 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(20);
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(0)).isMin(0, 20);
+		assertThat(ep.get(1)).isMin(10, 0);
+		assertThat(ep.get(2)).isMin(20, 0);
 
 		ep.add(0, createStackPlacement(0, 20, 24, 24));
 
@@ -661,18 +616,15 @@ public class DefaultPointCalculator2DTest {
 		assertThat(ep.get(0)).isMax(99, 99);
 		assertThat(ep.get(0)).isSupport(24, 99);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(0);
+		assertThat(ep.get(1)).isMin(10, 0);
 		assertThat(ep.get(1)).isSupport(99, 9);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(20, 0);
 		assertThat(ep.get(2)).isMaxXSupport(99);
 		assertThat(ep.get(2)).isYSupport(19);
 		assertThat(ep.get(2)).isNoYSupport(0);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(25);
-		assertThat(ep.get(3).getMinY()).isEqualTo(0);
+		assertThat(ep.get(3)).isMin(25, 0);
 		assertThat(ep.get(3)).isMax(99, 99);
 		assertThat(ep.get(3)).isMaxXSupport(99);
 		assertThat(ep.get(3)).isNoYSupport(0);
@@ -697,16 +649,11 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(5);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(25);
-		assertThat(ep.get(1).getMinX()).isEqualTo(10);
-		assertThat(ep.get(1).getMinY()).isEqualTo(5);
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(5);
-		assertThat(ep.get(3).getMinX()).isEqualTo(25);
-		assertThat(ep.get(3).getMinY()).isEqualTo(5);
-		assertThat(ep.get(4).getMinX()).isEqualTo(30);
-		assertThat(ep.get(4).getMinY()).isEqualTo(0);
+		assertThat(ep.get(0)).isMin(0, 25);
+		assertThat(ep.get(1)).isMin(10, 5);
+		assertThat(ep.get(2)).isMin(20, 5);
+		assertThat(ep.get(3)).isMin(25, 5);
+		assertThat(ep.get(4)).isMin(30, 0);
 	}
 
 	@Test
@@ -717,15 +664,13 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(1);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(1);
-		assertThat(ep.get(0).getMinY()).isEqualTo(0);
+		assertThat(ep.get(0)).isMin(1, 0);
 
 		ep.add(0, createStackPlacement(1, 0, 1, 1));
 
 		assertThat(ep.getAll()).hasSize(1);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(2);
-		assertThat(ep.get(0).getMinY()).isEqualTo(0);
+		assertThat(ep.get(0)).isMin(2, 0);
 
 		ep.add(0, createStackPlacement(2, 0, 2, 1));
 
@@ -738,22 +683,19 @@ public class DefaultPointCalculator2DTest {
 		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b, 16);
 		ep.clearToSize(1000, 1000, 0);
 		ep.add(0, createStackPlacement(0, 0, 49, 99));
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).hasXYSupport();
 
 		ep.add(1, createStackPlacement(50, 0, 99, 49));
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).hasXYSupport();
+		assertThat(ep.get(1)).hasXYSupport();
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
+		assertThat(ep.get(0)).isMin(0, 100);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(50);
-		assertThat(ep.get(1).getMinY()).isEqualTo(50);
+		assertThat(ep.get(1)).isMin(50, 50);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(100, 0);
 
 		for (Point point : ep.getAll()) {
 			assertThat(point.getMaxX()).isEqualTo(999);
@@ -785,21 +727,17 @@ public class DefaultPointCalculator2DTest {
 		//               50       100        150
 		assertThat(ep.getAll()).hasSize(4);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 150);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(100, 0);
+		assertThat(ep.get(2)).hasXYSupport();
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(150);
-		assertThat(ep.get(3).getMinY()).isEqualTo(0);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(150, 0);
+		assertThat(ep.get(3)).hasXYSupport();
 
 		ep.add(3, createStackPlacement(150, 0, 169, 19));
 
@@ -825,36 +763,30 @@ public class DefaultPointCalculator2DTest {
 		//    |----------|---------x----------|-----x----------------------
 		//               50       100        150   170
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 150);
+		assertThat(ep.get(1)).hasXYSupport();
 		assertThat(ep.get(1)).isMax(999, 999);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(100, 0);
+		assertThat(ep.get(2)).hasXYSupport();
 		assertThat(ep.get(2)).isMax(149, 49);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(100);
-		assertThat(ep.get(3).getMinY()).isEqualTo(20);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(100, 20);
+		assertThat(ep.get(3)).hasXYSupport();
 		assertThat(ep.get(3)).isMax(999, 49);
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(150);
-		assertThat(ep.get(4).getMinY()).isEqualTo(20);
-		assertThat(ep.get(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(4)).isMin(150, 20);
+		assertThat(ep.get(4)).hasXYSupport();
 		assertThat(ep.get(4)).isMax(999, 999);
 		assertThat(ep.get(4)).isXSupport(169);
 		assertThat(ep.get(4)).isNoYSupport(0);
 		assertThat(ep.get(4)).isYSupport(149);
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(170);
-		assertThat(ep.get(5).getMinY()).isEqualTo(0);
-		assertThat(ep.get(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(5)).isMin(170, 0);
+		assertThat(ep.get(5)).hasXYSupport();
 		assertThat(ep.get(5)).isMax(999, 999);
 
 		assertThat(ep.getAll()).hasSize(6);
@@ -885,39 +817,31 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(8);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 150);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(100, 0);
+		assertThat(ep.get(2)).hasXYSupport();
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(100);
-		assertThat(ep.get(3).getMinY()).isEqualTo(20);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(100, 20);
+		assertThat(ep.get(3)).hasXYSupport();
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(100);
-		assertThat(ep.get(4).getMinY()).isEqualTo(30);
-		assertThat(ep.get(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(4)).isMin(100, 30);
+		assertThat(ep.get(4)).hasXYSupport();
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(150);
-		assertThat(ep.get(5).getMinY()).isEqualTo(20);
-		assertThat(ep.get(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(5)).isMin(150, 20);
+		assertThat(ep.get(5)).hasXYSupport();
 		assertThat(ep.get(5)).isMax(169, 999);
 
-		assertThat(ep.get(6).getMinX()).isEqualTo(150);
-		assertThat(ep.get(6).getMinY()).isEqualTo(30);
-		assertThat(ep.get(6)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(6)).isMin(150, 30);
+		assertThat(ep.get(6)).hasXYSupport();
 		assertThat(ep.get(6)).isMax(999, 999);
 
-		assertThat(ep.get(7).getMinX()).isEqualTo(190);
-		assertThat(ep.get(7).getMinY()).isEqualTo(0);
-		assertThat(ep.get(7)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(7)).isMin(190, 0);
+		assertThat(ep.get(7)).hasXYSupport();
 		assertThat(ep.get(7)).isMax(999, 999);
 
 		ep.add(6, createStackPlacement(150, 30, 189, 69));
@@ -945,23 +869,17 @@ public class DefaultPointCalculator2DTest {
 		//    |----------|---------x----------|-----|-----x----------------
 		//               50       100        150   170
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
+		assertThat(ep.get(0)).isMin(0, 100);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
+		assertThat(ep.get(1)).isMin(0, 150);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(100, 0);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(100);
-		assertThat(ep.get(3).getMinY()).isEqualTo(20);
+		assertThat(ep.get(3)).isMin(100, 20);
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(150);
-		assertThat(ep.get(4).getMinY()).isEqualTo(70);
+		assertThat(ep.get(4)).isMin(150, 70);
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(190);
-		assertThat(ep.get(5).getMinY()).isEqualTo(0);
+		assertThat(ep.get(5)).isMin(190, 0);
 
 		assertThat(ep.getAll()).hasSize(6);
 
@@ -990,42 +908,33 @@ public class DefaultPointCalculator2DTest {
 		//    |----------|---------x-------x--|-----|-----x----------------
 		//               50       100        150   170
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
+		assertThat(ep.get(0)).isMin(0, 100);
 		assertThat(ep.get(0)).isSupport(49, 999);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
+		assertThat(ep.get(1)).isMin(0, 150);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(100, 0);
 		assertThat(ep.get(2)).isSupport(999, 19);
 
 		// split point
-		assertThat(ep.get(3).getMinX()).isEqualTo(100);
-		assertThat(ep.get(3).getMinY()).isEqualTo(25);
+		assertThat(ep.get(3)).isMin(100, 25);
 		assertThat(ep.get(3)).isMax(169, 29);
 		assertThat(ep.get(3)).isSupport(139, 49);
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(100);
-		assertThat(ep.get(4).getMinY()).isEqualTo(25);
+		assertThat(ep.get(4)).isMin(100, 25);
 		assertThat(ep.get(4)).isMax(149, 49);
 		assertThat(ep.get(4)).isSupport(139, 49);
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(140);
-		assertThat(ep.get(5).getMinY()).isEqualTo(0);
+		assertThat(ep.get(5)).isMin(140, 0);
 		assertThat(ep.get(5)).isMax(149, 49);
 
-		assertThat(ep.get(6).getMinX()).isEqualTo(140);
-		assertThat(ep.get(6).getMinY()).isEqualTo(20);
+		assertThat(ep.get(6)).isMin(140, 20);
 		assertThat(ep.get(6)).isMax(169, 29);
 
-		assertThat(ep.get(7).getMinX()).isEqualTo(150);
-		assertThat(ep.get(7).getMinY()).isEqualTo(70);
+		assertThat(ep.get(7)).isMin(150, 70);
 		assertThat(ep.get(7)).isMax(999, 999);
 
-		assertThat(ep.get(8).getMinX()).isEqualTo(190);
-		assertThat(ep.get(8).getMinY()).isEqualTo(0);
+		assertThat(ep.get(8)).isMin(190, 0);
 		assertThat(ep.get(8)).isMax(999, 999);
 
 		assertThat(ep.getAll()).hasSize(9);
@@ -1038,22 +947,19 @@ public class DefaultPointCalculator2DTest {
 		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(b, 16);
 		ep.clearToSize(1000, 1000, 100);
 		ep.add(0, createStackPlacement(0, 0, 49, 99));
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).hasXYSupport();
 
 		ep.add(1, createStackPlacement(50, 0, 99, 49));
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).hasXYSupport();
+		assertThat(ep.get(1)).hasXYSupport();
 
 		assertThat(ep.getAll()).hasSize(3);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
+		assertThat(ep.get(0)).isMin(0, 100);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(50);
-		assertThat(ep.get(1).getMinY()).isEqualTo(50);
+		assertThat(ep.get(1)).isMin(50, 50);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
+		assertThat(ep.get(2)).isMin(100, 0);
 
 		for (Point point : ep.getAll()) {
 			assertThat(point.getMaxX()).isEqualTo(999);
@@ -1085,21 +991,17 @@ public class DefaultPointCalculator2DTest {
 		//               50       100        150
 		assertThat(ep.getAll()).hasSize(4);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(150);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 150);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(100);
-		assertThat(ep.get(2).getMinY()).isEqualTo(0);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(100, 0);
+		assertThat(ep.get(2)).hasXYSupport();
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(150);
-		assertThat(ep.get(3).getMinY()).isEqualTo(0);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(150, 0);
+		assertThat(ep.get(3)).hasXYSupport();
 
 		ep.add(1, createStackPlacement(0, 150, 19, 169));
 
@@ -1127,29 +1029,23 @@ public class DefaultPointCalculator2DTest {
 		//    |----------|---------x----------x----------
 		//               50       100        150
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(170);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 170);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(100);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(20, 100);
+		assertThat(ep.get(2)).hasXYSupport();
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(20);
-		assertThat(ep.get(3).getMinY()).isEqualTo(150);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(20, 150);
+		assertThat(ep.get(3)).hasXYSupport();
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(100);
-		assertThat(ep.get(4).getMinY()).isEqualTo(0);
-		assertThat(ep.get(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(4)).isMin(100, 0);
+		assertThat(ep.get(4)).hasXYSupport();
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(150);
-		assertThat(ep.get(5).getMinY()).isEqualTo(0);
-		assertThat(ep.get(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(5)).isMin(150, 0);
+		assertThat(ep.get(5)).hasXYSupport();
 
 		assertThat(ep.getAll()).hasSize(6);
 
@@ -1183,37 +1079,29 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(8);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(190);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 190);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(100);
-		assertThat(ep.get(2)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(2)).isMin(20, 100);
+		assertThat(ep.get(2)).hasXYSupport();
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(20);
-		assertThat(ep.get(3).getMinY()).isEqualTo(150);
-		assertThat(ep.get(3)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(3)).isMin(20, 150);
+		assertThat(ep.get(3)).hasXYSupport();
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(30);
-		assertThat(ep.get(4).getMinY()).isEqualTo(100);
-		assertThat(ep.get(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(4)).isMin(30, 100);
+		assertThat(ep.get(4)).hasXYSupport();
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(30);
-		assertThat(ep.get(5).getMinY()).isEqualTo(150);
-		assertThat(ep.get(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(5)).isMin(30, 150);
+		assertThat(ep.get(5)).hasXYSupport();
 
-		assertThat(ep.get(6).getMinX()).isEqualTo(100);
-		assertThat(ep.get(6).getMinY()).isEqualTo(0);
-		assertThat(ep.get(6)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(6)).isMin(100, 0);
+		assertThat(ep.get(6)).hasXYSupport();
 
-		assertThat(ep.get(7).getMinX()).isEqualTo(150);
-		assertThat(ep.get(7).getMinY()).isEqualTo(0);
-		assertThat(ep.get(7)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(7)).isMin(150, 0);
+		assertThat(ep.get(7)).hasXYSupport();
 
 		ep.add(5, createStackPlacement(30, 150, 69, 189));
 
@@ -1245,28 +1133,22 @@ public class DefaultPointCalculator2DTest {
 
 		assertThat(ep.getAll()).hasSize(6);
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
-		assertThat(ep.get(0)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(0)).isMin(0, 100);
+		assertThat(ep.get(0)).hasXYSupport();
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(190);
-		assertThat(ep.get(1)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(1)).isMin(0, 190);
+		assertThat(ep.get(1)).hasXYSupport();
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(20);
-		assertThat(ep.get(2).getMinY()).isEqualTo(100);
+		assertThat(ep.get(2)).isMin(20, 100);
 
-		assertThat(ep.get(3).getMinX()).isEqualTo(70);
-		assertThat(ep.get(3).getMinY()).isEqualTo(150);
+		assertThat(ep.get(3)).isMin(70, 150);
 		assertThat(ep.get(3)).isMaxYSupport(189);
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(100);
-		assertThat(ep.get(4).getMinY()).isEqualTo(0);
-		assertThat(ep.get(4)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(4)).isMin(100, 0);
+		assertThat(ep.get(4)).hasXYSupport();
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(150);
-		assertThat(ep.get(5).getMinY()).isEqualTo(0);
-		assertThat(ep.get(5)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(5)).isMin(150, 0);
+		assertThat(ep.get(5)).hasXYSupport();
 
 		ep.add(2, createStackPlacement(20, 100, 24, 139));
 
@@ -1296,37 +1178,28 @@ public class DefaultPointCalculator2DTest {
 		//    |------------|---------x----------x----------
 		//               50       100        150
 
-		assertThat(ep.get(0).getMinX()).isEqualTo(0);
-		assertThat(ep.get(0).getMinY()).isEqualTo(100);
+		assertThat(ep.get(0)).isMin(0, 100);
 		assertThat(ep.get(0)).isMax(19, 149);
 
-		assertThat(ep.get(1).getMinX()).isEqualTo(0);
-		assertThat(ep.get(1).getMinY()).isEqualTo(140);
+		assertThat(ep.get(1)).isMin(0, 140);
 
-		assertThat(ep.get(2).getMinX()).isEqualTo(0);
-		assertThat(ep.get(2).getMinY()).isEqualTo(190);
+		assertThat(ep.get(2)).isMin(0, 190);
 
 		// split point
-		assertThat(ep.get(3).getMinX()).isEqualTo(20);
-		assertThat(ep.get(3).getMinY()).isEqualTo(140);
+		assertThat(ep.get(3)).isMin(20, 140);
 
-		assertThat(ep.get(4).getMinX()).isEqualTo(25);
-		assertThat(ep.get(4).getMinY()).isEqualTo(100);
+		assertThat(ep.get(4)).isMin(25, 100);
 
-		assertThat(ep.get(5).getMinX()).isEqualTo(25);
-		assertThat(ep.get(5).getMinY()).isEqualTo(100);
+		assertThat(ep.get(5)).isMin(25, 100);
 
-		assertThat(ep.get(6).getMinX()).isEqualTo(70);
-		assertThat(ep.get(6).getMinY()).isEqualTo(150);
+		assertThat(ep.get(6)).isMin(70, 150);
 		assertThat(ep.get(6)).isMaxYSupport(189);
 
-		assertThat(ep.get(7).getMinX()).isEqualTo(100);
-		assertThat(ep.get(7).getMinY()).isEqualTo(0);
+		assertThat(ep.get(7)).isMin(100, 0);
 		assertThat(ep.get(7)).isSupport(999, 49);
 
-		assertThat(ep.get(8).getMinX()).isEqualTo(150);
-		assertThat(ep.get(8).getMinY()).isEqualTo(0);
-		assertThat(ep.get(8)).isInstanceOf(DefaultXYSupportPoint2D.class);
+		assertThat(ep.get(8)).isMin(150, 0);
+		assertThat(ep.get(8)).hasXYSupport();
 		assertThat(ep.get(8)).isMaxXSupport(999);
 
 		assertThat(ep.getAll()).hasSize(9);
@@ -1335,8 +1208,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1410,8 +1283,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1452,8 +1325,8 @@ public class DefaultPointCalculator2DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneY(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneY(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(3); // no left (x=0), no z in 2D
@@ -1483,8 +1356,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testTwoObstacleInXYPlaneX(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testTwoObstacleInXYPlaneX(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 0, 0, 54, 24, 4));
 		ep.addObstacle(createStackPlacement(50, 75, 0, 54, 99, 4));
@@ -1564,8 +1437,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneTop(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneTop(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(3); // no above (y=99), no z in 2D
@@ -1617,8 +1490,8 @@ public class DefaultPointCalculator2DTest {
 	
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneRight(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneRight(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 0, 99, 54, 4));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1680,8 +1553,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInMiddleAir(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInMiddleAir(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(50, 50, 5, 54, 54, 9));
 		assertThat(ep.getAll()).hasSize(4); // same as middle in 2D (z is irrelevant)
@@ -1732,8 +1605,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneCorner(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneCorner(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.addObstacle(createStackPlacement(0, 50, 0, 54, 99, 4));
 		assertThat(ep.getAll()).hasSize(2); // i.e. not below
@@ -1780,8 +1653,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testOffsetInXYPlaneMiddle(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testOffsetInXYPlaneMiddle(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 100);
 		ep.add(0, createStackPlacement(50, 50, 0, 54, 54, 4));
 		assertThat(ep.getAll()).hasSize(4); // i.e. not below
@@ -1857,8 +1730,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneMiddleZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneMiddleZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(50, 50, 54, 54));
 		assertThat(ep.getAll()).hasSize(4);
@@ -1880,8 +1753,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneXZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneXZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(50, 0, 54, 54));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1899,8 +1772,8 @@ public class DefaultPointCalculator2DTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	public void testObstacleInXYPlaneYZeroZ(boolean clone) {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(clone, 16);
+	public void testObstacleInXYPlaneYZeroZ(boolean copy) {
+		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(copy, 16);
 		ep.clearToSize(100, 100, 0);
 		ep.addObstacle(createStackPlacement(0, 50, 54, 54));
 		assertThat(ep.getAll()).hasSize(3);
@@ -1923,18 +1796,7 @@ public class DefaultPointCalculator2DTest {
 	}
 
 	/**
-	 * Placements refer to points by index, so the indexes must follow when points are removed.
-	 *
-	 * <pre>
-	 * y
-	 * 9 |---------------|
-	 *   |       0       |   point 0 is 14 x 2: too small for a minimum area of 56
-	 * 8 |-------|       |
-	 *   |       |   1   |   point 1 is 7 x 10
-	 *   |   A   |       |
-	 * 0 |-------|-------|-- x
-	 *   0       7      13
-	 * </pre>
+	 * Placements refer to points by index, so the indexes must follow when the minimum area removes points.
 	 */
 	@Test
 	public void testIndexesFollowWhenTheMinimumAreaRemovesPoints() {
@@ -1951,6 +1813,9 @@ public class DefaultPointCalculator2DTest {
 		assertIndexes(ep);
 	}
 
+	/**
+	 * Placements refer to points by index, so the indexes must follow when points are removed.
+	 */
 	@Test
 	public void testIndexesFollowWhenPointsAreRemoved() {
 		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
@@ -1959,21 +1824,6 @@ public class DefaultPointCalculator2DTest {
 		assertThat(ep.getAll()).hasSize(2);
 
 		ep.remove(0);
-
-		assertThat(ep.getAll()).hasSize(1);
-		assertThat(ep.get(0)).isMin(7, 0);
-		assertIndexes(ep);
-	}
-
-	@Test
-	public void testIndexesFollowWhenPointsAreRemovedByPredicate() {
-		DefaultPointCalculator2D ep = new DefaultPointCalculator2D(false, 16);
-		ep.clearToSize(14, 10, 1);
-		ep.add(0, createStackPlacement(0, 0, 6, 7));
-		assertThat(ep.getAll()).hasSize(2);
-
-		// removes the points which match
-		ep.remove(p -> p.getMinX() == 0);
 
 		assertThat(ep.getAll()).hasSize(1);
 		assertThat(ep.get(0)).isMin(7, 0);

@@ -21,9 +21,13 @@ public class ItemIO {
 
 	public static List<Item> read(Path path) throws IOException {
 		try (InputStream in = Files.newInputStream(path)) {
-			ObjectMapper mapper = new ObjectMapper();
-			return mapper.readValue(in, mapper.getTypeFactory().constructCollectionType(List.class, EgyItem.class));
+			return read(in);
 		}
+	}
+
+	public static List<Item> read(InputStream in) throws IOException {
+		ObjectMapper mapper = new ObjectMapper();
+		return mapper.readValue(in, mapper.getTypeFactory().constructCollectionType(List.class, EgyItem.class));
 	}
 
 }

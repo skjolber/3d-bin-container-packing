@@ -3,10 +3,8 @@ package com.github.skjolber.packing.points3d.assertj;
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
-import com.github.skjolber.packing.ep.points3d.XYPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.XZPlanePoint3D;
-import com.github.skjolber.packing.ep.points3d.YZPlanePoint3D;
 import com.github.skjolber.packing.test.assertj.AbstractPoint3DAssert;
 
 @SuppressWarnings("rawtypes")
@@ -20,10 +18,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isXYSupportAt(int x, int y) {
 		isNotNull();
 		if(!actual.isSupportedXYPlane(x, y)) {
-			if(actual instanceof XYPlanePoint3D) {
-				XYPlanePoint3D support = (XYPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedXYPlane()) {
 
-				failWithMessage("Expected xy support at " + x + "x" + y + ", was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY() + " for " + actual);
+				failWithMessage("Expected xy support at " + x + "x" + y + ", was " + support.getXYPlane().getAbsoluteEndX() + "x" + support.getXYPlane().getAbsoluteEndY() + " for " + actual);
 
 			} else {
 				failWithMessage("Expected xy support at " + x + "x" + y + ", was none for " + actual);
@@ -35,10 +32,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isXZSupportAt(int x, int z) {
 		isNotNull();
 		if(!actual.isSupportedXZPlane(x, z)) {
-			if(actual instanceof XZPlanePoint3D) {
-				XZPlanePoint3D support = (XZPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedXZPlane()) {
 
-				failWithMessage("Expected xz support at " + x + "x" + z + ", was " + support.getSupportedXZPlaneMaxX() + "x" + support.getSupportedXZPlaneMaxZ() + " for " + actual);
+				failWithMessage("Expected xz support at " + x + "x" + z + ", was " + support.getXZPlane().getAbsoluteEndX() + "x" + support.getXZPlane().getAbsoluteEndZ() + " for " + actual);
 			} else {
 				failWithMessage("Expected xz support at " + x + "x" + z + ", was none for " + actual);
 			}
@@ -49,10 +45,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isYZSupportAt(int y, int z) {
 		isNotNull();
 		if(!actual.isSupportedYZPlane(y, z)) {
-			if(actual instanceof YZPlanePoint3D) {
-				YZPlanePoint3D support = (YZPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedYZPlane()) {
 
-				failWithMessage("Expected yz support at " + y + "x" + z + ", was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ() + " for " + actual);
+				failWithMessage("Expected yz support at " + y + "x" + z + ", was " + support.getYZPlane().getAbsoluteEndY() + "x" + support.getYZPlane().getAbsoluteEndZ() + " for " + actual);
 
 			} else {
 				failWithMessage("Expected yz support at " + y + "x" + z + ", was none for " + actual);
@@ -64,10 +59,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isNoXYSupportAt(int x, int y) {
 		isNotNull();
 		if(actual.isSupportedXYPlane(x, y)) {
-			if(actual instanceof XYPlanePoint3D) {
-				XYPlanePoint3D support = (XYPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedXYPlane()) {
 
-				failWithMessage("Expected no xy support at " + x + "x" + y + ", was " + support.getSupportedXYPlaneMaxX() + "x" + support.getSupportedXYPlaneMaxY() + " for " + actual);
+				failWithMessage("Expected no xy support at " + x + "x" + y + ", was " + support.getXYPlane().getAbsoluteEndX() + "x" + support.getXYPlane().getAbsoluteEndY() + " for " + actual);
 			}
 		}
 		return myself;
@@ -76,10 +70,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isNoXZSupportAt(int x, int z) {
 		isNotNull();
 		if(actual.isSupportedXZPlane(x, z)) {
-			if(actual instanceof XZPlanePoint3D) {
-				XZPlanePoint3D support = (XZPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedXZPlane()) {
 
-				failWithMessage("Expected no xz support at " + x + "x" + z + ", was " + support.getSupportedXZPlaneMaxX() + "x" + support.getSupportedXZPlaneMaxZ() + " for " + actual);
+				failWithMessage("Expected no xz support at " + x + "x" + z + ", was " + support.getXZPlane().getAbsoluteEndX() + "x" + support.getXZPlane().getAbsoluteEndZ() + " for " + actual);
 			}
 		}
 		return myself;
@@ -88,10 +81,9 @@ public abstract class AbstractSimplePoint3DAssert<SELF extends AbstractSimplePoi
 	public SELF isNoYZSupportAt(int y, int z) {
 		isNotNull();
 		if(actual.isSupportedYZPlane(y, z)) {
-			if(actual instanceof YZPlanePoint3D) {
-				YZPlanePoint3D support = (YZPlanePoint3D)actual;
+			if(actual instanceof DefaultPoint3D support && support.isSupportedYZPlane()) {
 
-				failWithMessage("Expected no yz support at " + y + "x" + z + ", was " + support.getSupportedYZPlaneMaxY() + "x" + support.getSupportedYZPlaneMaxZ() + " for " + actual);
+				failWithMessage("Expected no yz support at " + y + "x" + z + ", was " + support.getYZPlane().getAbsoluteEndY() + "x" + support.getYZPlane().getAbsoluteEndZ() + " for " + actual);
 			}
 		}
 		return myself;

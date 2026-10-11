@@ -15,7 +15,7 @@ public abstract class AbstractStackAssert<SELF extends AbstractStackAssert<SELF,
 		super(actual, selfType);
 	}
 
-	public SELF isWithinLoadContraints(Container container) {
+	public SELF isWithinLoadConstraints(Container container) {
 		isNotNull();
 		isWithinLoadDimensions(container);
 		isWithinLoadWeight(container);

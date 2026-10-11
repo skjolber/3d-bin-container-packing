@@ -1,10 +1,7 @@
 package com.github.skjolber.packing.ep.points3d;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
@@ -17,6 +14,10 @@ import com.github.skjolber.packing.ep.PlacementList;
 /**
  * 
  * Implementation of so-called extreme points in 3D.
+ * <p>
+ * The points which are moved past a placement are processed in a canonical total order (see {@linkplain CustomIntXComparator}, {@linkplain CustomIntYComparator} and
+ * {@linkplain CustomIntZComparator}), so the free points after a placement only depend on the free points before it, not on the sorting algorithm. Each move adds only the
+ * maximal moved points, and of moved points which are geometrically identical the one with the richest supports.
  *
  */
 
@@ -62,7 +63,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	protected CustomIntYComparator yyComparator = new CustomIntYComparator();
 	protected CustomIntZComparator zzComparator = new CustomIntZComparator();
 	
-	protected List<SimplePoint3D> initialPoints = Collections.emptyList();
+	protected Point3DList initialPoints;
 
 	public DefaultPointCalculator3D(boolean immutablePoints, BoxItemSource boxItemSource) {
 		this.immutablePoints = immutablePoints;
@@ -81,9 +82,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void setSize(int dx, int dy, int dz) {
-		this.containerMaxX = dx - 1;
-		this.containerMaxY = dy - 1;
-		this.containerMaxZ = dz - 1;
+		int containerMaxX = dx - 1;
+		int containerMaxY = dy - 1;
+		int containerMaxZ = dz - 1;
+
+		if(containerPlacement != null &&
+				this.containerMaxX == containerMaxX &&
+				this.containerMaxY == containerMaxY &&
+				this.containerMaxZ == containerMaxZ) {
+			return;
+		}
+
+		this.containerMaxX = containerMaxX;
+		this.containerMaxY = containerMaxY;
+		this.containerMaxZ = containerMaxZ;
 
 		this.containerPlacement = createContainerPlacement();
 	}
@@ -91,14 +103,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private Placement createContainerPlacement() {
 		BoxStackValue value = new BoxStackValue(containerMaxX + 1, containerMaxY + 1, containerMaxZ + 1, null, -1);
 		
-		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ));
+		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ), false);
 	}
 	
 	public boolean add(Point point, Placement placement) {
-		if(point.getIndex() == -1) {
-			return add(values.getIndex(point, 0), placement);
-		} 
-		return add(point.getIndex(), placement);
+		return add(indexOf(point), placement);
 	}
 	
 	public boolean add(Point point, Placement placement, int filteredIndex, int filteredSize) {
@@ -116,12 +125,33 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			return add(values.getIndex(point, filteredIndex), placement);
 		} 
-		return add(point.getIndex(), placement);
+		return add(indexOf(point), placement);
 	}
 
 	public boolean add(int index, Placement placement) {
-		SimplePoint3D point = values.get(index);
-		
+		return insert(values.get(index), index, placement);
+	}
+
+	/**
+	 * Resolve the current index of a free point. Points are shared between stack levels,
+	 * so a stored index is only trusted if it still refers to the same point. Points which
+	 * are not current free points are located by their coordinates.
+	 */
+	protected int indexOf(Point point) {
+		int index = point.getIndex();
+		if(index >= 0 && index < values.size() && values.get(index) == point) {
+			return index;
+		}
+		for(int i = 0; i < values.size(); i++) {
+			if(values.get(i) == point) {
+				return i;
+			}
+		}
+		return values.getIndex(point, 0);
+	}
+
+	/** Insert at a point which contains the placement, deriving the supported planes from the point. */
+	protected boolean insert(SimplePoint3D point, int index, Placement placement) {
 		// check supported planes when placement is not placed at point
 		boolean supportedXYPlane = point.getMinZ() == placement.getAbsoluteZ() && point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
 		boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
@@ -129,20 +159,131 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		
 		return add(point, index, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
 	}
-	
+
+	/** See {@link #add(int, List, long, long)}. Resolves the selected point before filtering. */
+	public boolean add(Point point, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		return add(indexOf(point), batch, remainingMinimumArea, remainingMinimumVolume);
+	}
+
+	/**
+	 * Insert an arrangement into one initially selected free-space point. Placements
+	 * use absolute coordinates, must not overlap and must all fit the selected point.
+	 * They are inserted in list order and retained directly, without copying or moving
+	 * them. Callers must not mutate them while the calculator uses them.
+	 *
+	 * During insertion each limit is the smaller of the batch minimum and the
+	 * corresponding remaining-item minimum, so the batch never prunes space which
+	 * smaller remaining items need. After insertion, the remaining-item limits are
+	 * installed. Use zero to disable a limit, or {@link Long#MAX_VALUE} for both limits
+	 * when no items remain. Limits cannot recover previously pruned space: earlier
+	 * insertions must also use safe remaining-item limits.
+	 *
+	 * Children are inserted with {@link #add(SimplePoint3D, int, Placement, boolean, boolean, boolean)},
+	 * not {@link #add(int, Placement)}; subclasses which hook single insertions must also
+	 * override {@link #addBatch(int, List, long, long)}.
+	 *
+	 * No overlap preflight or rollback snapshot is made. Invalid overlapping input can
+	 * fail after partial insertion; callers requiring rollback must use a checkpoint.
+	 * A false return means no usable free points remain, not that insertion failed.
+	 *
+	 * @param index live point index before filtering
+	 * @param batch non-empty, prevalidated arrangement
+	 * @param remainingMinimumArea smallest area of the remaining items
+	 * @param remainingMinimumVolume smallest volume of the remaining items
+	 * @return whether free points remain after all placements have been inserted
+	 * @throws IllegalArgumentException if the batch is empty, a placement does not fit or a limit is negative
+	 */
+	public boolean add(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		if(remainingMinimumArea < 0 || remainingMinimumVolume < 0) {
+			throw new IllegalArgumentException("Expected non-negative remaining minima");
+		}
+		if(batch.isEmpty()) {
+			throw new IllegalArgumentException("Expected at least one placement");
+		}
+		return addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume);
+	}
+
+	/** Shared batch entry point so stack calculators checkpoint exactly once per batch. */
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		SimplePoint3D source = values.get(index);
+		long minimumArea = remainingMinimumArea;
+		long minimumVolume = remainingMinimumVolume;
+		int batchSize = batch.size();
+		for(int i = 0; i < batchSize; i++) {
+			Placement placement = batch.get(i);
+			if(!source.fits3D(placement)) {
+				throw new IllegalArgumentException("Batch placement is outside the selected free space");
+			}
+			BoxStackValue value = placement.getStackValue();
+			minimumArea = Math.min(minimumArea, value.getArea());
+			minimumVolume = Math.min(minimumVolume, value.getVolume());
+		}
+		placements.ensureAdditionalCapacity(batchSize);
+		int currentIndex = index;
+		if(minimumArea != minAreaLimit || minimumVolume != minVolumeLimit) {
+			setMinimumAreaAndVolumeLimit(minimumArea, minimumVolume);
+			// The source contains every child, so it survives minimum filtering, but
+			// earlier points may have been removed: its index can only decrease.
+			currentIndex = indexOf(source, Math.min(index, values.size() - 1));
+		}
+		for(int i = 0; i < batchSize; i++) {
+			Placement placement = batch.get(i);
+			if(source == null) {
+				currentIndex = findContainingPoint(placement);
+				if(currentIndex == -1) {
+					throw new IllegalArgumentException("No free space contains the next batch placement");
+				}
+				source = values.get(currentIndex);
+			}
+			// Bypass single-placement entry points: stack subclasses record a batch
+			// once, not one search step per physical placement.
+			insert(source, currentIndex, placement);
+			source = null;
+		}
+		setMinimumAreaAndVolumeLimit(remainingMinimumArea, remainingMinimumVolume);
+		return !values.isEmpty();
+	}
+
+	/** Index of the given point, searching downwards from {@code fromIndex}. */
+	protected int indexOf(SimplePoint3D point, int fromIndex) {
+		for(int i = fromIndex; i >= 0; i--) {
+			if(values.get(i) == point) {
+				return i;
+			}
+		}
+		throw new IllegalStateException("Cannot locate point");
+	}
+
+	/**
+	 * Find a point which contains the placement, preferring a point whose minimum corner
+	 * is the placement's corner so that its supported planes are known. Current points
+	 * are sorted by minimum X.
+	 */
+	protected int findContainingPoint(Placement placement) {
+		int containing = -1;
+		for(int i = 0; i < values.size(); i++) {
+			SimplePoint3D point = values.get(i);
+			if(point.getMinX() > placement.getAbsoluteX()) {
+				break;
+			}
+			if(point.fits3D(placement)) {
+				if(point.getMinX() == placement.getAbsoluteX() && point.getMinY() == placement.getAbsoluteY() && point.getMinZ() == placement.getAbsoluteZ()) {
+					return i;
+				}
+				if(containing == -1) {
+					containing = i;
+				}
+			}
+		}
+		return containing;
+	}
+
 	public boolean addObstacle(Placement placement) {
 		// find a point which holds the placement
 		for(int i = 0; i < values.size(); i++) {
 			SimplePoint3D point = values.get(i);
-			
 			if(point.fits3D(placement)) {
-				// check supported planes when placement is not placed at point
-				boolean supportedXYPlane = point.getMinZ() == placement.getAbsoluteZ() && point.isSupportedXYPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndY());
-				boolean supportedXZPlane = point.getMinY() == placement.getAbsoluteY() && point.isSupportedXZPlane(placement.getAbsoluteEndX(), placement.getAbsoluteEndZ());
-				boolean supportedYZPlane = point.getMinX() == placement.getAbsoluteX() && point.isSupportedYZPlane(placement.getAbsoluteEndY(), placement.getAbsoluteEndZ());
-				
-				add(point, i, placement, supportedXYPlane, supportedXZPlane, supportedYZPlane);
-				
+				insert(point, i, placement);
 				return true;
 			}
 		}
@@ -216,10 +357,81 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			pointIndex = 0;
 		}
 
+		classify(values, placement, pointIndex, endIndex, xx, yy, zz, supported);
+
+		moveX(values, placement, endIndex, xx);
+		moveY(values, placement, yy);
+		moveZ(values, placement, zz);
+
+		// Constrain max values to the new placement
+
+		if(supported) {
+			// not necessary
+		} else if(supportedXYPlane && supportedXZPlane) {
+			// must be directly left of placement
+			constrainMaxYZ(placement, endIndex);
+		} else if(supportedXYPlane && supportedYZPlane) {
+			// must be directly in front of placement
+			constrainMaxXZ(placement, pointIndex, endIndex);
+		} else if(supportedXZPlane && supportedYZPlane) {
+			// must be directly below placement
+			constrainMaxXY(placement, pointIndex, endIndex);
+		} else {
+			// Constrain max values to the new placement
+			if(immutablePoints) {
+				constrainFloatingMaxWithCopy(placement, endIndex);
+			} else {
+				constrainFloatingMax(placement, endIndex);
+			}
+		}
+
+		placements.add(placement);
+
+		// Overview of the points we have accumulated above
+		// these must be placed in the right order into the resulting output
+		//
+		//                                                                    XX
+		//              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15| 16| 17| 18| 19| 20| 21 
+		//  addXX       |   |   |   |   |   |   |   |   |   |   |   |   |   |   | a |   |   |   |   |   |   |   
+		//  addYY       |   | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
+		//  addZZ       |   |   |   |   |   | 1 |   | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   
+		//  constrainXX |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
+		//  constrainYY |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
+		//  constrainZZ | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
+		//  values      | x | x | 1 | 1 | 1 | x | x | x | 1 | 1 | 1 | 1 | 1 | x | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
+		//
+
+		merge(values, otherValues, endIndex, xx);
+
+		saveValues(values, otherValues);
+
+		addedXX.clear();
+		addedYY.clear();
+		addedZZ.clear();
+
+		// already cleaned up: 
+		// constrainXX
+		// constrainYY 
+		// constrainZZ
+
+		updateIndexes(otherValues);
+		
+		return !values.isEmpty();
+	}
+
+	/** Flag swallowed points and collect the points to move, between pointIndex and endIndex. */
+	private void classify(Point3DFlagList values, Placement placement, int pointIndex, int endIndex, int xx, int yy, int zz, boolean supported) {
+		// loop invariants: placement bounds are computed from the stack value on every call
+		final int placementX = placement.getAbsoluteX();
+		final int placementY = placement.getAbsoluteY();
+		final int placementZ = placement.getAbsoluteZ();
+		final int placementEndY = yy - 1;
+		final int placementEndZ = zz - 1;
+
 		for (int i = pointIndex; i < endIndex; i++) {
 			SimplePoint3D point = values.get(i);
 
-			if(point.getMinY() > placement.getAbsoluteEndY() || point.getMinZ() > placement.getAbsoluteEndZ()) {
+			if(point.getMinY() > placementEndY || point.getMinZ() > placementEndZ) {
 				// 
 				// |
 				// |
@@ -251,7 +463,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// ---------------------------
 			//
 
-			boolean swallowed = point.getMinX() >= placement.getAbsoluteX() && point.getMinY() >= placement.getAbsoluteY() && point.getMinZ() >= placement.getAbsoluteZ();
+			boolean swallowed = point.getMinX() >= placementX && point.getMinY() >= placementY && point.getMinZ() >= placementZ;
 			if(swallowed ) {
 				// 
 				// |
@@ -319,14 +531,17 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				moveToZZ.add(i);
 			}
 		}
+	}
 
+	/** Move points in the x direction, past the placement; the moved points are inserted at or after endIndex. */
+	private void moveX(Point3DFlagList values, Placement placement, int endIndex, int xx) {
 		if(!moveToXX.isEmpty()) {
-			xxComparator.setValues(values);
-			moveToXX.sortThis(xxComparator);
+			xxComparator.setValues(values, xx);
+			// the order is total: the sorting algorithm does not matter. Insertion sort is better when items are already close to ordered
+			moveToXX.insertionSortThis(xxComparator);
 
 			int moveToXXSize = moveToXX.size();
 			int targetIndex = endIndex;
-			addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize);
 
 			add: for (int i = 0; i < moveToXXSize; i++) {
 				int currentIndex = moveToXX.get(i);
@@ -353,20 +568,23 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// TODO skip x
 				while (targetIndex < values.size() && SimplePoint3D.COMPARATOR_X_THEN_Y_THEN_Z.compare(added, values.get(targetIndex)) > 0) {
 					targetIndex++;
-
-					addXX.ensurePointAdditionalCapacity(targetIndex, moveToXXSize - i);
 				}
 
+				// lists are created on first use, so only the index which receives the point gets capacity
+				addXX.ensurePointAdditionalCapacity(targetIndex, 1);
 				addXX.add(added, targetIndex);
 				addedXX.add(added);
 			}
 
 			moveToXX.clear();
 		}
+	}
 
+	/** Move points in the y direction, past the placement. */
+	private void moveY(Point3DFlagList values, Placement placement, int yy) {
 		if(!moveToYY.isEmpty()) {
-			yyComparator.setValues(values);
-			moveToYY.sortThis(yyComparator);
+			yyComparator.setValues(values, yy);
+			moveToYY.insertionSortThis(yyComparator);
 
 			int moveToYYSize = moveToYY.size();
 			add: for (int i = 0; i < moveToYYSize; i++) {
@@ -408,12 +626,15 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 			moveToYY.clear();
 		}
+	}
 
+	/** Move points in the z direction, past the placement. */
+	private void moveZ(Point3DFlagList values, Placement placement, int zz) {
 		if(!moveToZZ.isEmpty()) {
-			zzComparator.setValues(values);
-			
-		    // insertion sort: Better when items are already close to ordered
-		    // which should be the case here, i.e. sorted by x, y, z.
+			zzComparator.setValues(values, zz);
+
+			// insertion sort: Better when items are already close to ordered
+			// which should be the case here, i.e. sorted by x, y, z.
 			moveToZZ.insertionSortThis(zzComparator);
 
 			int moveToZZSize = moveToZZ.size();
@@ -453,45 +674,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 			moveToZZ.clear();
 		}
+	}
 
-		// Constrain max values to the new placement
-
-		if(supported) {
-			// not necessary
-		} else if(supportedXYPlane && supportedXZPlane) {
-			// must be directly left of placement
-			constrainMaxYZ(placement, endIndex);
-		} else if(supportedXYPlane && supportedYZPlane) {
-			// must be directly in front of placement
-			constrainMaxXZ(placement, pointIndex, endIndex);
-		} else if(supportedXZPlane && supportedYZPlane) {
-			// must be directly below placement
-			constrainMaxXY(placement, pointIndex, endIndex);
-		} else {
-			// Constrain max values to the new placement
-			if(immutablePoints) {
-				constrainFloatingMaxWithClone(placement, endIndex);
-			} else {
-				constrainFloatingMax(placement, endIndex);
-			}
-		}
-
-		placements.add(placement);
-
-		// Overview of the points we have accumulated above
-		// these must be placed in the right order into the resulting output
-		//
-		//                                                                    XX
-		//              | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10| 11| 12| 13| 14| 15| 16| 17| 18| 19| 20| 21 
-		//  addXX       |   |   |   |   |   |   |   |   |   |   |   |   |   |   | a |   |   |   |   |   |   |   
-		//  addYY       |   | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
-		//  addZZ       |   |   |   |   |   | 1 |   | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   
-		//  constrainXX |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
-		//  constrainYY |   |   | 1 | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
-		//  constrainZZ | 1 |   |   |   | 1 |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   |   
-		//  values      | x | x | 1 | 1 | 1 | x | x | x | 1 | 1 | 1 | 1 | 1 | x | 1 | 1 | 1 | 1 | 1 | 1 | 1 | 1   
-		//
-
+	/** Merge existing, moved and constrained points, in x order, into the output list, dropping eclipsed points. */
+	private void merge(Point3DFlagList values, Point3DFlagList otherValues, int endIndex, int xx) {
 		int added = addedXX.size() + addedYY.size() + addedZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
 
 		otherValues.ensureCapacity(values.size() + added);
@@ -619,21 +805,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 			addXXPoint3d.clear();
 		}
-
-		saveValues(values, otherValues);
-
-		addedXX.clear();
-		addedYY.clear();
-		addedZZ.clear();
-
-		// already cleaned up: 
-		// constrainXX
-		// constrainYY 
-		// constrainZZ
-
-		updateIndexes(otherValues);
-		
-		return !values.isEmpty();
 	}
 
 	private void ensureCapacity(int size) {
@@ -677,21 +848,20 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		// check if one of the existing values contains the new value
 		
 		final int pointMinX = point.getMinX();
-		final long pointVolume = point.getVolume();
-		final long pointArea = point.getArea();
-		final int size = otherValues.size();
-		
-		// otherValues is sorted by x
-		for (int index = 0; index < size; index++) {
-			SimplePoint3D otherValue = otherValues.get(index);
-			if (otherValue.getMinX() > pointMinX) {
-				return false;
-			}
-			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
-				if(otherValue.eclipses(point)) {
-					// discard 
-					return true;
-				}
+		final Point3DFlagList otherValues = this.otherValues;
+
+		// otherValues is sorted by x. Scan backwards: an eclipsing point is most often
+		// one of the last merged points. The result does not depend on the scan order.
+		// There is no volume / area pre-filter: containment implies it, and the pre-filter measured as
+		// more expensive than the early-exit containment test it guards.
+		int index = otherValues.size() - 1;
+		while (index >= 0 && otherValues.get(index).getMinX() > pointMinX) {
+			index--;
+		}
+		for (; index >= 0; index--) {
+			if(otherValues.get(index).eclipses(point)) {
+				// discard 
+				return true;
 			}
 		}
 		return false;
@@ -699,20 +869,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	private boolean isEclipsedAtXX(SimplePoint3D point, int xx) {
 		// check if one of the existing values contains the new value
-		final long pointVolume = point.getVolume();
-		final long pointArea = point.getArea();
-		
+
 		// otherValues is sorted by x
 		for (int index = otherValues.size() - 1; index >= 0; index--) {
 			SimplePoint3D otherValue = otherValues.get(index);
 			if(otherValue.getMinX() < xx) {
 				return false;
 			}
-			if(pointVolume <= otherValue.getVolume() && pointArea <= otherValue.getArea()) {
-				if(otherValue.eclipses(point)) {
-					// discard 
-					return true;
-				}
+			if(otherValue.eclipses(point)) {
+				// discard 
+				return true;
 			}
 		}
 		return false;
@@ -764,8 +930,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
-					constrainXX.set(clone, i);
+					SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					constrainXX.set(copy, i);
 				}
 			} else {
 				point.setMaxX(placement.getAbsoluteX() - 1);
@@ -802,8 +968,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			if(immutablePoints) {
 				// area is same as before, so not necessary to constrain
-				SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
-				constrainZZ.set(clone, i);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				constrainZZ.set(copy, i);
 			} else {
 				point.setMaxZ(placement.getAbsoluteZ() - 1);
 				constrainZZ.set(point, i);
@@ -841,8 +1007,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			if(immutablePoints) {
 				long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
 				if(area >= minAreaLimit) {
-					SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
-					constrainYY.set(clone, i);
+					SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					constrainYY.set(copy, i);
 				}
 			} else {
 				point.setMaxY(placement.getAbsoluteY() - 1);
@@ -970,13 +1136,11 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					// at this index or later
 					break;
 				}
-				if(unsorted.getVolume() <= sorted.getVolume() && unsorted.getArea() <= sorted.getArea()) {
-					if(sorted.eclipses(unsorted)) {
-						// discard unsorted
-						values.flag(i);
+				if(sorted.eclipses(unsorted)) {
+					// discard unsorted
+					values.flag(i);
 
-						continue added;
-					}
+					continue added;
 				}
 			}
 
@@ -987,12 +1151,12 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 	}
 
-	protected void constrainFloatingMaxWithClone(Placement placement, int limit) {
-		// each examined point can add at most one clone per direction
-		addedXX.ensureAdditionalCapacity(limit);
-		addedYY.ensureAdditionalCapacity(limit);
-		addedZZ.ensureAdditionalCapacity(limit);
-
+	protected void constrainFloatingMaxWithCopy(Placement placement, int limit) {
+		// A copy is not checked against the free points here: merge(..) checks every copy against the points before it,
+		// which are the points which stay and the copies which this check would have compared it with (and more), and
+		// discards an eclipsed copy. A check here only saves the allocation of a copy which is discarded, and costs a scan
+		// of the list for every copy which is kept. No moved point can eclipse a copy: a moved point starts behind the
+		// placement in the direction of the copy, and the copy ends before the placement.
 		for (int i = 0; i < limit; i++) {
 			SimplePoint3D point = values.get(i);
 
@@ -1074,123 +1238,24 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			//    *---------------|--------------
 			//             
 
-			addX: if(point.getMinX() < placement.getAbsoluteX()) {
-				if(!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-					// is the point now eclipsed by current points?
-					long cloneVolume = (long)point.getDy() * (long)point.getDz() * (placement.getAbsoluteX() - point.getMinX());
-					int cloneMaxX = placement.getAbsoluteX() - 1;
-
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedX(point, cloneMaxX)) {
-								break addX;
-							}
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedXX.size(); j++) {
-						SimplePoint3D point3d = addedXX.get(j);
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedX(point, cloneMaxX)) {
-								break addX;
-							}
-						}
-					}
-
-					SimplePoint3D clone = point.clone(cloneMaxX, point.getMaxY(), point.getMaxZ());
-
-					addedXX.add(clone);
-					constrainXX.set(clone, i);
+			if(point.getMinX() < placement.getAbsoluteX()) {
+				int copyMaxX = placement.getAbsoluteX() - 1;
+				if(!isConstrainedAtMaxX(point, copyMaxX)) {
+					constrainXX.set(point.copy(copyMaxX, point.getMaxY(), point.getMaxZ()), i);
 				}
 			}
 
-			addY: if(point.getMinY() < placement.getAbsoluteY()) {
-				if(!isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-					// is the point now eclipsed by current points?
-					long cloneVolume = (long)point.getDx() * (long)point.getDz() * (placement.getAbsoluteY() - point.getMinY());
-					int cloneMaxY = placement.getAbsoluteY() - 1;
-
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedY(point, cloneMaxY)) {
-								break addY;
-							}
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedYY.size(); j++) {
-						SimplePoint3D point3d = addedYY.get(j);
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedY(point, cloneMaxY)) {
-								break addY;
-							}
-						}
-					}
-
-					SimplePoint3D clone = point.clone(point.getMaxX(), cloneMaxY, point.getMaxZ());
-
-					addedYY.add(clone);
-					constrainYY.set(clone, i);
+			if(point.getMinY() < placement.getAbsoluteY()) {
+				int copyMaxY = placement.getAbsoluteY() - 1;
+				if(!isConstrainedAtMaxY(point, copyMaxY)) {
+					constrainYY.set(point.copy(point.getMaxX(), copyMaxY, point.getMaxZ()), i);
 				}
 			}
 
-			addZ: if(point.getMinZ() < placement.getAbsoluteZ()) {
-				if(!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-					// is the point now eclipsed by current points?
-					
-					long cloneVolume = point.getArea() * (placement.getAbsoluteZ() - point.getMinZ());
-					int cloneMaxZ = placement.getAbsoluteZ() - 1;
-					
-					for (int j = 0; j < i - 1; j++) {
-						if(values.isFlag(j)) {
-							continue;
-						}
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedZ(point, cloneMaxZ)) {
-								break addZ;
-							}
-						}
-					}
-
-					// is the point now eclipsed by new points?
-					for (int j = 0; j < addedZZ.size(); j++) {
-						SimplePoint3D point3d = addedZZ.get(j);
-
-						if(point3d.getVolume() >= cloneVolume) {
-							if(point3d.eclipsesConstrainedZ(point, cloneMaxZ)) {
-								break addZ;
-							}
-						}
-					}
-					SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), cloneMaxZ);
-
-					addedZZ.add(clone);
-					constrainZZ.set(clone, i);
+			if(point.getMinZ() < placement.getAbsoluteZ()) {
+				int copyMaxZ = placement.getAbsoluteZ() - 1;
+				if(!isConstrainedAtMaxZ(point, copyMaxZ)) {
+					constrainZZ.set(point.copy(point.getMaxX(), point.getMaxY(), copyMaxZ), i);
 				}
 			}
 			values.flag(i);
@@ -1202,7 +1267,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		Point3DFlagList values = this.values;
 
-		// each examined point can add at most one clone per direction
+		// each examined point can add at most one copy per direction
 		addedXX.ensureAdditionalCapacity(limit);
 		addedYY.ensureAdditionalCapacity(limit);
 		addedZZ.ensureAdditionalCapacity(limit);
@@ -1346,12 +1411,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1360,12 +1423,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddXX; j < addedXX.size(); j++) {
 							SimplePoint3D point3d = addedXX.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}
@@ -1391,12 +1452,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1405,12 +1464,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddYY; j < addedYY.size(); j++) {
 							SimplePoint3D point3d = addedYY.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}
@@ -1437,12 +1494,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						if(point3d.getMinX() > point.getMinX()) {
 							break;
 						}
-						if(point3d.getVolume() >= point.getVolume()) {
-							if(point3d.eclipses(point)) {
-								values.flag(i);
+						if(point3d.eclipses(point)) {
+							values.flag(i);
 
-								continue limitLoop;
-							}
+							continue limitLoop;
 						}
 					}
 
@@ -1451,12 +1506,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 						for (int j = startAddZZ; j < addedZZ.size(); j++) {
 							SimplePoint3D point3d = addedZZ.get(j);
 
-							if(point3d.getVolume() >= point.getVolume()) {
-								if(point3d.eclipses(point)) {
-									values.flag(i);
+							if(point3d.eclipses(point)) {
+								values.flag(i);
 
-									break;
-								}
+								break;
 							}
 						}
 					}
@@ -1470,23 +1523,23 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// fall through: must add multiple points
 
 			if(point.getMinX() < placement.getAbsoluteX() &&!isConstrainedAtMaxX(point, placement.getAbsoluteX() - 1)) {
-				SimplePoint3D clone = point.clone(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
-				constrainXX.set(clone, i);
-				addedXX.add(clone);
+				SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+				constrainXX.set(copy, i);
+				addedXX.add(copy);
 				splitXX = true;
 			}
 			
 			if(point.getMinY() < placement.getAbsoluteY() && !isConstrainedAtMaxY(point, placement.getAbsoluteY() - 1)) {
-				SimplePoint3D clone = point.clone(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
-				constrainYY.set(clone, i);
-				addedYY.add(clone);
+				SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+				constrainYY.set(copy, i);
+				addedYY.add(copy);
 				splitYY = true;
 			}
 
 			if(point.getMinZ() < placement.getAbsoluteZ() &&!isConstrainedAtMaxZ(point, placement.getAbsoluteZ() - 1)) {
-				SimplePoint3D clone = point.clone(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
-				constrainZZ.set(clone, i);
-				addedZZ.add(clone);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				constrainZZ.set(copy, i);
+				addedZZ.add(copy);
 				splitZZ = true;
 			}
 			values.flag(i);
@@ -1609,14 +1662,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		values.clear();
 		placements.clear();
 
-		if(initialPoints.isEmpty()) {
+		Point3DList initialPoints = this.initialPoints;
+		if(initialPoints == null || initialPoints.isEmpty()) {
 			SimplePoint3D origin = createContainerPoint();
 			values.add(origin);
 		} else {
-			for (SimplePoint3D simplePoint3D : initialPoints) {
-				SimplePoint3D clone = simplePoint3D.clone();
-				clone.setIndex(values.size());
-				values.add(clone);
+			for (int i = 0; i < initialPoints.size(); i++) {
+				SimplePoint3D simplePoint3D = initialPoints.get(i);
+				SimplePoint3D copy = simplePoint3D.copy();
+				copy.setIndex(values.size());
+				values.add(copy);
 			}
 		}
 		minAreaLimit = 0;
@@ -1625,7 +1680,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	public void setPoints(List<Point> points) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			if(p.getMaxX() > containerMaxX) {
@@ -1643,19 +1698,19 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			boolean xzPlane = p.getMinY() == 0;
 
 			if(xyPlane && yzPlane && xzPlane) {
-				initialPoints.add(new Default3DPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement, containerPlacement));
 			} else if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXZPlaneYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement, null));
 			} else if(xyPlane && xzPlane) {
-				initialPoints.add(new DefaultXYPlaneXZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), null, containerPlacement, containerPlacement));
 			} else if(xyPlane && yzPlane) {
-				initialPoints.add(new DefaultXYPlaneYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, null, containerPlacement));
 			} else if(xyPlane) {
-				initialPoints.add(new DefaultXYPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), null, null, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), null, containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYZPlanePoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement));
+				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ(), containerPlacement, null, null));
 			} else {
 				initialPoints.add(new DefaultPoint3D(p.getMinX(), p.getMinY(), p.getMinZ(), p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 			}
@@ -1669,7 +1724,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	// set points, but limit to a specific box
 	public boolean setPoints(List<Point> points, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		// transform coordinates to internal representation, i.e. with support etc
-		initialPoints = new ArrayList<>(points.size());
+		Point3DList initialPoints = prepareInitialPoints(points.size());
 		
 		for(Point p: points) {
 			
@@ -1713,19 +1768,19 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			int limitedMaxZ = Math.min(p.getMaxZ(), maxZ);
 			
 			if(xyPlane && yzPlane && xzPlane) {
-				initialPoints.add(new Default3DPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement, containerPlacement));
 			} else if(yzPlane && xzPlane) {
-				initialPoints.add(new DefaultXZPlaneYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, containerPlacement, null));
 			} else if(xyPlane && xzPlane) {
-				initialPoints.add(new DefaultXYPlaneXZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, null, containerPlacement, containerPlacement));
 			} else if(xyPlane && yzPlane) {
-				initialPoints.add(new DefaultXYPlaneYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement, containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, null, containerPlacement));
 			} else if(xyPlane) {
-				initialPoints.add(new DefaultXYPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, null, null, containerPlacement));
 			} else if(xzPlane) {
-				initialPoints.add(new DefaultXZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, null, containerPlacement, null));
 			} else if(yzPlane) {
-				initialPoints.add(new DefaultYZPlanePoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ , containerPlacement));
+				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, limitedMaxX, limitedMaxY, limitedMaxZ, containerPlacement, null, null));
 			} else {
 				initialPoints.add(new DefaultPoint3D(limitedMinX, limitedMinY, limitedMinZ, p.getMaxX(), p.getMaxY(), p.getMaxZ()));
 			}
@@ -1738,13 +1793,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return !initialPoints.isEmpty();
 	}
 
+	private Point3DList prepareInitialPoints(int size) {
+		if(initialPoints == null) {
+			initialPoints = new Point3DList(size);
+		} else {
+			initialPoints.reset();
+			initialPoints.ensureCapacity(size);
+		}
+		return initialPoints;
+	}
+
 	protected SimplePoint3D createContainerPoint() {
-		SimplePoint3D firstPoint = new Default3DPlanePoint3D(
-				0, 0, 0,
-				containerMaxX, containerMaxY, containerMaxZ,
-				containerPlacement,
-				containerPlacement,
-				containerPlacement);
+		SimplePoint3D firstPoint = new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ, containerPlacement, containerPlacement, containerPlacement);
 		
 		firstPoint.setIndex(0);
 		return firstPoint;
@@ -1819,11 +1879,6 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 	@Override
 	public Iterator<Point> iterator() {
-		for (Point point : values) {
-			if(point.getIndex() == -1) {
-				throw new RuntimeException(point.toString());
-			}
-		}
 		return values.iterator();
 	}
 	
@@ -1877,18 +1932,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 
 	public void clearInitialPoints() {
-		initialPoints.clear();
-	}
-	
-	@Override
-	public void remove(Predicate<Point> test) {
-		for(int i = 0; i < values.size(); i++) {
-			if(test.test(values.get(i))) {
-				values.flag(i);
-			}
-		}
-		if(values.removeFlagged() > 0) {
-			updateIndexes(values);
+		if(initialPoints != null) {
+			initialPoints.reset();
 		}
 	}
 

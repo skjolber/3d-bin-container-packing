@@ -24,7 +24,7 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * do {
  * 	do {
  * 		for (int i = 0; i < n; i++) {
- * 			PermutationRotation box = instance.get(i);
+ * 			BoxStackValue stackValue = instance.getStackValue(i);
  * 			// .. your code here
  * 		}
  * 	} while (instance.nextRotation() != -1);
@@ -58,6 +58,23 @@ public interface BoxItemPermutationRotationIterator {
 	BoxStackValue getStackValue(int index);
 
 	/**
+	 * @param index position in the current permutation
+	 * @return the box item at the position
+	 */
+	BoxItem getBoxItem(int index);
+
+	/**
+	 * @param index position in the current permutation
+	 * @return the rotations of the box at the position which fit the container (stack values of its box)
+	 */
+	BoxStackValue[] getStackValues(int index);
+
+	/**
+	 * @return the rotations of each box item which fit the container, by box item index (see {@link #getBoxItems()})
+	 */
+	BoxStackValue[][] getBoxItemStackValues();
+
+	/**
 	 * Get current state
 	 * 
 	 * @return current state
@@ -80,8 +97,6 @@ public interface BoxItemPermutationRotationIterator {
 
 	long[] getMinBoxVolume();
 
-	int getMinStackableAreaIndex(int i);
-	
 	/**
 	 * Get current permutations
 	 * 

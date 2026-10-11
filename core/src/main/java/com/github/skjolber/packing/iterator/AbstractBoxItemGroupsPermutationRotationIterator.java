@@ -1,22 +1,50 @@
 package com.github.skjolber.packing.iterator;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.BoxStackValue;
 
 public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends AbstractBoxItemPermutationRotationIterator implements BoxItemGroupPermutationRotationIterator {
 
 	protected BoxItemGroup[] groupsMatrix;
 	protected List<BoxItemGroup> excludedBoxItemGroups;
 
-	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, List<BoxItemGroup> excluded) {
-		super(boxMatrix);
+	public AbstractBoxItemGroupsPermutationRotationIterator(BoxItemGroup[] groupsMatrix, BoxItem[] boxMatrix, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded) {
+		super(boxMatrix, stackValues);
 		this.groupsMatrix = groupsMatrix;
 		this.excludedBoxItemGroups = excluded;
 	}
+
+	protected record GroupState(BoxItemGroup[] groups, BoxItem[] boxes) {}
+
+	protected static GroupState copyGroupState(AbstractBoxItemGroupsPermutationRotationIterator source) {
+		BoxItem[] boxes = copyBoxItems(source.stackableItems);
+		BoxItemGroup[] groups = new BoxItemGroup[source.groupsMatrix.length];
+		for(int i = 0; i < groups.length; i++) {
+			BoxItemGroup group = source.groupsMatrix[i];
+			if(group != null) {
+				List<BoxItem> items = new ArrayList<>(group.size());
+				for(BoxItem item : group.getItems()) {
+					items.add(boxes[item.getLocalIndex()]);
+				}
+				groups[i] = new BoxItemGroup(group.getId(), items, group.getIndex());
+			}
+		}
+		return new GroupState(groups, boxes);
+	}
 	
 	protected int getBoxCount() {
+		return getBoxCount(groupsMatrix);
+	}
+
+	/**
+	 * @param groupsMatrix groups by index (null if excluded or removed)
+	 * @return the number of boxes of the groups
+	 */
+	protected static int getBoxCount(BoxItemGroup[] groupsMatrix) {
 		int count = 0;
 		for (BoxItemGroup group : groupsMatrix) {
 			if(group == null) {
@@ -34,6 +62,16 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 	 */
 
 	public long countPermutations() {
+		return countPermutations(groupsMatrix);
+	}
+
+	/**
+	 * Return number of permutations for the boxes of the groups (which are permuted within their group).
+	 *
+	 * @param groupsMatrix groups by index (null if excluded or removed)
+	 * @return permutation count, or -1 if it does not fit in a long
+	 */
+	protected static long countPermutations(BoxItemGroup[] groupsMatrix) {
 		// reduce permutations for boxes which are duplicated
 
 		// could be further bounded by looking at how many boxes (i.e. n x the smallest) which actually
@@ -117,7 +155,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIterator extends A
 			}
 			for (BoxItem boxItem : boxItemGroup.getItems()) {
 				count += boxItem.getCount();
-				stackableItems[boxItem.getIndex()] = null;
+				stackableItems[boxItem.getLocalIndex()] = null;
 			}
 			groupsMatrix[i] = null;
 		}

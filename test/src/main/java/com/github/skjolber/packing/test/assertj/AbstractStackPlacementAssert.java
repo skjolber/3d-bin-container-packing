@@ -1,11 +1,15 @@
 package com.github.skjolber.packing.test.assertj;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.assertj.core.api.AbstractObjectAssert;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 
 public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPlacementAssert<SELF, ACTUAL>, ACTUAL extends Placement>
 		extends AbstractObjectAssert<SELF, ACTUAL> {
@@ -289,30 +293,66 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		failWithMessage("Not overlapping in y dimension");
 	}
 
-	/*
-	public SELF isSupportedBy(StackPlacement ... others) {
+	/**
+	 * Supported by exactly the given placements (in any order), as recorded by the load graph.
+	 */
+	public SELF isSupportedBy(Placement... others) {
 		isNotNull();
-		
-		List<? extends StackPlacement> supports3d = actual.getSupports3D();
-		for (StackPlacement other : others) {
-			if(!supports3d.contains(other)) {
-				failWithMessage("Not supported by " + other);
-			}
+		assertLinks(actual.getSupporters(), others, "supported by");
+		return myself;
+	}
+
+	/**
+	 * Supports exactly the given placements (in any order), as recorded by the load graph.
+	 */
+	public SELF supports(Placement... others) {
+		isNotNull();
+		assertLinks(actual.getSupportees(), others, "supporting");
+		return myself;
+	}
+
+	public SELF isUnsupported() {
+		isNotNull();
+		if(!actual.getSupporters().isEmpty()) {
+			failWithMessage("Expected no supporters, got " + placements(actual.getSupporters()));
 		}
 		return myself;
 	}
-	
-	public SELF supports(StackPlacement ... others) {
+
+	public SELF supportsNothing() {
 		isNotNull();
-		for (StackPlacement other : others) {
-			List<? extends StackPlacement> list = other.getSupports3D();
-			if(list == null || !list.contains(actual)) {
-				failWithMessage(actual + " is not supporting " + other + ". Supporters are " + list);
-			}
+		if(!actual.getSupportees().isEmpty()) {
+			failWithMessage("Expected no supportees, got " + placements(actual.getSupportees()));
 		}
 		return myself;
 	}
-	*/
+
+	private void assertLinks(List<PlacementLoad> links, Placement[] expected, String relation) {
+		if(links.size() != expected.length) {
+			failWithMessage("Expected " + actual + " " + relation + " " + Arrays.toString(expected) + ", got " + placements(links));
+			return;
+		}
+		for (Placement other : expected) {
+			boolean found = false;
+			for (PlacementLoad link : links) {
+				if(link.getPlacement() == other) {
+					found = true;
+					break;
+				}
+			}
+			if(!found) {
+				failWithMessage("Expected " + actual + " " + relation + " " + other + ", got " + placements(links));
+			}
+		}
+	}
+
+	private static List<Placement> placements(List<PlacementLoad> links) {
+		List<Placement> placements = new ArrayList<>(links.size());
+		for (PlacementLoad link : links) {
+			placements.add(link.getPlacement());
+		}
+		return placements;
+	}
 	
 	public SELF hasBoxItemDescription(String name) {
 		isNotNull();
@@ -324,8 +364,8 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 	
 	public SELF hasBoxItemGroupId(String id) {
 		isNotNull();
-		if(!Objects.equals(id, actual.getStackValue().getBox().getBoxItem().getGroup().getId())) {
-			failWithMessage("Expected group name " + id+ ", not " + actual.getStackValue().getBox().getBoxItem().getGroup().getId());
+		if(!Objects.equals(id, actual.getBoxItem().getGroup().getId())) {
+			failWithMessage("Expected group name " + id+ ", not " + actual.getBoxItem().getGroup().getId());
 		}
 		return myself;
 	}
@@ -343,6 +383,25 @@ public abstract class AbstractStackPlacementAssert<SELF extends AbstractStackPla
 		isNotNull();
 		if(!Objects.equals(stackValue, actual.getStackValue())) {
 			failWithMessage("Expected stack value " + stackValue + ", not " + actual.getStackValue());
+		}
+		return myself;
+	}
+
+	/**
+	 * @param weight expected total weight resting on this placement, see {@link Placement#getLoadWeight()}
+	 */
+	public SELF hasLoadWeight(double weight) {
+		isNotNull();
+		if(Double.compare(actual.getLoadWeight(), weight) != 0) {
+			failWithMessage("Expected load weight " + weight + ", not " + actual.getLoadWeight());
+		}
+		return myself;
+	}
+
+	public SELF hasSupportedArea(long area) {
+		isNotNull();
+		if(actual.getSupportedArea() != area) {
+			failWithMessage("Expected supported area " + area + ", not " + actual.getSupportedArea());
 		}
 		return myself;
 	}

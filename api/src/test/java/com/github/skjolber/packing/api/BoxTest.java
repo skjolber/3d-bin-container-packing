@@ -1,25 +1,46 @@
 package com.github.skjolber.packing.api;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
 public class BoxTest {
 
 	@Test
-	public void testMinimumPressureUsesMaximumArea() {
-		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+	void globalBoxItemIndexIsImmutableAfterAssignment() {
+		BoxItem item = new BoxItem(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build());
 
-		assertSame(Box.getMaximumArea(box.getStackValues()), Box.getMinimumPressure(box.getStackValues()));
+		item.setGlobalIndex(3);
+		item.setGlobalIndex(3);
+
+		assertThrows(IllegalStateException.class, () -> item.setGlobalIndex(4));
+	}
+
+	@Test
+	public void testCalculatePressure() {
+		assertEquals(2.5, Box.calculatePressure(4, 10), 0.0);
+		assertEquals(0.0, Box.calculatePressure(0, 10), 0.0);
+		assertEquals(1.0 / 3.0, Box.calculatePressure(3, 1), 0.0);
 	}
 
 	@Test
 	public void testLargeAggregateWeightsDoNotOverflow() {
 		Box box = Box.newBuilder().withSize(1, 1, 1).withWeight(1_500_000_000).build();
-
 		assertEquals(3_000_000_000L, new BoxItem(box, 2).getWeight());
+
+		Stack stack = new Stack();
+		stack.add(new Placement(box.getStackValue(0), 0, 0, 0, 0));
+		stack.add(new Placement(box.getStackValue(0), 0, 1, 0, 0));
+		assertEquals(3_000_000_000L, stack.getWeight());
 	}
 
 	@Test
@@ -51,6 +72,85 @@ public class BoxTest {
 		assertUniqueValues(stackValues);
 	}
 
+	/**
+	 * A stack value belongs to one box: building another box with it would make the first box's stack value refer to
+	 * the other box. A copy belongs to no box.
+	 */
+	@Test
+	public void stackValueBelongsToOneBox() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withWeight(1).build();
+		BoxStackValue stackValue = box.getStackValue(0);
+
+		assertThrows(IllegalArgumentException.class, () -> new Box("other", null, 6, 1, new BoxStackValue[] { stackValue }, Collections.emptyMap()));
+		assertSame(box, stackValue.getBox());
+
+		BoxStackValue copy = stackValue.copy();
+		Box other = new Box("other", null, 6, 1, new BoxStackValue[] { copy }, Collections.emptyMap());
+		assertSame(other, copy.getBox());
+		assertSame(box, stackValue.getBox());
+	}
+
+	@Test
+	public void loadBoxBuilderBuildsBoxesWithStackValuesOfTheirOwn() {
+		Box.LoadBoxBuilder builder = new Box.LoadBoxBuilder().withRotation(r -> r.withDimensions(1, 2, 3)).withWeight(1);
+		Box first = builder.build();
+		Box second = builder.build();
+		assertSame(first, first.getStackValue(0).getBox());
+		assertSame(second, second.getStackValue(0).getBox());
+	}
+
+	/**
+	 * Setting a box count limit replaces an identical-only limit, as on {@link BoxStackValue}'s builder.
+	 */
+	@Test
+	public void maxLoadBoxCountReplacesIdenticalOnlyLimit() {
+		Box identical = Box.newBuilder().withSize(1, 2, 3).withWeight(1).withMaxLoadIdenticalBoxCount(2).build();
+		assertTrue(identical.isLoadIdenticalBoxOnly());
+		assertTrue(identical.getStackValue(0).isLoadIdenticalBoxOnly());
+
+		Box any = Box.newBuilder().withSize(1, 2, 3).withWeight(1).withMaxLoadIdenticalBoxCount(2).withMaxLoadBoxCount(3).build();
+		assertFalse(any.isLoadIdenticalBoxOnly());
+		assertTrue(any.isMaxLoadBoxCount());
+		for (BoxStackValue stackValue : any.getStackValues()) {
+			assertFalse(stackValue.isLoadIdenticalBoxOnly());
+			assertEquals(3, stackValue.getMaxLoadBoxCount());
+		}
+	}
+
+	@Test
+	public void rotationsReturnsTheStackValuesWhichFit() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+
+		// only the stack values with dz = 1 fit, i.e. 2x3x1 and 3x2x1
+		List<BoxStackValue> rotations = box.rotations(3, 3, 1);
+		assertEquals(2, rotations.size());
+		for (BoxStackValue stackValue : rotations) {
+			assertTrue(stackValue.fitsInside3D(3, 3, 1));
+		}
+
+		assertEquals(6, box.rotations(3, 3, 3).size());
+	}
+
+	@Test
+	public void rotationsReturnsAnEmptyImmutableListWhenNothingFits() {
+		Box box = Box.newBuilder().withSize(1, 2, 3).withRotate3D().withWeight(1).build();
+
+		List<BoxStackValue> rotations = box.rotations(1, 1, 1);
+		assertNotNull(rotations);
+		assertTrue(rotations.isEmpty());
+		assertThrows(UnsupportedOperationException.class, () -> rotations.add(box.getStackValue(0)));
+	}
+
+	@Test
+	public void stackValueBuilderSetsCenterOfGravity() {
+		Box box = new Box.LoadBoxBuilder().withRotation(r -> r.withDimensions(3, 4, 5).withCenterOfGravity(1, 2, 3)).withWeight(1).build();
+
+		BoxStackValue stackValue = box.getStackValue(0);
+		assertEquals(1, stackValue.getCenterOfGravityX());
+		assertEquals(2, stackValue.getCenterOfGravityY());
+		assertEquals(3, stackValue.getCenterOfGravityZ());
+	}
+
 	private void assertUniqueValues(BoxStackValue[] stackValues) {
 		for (int i = 0; i < stackValues.length; i++) {
 			BoxStackValue box1 = stackValues[i];
@@ -67,6 +167,51 @@ public class BoxTest {
 				}
 
 			}
+		}
+	}
+
+	@Test
+	public void testContainerCopyPreservesMotion() {
+		Motion motion = new Motion();
+		Container container = new Container("id", "description", 1, 2, 3, 4, 1, 2, 3, 5, new Stack(), motion);
+
+		Container copy = container.copy();
+
+		assertSame(motion, copy.getMotion());
+	}
+	@Test
+	void copyCopiesDerivedValues() {
+		Box box = Box.newBuilder()
+				.withId("box")
+				.withSize(3, 5, 7)
+				.withWeight(11)
+				.withRotate3D()
+				.withMaxLoadWeight(100)
+				.withMaxLoadBoxCount(4)
+				.build();
+
+		Box copy = box.copy();
+
+		assertEquals(box.getId(), copy.getId());
+		assertEquals(box.getVolume(), copy.getVolume());
+		assertEquals(box.getWeight(), copy.getWeight());
+		assertEquals(box.getStackValues().length, copy.getStackValues().length);
+		assertEquals(box.getMinimumArea(), copy.getMinimumArea());
+		assertEquals(box.getMaximumArea(), copy.getMaximumArea());
+		assertEquals(box.getMinimumDx(), copy.getMinimumDx());
+		assertEquals(box.getMinimumDy(), copy.getMinimumDy());
+		assertEquals(box.getMinimumDz(), copy.getMinimumDz());
+		assertEquals(box.getMaximumDz(), copy.getMaximumDz());
+		assertEquals(box.getMinimumPressure(), copy.getMinimumPressure(), 0.0);
+		assertEquals(box.getMaximumPressure(), copy.getMaximumPressure(), 0.0);
+		assertEquals(box.isMaxLoadWeight(), copy.isMaxLoadWeight());
+		assertEquals(box.isMaxLoadBoxCount(), copy.isMaxLoadBoxCount());
+		assertEquals(box.isMaxLoadPressure(), copy.isMaxLoadPressure());
+		assertEquals(box.isLoadIdenticalBoxOnly(), copy.isLoadIdenticalBoxOnly());
+		for(int i = 0; i < copy.getStackValues().length; i++) {
+			// the copy's stack values belong to the copy
+			assertSame(copy, copy.getStackValues()[i].getBox());
+			assertSame(box, box.getStackValues()[i].getBox());
 		}
 	}
 }

@@ -1,7 +1,6 @@
 package com.github.skjolber.packing.packer;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 import com.github.skjolber.packing.api.Box;
@@ -13,60 +12,78 @@ import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.packager.DefaultBoxItemSource;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
+import com.github.skjolber.packing.api.packager.control.manifest.DefaultManifestControls;
 import com.github.skjolber.packing.api.packager.control.manifest.ManifestControls;
+import com.github.skjolber.packing.api.packager.control.manifest.ManifestControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.placement.PlacementControls;
+import com.github.skjolber.packing.api.packager.control.point.DefaultPointControlsBuilderFactory;
 import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
+import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.point.PointSource;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.MarkResetPointCalculator3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupIterator;
 import com.github.skjolber.packing.iterator.PackagerBoxItems;
 
 /**
- * Fit boxes into container, i.e. perform bin packing to a single container.
+ * Base class for packagers which pack one container at a time, placing boxes at extreme points according to placement, point and manifest controls.
  * <br>
  * <br>
  * Thread-safe implementation.
  */
 public abstract class AbstractControlPackager<I extends Placement, B extends PackagerResultBuilder> extends AbstractPackager<B> {
 
-	public AbstractControlPackager(Comparator<IntermediatePackagerResult> comparator) {
+	public AbstractControlPackager(IntermediatePackagerResultComparator comparator) {
 		super(comparator);
 	}
 
-	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult pack(List<BoxItem> boxItems, ContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, Order order, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) throws PackagerInterruptedException {
 		Container container = controlContainerItem.getContainer();
 
-		Stack stack = new Stack();
+		Stack stack = createStack();
 
-		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(boxItems);
+		// container priorities: the items of one priority at a time, see getContainerPriorityEnd(..)
+		boolean containerPriorities = hasContainerPriorities(boxItems);
+		int maxContainerPriority = Integer.MAX_VALUE;
+		DefaultBoxItemSource boxItemSource = new DefaultBoxItemSource(sortByRanks(boxItems, order));
+		ExtractionOrderSearch extractionOrderSearch = createExtractionOrderSearch(boxItems, order);
 
-		PointCalculator pointCalculator = createPointCalculator(boxItemSource);
+		PointCalculator pointCalculator = createPointCalculator(boxItemSource); 
 		pointCalculator.clearToSize(container.getLoadDx(), container.getLoadDy(), container.getLoadDz());
 		if(controlContainerItem.hasInitialPoints()) {
 			pointCalculator.setPoints(controlContainerItem.getInitialPoints());
 			pointCalculator.clear();
 		}
 
-		ManifestControls manifestControls = controlContainerItem.createBoxItemControls(container, stack, boxItemSource, pointCalculator, null);
+		ManifestControls manifestControls = createManifestControls(container, stack, boxItemSource, pointCalculator, null, controlContainerItem.getManifestControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, boxItemSource, pointCalculator);
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+
+		PointControls pointControls = createPointControls(container, stack, boxItemSource, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, loadIdenticalBox);
 		
 		// remove boxes which do not fit due to volume, weight or dimensions
 		List<BoxItem> removed = new ArrayList<>(boxItemSource.size());
 		for(int i = 0; i < boxItemSource.size(); i++) {
 			BoxItem boxItem = boxItemSource.get(i);
-			if(!container.fitsInside(boxItem.getBox())) {
+			if(!container.canLoad(boxItem.getBox())) {
 
 				if(abortOnAnyBoxTooBig) {
 					return createEmptyIntermediatePackagerResult();
 				}
 				
-				if(order != Order.CRONOLOGICAL) {
+				if(order != Order.CHRONOLOGICAL) {
 					removed.add(boxItemSource.remove(i));
 					i--;
 				} else {
@@ -81,43 +98,51 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		if(!removed.isEmpty()) {
 			manifestControls.declined(removed);
 			pointControls.declined(removed);
+			maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 			
 			removed.clear();
 		}
 		
 		long maxBoxArea = boxItemSource.getMaxArea();
 		long maxBoxVolume = boxItemSource.getMaxVolume();
+		int maxBoxWeight = getMaxBoxWeight(boxItemSource);
 		
 		pointCalculator.setMinimumAreaAndVolumeLimit(boxItemSource.getMinArea(), boxItemSource.getMinVolume());
 
 		int remainingLoadWeight = container.getMaxLoadWeight();
 		long remainingLoadVolume = container.getMaxLoadVolume();
 
-		PlacementControls<I> placementControls = createControls(boxItemSource, 0, boxItemSource.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls placementControls = createControls(boxItemSource, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, loadIdenticalBox);
 
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !boxItemSource.isEmpty()) {
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
 			}
 
-			Placement placement = placementControls.getPlacement(0, boxItemSource.size());
+			int end = containerPriorities ? getContainerPriorityEnd(boxItemSource, maxContainerPriority) : boxItemSource.size();
+			if(end == 0) {
+				break;
+			}
+			Placement placement = extractionOrderSearch != null ? extractionOrderSearch.getPlacement(placementControls, boxItemSource, end) : placementControls.getPlacement(0, end);
 			if(placement == null) {
 				break;
 			}
-			
+
 			stack.add(placement);
 			pointCalculator.add(placement.getPointIndex(), placement);
+			placementControls.accepted(placement);
 			
 			remainingLoadWeight -= placement.getBoxItem().getBox().getWeight();
 			remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 			
-			if(order == Order.CRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(boxItemSource, placement.getBoxItem(), removed)) {
+			if(order == Order.CHRONOLOGICAL_ALLOW_SKIPPING && removeSkippedBoxItems(boxItemSource, placement.getBoxItem(), removed)) {
 				manifestControls.declined(removed);
 				pointControls.declined(removed);
+				maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 
 				removed.clear();
 			}
-			boxItemSource.decrement(placement.getBoxItem().getIndex(), 1);
+			boxItemSource.decrement(placement.getBoxItem().getLocalIndex(), 1);
 
 			manifestControls.accepted(placement.getBoxItem());
 			pointControls.accepted(placement.getBoxItem());
@@ -125,31 +150,35 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			if(!boxItemSource.isEmpty()) {
 				
 				// remove items are too big according to total volume / weight
-				for(int i = 0; i < boxItemSource.size(); i++) {
-					BoxItem boxItem = boxItemSource.get(i);
-					Box box = boxItem.getBox();
-					if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
-						
-						if(abortOnAnyBoxTooBig) {
-							return createEmptyIntermediatePackagerResult();
-						}
-						
-						if(order != Order.CRONOLOGICAL) {
-							removed.add(boxItemSource.remove(i));
-							i--;
-						} else {
-							// remove all later then the first removed
-							while(i < boxItemSource.size()) {
+				// (the items only shrink, so nothing can be too big while the remaining capacity holds the largest initial item)
+				if(remainingLoadVolume < maxBoxVolume || remainingLoadWeight < maxBoxWeight) {
+					for(int i = 0; i < boxItemSource.size(); i++) {
+						BoxItem boxItem = boxItemSource.get(i);
+						Box box = boxItem.getBox();
+						if(box.getVolume() > remainingLoadVolume || box.getWeight() > remainingLoadWeight) {
+							
+							if(abortOnAnyBoxTooBig) {
+								return createEmptyIntermediatePackagerResult();
+							}
+							
+							if(order != Order.CHRONOLOGICAL) {
 								removed.add(boxItemSource.remove(i));
-							}							
+								i--;
+							} else {
+								// remove all later then the first removed
+								while(i < boxItemSource.size()) {
+									removed.add(boxItemSource.remove(i));
+								}							
+							}
 						}
 					}
-				}
-				if(!removed.isEmpty()) {
-					manifestControls.declined(removed);
-					pointControls.declined(removed);
-					
-					removed.clear();
+					if(!removed.isEmpty()) {
+						manifestControls.declined(removed);
+						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
+						
+						removed.clear();
+					}
 				}
 				
 				// remove small points
@@ -169,7 +198,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 								return createEmptyIntermediatePackagerResult();
 							}
 							
-							if(order != Order.CRONOLOGICAL) {
+							if(order != Order.CHRONOLOGICAL) {
 								removed.add(boxItemSource.remove(i));
 								i--;
 							} else {
@@ -184,6 +213,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					if(!removed.isEmpty()) {
 						manifestControls.declined(removed);
 						pointControls.declined(removed);
+						maxContainerPriority = getMaxContainerPriority(maxContainerPriority, removed);
 						
 						removed.clear();
 					}
@@ -196,16 +226,189 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
+	/**
+	 * Without a box item order, sort the box items by ascending container priority (so that the items of the lowest
+	 * priority are first, see {@link #getContainerPriorityEnd(BoxItemSource, int)}), then by descending extraction order
+	 * (see {@link ExtractionOrderSearch}), keeping their order otherwise. With a box item order, the container priorities
+	 * do not decrease (see {@link AbstractPackager#getUnsupportedReason(PackagerInput)}).
+	 */
+	protected static List<BoxItem> sortByRanks(List<BoxItem> boxItems, Order order) {
+		if(order != null && order != Order.NONE || !hasContainerPriorities(boxItems) && !hasExtractionOrders(boxItems)) {
+			return boxItems;
+		}
+		List<BoxItem> sorted = new ArrayList<>(boxItems);
+		// stable insertion sort; few items, often sorted
+		for (int i = 1; i < sorted.size(); i++) {
+			BoxItem boxItem = sorted.get(i);
+			int j = i - 1;
+			while(j >= 0 && isRankedAfter(sorted.get(j), boxItem)) {
+				sorted.set(j + 1, sorted.get(j));
+				j--;
+			}
+			sorted.set(j + 1, boxItem);
+		}
+		return sorted;
+	}
+
+	private static boolean isRankedAfter(BoxItem first, BoxItem second) {
+		if(first.getContainerPriority() != second.getContainerPriority()) {
+			return first.getContainerPriority() > second.getContainerPriority();
+		}
+		return first.getExtractionOrder() < second.getExtractionOrder();
+	}
+
+	/**
+	 * @return an extraction order search, if the box items have different extraction orders and no given order, otherwise null
+	 */
+	protected static ExtractionOrderSearch createExtractionOrderSearch(List<BoxItem> boxItems, Order order) {
+		if(order != null && order != Order.NONE || !hasExtractionOrders(boxItems)) {
+			return null;
+		}
+		return new ExtractionOrderSearch();
+	}
+
+	protected static boolean hasExtractionOrders(List<BoxItem> boxItems) {
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getExtractionOrder() != boxItems.get(0).getExtractionOrder()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean hasContainerPriorities(List<BoxItem> boxItems) {
+		for (int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getContainerPriority() != boxItems.get(0).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	protected static boolean hasGroupContainerPriorities(List<BoxItemGroup> groups) {
+		for (int i = 1; i < groups.size(); i++) {
+			if(groups.get(i).getContainerPriority() != groups.get(0).getContainerPriority()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Boxes are placed in a container one container priority at a time (see {@link BoxItem#withContainerPriority(int)}):
+	 * the items of the first priority, as long as it does not exceed the given maximum.
+	 *
+	 * @param boxItems box items, sorted by container priority
+	 * @param maxContainerPriority the highest priority which may still be placed in the container (lowered when items
+	 *        are declined, as the next priority must then wait for the next container)
+	 * @return the end index of the items which may be placed, 0 if none
+	 */
+	/**
+	 * With {@link Order#CHRONOLOGICAL_ALLOW_SKIPPING}, the boxes before a placed box in the order were skipped: they are
+	 * not placed in this container (later boxes could otherwise make room for them), but wait for the next container,
+	 * so that the boxes in a container are in the order.
+	 *
+	 * @param placed the box item just placed; its local index is its position in the box items
+	 * @param removed the skipped box items are added here
+	 * @return true if any box items were skipped
+	 */
+	protected static boolean removeSkippedBoxItems(BoxItemSource boxItemSource, BoxItem placed, List<BoxItem> removed) {
+		int skipped = placed.getLocalIndex();
+		for(int i = 0; i < skipped; i++) {
+			removed.add(boxItemSource.remove(0));
+		}
+		return skipped > 0;
+	}
+
+	protected static int getContainerPriorityEnd(BoxItemSource boxItems, int maxContainerPriority) {
+		if(boxItems.isEmpty()) {
+			return 0;
+		}
+		int priority = boxItems.get(0).getContainerPriority();
+		if(priority > maxContainerPriority) {
+			return 0;
+		}
+		int end = 1;
+		while(end < boxItems.size() && boxItems.get(end).getContainerPriority() == priority) {
+			end++;
+		}
+		return end;
+	}
+
+	/**
+	 * @return the highest container priority which may still be placed in the container after declining the items
+	 */
+	protected static int getMaxContainerPriority(int maxContainerPriority, List<BoxItem> declined) {
+		for (int i = 0; i < declined.size(); i++) {
+			maxContainerPriority = Math.min(maxContainerPriority, declined.get(i).getContainerPriority());
+		}
+		return maxContainerPriority;
+	}
+
+	/**
+	 * @return the highest container priority which may still be placed in the container after declining the groups
+	 */
+	protected static int getMaxGroupContainerPriority(int maxContainerPriority, List<BoxItemGroup> declined) {
+		for (int i = 0; i < declined.size(); i++) {
+			maxContainerPriority = Math.min(maxContainerPriority, declined.get(i).getContainerPriority());
+		}
+		return maxContainerPriority;
+	}
+
+	/**
+	 * @return the lowest container priority of the groups
+	 */
+	protected static int getMinGroupContainerPriority(BoxItemGroupSource groups) {
+		int min = Integer.MAX_VALUE;
+		for (int i = 0; i < groups.size(); i++) {
+			min = Math.min(min, groups.get(i).getContainerPriority());
+		}
+		return min;
+	}
+
+	protected Stack createStack() {
+		return new Stack();
+	}
+
+	protected ManifestControls createManifestControls(Container container, Stack stack, BoxItemSource boxItemSource,
+			PointCalculator pointCalculator, BoxItemGroupSource groups, ManifestControlsBuilderFactory manifestControlsBuilderFactory) {
+				
+		if(manifestControlsBuilderFactory == null) {
+			return new DefaultManifestControls();
+		}
+		return manifestControlsBuilderFactory.createManifestControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withBoxItemGroups(groups)
+				.withPoints(pointCalculator)
+				.build();
+	}
+	
+	protected PointControls createPointControls(Container container, Stack stack, BoxItemSource boxItemSource, PointSource points, PointControlsBuilderFactory pointControlsBuilderFactory, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean loadIdenticalBox) {
+		return pointControlsBuilderFactory.createPointControlsBuilder()
+				.withContainer(container)
+				.withStack(stack)
+				.withBoxItems(boxItemSource)
+				.withPoints(points)
+				.withMaxLoad(maxLoadWeight, maxLoadPressure, maxLoadBoxCount)
+				.withLoadIdenticalBox(loadIdenticalBox)
+				.build();
+	}
+	
 	protected PointCalculator createPointCalculator(BoxItemSource boxItemSource) {
 		return new DefaultPointCalculator3D(false, boxItemSource);
 	}
 
-	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ControlledContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig) throws PackagerInterruptedException {
+	public IntermediatePackagerResult packGroup(List<BoxItemGroup> boxItemGroups, Order order, ContainerItem controlContainerItem, PackagerInterruptSupplier interrupt, boolean abortOnAnyBoxTooBig, boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount) throws PackagerInterruptedException {
 		ContainerItem containerItem = controlContainerItem;
 		Container container = containerItem.getContainer();
 		
-		Stack stack = new Stack();
-
+		Stack stack = createStack();
+		
+		// container priorities: the groups of one priority at a time
+		boolean containerPriorities = hasGroupContainerPriorities(boxItemGroups);
+		int maxContainerPriority = Integer.MAX_VALUE;
 		PackagerBoxItems packagerBoxItems = new PackagerBoxItems(boxItemGroups);
 		BoxItemSource filteredBoxItems = packagerBoxItems.getFilteredBoxItems();
 
@@ -219,22 +422,27 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		BoxItemGroupSource filteredBoxItemGroups = packagerBoxItems.getFilteredBoxItemGroups();
 
-		ManifestControls boxItemControls = controlContainerItem.createBoxItemControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups);
+		ManifestControls manifestControls = createManifestControls(container, stack, filteredBoxItems, pointCalculator, filteredBoxItemGroups, controlContainerItem.getManifestControlsBuilderFactory());
 
-		PointControls pointControls = controlContainerItem.createPointControls(container, stack, filteredBoxItems, pointCalculator);
+		PointControlsBuilderFactory pointControlsBuilderFactory = controlContainerItem.getPointControlsBuilderFactory();
+		if(pointControlsBuilderFactory == null) {
+			pointControlsBuilderFactory = new DefaultPointControlsBuilderFactory();
+		}
+		
+		PointControls pointControls = createPointControls(container, stack, filteredBoxItems, pointCalculator, pointControlsBuilderFactory, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 						
 		List<BoxItemGroup> removedBoxItemGroups = new ArrayList<>();
 
-		if(order != Order.CRONOLOGICAL) {
+		if(order != Order.CHRONOLOGICAL) {
 	
 			// remove boxes which do not fit due to volume, weight or stack value dimensions
 			for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
 				BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(i);
-				if(!container.fitsInside(boxItemGroup)) {
+				if(!container.canLoadAtLeastOneBox(boxItemGroup)) {
 					if(abortOnAnyBoxTooBig) {
 						return createEmptyIntermediatePackagerResult();
 					}
-					if(order != Order.CRONOLOGICAL) {
+					if(order != Order.CHRONOLOGICAL) {
 						filteredBoxItemGroups.remove(i);
 						i--;
 						
@@ -249,12 +457,13 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			}
 			
 			if(!removedBoxItemGroups.isEmpty()) {
-				if(boxItemControls != null) {
-					boxItemControls.filteredGroups(removedBoxItemGroups);
+				if(manifestControls != null) {
+					manifestControls.filteredGroups(removedBoxItemGroups);
 				}
 				if(pointControls != null) {
 					pointControls.filteredGroups(removedBoxItemGroups);
 				}
+				maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 				removedBoxItemGroups.clear();
 			}
 		}
@@ -268,8 +477,10 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 
 		long maxBoxVolume = filteredBoxItems.getMaxVolume();
 		long maxBoxArea = filteredBoxItems.getMaxArea();
+		long maxGroupVolume = getMaxGroupVolume(filteredBoxItemGroups);
+		long maxGroupWeight = getMaxGroupWeight(filteredBoxItemGroups);
 		
-		PlacementControls<I> placementControls = createControls(filteredBoxItems, 0, filteredBoxItems.size(), order, pointControls, container, pointCalculator, stack);
+		PlacementControls placementControls = createControls(filteredBoxItems, order, pointControls, container, pointCalculator, stack, maxLoadWeight, maxLoadPressure, maxLoadBoxCount, maxLoadIdenticalBoxCount);
 
 		groups:
 		while (remainingLoadWeight > 0 && remainingLoadVolume > 0 && !pointCalculator.isEmpty() && boxItemGroupIterator.hasNext() && !filteredBoxItemGroups.isEmpty()) {
@@ -278,12 +489,16 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			int boxItemStartIndex = packagerBoxItems.getFirstBoxItemIndexForGroup(groupIndex);
 			
 			BoxItemGroup boxItemGroup = filteredBoxItemGroups.get(groupIndex);
+			if(containerPriorities && boxItemGroup.getContainerPriority() > Math.min(maxContainerPriority, getMinGroupContainerPriority(filteredBoxItemGroups))) {
+				// a group of a lower container priority is not placed in this container
+				break groups;
+			}
 			boxItemGroup.mark();
 			
 			pointCalculator.mark();
 			int markStackSize = stack.size();
 			
-			boxItemControls.attempt(boxItemGroup, boxItemStartIndex, boxItemGroup.size());
+			manifestControls.attempt(boxItemGroup, boxItemStartIndex, boxItemGroup.size());
 			
 			while(!boxItemGroup.isEmpty()) {
 				if(interrupt.getAsBoolean()) {
@@ -299,7 +514,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				if(placement == null) {
 					break;
 				}
-				
+
 				stack.add(placement);
 				pointCalculator.add(placement.getPointIndex(), placement);
 				
@@ -307,46 +522,46 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 				remainingLoadVolume -= placement.getBoxItem().getBox().getVolume();
 				
 				// decrement box item without deleting the whole group
-				packagerBoxItems.decrement(placement.getBoxItem().getIndex());
+				packagerBoxItems.decrement(placement.getBoxItem().getLocalIndex());
 
-				boxItemControls.accepted(placement.getBoxItem());
+				manifestControls.accepted(placement.getBoxItem());
 				pointControls.accepted(placement.getBoxItem());
+				placementControls.accepted(placement);
 
 				if(!filteredBoxItemGroups.isEmpty()) {
 					// remove groups are too big according to total volume / weight
-					
-					for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
-						BoxItemGroup g = filteredBoxItemGroups.get(i);
-						if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
-							
-							if(abortOnAnyBoxTooBig) {
-								return createEmptyIntermediatePackagerResult();
-							}
-							
-							if(order != Order.CRONOLOGICAL) {
-								filteredBoxItemGroups.remove(i);
-								i--;
+					// (the groups only shrink, so nothing can be too big while the remaining capacity holds the largest initial group)
+					if(remainingLoadVolume < maxGroupVolume || remainingLoadWeight < maxGroupWeight) {
+						for(int i = 0; i < filteredBoxItemGroups.size(); i++) {
+							BoxItemGroup g = filteredBoxItemGroups.get(i);
+							if(g.getVolume() > remainingLoadVolume || g.getWeight() > remainingLoadWeight) {
 								
-								removedBoxItemGroups.add(g);
-							} else {
-								// remove all later groups than the first removed
-								while(i < filteredBoxItemGroups.size()) {
-									removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+								if(abortOnAnyBoxTooBig) {
+									return createEmptyIntermediatePackagerResult();
 								}
 								
-								
+								if(order != Order.CHRONOLOGICAL) {
+									filteredBoxItemGroups.remove(i);
+									i--;
+									
+									removedBoxItemGroups.add(g);
+								} else {
+									// remove all later groups than the first removed
+									while(i < filteredBoxItemGroups.size()) {
+										removedBoxItemGroups.add(filteredBoxItemGroups.remove(i));
+									}
+									
+									
+								}
 							}
 						}
-					}
-
-					if(!removedBoxItemGroups.isEmpty()) {
-						if(boxItemControls != null) {
-							boxItemControls.filteredGroups(removedBoxItemGroups);
-						}
-						if(pointControls != null) {
+	
+						if(!removedBoxItemGroups.isEmpty()) {
+							manifestControls.filteredGroups(removedBoxItemGroups);
 							pointControls.filteredGroups(removedBoxItemGroups);
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
+							removedBoxItemGroups.clear();
 						}
-						removedBoxItemGroups.clear();
 					}
 					
 					// remove / constrain to small points
@@ -370,7 +585,7 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 										return createEmptyIntermediatePackagerResult();
 									}
 
-									if(order != Order.CRONOLOGICAL) {
+									if(order != Order.CHRONOLOGICAL) {
 										filteredBoxItemGroups.remove(i);
 										i--;
 										
@@ -387,12 +602,9 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 							}				
 						}
 						if(!removedBoxItemGroups.isEmpty()) {
-							if(boxItemControls != null) {
-								boxItemControls.filteredGroups(removedBoxItemGroups);
-							}
-							if(pointControls != null) {
-								pointControls.filteredGroups(removedBoxItemGroups);
-							}
+							manifestControls.filteredGroups(removedBoxItemGroups);
+							pointControls.filteredGroups(removedBoxItemGroups);
+							maxContainerPriority = getMaxGroupContainerPriority(maxContainerPriority, removedBoxItemGroups);
 							removedBoxItemGroups.clear();
 						}
 					}
@@ -417,33 +629,30 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 					return createEmptyIntermediatePackagerResult();
 				}
 
-				List<BoxItem> removedBoxItems = new ArrayList<>();
 				// undo any work on this group
-				for(int i = markStackSize; i < stack.size(); i++) {
-					removedBoxItems.add(stack.getPlacements().get(i).getStackValue().getBox().getBoxItem());
-				}
-				if(!removedBoxItems.isEmpty()) {
-					if(boxItemControls != null) {
-						boxItemControls.undo(removedBoxItems);
+				List<Placement> removedBoxPlacements = stack.getPlacements().subList(markStackSize, stack.size());
+				if(!removedBoxPlacements.isEmpty()) {
+					List<BoxItem> removedBoxItems = new ArrayList<>();
+					for(Placement p : removedBoxPlacements) {
+						removedBoxItems.add(p.getBoxItem());
 					}
-					if(pointControls != null) {
-						pointControls.undo(removedBoxItems);
-					}
+					manifestControls.undo(removedBoxItems);
+					pointControls.undo(removedBoxItems);
 					
 					removedBoxItems.clear();
+					
+					placementControls.undo(removedBoxPlacements);
 				}
 				
-				if(boxItemControls != null) {
-					boxItemControls.attemptFailure(boxItemGroup);
-				}
-				if(pointControls != null) {
-					pointControls.attemptFailure(boxItemGroup);
-				}
+				manifestControls.attemptFailure(boxItemGroup);
+				pointControls.attemptFailure(boxItemGroup);
 				
 				stack.setSize(markStackSize);
+				// the group waits for the next container, and so do the groups of higher container priorities
+				maxContainerPriority = Math.min(maxContainerPriority, boxItemGroup.getContainerPriority());
 				
 				// unable to stack whole group
-				if(order == Order.CRONOLOGICAL) {
+				if(order == Order.CHRONOLOGICAL) {
 					break groups;
 				}
 				// try again with another group if possible
@@ -463,18 +672,47 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			
 			// successfully stacked group
 			boxItemGroup.reset();
-			if(boxItemControls != null) {
-				boxItemControls.attemptSuccess(boxItemGroup);
-			}
-			if(pointControls != null) {
-				pointControls.attemptSuccess(boxItemGroup);
-			}
+			manifestControls.attemptSuccess(boxItemGroup);
+			pointControls.attemptSuccess(boxItemGroup);
 		}
 		
 		return createIntermediatePackagerResult(controlContainerItem, stack);
 	}
 
-	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack);
+	protected static int getMaxBoxWeight(BoxItemSource boxItemSource) {
+		int maxWeight = 0;
+		for(int i = 0; i < boxItemSource.size(); i++) {
+			int weight = boxItemSource.get(i).getBox().getWeight();
+			if(weight > maxWeight) {
+				maxWeight = weight;
+			}
+		}
+		return maxWeight;
+	}
+
+	protected static long getMaxGroupVolume(BoxItemGroupSource boxItemGroups) {
+		long maxVolume = 0;
+		for(int i = 0; i < boxItemGroups.size(); i++) {
+			long volume = boxItemGroups.get(i).getVolume();
+			if(volume > maxVolume) {
+				maxVolume = volume;
+			}
+		}
+		return maxVolume;
+	}
+
+	protected static long getMaxGroupWeight(BoxItemGroupSource boxItemGroups) {
+		long maxWeight = 0;
+		for(int i = 0; i < boxItemGroups.size(); i++) {
+			long weight = boxItemGroups.get(i).getWeight();
+			if(weight > maxWeight) {
+				maxWeight = weight;
+			}
+		}
+		return maxWeight;
+	}
+
+	protected abstract IntermediatePackagerResult createIntermediatePackagerResult(ContainerItem containerItem, Stack stack);
 
 	protected abstract IntermediatePackagerResult createEmptyIntermediatePackagerResult();
 
@@ -485,29 +723,12 @@ public abstract class AbstractControlPackager<I extends Placement, B extends Pac
 			PointCalculator pointCalculator
 		);
 
-	protected abstract PlacementControls<I> createControls(
+	protected abstract PlacementControls createControls(
 			BoxItemSource boxItems,
-			int offset, int length,
-			Order order,
-			PointControls pointControls,
-			Container container, 
-			PointCalculator pointCalculator, Stack stack
+			Order order, PointControls pointControls,
+			Container container,
+			PointCalculator pointCalculator,
+			Stack stack,
+			boolean maxLoadWeight, boolean maxLoadPressure, boolean maxLoadBoxCount, boolean maxLoadIdenticalBoxCount
 		);
-
-	/**
-	 * With {@link Order#CRONOLOGICAL_ALLOW_SKIPPING}, the boxes before a placed box in the order were skipped: they are
-	 * not placed in this container (later boxes could otherwise make room for them), but wait for the next container,
-	 * so that the boxes in a container are in the order.
-	 *
-	 * @param placed the box item just placed; its index is its position in the box items
-	 * @param removed the skipped box items are added here
-	 * @return true if any box items were skipped
-	 */
-	protected static boolean removeSkippedBoxItems(BoxItemSource boxItemSource, BoxItem placed, List<BoxItem> removed) {
-		int skipped = placed.getIndex();
-		for(int i = 0; i < skipped; i++) {
-			removed.add(boxItemSource.remove(0));
-		}
-		return skipped > 0;
-	}
 }

@@ -2,111 +2,96 @@ package com.github.skjolber.packing.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
-public class RotationTest {
+class RotationTest {
 
 	@Test
-	void testRightAtZeroDegrees() {
-		Rotation rotation = Rotation.newBuilder().withRightAtZeroDegrees().build();
+	void rightAtNinetyDegreesIsRotated() {
+		Rotation rotation = Rotation.newBuilder().withRightAtNinetyDegrees().build();
 
-		assertNotNull(rotation.getRight0());
-		assertNull(rotation.getRight90());
+		assertTrue(rotation.isYZ90());
+		assertFalse(rotation.isYZ0());
+		assertSame(Surface.RIGHT, rotation.getRight90());
+		assertNull(rotation.getRight0());
+	}
+
+	@Test
+	void rightAtZeroDegreesIsNotRotated() {
+		Rotation rotation = Rotation.newBuilder().withRightAtZeroDegrees().build();
 
 		assertTrue(rotation.isYZ0());
 		assertFalse(rotation.isYZ90());
+		assertSame(Surface.RIGHT, rotation.getRight0());
+		assertNull(rotation.getRight90());
 	}
 
 	@Test
-	void testRightAtNinetyDegrees() {
-		Rotation rotation = Rotation.newBuilder().withRightAtNinetyDegrees().build();
+	void rightAtZeroAndNinetyDegreesEqualsRight() {
+		Rotation both = Rotation.newBuilder().withRightAtZeroDegrees().withRightAtNinetyDegrees().build();
+		Rotation right = Rotation.newBuilder().withRight().build();
 
-		assertNull(rotation.getRight0());
-		assertNotNull(rotation.getRight90());
-
-		assertFalse(rotation.isYZ0());
-		assertTrue(rotation.isYZ90());
+		assertSame(Surface.RIGHT, both.getRight0());
+		assertSame(Surface.RIGHT, both.getRight90());
+		assertSame(Surface.RIGHT, right.getRight0());
+		assertSame(Surface.RIGHT, right.getRight90());
 	}
 
 	@Test
-	void testRightAtZeroAndNinetyDegreesDiffer() {
-		Box box = Box.newBuilder().withSize(1, 2, 3).withRotation(Rotation.newBuilder().withRightAtZeroDegrees().build()).withWeight(1).build();
-		Box rotated = Box.newBuilder().withSize(1, 2, 3).withRotation(Rotation.newBuilder().withRightAtNinetyDegrees().build()).withWeight(1).build();
+	void ninetyDegreeVariantsAreRotatedAndZeroDegreeVariantsAreNot() {
+		Rotation.Builder zero = Rotation.newBuilder()
+				.withTopAtZeroDegrees()
+				.withBottomAtZeroDegrees()
+				.withLeftAtZeroDegrees()
+				.withRightAtZeroDegrees()
+				.withFrontAtZeroDegrees()
+				.withRearAtZeroDegrees();
+		Rotation.Builder ninety = Rotation.newBuilder()
+				.withTopAtNinetyDegrees()
+				.withBottomAtNinetyDegrees()
+				.withLeftAtNinetyDegrees()
+				.withRightAtNinetyDegrees()
+				.withFrontAtNinetyDegrees()
+				.withRearAtNinetyDegrees();
 
-		assertEquals(1, box.getStackValues().length);
-		assertEquals(3, box.getStackValue(0).getDx());
-		assertEquals(2, box.getStackValue(0).getDy());
-		assertEquals(1, box.getStackValue(0).getDz());
+		Rotation zeroRotation = zero.build();
+		assertTrue(zeroRotation.is0());
+		assertFalse(zeroRotation.is90());
 
-		assertEquals(1, rotated.getStackValues().length);
-		assertEquals(2, rotated.getStackValue(0).getDx());
-		assertEquals(3, rotated.getStackValue(0).getDy());
-		assertEquals(1, rotated.getStackValue(0).getDz());
+		Rotation ninetyRotation = ninety.build();
+		assertTrue(ninetyRotation.is90());
+		assertFalse(ninetyRotation.is0());
+		assertSame(Surface.TOP, ninetyRotation.getTop90());
+		assertSame(Surface.BOTTOM, ninetyRotation.getBottom90());
+		assertSame(Surface.LEFT, ninetyRotation.getLeft90());
+		assertSame(Surface.RIGHT, ninetyRotation.getRight90());
+		assertSame(Surface.FRONT, ninetyRotation.getFront90());
+		assertSame(Surface.REAR, ninetyRotation.getRear90());
 	}
 
+	/**
+	 * The yz plane is the bottom, so dx is the height. At zero degrees dy lies along y, at ninety degrees dz does.
+	 */
 	@Test
-	void testRightWithoutDegreesIsBothZeroAndNinety() {
-		Rotation rotation = Rotation.newBuilder().withRight().build();
+	void rightAtNinetyDegreesGivesTheRotatedStackValue() {
+		Box zero = Box.newBuilder().withSize(1, 2, 3).withRotation(Rotation.newBuilder().withRightAtZeroDegrees().build()).withWeight(1).build();
+		Box ninety = Box.newBuilder().withSize(1, 2, 3).withRotation(Rotation.newBuilder().withRightAtNinetyDegrees().build()).withWeight(1).build();
 
-		assertNotNull(rotation.getRight0());
-		assertNotNull(rotation.getRight90());
-	}
+		assertEquals(1, zero.getStackValues().length);
+		assertEquals(1, ninety.getStackValues().length);
 
-	@Test
-	void testNinetyDegreeMethodsOnlyAddRotatedSurfaces() {
-		Rotation top = Rotation.newBuilder().withTopAtNinetyDegrees().build();
-		assertNull(top.getTop0());
-		assertNotNull(top.getTop90());
+		BoxStackValue zeroValue = zero.getStackValue(0);
+		assertEquals(3, zeroValue.getDx());
+		assertEquals(2, zeroValue.getDy());
+		assertEquals(1, zeroValue.getDz());
 
-		Rotation bottom = Rotation.newBuilder().withBottomAtNinetyDegrees().build();
-		assertNull(bottom.getBottom0());
-		assertNotNull(bottom.getBottom90());
-
-		Rotation left = Rotation.newBuilder().withLeftAtNinetyDegrees().build();
-		assertNull(left.getLeft0());
-		assertNotNull(left.getLeft90());
-
-		Rotation right = Rotation.newBuilder().withRightAtNinetyDegrees().build();
-		assertNull(right.getRight0());
-		assertNotNull(right.getRight90());
-
-		Rotation front = Rotation.newBuilder().withFrontAtNinetyDegrees().build();
-		assertNull(front.getFront0());
-		assertNotNull(front.getFront90());
-
-		Rotation rear = Rotation.newBuilder().withRearAtNinetyDegrees().build();
-		assertNull(rear.getRear0());
-		assertNotNull(rear.getRear90());
-	}
-
-	@Test
-	void testZeroDegreeMethodsOnlyAddUnrotatedSurfaces() {
-		Rotation top = Rotation.newBuilder().withTopAtZeroDegrees().build();
-		assertNotNull(top.getTop0());
-		assertNull(top.getTop90());
-
-		Rotation bottom = Rotation.newBuilder().withBottomAtZeroDegrees().build();
-		assertNotNull(bottom.getBottom0());
-		assertNull(bottom.getBottom90());
-
-		Rotation left = Rotation.newBuilder().withLeftAtZeroDegrees().build();
-		assertNotNull(left.getLeft0());
-		assertNull(left.getLeft90());
-
-		Rotation right = Rotation.newBuilder().withRightAtZeroDegrees().build();
-		assertNotNull(right.getRight0());
-		assertNull(right.getRight90());
-
-		Rotation front = Rotation.newBuilder().withFrontAtZeroDegrees().build();
-		assertNotNull(front.getFront0());
-		assertNull(front.getFront90());
-
-		Rotation rear = Rotation.newBuilder().withRearAtZeroDegrees().build();
-		assertNotNull(rear.getRear0());
-		assertNull(rear.getRear90());
+		BoxStackValue ninetyValue = ninety.getStackValue(0);
+		assertEquals(2, ninetyValue.getDx());
+		assertEquals(3, ninetyValue.getDy());
+		assertEquals(1, ninetyValue.getDz());
 	}
 }

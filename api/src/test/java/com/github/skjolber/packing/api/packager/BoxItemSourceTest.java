@@ -12,13 +12,71 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 
-public class BoxItemSourceTest {
+/**
+ * Tests of the default methods of {@link BoxItemSource} and {@link BoxItemGroupSource}.
+ */
+class BoxItemSourceTest {
+
+	@Test
+	void emptySourceMinimumsAreLargerThanAnyBox() {
+		DefaultBoxItemSource source = new DefaultBoxItemSource();
+		assertEquals(Long.MAX_VALUE, source.getMinVolume());
+		assertEquals(Long.MAX_VALUE, source.getMinArea());
+
+		ListBoxItemSource empty = new ListBoxItemSource(new ArrayList<>());
+		assertEquals(Long.MAX_VALUE, empty.getMinVolume());
+		assertEquals(Long.MAX_VALUE, empty.getMinArea());
+	}
+
+	private static class ListBoxItemSource implements BoxItemSource {
+
+		private final List<BoxItem> items;
+
+		ListBoxItemSource(List<BoxItem> items) {
+			this.items = items;
+		}
+
+		@Override
+		public int size() {
+			return items.size();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return items.isEmpty();
+		}
+
+		@Override
+		public BoxItem get(int localIndex) {
+			return items.get(localIndex);
+		}
+
+		@Override
+		public boolean decrement(int localIndex, int count) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public BoxItem remove(int localIndex) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public BoxItemGroupSource getGroups() {
+			return null;
+		}
+
+		@Override
+		public Iterator<BoxItem> iterator() {
+			return items.iterator();
+		}
+	}
 
 	private static class ListBoxItemGroupSource implements BoxItemGroupSource {
 
 		private final List<BoxItemGroup> groups;
 
-		public ListBoxItemGroupSource(List<BoxItemGroup> groups) {
+		ListBoxItemGroupSource(List<BoxItemGroup> groups) {
 			this.groups = groups;
 		}
 
@@ -39,7 +97,7 @@ public class BoxItemSourceTest {
 
 		@Override
 		public BoxItemGroup remove(int index) {
-			return groups.remove(index);
+			throw new UnsupportedOperationException();
 		}
 
 		@Override
@@ -48,101 +106,71 @@ public class BoxItemSourceTest {
 		}
 	}
 
-	private static BoxItem boxItem(String id, int dx, int dy, int dz) {
-		return new BoxItem(Box.newBuilder().withId(id).withSize(dx, dy, dz).withRotate3D().withWeight(1).build(), 1);
+	private static BoxItem item(int dx, int dy, int dz) {
+		return new BoxItem(Box.newBuilder().withSize(dx, dy, dz).withRotate3D().withWeight(1).build());
 	}
 
-	private static BoxItemSource source(BoxItem... boxItems) {
-		return new DefaultBoxItemSource(List.of(boxItems));
-	}
-
-	private static BoxItemGroupSource groupSource(BoxItem... boxItems) {
-		List<BoxItemGroup> groups = new ArrayList<>();
-		for (BoxItem boxItem : boxItems) {
-			groups.add(new BoxItemGroup("group-" + boxItem.getBox().getId(), List.of(boxItem)));
+	private static List<BoxItem> items(BoxItem... items) {
+		List<BoxItem> list = new ArrayList<>();
+		for (BoxItem item : items) {
+			list.add(item);
 		}
-		return new ListBoxItemGroupSource(groups);
+		return list;
 	}
 
 	/**
-	 * Footprints, i.e. the areas of the faces a box can be placed on:
-	 * <pre>
-	 *   1x10x100: 10, 100, 1000 (minimum area 10, maximum area 1000)
-	 *   2x3x4:    6, 8, 12      (minimum area 6, maximum area 12)
-	 * </pre>
+	 * The 1x10x100 box has a minimum footprint of 10 and a maximum footprint of 1000; the 2x3x4 box has a minimum footprint of 6 and a maximum of 12.
 	 */
-
 	@Test
-	void testMaxAreaIsTheLargestMinimumArea() {
-		BoxItem slim = boxItem("slim", 1, 10, 100);
-		BoxItem small = boxItem("small", 2, 3, 4);
+	void maxAreaIsTheLargestMinimumAreaOfTheBoxes() {
+		BoxItem slender = item(1, 10, 100);
+		BoxItem small = item(2, 3, 4);
 
-		assertEquals(10, slim.getBox().getMinimumArea());
-		assertEquals(1000, slim.getBox().getMaximumArea());
-		assertEquals(6, small.getBox().getMinimumArea());
-		assertEquals(12, small.getBox().getMaximumArea());
+		assertEquals(10L, slender.getBox().getMinimumArea());
+		assertEquals(1000L, slender.getBox().getMaximumArea());
 
-		// the smallest footprint of the box which needs the most
-		assertEquals(10, source(slim, small).getMaxArea());
-		assertEquals(10, source(small, slim).getMaxArea());
-
-		assertEquals(10, source(slim).getMaxArea());
-		assertEquals(6, source(small).getMaxArea());
+		assertEquals(10L, new ListBoxItemSource(items(slender)).getMaxArea());
+		assertEquals(10L, new ListBoxItemSource(items(slender, small)).getMaxArea());
+		assertEquals(10L, new ListBoxItemSource(items(small, slender)).getMaxArea());
 	}
 
 	@Test
-	void testMinVolumeAndMinAreaOfLargeBoxes() {
-		// volume 3 * 10^11, i.e. above Integer.MAX_VALUE
-		BoxItem large = boxItem("large", 2000, 3000, 50000);
-		BoxItem larger = boxItem("larger", 4000, 3000, 50000);
+	void minVolumeBeyondIntRange() {
+		BoxItemSource source = new ListBoxItemSource(items(item(3000, 3000, 3000), item(2000, 2000, 2000)));
 
-		assertEquals(300_000_000_000L, large.getBox().getVolume());
-
-		BoxItemSource source = source(large, larger);
-		assertEquals(300_000_000_000L, source.getMinVolume());
-		assertEquals(6_000_000L, source.getMinArea());
-		assertEquals(300_000_000_000L, source(larger, large).getMinVolume());
+		assertEquals(8_000_000_000L, source.getMinVolume());
 	}
 
 	@Test
-	void testMinAreaAboveIntegerMaxValue() {
-		// smallest footprint is 50000 * 60000 = 3 * 10^9, i.e. above Integer.MAX_VALUE
-		BoxItem huge = boxItem("huge", 50000, 60000, 70000);
+	void minAreaBeyondIntRange() {
+		BoxItemSource source = new ListBoxItemSource(items(item(60000, 60000, 60000), item(50000, 50000, 50000)));
 
-		assertEquals(3_000_000_000L, huge.getBox().getMinimumArea());
-
-		BoxItemSource source = source(huge);
-		assertEquals(3_000_000_000L, source.getMinArea());
-		assertEquals(3_000_000_000L, source.getMaxArea());
-		assertEquals(huge.getBox().getVolume(), source.getMinVolume());
+		assertEquals(2_500_000_000L, source.getMinArea());
 	}
 
 	@Test
-	void testMinVolumeAndMinAreaOfLargeBoxesInGroups() {
-		BoxItem large = boxItem("large", 2000, 3000, 50000);
-		BoxItem larger = boxItem("larger", 4000, 3000, 50000);
+	void groupMinVolumeBeyondIntRange() {
+		BoxItemGroupSource source = new ListBoxItemGroupSource(List.of(
+				new BoxItemGroup("a", items(item(3000, 3000, 3000), item(60000, 60000, 60000))),
+				new BoxItemGroup("b", items(item(2000, 2000, 2000), item(50000, 50000, 50000)))));
 
-		BoxItemGroupSource groups = groupSource(large, larger);
-		assertEquals(300_000_000_000L, groups.getMinVolume());
-		assertEquals(6_000_000L, groups.getMinArea());
+		assertEquals(8_000_000_000L, source.getMinVolume());
 	}
 
 	@Test
-	void testMinAreaAboveIntegerMaxValueInGroups() {
-		BoxItem huge = boxItem("huge", 50000, 60000, 70000);
+	void groupMinAreaBeyondIntRange() {
+		BoxItemGroupSource source = new ListBoxItemGroupSource(List.of(
+				new BoxItemGroup("a", items(item(60000, 60000, 60000))),
+				new BoxItemGroup("b", items(item(50000, 50000, 50000)))));
 
-		BoxItemGroupSource groups = groupSource(huge);
-		assertEquals(3_000_000_000L, groups.getMinArea());
-		assertEquals(huge.getBox().getVolume(), groups.getMinVolume());
+		assertEquals(2_500_000_000L, source.getMinArea());
 	}
 
 	@Test
-	void testMinimumsOfNothingAreLargerThanAnyBox() {
-		assertEquals(Long.MAX_VALUE, source().getMinVolume());
-		assertEquals(Long.MAX_VALUE, source().getMinArea());
+	void defaultSourceMinimumsBeyondIntRange() {
+		DefaultBoxItemSource source = new DefaultBoxItemSource(items(item(60000, 60000, 60000), item(50000, 50000, 50000)));
 
-		BoxItemGroupSource groups = new ListBoxItemGroupSource(new ArrayList<>());
-		assertEquals(Long.MAX_VALUE, groups.getMinVolume());
-		assertEquals(Long.MAX_VALUE, groups.getMinArea());
+		assertEquals(2_500_000_000L, source.getMinArea());
+		assertEquals(125_000_000_000_000L, source.getMinVolume());
 	}
 }

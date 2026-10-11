@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs findings which are excluded, see the spotbugs profile in pom.xml.
+  BY DESIGN: the finding is correct, but the code is intentionally so.
+  FALSE POSITIVE: the finding does not apply to this code.
+-->
+<FindBugsFilter
+		xmlns="https://github.com/spotbugs/filter/3.0.0"
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="https://github.com/spotbugs/filter/3.0.0 https://raw.githubusercontent.com/spotbugs/spotbugs/master/spotbugs/etc/findbugsfilter.xsd">
+	<!-- BY DESIGN: mutable inputs and outputs are not copied, for performance -->
+	<Match>
+		<Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2,MS_EXPOSE_REP,MS_MUTABLE_COLLECTION_PKGPROTECT"/>
+	</Match>
+	<!-- FALSE POSITIVE: nothing is serialized with Java serialization -->
+	<Match>
+		<Bug pattern="SE_BAD_FIELD,SE_TRANSIENT_FIELD_NOT_RESTORED,SE_COMPARATOR_SHOULD_BE_SERIALIZABLE"/>
+	</Match>
+	<!-- FALSE POSITIVE: constructors validating their arguments; there are no finalizers to attack -->
+	<Match>
+		<Bug pattern="CT_CONSTRUCTOR_THROW"/>
+	</Match>
+	<!-- BY DESIGN: protected fields, so that users can extend the classes -->
+	<Match>
+		<Bug pattern="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD,UUF_UNUSED_PUBLIC_OR_PROTECTED_FIELD"/>
+	</Match>
+	<!-- BY DESIGN: internal iterators in hot loops, always used with hasNext() -->
+	<Match>
+		<Bug pattern="IT_NO_SUCH_ELEMENT"/>
+	</Match>
+	<!-- FALSE POSITIVE: methods called from constructors are not overridden with state that is not yet set -->
+	<Match>
+		<Bug pattern="MC_OVERRIDABLE_METHOD_CALL_IN_CONSTRUCTOR"/>
+	</Match>
+	<!-- FALSE POSITIVE: builder and lazily initialized fields, set before use -->
+	<Match>
+		<Bug pattern="UWF_FIELD_NOT_INITIALIZED_IN_CONSTRUCTOR"/>
+	</Match>
+	<!-- BY DESIGN: style -->
+	<Match>
+		<Bug pattern="THROWS_METHOD_THROWS_RUNTIMEEXCEPTION,CI_CONFUSED_INHERITANCE,RI_REDUNDANT_INTERFACES,SIC_INNER_SHOULD_BE_STATIC_ANON,IAOM_DO_NOT_INCREASE_METHOD_ACCESSIBILITY"/>
+	</Match>
+	<!-- FALSE POSITIVE: negates Integer.compare(..), which never returns Integer.MIN_VALUE -->
+	<Match>
+		<Bug pattern="RV_NEGATING_RESULT_OF_COMPARETO"/>
+	</Match>
+	<!-- BY DESIGN: singletons with constructors open for extension -->
+	<Match>
+		<Bug pattern="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR"/>
+	</Match>
+	<!-- FALSE POSITIVE: subclasses may reject candidates by returning null from createPlacement(..) -->
+	<Match>
+		<Class name="~com\.github\.skjolber\.packing\.packer\..*PlacementControls"/>
+		<Bug pattern="RCN_REDUNDANT_NULLCHECK_OF_NONNULL_VALUE"/>
+	</Match>
+	<!-- FALSE POSITIVE: binary search fall-through, the condition documents the case -->
+	<Match>
+		<Class name="~com\.github\.skjolber\.packing\.ep\..*FlagList"/>
+		<Bug pattern="UC_USELESS_CONDITION"/>
+	</Match>
+	<!-- BY DESIGN: kept for container-level load constraints -->
+	<Match>
+		<Class name="com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder"/>
+		<Bug pattern="URF_UNREAD_FIELD"/>
+	</Match>
+	<!-- BY DESIGN: test utilities compare by name only -->
+	<Match>
+		<Package name="~com\.github\.skjolber\.packing\.test.*"/>
+		<Bug pattern="EQ_COMPARETO_USE_OBJECT_EQUALS"/>
+	</Match>
+</FindBugsFilter>

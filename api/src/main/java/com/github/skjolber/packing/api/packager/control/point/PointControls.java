@@ -16,5 +16,5 @@ import com.github.skjolber.packing.api.point.PointSource;
 public interface PointControls extends ManifestListener {
 
 	PointSource getPoints(BoxItem boxItem);
-
+	
 }

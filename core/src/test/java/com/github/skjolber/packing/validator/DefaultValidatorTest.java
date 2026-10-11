@@ -26,6 +26,8 @@ import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.ep.points3d.DefaultPoint3D;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
+import com.github.skjolber.packing.test.assertj.ValidatorResultAssert;
 import com.github.skjolber.packing.validator.reasons.BoxesIntersectReason;
 
 public class DefaultValidatorTest {
@@ -109,10 +111,10 @@ public class DefaultValidatorTest {
 				.withContainerItem(new ContainerItem(container("container"), 1))
 				.withPackagerResult(new PackagerResult(List.of(resultContainer), 0, false))
 				.withBoxItems(List.of(new BoxItem(first), new BoxItem(second), new BoxItem(third)))
-				.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+				.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 				.build();
 
-		assertFalse(result.isValid());
+		ValidatorResultAssert.assertThat(result).isNotValid();
 	}
 
 	@Test
@@ -127,7 +129,7 @@ public class DefaultValidatorTest {
 				.withPackagerResult(new PackagerResult(List.of(validContainer), 0, false))
 				.withBoxItems(List.of(new BoxItem(expected), new BoxItem(expected)))
 				.build();
-		assertTrue(valid.isValid());
+		ValidatorResultAssert.assertThat(valid).isValid();
 
 		Box unexpected = box("unexpected");
 		Container invalidContainer = container("container");
@@ -137,7 +139,7 @@ public class DefaultValidatorTest {
 				.withPackagerResult(new PackagerResult(List.of(invalidContainer), 0, false))
 				.withBoxItems(new BoxItem(expected))
 				.build();
-		assertFalse(invalid.isValid());
+		ValidatorResultAssert.assertThat(invalid).isNotValid();
 	}
 
 	@Test
@@ -152,7 +154,7 @@ public class DefaultValidatorTest {
 				.withPackagerResult(new PackagerResult(List.of(emptyContainer), 0, false))
 				.withBoxItemGroups(List.of(group))
 				.build();
-		assertFalse(missing.isValid());
+		ValidatorResultAssert.assertThat(missing).isNotValid();
 
 		Container firstContainer = container("container");
 		firstContainer.getStack().add(createPlacement(first.getStackValue(0), 0, 0, 0));
@@ -166,7 +168,7 @@ public class DefaultValidatorTest {
 				.withPackagerResult(new PackagerResult(List.of(firstContainer, secondContainer), 0, false))
 				.withBoxItemGroups(List.of(group))
 				.build();
-		assertFalse(repeated.isValid());
+		ValidatorResultAssert.assertThat(repeated).isNotValid();
 	}
 
 	@Test
@@ -193,7 +195,10 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(untrustedContainer), 0, false);
 	
-			assertNotValidUsingValidator(trustedContainerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(trustedContainerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -276,7 +281,10 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(resultContainer), 0, false);
 	
-			assertNotValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -307,7 +315,10 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(resultContainer), 0, false);
 	
-			assertNotValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -338,7 +349,10 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(resultContainer), 0, false);
 	
-			assertNotValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -369,7 +383,10 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(resultContainer), 0, false);
 	
-			assertNotValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -399,26 +416,14 @@ public class DefaultValidatorTest {
 			
 			PackagerResult result = new PackagerResult(Arrays.asList(untrustedContainer), 0, false);
 	
-			assertNotValidUsingValidator(trustedContainerItems, 1, result, products, Order.CRONOLOGICAL);
+			PackagerResultAssert.assertThat(result).isRejectedBy(validator.newResultBuilder()
+					.withContainerItems(trustedContainerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products)
+					.withOrder(Order.CHRONOLOGICAL));
 		} finally {
 			packager.close();
 		}
-	}
-
-	protected void assertNotValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems, Order order) {
-		ValidatorResult validatorResult = validator.newResultBuilder()
-				.withContainerItems(containerItems)
-				.withMaxContainerCount(maxContainers)
-				.withPackagerResult(result)
-				.withOrder(order)
-				.withBoxItems(boxItems)
-				.build();
-		
-		assertFalse(validatorResult.isValid());
-	}
-	
-	protected void assertNotValidUsingValidator(List<ContainerItem> containerItems, int maxContainers, PackagerResult result, List<BoxItem> boxItems) {
-		assertNotValidUsingValidator(containerItems, maxContainers, result, boxItems, Order.NONE);
 	}
 	
 	private Placement createPlacement(BoxStackValue stackValue, int x, int y, int z) {

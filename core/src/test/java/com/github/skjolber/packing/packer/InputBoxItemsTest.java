@@ -1,6 +1,7 @@
 package com.github.skjolber.packing.packer;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -14,7 +15,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 
@@ -35,7 +36,7 @@ public class InputBoxItemsTest {
 				() -> LargestAreaFitFirstPackager.newBuilder().build(),
 				() -> BruteForcePackager.newBuilder().build(),
 				() -> FastBruteForcePackager.newBuilder().build(),
-				() -> ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
+				() -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build());
 
 		for (Supplier<AbstractPackager<?>> supplier : packagers) {
 			AbstractPackager<?> packager = supplier.get();
@@ -49,6 +50,44 @@ public class InputBoxItemsTest {
 							.withBoxItems(List.of(boxItem))
 							.withMaxContainerCount(3)
 							.build();
+					// <figure>
+					// container 1 of 3: c
+					//   z                 z                 y                 z
+					//                     1 +-------+       1 +-------+       1 +-------+
+					//   | /-------|   y     |       |         |       |         |       |
+					//   |/       /|         |   a   |         |   a   |         |   a   |
+					// 1 |-------| | /       |       |         |       |         |       |
+					//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+					//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+					//   |       |/
+					// 0 |-------|-- x
+					//   0       1
+					//
+					// container 2 of 3: c
+					//   z                 z                 y                 z
+					//                     1 +-------+       1 +-------+       1 +-------+
+					//   | /-------|   y     |       |         |       |         |       |
+					//   |/       /|         |   a   |         |   a   |         |   a   |
+					// 1 |-------| | /       |       |         |       |         |       |
+					//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+					//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+					//   |       |/
+					// 0 |-------|-- x
+					//   0       1
+					//
+					// container 3 of 3: c
+					//   z                 z                 y                 z
+					//                     1 +-------+       1 +-------+       1 +-------+
+					//   | /-------|   y     |       |         |       |         |       |
+					//   |/       /|         |   a   |         |   a   |         |   a   |
+					// 1 |-------| | /       |       |         |       |         |       |
+					//   |       | |/      0 +-------+       0 +-------+       0 +-------+
+					//   |   a   | | 1       0       1   x     0       1   x     0       1   y
+					//   |       |/
+					// 0 |-------|-- x
+					//   0       1
+					// </figure>
+					figure(result);
 					assertThat(result.isSuccess()).as(name + " packing " + i).isTrue();
 					assertThat(result.getContainers()).as(name + " packing " + i).hasSize(3);
 					assertThat(boxItem.getCount()).as(name + " packing " + i).isEqualTo(3);

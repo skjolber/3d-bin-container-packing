@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +16,7 @@ import java.util.TreeMap;
 
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.eclipse.collections.api.iterator.IntIterator;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -24,12 +26,40 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.ContainerAssert;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
+
+	@Test
+	void pointFilterIsConfigurable() {
+		BruteForcePackager.BruteForcePointIteratorFilter filter = (pointCalculator, stackValue) -> new IntIterator() {
+			private boolean available = true;
+
+			@Override
+			public boolean hasNext() {
+				return available;
+			}
+
+			@Override
+			public int next() {
+				available = false;
+				return 0;
+			}
+		};
+		BruteForcePackager packager = BruteForcePackager.newBuilder()
+				.withPointFilter(filter)
+				.build();
+		try {
+			assertThat(packager.pointFilter).isSameAs(filter);
+		} finally {
+			packager.close();
+		}
+	}
 
 	@Test
 	void testStackingSquaresOnSquare() {
@@ -48,8 +78,21 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(build);
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 	
@@ -61,7 +104,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -86,13 +132,39 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			PackagerResult build = packager
 					.newResultBuilder()
 					.withContainerItems(containers)
-					.withBoxItems(clone(products))
+					.withBoxItems(copy(products))
 					.withMaxContainerCount(5)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   A   |   B   |         |   A   |   A   |   B   |         |   B   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   A   |   B   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			//
+			// container 2 of 2: 1
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   B   |   C   |   C   |         |   B   |   C   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   B   |   C   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(build);
 	
 			List<Container> packList = build.getContainers();
 	
-			assertValid(packList);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			assertThat(packList).hasSize(2);
 	
 			Container fits = packList.get(0);
@@ -107,7 +179,10 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containers, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -134,12 +209,76 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			}
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
+			// <figure>
+			//                   /---------------/---------------/-------/-------|   y   z
+			//                  /               /               /  N7   /  N15  /|       1 +-------------------------------+-------+-------+
+			//                 /      K1       /      K3       /-------/-------| | /       |                               |       |       |
+			//                /               /               /  N6   /  N14  /| |/        |               J               |  N0   |  N8   |
+			//               /---------------/---------------/-------/-------| | | 8       |                               |       |       |
+			//              /               /               /  N5   /  N13  /| |/        0 +-------------------------------+-------+-------+
+			//             /      K0       /      K2       /-------/-------| | | 7         0               2               4       5       6   x
+			//            /               /               /  N4   /  N12  /| |/
+			//           /---------------/---------------/-------/-------| | | 6
+			//          /                               /  N3   /  N11  /| |/
+			//         /                               /-------/-------| | | 5
+			//        /                               /  N2   /  N10  /| |/
+			//   z   /                               /-------/-------| | | 4
+			//      /                               /  N1   /  N9   /| |/
+			//   | /                               /-------/-------| | | 3
+			//   |/                               /       /       /| |/
+			// 1 |-------------------------------|-------|-------| | | 2
+			//   |                               |       |       | |/
+			//   |               J               |  N0   |  N8   | | 1
+			//   |                               |       |       |/
+			// 0 |-------------------------------|-------|-------|-- x
+			//   0                               4       5       6
+			//
+			// y                                                         z
+			// 8 +---------------+---------------+-------+-------+       1 +-------+-------+-------+-------+-------+-------+-------+-------+
+			//   |               |               |       |       |         |       |       |       |       |       |       |       |       |
+			//   |               |               |  N7   |  N15  |         |  N8   |  N9   |  N10  |  N11  |  N12  |  N13  |  N14  |  N15  |
+			//   |               |               |       |       |         |       |       |       |       |       |       |       |       |
+			// 7 |      K1       |      K3       +-------+-------+       0 +-------+-------+-------+-------+-------+-------+-------+-------+
+			//   |               |               |       |       |         0       1       2       3       4       5       6       7       8   y
+			//   |               |               |  N6   |  N14  |
+			//   |               |               |       |       |
+			// 6 +---------------+---------------+-------+-------+
+			//   |               |               |       |       |
+			//   |               |               |  N5   |  N13  |
+			//   |               |               |       |       |
+			// 5 |      K0       |      K2       +-------+-------+
+			//   |               |               |       |       |
+			//   |               |               |  N4   |  N12  |
+			//   |               |               |       |       |
+			// 4 +---------------+---------------+-------+-------+
+			//   |                               |       |       |
+			//   |                               |  N3   |  N11  |
+			//   |                               |       |       |
+			// 3 |                               +-------+-------+
+			//   |                               |       |       |
+			//   |                               |  N2   |  N10  |
+			//   |                               |       |       |
+			// 2 |               J               +-------+-------+
+			//   |                               |       |       |
+			//   |                               |  N1   |  N9   |
+			//   |                               |       |       |
+			// 1 |                               +-------+-------+
+			//   |                               |       |       |
+			//   |                               |  N0   |  N8   |
+			//   |                               |       |       |
+			// 0 +-------------------------------+-------+-------+
+			//   0               2               4       5       6   x
+			// </figure>
+			figure(build);
 	
 			Container fits = build.getContainers().get(0);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(products.size(), fits.getStack().getPlacements().size());
 			
-			assertValidUsingValidator(containers, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containers)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -164,10 +303,82 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("N").withRotate3D().withSize(5, 10, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//                 /----------------------------/---------------------------|       z
+			//                /                            /                           /|       4 +----------------------------------+----------------------------------+
+			//               /                            /                           / |         |                                  |                N                 |
+			//              /                            /                           / /|         |                                  |                                  |
+			//             /                            /                           / / |       3 |                                  +----------------------------------+
+			//            /                            /                           / /  |         |                                  |                                  |
+			//           /                            /                           / /  /|         |                                  |                M                 |
+			//          /                            /                           / /  / |   y     |                                  |                                  |
+			//         /                            /                           / /  /  |       2 |                J                 +----------------------------------+
+			//        /                            /                           / /  /  /| /       |                                  |                A                 |
+			//   z   /                            /                           / /  /  / |/        |                                  |                                  |
+			//      /                            /                           / /  /  /  | 10    1 |                                  +----------------------------------+
+			//   | /                            /                           / /  /  /  /          |                                  |                                  |
+			//   |/                            /                           / /  /  /  /           |                                  |                L                 |
+			// 4 |----------------------------|---------------------------| /  /  /  /            |                                  |                                  |
+			//   |                            |             N             |/  /  /  /           0 +----------------------------------+----------------------------------+
+			// 3 |                            |---------------------------|  /  /  /              0                                  5                                  10   x
+			//   |                            |             M             | /  /  /
+			//   |                            |                           |/  /  /
+			// 2 |             J              |---------------------------|  /  /
+			//   |                            |             A             | /  /
+			//   |                            |                           |/  /
+			// 1 |                            |---------------------------|  /
+			//   |                            |             L             | /
+			//   |                            |                           |/
+			// 0 |----------------------------|---------------------------|-- x
+			//   0                            5                          10
+			//
+			// y                                                                                z
+			// 10 +----------------------------------+---------------------------------+        4 +---------------------------------------------------------------------+
+			//    |                                  |                                 |          |                                  N                                  |
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |        3 +---------------------------------------------------------------------+
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |          |                                  M                                  |
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |        2 +---------------------------------------------------------------------+
+			//    |                                  |                                 |          |                                  A                                  |
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |        1 +---------------------------------------------------------------------+
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |          |                                  L                                  |
+			//    |                                  |                                 |          |                                                                     |
+			//    |                                  |                                 |        0 +---------------------------------------------------------------------+
+			//    |                                  |                                 |          0                                                                     10   y
+			//    |                                  |                                 |
+			//    |                J                 |                N                |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//    |                                  |                                 |
+			//  0 +----------------------------------+---------------------------------+
+			//    0                                  5                                 10   x
+			// </figure>
+			figure(build);
 	
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, Integer.MAX_VALUE, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(Integer.MAX_VALUE)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -191,7 +402,50 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("D").withSize(3, 2, 1).withRotate3D().withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withBoxItems(products).build();
-			assertValid(build);
+			// <figure>
+			//             /---------------/-----------------------|   y   z
+			//            /               /                       /|       1 +-----------------------+---------------+
+			//           /               /           D           / | /       |                       |               |
+			//          /       B       /                       /  |/        |           A           |       C       |
+			//         /               |-------/---------------|   | 5       |                       |               |
+			//        /               /|      /               /|  /        0 +-----------------------+---------------+
+			//   z   /---------------/-------/               / | /           0               2       3               5   x
+			//      /                       /               /  |/
+			//   | /                       /               /   | 3
+			//   |/                       /               /   /
+			// 1 |-----------------------|---------------|   / 2
+			//   |                       |               |  /
+			//   |           A           |       C       | /
+			//   |                       |               |/
+			// 0 |-----------------------|---------------|-- x
+			//   0                       3               5
+			//
+			// y                                                 z
+			// 5 +---------------+-----------------------+       1 +-----------------------+---------------+
+			//   |               |                       |         |                       |               |
+			//   |               |                       |         |           C           |       D       |
+			//   |               |                       |         |                       |               |
+			//   |               |           D           |       0 +-----------------------+---------------+
+			//   |               |                       |         0               2       3               5   y
+			//   |       B       |                       |
+			//   |               |                       |
+			// 3 |               +-------+---------------+
+			//   |               |       |               |
+			//   |               |       |               |
+			//   |               |       |               |
+			// 2 +---------------+-------+               |
+			//   |                       |               |
+			//   |                       |       C       |
+			//   |                       |               |
+			//   |           A           |               |
+			//   |                       |               |
+			//   |                       |               |
+			//   |                       |               |
+			// 0 +-----------------------+---------------+
+			//   0               2       3               5   x
+			// </figure>
+			figure(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}
@@ -201,14 +455,14 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	public void testSimpleImperfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredRectangles(9));
+		pack(directory.getSimpleImperfectSquaredRectangles(9), false);
 	}
 
 	@Test
 	public void testSimpleImperfectSquaredSquares() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimpleImperfectSquaredSquares(9));
+		pack(directory.getSimpleImperfectSquaredSquares(9), false);
 	}
 
 	@Disabled // takes too long
@@ -216,28 +470,51 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	public void testSimplePerfectSquaredRectangles() {
 		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
 
-		pack(directory.getSimplePerfectSquaredRectangles(9));
+		pack(directory.getSimplePerfectSquaredRectangles(9), false);
 	}
 
-	protected void pack(List<BouwkampCodes> codes) {
+	@Test
+	public void testSimpleImperfectSquaredRectanglesSkipReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredRectangles(9), true);
+	}
+
+	@Test
+	public void testSimpleImperfectSquaredSquaresReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimpleImperfectSquaredSquares(9), true);
+	}
+
+	@Disabled // takes too long
+	@Test
+	public void testSimplePerfectSquaredRectanglesReverse() {
+		BouwkampCodeDirectory directory = BouwkampCodeDirectory.getInstance();
+
+		pack(directory.getSimplePerfectSquaredRectangles(9), true);
+	}
+
+	
+	protected void pack(List<BouwkampCodes> codes, boolean skipReverse) {
 		for (BouwkampCodes bouwkampCodes : codes) {
 			for (BouwkampCode bouwkampCode : bouwkampCodes.getCodes()) {
 				long timestamp = System.currentTimeMillis();
 				System.out.println("Package " + bouwkampCode.getName() + " " + bouwkampCodes.getSource());
-				pack(bouwkampCode);
+				pack(bouwkampCode, skipReverse);
 				System.out.println("Packaged " + bouwkampCode.getName() + " order " + bouwkampCode.getOrder() + " in " + (System.currentTimeMillis() - timestamp));
 			}
 		}
 	}
 
-	protected void pack(BouwkampCode bouwkampCode) {
+	protected void pack(BouwkampCode bouwkampCode, boolean skipReverse) {
 		List<ContainerItem> containers = ContainerItem
 				.newListBuilder()
 				.withContainer(Container.newBuilder().withId("Container").withEmptyWeight(1).withSize(bouwkampCode.getWidth(), bouwkampCode.getDepth(), 1).withMaxLoadWeight(100)
 						.withStack(new ValidatingStack()).build())
 				.build();
 
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+		BruteForcePackager packager = BruteForcePackager.newBuilder().withSkipReversePermutations(skipReverse).build();
 		try {
 			List<BoxItem> products = new ArrayList<>();
 	
@@ -262,7 +539,7 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 	
 			Container fits = build.getContainers().get(0);
 			assertNotNull(bouwkampCode.getName(), fits);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
@@ -424,16 +701,33 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					})
 					.withBoxItems(products)
 					.build();
+			// <figure>
+			//   z   /-------/-------|   y   z                         y                         z
+			//      /       /   C   /|       1 +-------+-------+       2 +-------+-------+       1 +-------+-------+
+			//   | |-------/-------| | /       |       |       |         |       |       |         |       |       |
+			//   | |  A   /       /| |/        |   A   |   B   |         |   A   |   C   |         |   B   |   C   |
+			// 1 | |     |-------| | | 2       |       |       |         |       |       |         |       |       |
+			//   | |     |       | |/        0 +-------+-------+       1 +-------+-------+       0 +-------+-------+
+			//   | |-----|   B   | | 1         0       1       2   x             |       |         0       1       2   y
+			//   |       |       |/                                              |   B   |
+			// 0 |-------|-------|-- x                                           |       |
+			//   0       1       2                                     0         +-------+
+			//                                                           0       1       2   x
+			// </figure>
+			figure(build);
 			
 			List<Container> containers = build.getContainers();
-			assertValid(containers);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Placement> placements = containers.get(0).getStack().getPlacements();
 			for(Placement placement : placements) {
 				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0);
 			}
 			
-			assertValidUsingValidator(Arrays.asList(new ContainerItem(container, 1)), 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(Arrays.asList(new ContainerItem(container, 1)))
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 
 		} finally {
 			packager.close();
@@ -461,6 +755,29 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
 			}).withBoxItems(products9).build();
+			// <figure>
+			//         /-------|       z                 y                 z
+			//        /   I   /|       3 +-------+       3 +-------+       3 +-------+-------+-------+
+			//   z   /-------| |         |       |         |       |         |       |       |       |
+			//      /   F   /| |         |   C   |         |   I   |         |   C   |   F   |   I   |
+			//   | /-------| | |         |       |         |       |         |       |       |       |
+			//   |/       /| |/|       2 +-------+       2 +-------+       2 +-------+-------+-------+
+			// 3 |-------| | | |         |       |         |       |         |       |       |       |
+			//   |       | |/|H|         |   B   |         |   F   |         |   B   |   E   |   H   |
+			//   |   C   | | | |   y     |       |         |       |         |       |       |       |
+			//   |       |/|E|/|       1 +-------+       1 +-------+       1 +-------+-------+-------+
+			// 2 |-------| | | | /       |       |         |       |         |       |       |       |
+			//   |       | |/|G|/        |   A   |         |   C   |         |   A   |   D   |   G   |
+			//   |   B   | | | | 3       |       |         |       |         |       |       |       |
+			//   |       |/|D|/        0 +-------+       0 +-------+       0 +-------+-------+-------+
+			// 1 |-------| | | 2         0       1   x     0       1   x     0       1       2       3   y
+			//   |       | |/
+			//   |   A   | | 1
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(build9);
 			
 			List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
 			
@@ -482,8 +799,31 @@ public class BruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 							);
 					});
 				}).withBoxItems(products).build();
+				// <figure>
+				//         /-------|       z                 y                 z
+				//        /   H   /|       3 +-------+       3 +-------+       3 +-------+-------+-------+
+				//   z   /-------| |         |       |         |       |         |       |       |       |
+				//      /   E   /| |         |   B   |         |   H   |         |   B   |   E   |   H   |
+				//   | /-------| | |         |       |         |       |         |       |       |       |
+				//   |/       /| |/|       2 +-------+       2 +-------+       2 +-------+-------+-------+
+				// 3 |-------| | | |         |       |         |       |         |       |       |       |
+				//   |       | |/|G|         |   A   |         |   E   |         |   A   |   D   |   G   |
+				//   |   B   | | | |   y     |       |         |       |         |       |       |       |
+				//   |       |/|D|/|       1 +-------+       1 +-------+       1 +-------+-------+-------+
+				// 2 |-------| | | | /       |#######|         |       |         |#######|       |       |
+				//   |       | |/|F|/        |#######|         |   B   |         |#######|   C   |   F   |
+				//   |   A   | | | | 3       |#######|         |       |         |#######|       |       |
+				//   |       |/|C|/        0 +-------+       0 +-------+       0 +-------+-------+-------+
+				// 1 |-------|#| | 2         0       1   x     0       1   x     0       1       2       3   y
+				//   |#######|#|/
+				//   |#######|#| 1
+				//   |#######|/
+				// 0 |-------|-- x
+				//   0       1
+				// </figure>
+				figure(build);
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

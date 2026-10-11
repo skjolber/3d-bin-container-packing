@@ -1,0 +1,46 @@
+package com.github.skjolber.packing.comparator;
+
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+
+/**
+ * Ranks placements by their supported area share; the delegate only breaks ties. Use it to put support
+ * first in an existing ranking without rewriting it.
+ */
+public class SupportDelegateComparator implements PlacementComparator {
+
+	private final PlacementComparator delegate;
+
+	public SupportDelegateComparator(PlacementComparator delegate) {
+		this.delegate = delegate;
+	}
+
+	@Override
+	public boolean usesSupportedArea() {
+		return true;
+	}
+
+	@Override
+	public boolean prefersHigherSupportedArea() {
+		// the primary key of this comparator, regardless of the delegate's own preference
+		return true;
+	}
+
+	@Override
+	public int compare(Placement referenceResult, Placement potentiallyBetterResult) {
+
+		// higher support is better
+		long referenceValue = (referenceResult.getSupportedArea() * 1000)
+				/ referenceResult.getStackValue().getArea();
+		long potentiallyBetterValue = (potentiallyBetterResult.getSupportedArea() * 1000)
+				/ potentiallyBetterResult.getStackValue().getArea();
+
+		int result = Long.compare(referenceValue, potentiallyBetterValue);
+		if(result != 0) {
+			return result;
+		}
+
+		return delegate.compare(referenceResult, potentiallyBetterResult);
+	}
+
+}

@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.points;
 
+import java.util.List;
+
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
@@ -19,6 +21,14 @@ public class ValidatingPointCalculator3D extends DefaultPointCalculator3D {
 	public boolean add(int index, Placement placement) {
 		boolean add = super.add(index, placement);
 		validate(placement);
+		return add;
+	}
+
+	@Override
+	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
+		// batch children bypass add(int, Placement)
+		boolean add = super.addBatch(index, batch, remainingMinimumArea, remainingMinimumVolume);
+		validate(batch.get(0));
 		return add;
 	}
 

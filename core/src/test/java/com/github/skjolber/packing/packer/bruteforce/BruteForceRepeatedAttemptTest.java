@@ -1,22 +1,28 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
-import com.github.skjolber.packing.packer.ContainerItemsCalculator;
-import com.github.skjolber.packing.packer.ControlledContainerItem;
-import com.github.skjolber.packing.packer.PackagerAdapter;
-import com.github.skjolber.packing.packer.PackagerInterruptedException;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
+import com.github.skjolber.packing.packer.AbstractPackager;
+import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
- * An adapter can attempt the same container more than once, for example when the packager first checks whether a
- * single container holds all boxes. Each attempt searches from the first permutation and rotation.
+ * A session can attempt the same container more than once, for example when the container packing strategy first checks
+ * whether a single container holds all boxes. Each attempt searches from the first permutation and rotation, and from
+ * an empty container.
  */
 public class BruteForceRepeatedAttemptTest {
 
@@ -32,45 +38,86 @@ public class BruteForceRepeatedAttemptTest {
 	//   |   c   |    last permutation (c, b, a): one box
 	//   +-------+
 	//
+	private static List<BoxItem> boxItems() {
+		return List.of(
+				new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("b").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("c").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
+	}
+
+	private static List<ContainerItem> containers() {
+		return ContainerItem.newListBuilder()
+				.withContainer(Container.newBuilder().withId("container").withSize(2, 1, 1).withMaxLoadWeight(3).build(), 3)
+				.build();
+	}
+
 	@Test
 	public void bruteForceAttemptsAgainFromTheFirstPermutation() throws PackagerInterruptedException {
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
-		try {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			assertAttemptsAgainFromTheFirstPermutation(packager);
-		} finally {
-			packager.close();
 		}
 	}
 
 	@Test
 	public void fastBruteForceAttemptsAgainFromTheFirstPermutation() throws PackagerInterruptedException {
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
-		try {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
 			assertAttemptsAgainFromTheFirstPermutation(packager);
-		} finally {
-			packager.close();
 		}
 	}
 
 	@Test
 	public void parallelBruteForceAttemptsAgainFromTheFirstPermutation() throws PackagerInterruptedException {
-		ParallelBoxItemBruteForcePackager packager = ParallelBoxItemBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build();
-		try {
+		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(2).build()) {
 			assertAttemptsAgainFromTheFirstPermutation(packager);
-		} finally {
-			packager.close();
 		}
 	}
 
-	private static void assertAttemptsAgainFromTheFirstPermutation(AbstractBruteForcePackager packager) throws PackagerInterruptedException {
-		List<BoxItem> boxItems = List.of(
-				new BoxItem(Box.newBuilder().withId("a").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1),
-				new BoxItem(Box.newBuilder().withId("b").withSize(1, 1, 1).withRotate3D().withWeight(1).build(), 1),
-				new BoxItem(Box.newBuilder().withId("c").withSize(2, 1, 1).withRotate3D().withWeight(1).build(), 1));
-		Container container = Container.newBuilder().withId("container").withSize(2, 1, 1).withMaxLoadWeight(3).build();
-		PackagerAdapter adapter = packager.createBoxItemAdapter(boxItems, new ContainerItemsCalculator(List.of(new ControlledContainerItem(container, 3))), () -> false);
+	private static void assertAttemptsAgainFromTheFirstPermutation(AbstractPackager<?> packager) throws PackagerInterruptedException {
+		PackagerSession session = packager.createSession(new PackagerInput(boxItems(), null, containers(), 3, Order.NONE), () -> false);
 
-		assertThat(adapter.attempt(0, null, false).getStack().size()).isEqualTo(2);
-		assertThat(adapter.attempt(0, null, false).getStack().size()).isEqualTo(2);
+		assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(2);
+		assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(2);
+	}
+
+	/**
+	 * With a box item order, fast brute force searches the rotations of the boxes; repeated attempts give the same result.
+	 * These boxes (in a 10 x 8 x 6 container) all fit: a box may use a free point which only another of its rotations
+	 * fits.
+	 */
+	@Test
+	public void fastBruteForceInOrderAttemptsAgainFromTheFirstRotations() throws PackagerInterruptedException {
+		List<BoxItem> boxItems = List.of(
+				new BoxItem(Box.newBuilder().withId("a").withSize(3, 3, 4).withRotate2D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("b").withSize(4, 3, 2).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("c").withSize(5, 6, 4).withRotate3D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("d").withSize(6, 6, 2).withRotate2D().withWeight(1).build(), 1),
+				new BoxItem(Box.newBuilder().withId("e").withSize(5, 4, 3).withRotate3D().withWeight(1).build(), 1));
+		List<ContainerItem> containers = ContainerItem.newListBuilder()
+				.withContainer(Container.newBuilder().withId("container").withSize(10, 8, 6).withMaxLoadWeight(20).build(), 6)
+				.build();
+
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
+			PackagerSession session = packager.createSession(new PackagerInput(boxItems, null, containers, 6, Order.CHRONOLOGICAL), () -> false);
+
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(5);
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(5);
+		}
+	}
+
+	@Test
+	public void bruteForceAttemptsAgainAfterAnInterruptedAttempt() throws PackagerInterruptedException {
+		// interrupt the first attempt during the search, after placing the first box
+		AtomicInteger checks = new AtomicInteger();
+		AtomicInteger interruptAt = new AtomicInteger(3);
+		PackagerInterruptSupplier interrupt = () -> checks.incrementAndGet() == interruptAt.get();
+
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
+			PackagerSession session = packager.createSession(new PackagerInput(boxItems(), null, containers(), 3, Order.NONE), interrupt);
+
+			assertThatThrownBy(() -> session.attempt(0, null, false)).isInstanceOf(PackagerInterruptedException.class);
+
+			interruptAt.set(-1);
+			assertThat(session.attempt(0, null, false).getStack().size()).isEqualTo(2);
+		}
 	}
 }

@@ -2,25 +2,18 @@ package com.github.skjolber.packing.ep.points1d;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.eclipse.collections.api.block.function.primitive.BooleanFunction;
 
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.packager.BoxItemGroupSource;
 import com.github.skjolber.packing.api.packager.BoxItemSource;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.api.point.PointCalculator;
 import com.github.skjolber.packing.ep.PlacementList;
-import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
-import com.github.skjolber.packing.ep.points2d.DefaultXSupportPoint2D;
-import com.github.skjolber.packing.ep.points2d.DefaultXYSupportPoint2D;
-import com.github.skjolber.packing.ep.points2d.DefaultYSupportPoint2D;
 
 /**
  * 
@@ -32,14 +25,13 @@ import com.github.skjolber.packing.ep.points2d.DefaultYSupportPoint2D;
 
 public class DefaultPointCalculator1D implements PointCalculator {
 
-	public static final Comparator<Point1D> COMPARATOR_X = new Comparator<Point1D>() {
+	/**
+	 * The direction in which the boxes are placed side by side.
+	 */
+	public enum Axis {
+		X, Y, Z
+	}
 
-		@Override
-		public int compare(Point1D o1, Point1D o2) {
-			return Integer.compare(o1.getMinX(), o2.getMinX());
-		}
-	};
-	
 	protected int containerMaxX;
 	protected int containerMaxY;
 	protected int containerMaxZ;
@@ -51,27 +43,25 @@ public class DefaultPointCalculator1D implements PointCalculator {
 
 	protected long minAreaLimit = 0;
 
-	protected Point1D initialPoint;
-	
 	protected BooleanFunction<Placement> adder;
 	
-	public DefaultPointCalculator1D(BoxItemSource boxItemSource, Dimension dimension) {
+	public DefaultPointCalculator1D(BoxItemSource boxItemSource, Axis axis) {
 		int count = 0;
 		for(int i = 0; i < boxItemSource.size(); i++) {
 			count += boxItemSource.get(i).getCount();
 		}
 		
 		this.placements = new PlacementList(count);
-		this.adder = toAdder(dimension);
+		this.adder = toAdder(axis);
 	}
 
-	public DefaultPointCalculator1D(int capacity, Dimension dimension) {
+	public DefaultPointCalculator1D(int capacity, Axis axis) {
 		this.placements = new PlacementList(capacity);
-		this.adder = toAdder(dimension);
+		this.adder = toAdder(axis);
 	}	
 
-	private BooleanFunction<Placement> toAdder(Dimension dimension) {
-		switch(dimension) {
+	private BooleanFunction<Placement> toAdder(Axis axis) {
+		switch(axis) {
 			case X: {
 				return this::addX;
 			}
@@ -359,14 +349,5 @@ public class DefaultPointCalculator1D implements PointCalculator {
 	@Override
 	public void setMinimumAreaAndVolumeLimit(long area, long volume) {
 		setMinimumAreaLimit(area);
-	}
-
-	@Override
-	public void remove(Predicate<Point> test) {
-		if(value != null) {
-			if(test.test(value)) {
-				value = null;
-			}
-		}
 	}
 }

@@ -1,6 +1,6 @@
 ---
 name: maven
-description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, owasp), regenerating OpenAPI sources, building the JMH benchmark JAR, or releasing to Maven Central.'
+description: 'Maven build expertise for this multi-module Java project. Use when working with pom.xml files, managing dependencies, running builds or tests for specific modules, configuring or troubleshooting plugins (surefire, jacoco, shade, spotless, pitest, spotbugs, owasp), building the JMH benchmark JAR, or releasing to Maven Central.'
 ---
 
 # Maven Multi-Module Build
@@ -13,13 +13,10 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 |---|---|
 | `api` | Public interfaces and data model |
 | `points` | Free-space point tracking |
+| `validators` | Result and load validators |
 | `core` | Packager algorithm implementations |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |
-| `open-api/open-api-model` | Generated Jackson model |
-| `open-api/open-api-server` | Generated Spring server stubs |
-| `open-api/open-api-client` | Generated Apache HttpClient 5 stubs |
-| `open-api/open-api-test` | Shared open-api test utilities |
 | `visualizer/api` | Visualizer JSON contract types |
 | `visualizer/algorithm` | Algorithm state capture |
 | `visualizer/packaging` | Packing result → JSON conversion |
@@ -48,6 +45,19 @@ mvn test -pl <module> -am
 ```
 Version is `maven-surefire-plugin.version` in root `pom.xml`.
 
+### Slow integration tests — differential verification against the 4.x reference
+The `slow-tests` profile runs the `*IT` classes of `core` with the Failsafe plugin (same version as Surefire). They
+compare the 5.0 brute force packagers with the ported 4.x recursive search, the reference oracle in
+`core/src/test/java/.../packer/bruteforce/reference`, over thousands of seeded scenarios and the order-9 Bouwkamp codes
+which are too slow for the ordinary tests. The profile is off by default: a default build has no Failsafe execution, and
+`*IT` classes are not run by `test`. Run the tier locally, on four cores, with:
+```bash
+taskset -c 0-3 ./mvnw -B -ntp -Pdev,slow-tests -Dmaven.build.cache.enabled=false -pl core -am verify
+```
+It takes a few minutes, and the forked JVM is stopped after 30 minutes. The tier runs on master in CI and weekly
+(`.github/workflows/maven.yml`, job `slow-tests`, also on demand). To run one class while developing, name it with
+Surefire: `-Dtest=BouwkampReferenceIT -Dsurefire.failIfNoSpecifiedTests=false test`.
+
 ### JaCoCo — code coverage
 ```bash
 mvn test jacoco:report -pl <module> -am
@@ -63,23 +73,26 @@ mvn spotless:apply          # auto-fix formatting
 ### Maven Shade — fat JAR (jmh module)
 ```bash
 mvn package -pl jmh -am -DskipTests
-java -jar jmh/target/benchmarks.jar
+java -jar jmh/target/benchmark.jar
 ```
-
-### OpenAPI Generator — regenerate model/server/client
-```bash
-# All three at once
-mvn generate-sources -pl open-api/open-api-model,open-api/open-api-server,open-api/open-api-client
-
-# Individual module
-mvn generate-sources -pl open-api/open-api-model
-```
-Source of truth is `open-api/3d-api.yaml`. Never hand-edit generated sources.
 
 ### PiTest — mutation testing
 ```bash
-mvn test-compile org.pitest:pitest-maven:mutationCoverage -pl <module> -am
+./mvnw -B -ntp -Pdev test-compile org.pitest:pitest-maven:mutationCoverage -pl <module> -am -DfailWhenNoMutations=false
 ```
+`-DfailWhenNoMutations=false` is needed because `-am` also runs PIT on upstream modules.
+Narrow a run with `-DtargetClasses=<pattern> -DtargetTests=<pattern>` (for example
+`-DtargetClasses='com.github.skjolber.packing.ep.points2d.*'`); a whole module takes long.
+JUnit 5 support comes from `pitest-junit5-plugin` in the root POM.
+
+### SpotBugs — static analysis
+```bash
+./mvnw -B -ntp -Pdev,spotbugs -DskipTests -Dmaven.build.cache.enabled=false clean verify -pl api,points,validators,core -am
+```
+The `spotbugs` profile runs the `check` goal at `verify` (effort max, threshold low) and writes
+`<module>/target/spotbugsXml.xml`; the build fails on findings. `spotbugs-exclude.xml` in the root excludes
+findings which are by design or reviewed (mutable inputs and outputs are not copied, no serialization, extension points).
+Use `clean`: Moditect fails on an already modular JAR otherwise.
 
 ### OWASP Dependency Check
 ```bash
@@ -103,9 +116,11 @@ mvn dependency-check:check -pl <module>
 | `assertj.version` | AssertJ |
 | `jmh.version` | JMH framework |
 | `jacoco-maven-plugin.version` | JaCoCo |
-| `maven-surefire-plugin.version` | Surefire |
+| `maven-surefire-plugin.version` | Surefire, and Failsafe for the `slow-tests` profile |
 | `spotless.version` | Spotless formatter |
 | `pitest.version` | PiTest mutation testing |
+| `pitest-junit5-plugin.version` | PiTest JUnit 5 test discovery |
+| `spotbugs-maven-plugin.version` | SpotBugs (`spotbugs` profile) |
 
 ## Release to Maven Central
 

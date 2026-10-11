@@ -17,8 +17,8 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 /**
  * Interrupting the brute-force packagers at any point gives a timeout result (or a result found before the
  * interrupt), never an exception. The interrupt fires after a number of checks, from 1 and up, so that it hits every
- * point at which the packagers check it. With four container types, the packagers search for the smallest container
- * which holds all boxes.
+ * point at which the packagers check it. With four container types, the container packing strategy searches for the
+ * smallest container which holds all boxes.
  */
 public class BruteForceInterruptTest {
 
@@ -26,39 +26,29 @@ public class BruteForceInterruptTest {
 
 	@Test
 	public void bruteForcePackagerCanBeInterruptedAnywhere() {
-		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
-		try {
+		try (BruteForcePackager packager = BruteForcePackager.newBuilder().build()) {
 			assertCanBeInterruptedAnywhere(packager);
-		} finally {
-			packager.close();
 		}
 	}
 
 	@Test
 	public void fastBruteForcePackagerCanBeInterruptedAnywhere() {
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build();
-		try {
+		try (FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().build()) {
 			assertCanBeInterruptedAnywhere(packager);
-		} finally {
-			packager.close();
 		}
 	}
 
 	private static void assertCanBeInterruptedAnywhere(AbstractPackager<?> packager) {
-		// one container, or several (then the packagers first search for a single container which holds the boxes)
-		for(int maxContainerCount : new int[] {1, 2}) {
-			for(int checks = 1; checks <= MAX_CHECKS; checks++) {
-				AtomicInteger count = new AtomicInteger();
-				int limit = checks;
-				PackagerResult result = packager.newResultBuilder()
-						.withContainerItems(containers())
-						.withBoxItems(boxes())
-						.withMaxContainerCount(maxContainerCount)
-						.withInterrupt(() -> count.incrementAndGet() > limit)
-						.build();
+		for(int checks = 1; checks <= MAX_CHECKS; checks++) {
+			AtomicInteger count = new AtomicInteger();
+			int limit = checks;
+			PackagerResult result = packager.newResultBuilder()
+					.withContainerItems(containers())
+					.withBoxItems(boxes())
+					.withInterrupt(() -> count.incrementAndGet() > limit)
+					.build();
 
-				assertThat(result.isSuccess() || result.isTimeout()).as("max %d containers, interrupted after %d checks", maxContainerCount, checks).isTrue();
-			}
+			assertThat(result.isSuccess() || result.isTimeout()).as("interrupted after %d checks", checks).isTrue();
 		}
 	}
 

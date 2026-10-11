@@ -12,13 +12,13 @@ public abstract class AbstractContainerAssert<SELF extends AbstractContainerAsse
 		super(actual, selfType);
 	}
 
-	public SELF isStackedWithinContraints() {
+	public SELF isStackedWithinConstraints() {
 		isNotNull();
 		Stack stack = actual.getStack();
 		if(stack == null) {
 			failWithMessage("Expected stack");
 		} else {
-			StackAssert.assertThat(actual.getStack()).isWithinLoadContraints(actual);
+			StackAssert.assertThat(actual.getStack()).isWithinLoadConstraints(actual);
 		}
 		return myself;
 	}

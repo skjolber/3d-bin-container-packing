@@ -76,7 +76,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 	protected final BoxItemGroupPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemGroupsPermutationRotationIterator(BoxItemGroupPermutationRotationIterator iterator) {
-		super(iterator.getBoxItemGroups(), iterator.getBoxItems(), iterator.getExcludedBoxItemGroups());
+		super(iterator.getBoxItemGroups(), iterator.getBoxItems(), iterator.getBoxItemStackValues(), iterator.getExcludedBoxItemGroups());
 		
 		permutations = new int[0]; // n!
 		
@@ -90,7 +90,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem boxItem = stackableItems[i];
 			if(boxItem != null && !boxItem.isEmpty()) {
-				boxItems.add(boxItem.clone());
+				boxItems.add(boxItem.copy());
 			}
 		}
 
@@ -156,7 +156,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		// assume the first entries of this box in the permutation has been consumed. 
 		int offset = 0;
 		for(int i = 0; i < this.permutations.length; i++) {
-			if(this.permutations[i] == mutableBoxItem.getIndex() && count > 0) {
+			if(this.permutations[i] == mutableBoxItem.getLocalIndex() && count > 0) {
 				count--;
 			} else {
 				permutations[offset] = this.permutations[i];
@@ -274,7 +274,7 @@ public class FilteredBoxItemGroupsPermutationRotationIterator extends AbstractBo
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+				boxItems.add(loadableItem.copy());
 			}
 		}
 

@@ -1,0 +1,298 @@
+package com.github.skjolber.packing.packer.bruteforce;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.packer.AbstractPackagerSession;
+import com.github.skjolber.packing.packer.BoxItemsContainerInventory;
+import com.github.skjolber.packing.packer.DefaultContainerInventory;
+import com.github.skjolber.packing.packer.DefaultIntermediatePackagerResult;
+
+public abstract class AbstractBruteForceBoxItemSession extends AbstractPackagerSession {
+
+	// keep inventory over all of the iterators here
+	protected Box[] boxes;
+	protected int[] boxesRemaining;
+	protected BoxItem[] boxItems;
+	/** The initial count, local index and global index of each box item, for fresh sessions. */
+	protected final int[] initialCounts;
+	protected final int[] initialLocalIndexes;
+	protected final int[] globalIndexes;
+
+	/** The box item order: with an order, there is only one permutation */
+	protected Order order = Order.NONE;
+	/** Whether the box items have different container priorities (they are sorted by container priority) */
+	protected final boolean containerPriorities;
+	/**
+	 * Whether a permutation and its reverse can be expected to pack equally well, so that skipping reverse permutations
+	 * is an option, see {@link AbstractBruteForcePackager#isReverseSymmetric(com.github.skjolber.packing.packer.PackagerInput)}
+	 */
+	protected boolean reverseSymmetric = true;
+
+	public AbstractBruteForceBoxItemSession(List<BoxItem> boxItems, List<ContainerItem> containers,
+			int containerCount) {
+		this(initializeGlobalIndexes(boxItems), new BoxItemsContainerInventory(containers, containerCount, boxItems));
+	}
+
+	protected AbstractBruteForceBoxItemSession(List<BoxItem> boxItems,
+			DefaultContainerInventory containerInventory) {
+		super(containerInventory);
+		
+		this.boxes = new Box[boxItems.size()];
+		this.boxesRemaining = new int[boxItems.size()];
+		this.boxItems = new BoxItem[boxItems.size()];
+		this.initialCounts = new int[boxItems.size()];
+		this.initialLocalIndexes = new int[boxItems.size()];
+		this.globalIndexes = new int[boxItems.size()];
+		
+		for(int i = 0; i < boxItems.size(); i++) {
+			BoxItem boxItem = boxItems.get(i);
+			this.boxItems[i] = boxItem;
+			this.boxes[i] = boxItem.getBox();
+			this.boxesRemaining[i] = boxItem.getCount();
+			this.initialCounts[i] = boxItem.getCount();
+			this.initialLocalIndexes[i] = boxItem.getLocalIndex();
+			this.globalIndexes[i] = boxItem.getGlobalIndex();
+		}
+		boolean containerPriorities = false;
+		for(int i = 1; i < boxItems.size(); i++) {
+			if(boxItems.get(i).getContainerPriority() != boxItems.get(0).getContainerPriority()) {
+				containerPriorities = true;
+				break;
+			}
+		}
+		this.containerPriorities = containerPriorities;
+	} 
+
+	protected AbstractBruteForceBoxItemSession(AbstractBruteForceBoxItemSession source) {
+		super(source);
+		this.initialCounts = source.initialCounts;
+		this.initialLocalIndexes = source.initialLocalIndexes;
+		this.globalIndexes = source.globalIndexes;
+		this.order = source.order;
+		this.containerPriorities = source.containerPriorities;
+		this.reverseSymmetric = source.reverseSymmetric;
+		this.boxes = source.boxes.clone();
+		this.boxesRemaining = source.boxesRemaining.clone();
+		this.boxItems = new BoxItem[source.boxItems.length];
+		for(int i = 0; i < boxItems.length; i++) {
+			if(source.boxItems[i] != null) {
+				boxItems[i] = source.boxItems[i].copy();
+			}
+		}
+	}
+
+	/**
+	 * @param order the box item order; with an order, there is only one permutation
+	 */
+	public void setOrder(Order order) {
+		this.order = order != null ? order : Order.NONE;
+	}
+
+	public void setReverseSymmetric(boolean reverseSymmetric) {
+		this.reverseSymmetric = reverseSymmetric;
+	}
+
+	@Override
+	public PackagerSession fresh() {
+		PackagerSession fresh = super.fresh();
+		((AbstractBruteForceBoxItemSession)fresh).setOrder(order);
+		((AbstractBruteForceBoxItemSession)fresh).setReverseSymmetric(reverseSymmetric);
+		return fresh;
+	}
+
+	/**
+	 * @return whether the box items are in a given order, or sorted by container priority: permutations which are the
+	 *         reverse of each other do not both respect the order
+	 */
+	protected boolean isOrdered() {
+		return order != Order.NONE || containerPriorities;
+	}
+
+	/**
+	 * With a box item order, the boxes after a box which does not fit the container cannot be placed in it, and with
+	 * container priorities, neither can the boxes of a higher priority than such a box: they would be in an earlier
+	 * container.
+	 *
+	 * @param iterator the container's iterator, by box item index (null if the box item does not fit, or is packed)
+	 * @return the number of leading boxes of the iterator's permutations which may be placed
+	 */
+	protected int getLimit(BoxItemPermutationRotationIterator iterator) {
+		if(!isOrdered()) {
+			return Integer.MAX_VALUE;
+		}
+		BoxItem[] iteratorItems = iterator.getBoxItems();
+		int limit = 0;
+		int blockedPriority = Integer.MAX_VALUE;
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem == null) {
+				// packed
+				continue;
+			}
+			if(boxItem.getContainerPriority() > blockedPriority) {
+				break;
+			}
+			if(iteratorItems[i] == null) {
+				// does not fit the container
+				if(order != Order.NONE) {
+					break;
+				}
+				blockedPriority = boxItem.getContainerPriority();
+				continue;
+			}
+			limit += iteratorItems[i].getCount();
+		}
+		return limit;
+	}
+
+	/**
+	 * Boxes which do not fit the container wait for a later container, and so do the boxes of a higher container
+	 * priority (see {@link AbstractBruteForcePackager#packInOrderSkipping}).
+	 *
+	 * @param iterator the container's iterator, by box item index (null if the box item does not fit, or is packed)
+	 * @return the highest container priority which may be placed in the container
+	 */
+	protected int getMaxContainerPriority(BoxItemPermutationRotationIterator iterator) {
+		BoxItem[] iteratorItems = iterator.getBoxItems();
+		int maxContainerPriority = Integer.MAX_VALUE;
+		for(int i = 0; i < boxItems.length; i++) {
+			if(boxItems[i] != null && iteratorItems[i] == null) {
+				maxContainerPriority = Math.min(maxContainerPriority, boxItems[i].getContainerPriority());
+			}
+		}
+		return maxContainerPriority;
+	}
+
+	/** @return copies of the box items at the start of the packaging operation */
+	protected List<BoxItem> copyInitialBoxItems() {
+		List<BoxItem> copies = new ArrayList<>(boxes.length);
+		for(int i = 0; i < boxes.length; i++) {
+			copies.add(new BoxItem(boxes[i].copy(), initialCounts[i], initialLocalIndexes[i], globalIndexes[i]).withOrderingOf(boxItems[i]));
+		}
+		return copies;
+	}
+
+	@Override
+	public ContainerItem getContainerItem(int index) {
+		return packagerContainerItems.getContainerItem(index);
+	}
+
+	/**
+	 * The placements of the results of a session are the session's own, shared by all of its attempts: the stack of a result
+	 * is valid until the stack of another result is calculated. So place the boxes of a result again (from the result's own
+	 * state) before using its stack after the session has attempted other containers.
+	 *
+	 * @param result a result of this session, or of another packager (which has its own stack)
+	 */
+	protected static void refreshStack(IntermediatePackagerResult result) {
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			bruteForceResult.markDirty();
+		}
+	}
+
+	@Override
+	public IntermediatePackagerResult peek(int containerIndex, IntermediatePackagerResult result) {
+		// whether the boxes fit another container depends on their positions
+		refreshStack(result);
+		return super.peek(containerIndex, result);
+	}
+
+
+	protected void removeInventory(List<Integer> p) {
+		// remove session inventory
+		for (Integer remove : p) {
+			boxesRemaining[remove]--;
+			boxItems[remove].decrement();
+			if(boxItems[remove].isEmpty()) {
+				boxItems[remove] = null;
+			}
+		}
+	}
+
+	/** Translate placements from another session to this session's local iterator indexes. */
+	protected List<Integer> getLocalIndexes(Stack stack) {
+		List<Integer> indexes = new ArrayList<>(stack.size());
+		for(Placement placement : stack.getPlacements()) {
+			BoxItem source = placement.getBoxItem();
+			int globalIndex = source.getGlobalIndex();
+			int localIndex = getLocalIndex(globalIndex);
+			indexes.add(localIndex);
+		}
+		return indexes;
+	}
+
+	protected int getLocalIndex(int globalIndex) {
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem != null && boxItem.getGlobalIndex() == globalIndex) {
+				return i;
+			}
+		}
+		throw new IllegalArgumentException("Result contains unknown box item global index " + globalIndex);
+	}
+
+	@Override
+	public List<Integer> getContainers() {
+		return packagerContainerItems.getContainers(getRemainingBoxItems()).getContainerIndexes();
+	}
+
+	@Override
+	public List<BoxItem> getRemainingBoxItems() {
+		List<BoxItem> remainingBoxItems = new ArrayList<>(boxItems.length);
+		for(int i = 0; i < boxItems.length; i++) {
+			BoxItem boxItem = boxItems[i];
+			if(boxItem != null && !boxItem.isEmpty()) {
+				remainingBoxItems.add(boxItem);
+			}
+		}
+		return remainingBoxItems;
+	}
+
+	@Override
+	public long getRemainingVolume() {
+		long volume = 0L;
+		for(int i = 0; i < boxes.length; i++) {
+			volume = Math.addExact(volume, Math.multiplyExact(boxes[i].getVolume(), boxesRemaining[i]));
+		}
+		return volume;
+	}
+
+	@Override
+	public long getRemainingWeight() {
+		long weight = 0L;
+		for(int i = 0; i < boxes.length; i++) {
+			weight = Math.addExact(weight, Math.multiplyExact((long)boxes[i].getWeight(), boxesRemaining[i]));
+		}
+		return weight;
+	}
+
+	protected IntermediatePackagerResult copy(ContainerItem peek, IntermediatePackagerResult result, int index) {
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult) {
+			// keep the permutation state, so that the stack can be calculated again when accepted
+			return bruteForceResult.copyTo(peek, index);
+		}
+		// a result of another session
+		return new DefaultIntermediatePackagerResult(peek, result.getStack());
+	}
+
+	@Override
+	public int countRemainingBoxItemGroups() {
+		return -1;
+	}
+
+	@Override
+	public List<BoxItemGroup> getRemainingBoxItemGroups() {
+		return null;
+	}
+
+}

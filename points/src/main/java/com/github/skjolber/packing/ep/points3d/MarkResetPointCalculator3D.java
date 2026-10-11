@@ -12,20 +12,20 @@ public class MarkResetPointCalculator3D extends DefaultPointCalculator3D {
 
 	protected PlacementList markPlacements;
 	
-	public MarkResetPointCalculator3D(boolean cloneOnConstrain, int capacity) {
-		super(cloneOnConstrain, capacity);
+	public MarkResetPointCalculator3D(boolean copyOnConstrain, int capacity) {
+		super(copyOnConstrain, capacity);
 		
 		markPlacements = new PlacementList(capacity);
 	}
 	
-	public MarkResetPointCalculator3D(boolean cloneOnConstrain, BoxItemSource source) {
-		super(cloneOnConstrain, source);
+	public MarkResetPointCalculator3D(boolean copyOnConstrain, BoxItemSource source) {
+		super(copyOnConstrain, source);
 		
 		markPlacements = new PlacementList(placements.getCapacity());
 	}
 
 	public void mark() {
-		this.markValues = values.clone(!immutablePoints);
+		this.markValues = values.copy(!immutablePoints);
 		
 		this.markMinAreaLimit = minAreaLimit;
 		this.markMinVolumeLimit = minVolumeLimit;

@@ -19,7 +19,7 @@ import com.github.skjolber.packing.test.generator.ItemGenerator;
 
 public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 
-	public static Clazz CLASS_1 = new Clazz.Builder()
+	public static final Clazz CLASS_1 = new Clazz.Builder()
 			.withCategory(Category.K1, BigDecimal.valueOf(28.48))
 			.withCategory(Category.K2, BigDecimal.valueOf(58.75))
 			.withCategory(Category.K3, BigDecimal.valueOf(12.67))
@@ -28,7 +28,7 @@ public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 			.withName("1")
 			.build();
 
-	public static Clazz CLASS_2 = new Clazz.Builder()
+	public static final Clazz CLASS_2 = new Clazz.Builder()
 			.withCategory(Category.K1, BigDecimal.valueOf(33.08))
 			.withCategory(Category.K2, BigDecimal.valueOf(32.36))
 			.withCategory(Category.K3, BigDecimal.valueOf(23.34))
@@ -37,7 +37,7 @@ public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 			.withName("2")
 			.build();
 
-	public static Clazz CLASS_3 = new Clazz.Builder()
+	public static final Clazz CLASS_3 = new Clazz.Builder()
 			.withCategory(Category.K1, BigDecimal.valueOf(66.88))
 			.withCategory(Category.K2, BigDecimal.valueOf(24.75))
 			.withCategory(Category.K3, BigDecimal.valueOf(5.7))
@@ -46,7 +46,7 @@ public class EgyItemGenerator implements ItemGenerator<EgyItem> {
 			.withName("3")
 			.build();
 
-	public static Clazz CLASS_4 = new Clazz.Builder()
+	public static final Clazz CLASS_4 = new Clazz.Builder()
 			.withCategory(Category.K1, BigDecimal.valueOf(78.58))
 			.withCategory(Category.K2, BigDecimal.valueOf(13.16))
 			.withCategory(Category.K3, BigDecimal.valueOf(6.33))

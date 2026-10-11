@@ -2,7 +2,6 @@ package com.github.skjolber.packing.ep.points2d;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
@@ -46,6 +45,9 @@ public class Point2DFlagList implements Iterable<Point> {
 	private int size = 0;
 	private SimplePoint2D[] points = new SimplePoint2D[16];
 	private boolean[] flag = new boolean[16];
+	private SimplePoint2D[] scratch;
+
+	private static final int INSERTION_SORT_LIMIT = 32;
 
 	public Point2DFlagList() {
 		this(16);
@@ -77,10 +79,6 @@ public class Point2DFlagList implements Iterable<Point> {
 	public void add(SimplePoint2D point) {
 		points[size] = point;
 		size++;
-	}
-
-	public void sort(Comparator<SimplePoint2D> comparator) {
-		Arrays.sort(points, 0, size, comparator);
 	}
 
 	public int size() {
@@ -226,8 +224,87 @@ public class Point2DFlagList implements Iterable<Point> {
 
 	}
 
-	public void sort(Comparator<Point2D> comparator, int maxSize) {
-		Arrays.sort(points, 0, maxSize, comparator);
+	/**
+	 * Stable sort of the first {@code maxSize} points (flags are not moved), without allocation.
+	 * New points are added at the front of an otherwise sorted list, so the sorted tail is found
+	 * first; then only the front is sorted and merged into the tail. The result is the same as
+	 * for any stable sort.
+	 */
+	public void sort(Point2DComparator comparator, int maxSize) {
+		SimplePoint2D[] points = this.points;
+		int tailStart = maxSize - 1;
+		while (tailStart > 0 && comparator.compare(points[tailStart - 1], points[tailStart]) <= 0) {
+			tailStart--;
+		}
+		if(tailStart <= 0) {
+			return;
+		}
+		if(scratch == null || scratch.length < maxSize) {
+			scratch = new SimplePoint2D[Math.max(maxSize, points.length)];
+		}
+		if(tailStart < INSERTION_SORT_LIMIT) {
+			insertionSort(comparator, 0, tailStart);
+		} else {
+			mergeSort(comparator, 0, tailStart);
+		}
+		merge(comparator, 0, tailStart, maxSize);
+	}
+
+	/** Stable binary insertion sort: one comparison per halving, and block moves. */
+	private void insertionSort(Point2DComparator comparator, int from, int to) {
+		SimplePoint2D[] points = this.points;
+		for (int i = from + 1; i < to; i++) {
+			SimplePoint2D key = points[i];
+			if(comparator.compare(points[i - 1], key) <= 0) {
+				continue;
+			}
+			// insert after equal elements, for stability
+			int left = from;
+			int right = i - 1;
+			while (left < right) {
+				int mid = (left + right) >>> 1;
+				if(comparator.compare(key, points[mid]) < 0) {
+					right = mid;
+				} else {
+					left = mid + 1;
+				}
+			}
+			System.arraycopy(points, left, points, left + 1, i - left);
+			points[left] = key;
+		}
+	}
+
+	/** Merge the sorted ranges [from, mid) and [mid, to), taking from the left on ties. */
+	private void merge(Point2DComparator comparator, int from, int mid, int to) {
+		SimplePoint2D[] points = this.points;
+		SimplePoint2D[] scratch = this.scratch;
+		System.arraycopy(points, from, scratch, from, mid - from);
+		int left = from;
+		int right = mid;
+		int target = from;
+		while (left < mid && right < to) {
+			if(comparator.compare(points[right], scratch[left]) < 0) {
+				points[target++] = points[right++];
+			} else {
+				points[target++] = scratch[left++];
+			}
+		}
+		while (left < mid) {
+			points[target++] = scratch[left++];
+		}
+	}
+
+	private void mergeSort(Point2DComparator comparator, int from, int to) {
+		if(to - from < INSERTION_SORT_LIMIT) {
+			insertionSort(comparator, from, to);
+			return;
+		}
+		int mid = (from + to) >>> 1;
+		mergeSort(comparator, from, mid);
+		mergeSort(comparator, mid, to);
+		if(comparator.compare(points[mid - 1], points[mid]) > 0) {
+			merge(comparator, from, mid, to);
+		}
 	}
 	
 	@Override
@@ -237,21 +314,21 @@ public class Point2DFlagList implements Iterable<Point> {
 		return iterator;
 	}
 
-	public Point2DFlagList clone(boolean clonePoints) {
-		Point2DFlagList clone = new Point2DFlagList(points.length);
+	public Point2DFlagList copy(boolean copyPoints) {
+		Point2DFlagList copy = new Point2DFlagList(points.length);
 
-		clone.size = size;
+		copy.size = size;
 
-		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
-		if(clonePoints) {
+		System.arraycopy(flag, 0, copy.flag, 0, flag.length);
+		if(copyPoints) {
 			for(int i = 0; i < size; i++) {
-				clone.points[i] = points[i].clone();
+				copy.points[i] = points[i].copy();
 			}
 		} else {
-			System.arraycopy(points, 0, clone.points, 0, points.length);
+			System.arraycopy(points, 0, copy.points, 0, points.length);
 		}
 		
-		return clone;
+		return copy;
 	}
 
 
