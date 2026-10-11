@@ -11,7 +11,16 @@ public final class FewestContainersControls implements BruteForceContainerPackin
 
 	private ContainerResult best;
 
+	private FewestContainersControls(ContainerResult best) {
+		this.best = best;
+	}
+
 	public FewestContainersControls() {
+	}
+
+	@Override
+	public FewestContainersControls copy() {
+		return new FewestContainersControls(best);
 	}
 
 	@Override
