@@ -138,8 +138,7 @@ PackagerResult result = packager
     .build();
 ```
 
-Note that all `packager` instances are thread-safe. Packing works on copies of the input box items and container items; boxes and their stack values are shared, as they are
-never modified, so boxes can be shared between threads (assign global indexes first).
+Note that all `packager` instances are thread-safe.
 
 ### Plain packager
 A simple packager, which places the box with the biggest volume first.
@@ -228,9 +227,9 @@ Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type o
 detect the constraints and enforce them.
 
 ## Insertion order
-The placements of each container are in insertion order: the order in which the boxes can be loaded. Each box comes
-after the boxes it rests on, and after the boxes it would otherwise have to pass on its way in. Set how boxes get into
-a container type with `withAccess(..)`:
+The placements of each container are in [insertion order](docs/insertion-order.md): the order in which the boxes can be loaded. 
+
+Also set how boxes get into a container type with `withAccess(..)`:
 
 ```java
 Container container = Container.newBuilder()
@@ -240,11 +239,8 @@ Container container = Container.newBuilder()
     .build();
 ```
 
-Details: [insertion order](docs/insertion-order.md), including skipping the ordering, obstacles and box item groups.
-
-## Deliveries: extraction order and container priority
-Two settings on box items (and box item groups) say when boxes leave, as opposed to the box item order (`Order`, see
-`withOrder(..)` on the result builder), which is the order in which boxes arrive for loading:
+## Extraction order and container priority
+Examples
 
 ```java
 // the stops of a delivery route: lower values are extracted first
@@ -280,21 +276,11 @@ The LAFF packager builders have the same options.
 
 Details: [support](docs/support.md), including the placement controls and the brute-force packagers.
 
-## Container costs
-Give container types a cost to prefer cheaper combinations of containers, using
-`ContainerItem.newListBuilder().withContainer(container, count, costCalculator)` with an
-implementation of `ContainerCostCalculator` (see `com.github.skjolber.packing.cost`).
-
-Details: [container costs](docs/container-costs.md), including the calculators and how costs change the choice of containers.
-
 ## Container packing strategies
-A container packing strategy decides which containers to use, and in which order. By default, containers
-are tried in the supplied (preference) order when more than one container may be used
-(`withMaxContainerCount(..)`, default 1; otherwise the result comparator picks), or the cheapest combination
-is searched for when the containers have costs. Supply your own with `withContainerPackingStrategyFactory(..)`
-on the packager builders; see [DEVELOPER.md](DEVELOPER.md).
+A [container packing strategy](docs/container-packing-strategies.md) decides which containers to use, and in which order.
 
-Details: [container packing strategies](docs/container-packing-strategies.md), including the built-in strategies and which is the default.
+## Container costs
+Give container types [a cost](docs/container-costs.md) to prefer cheaper combinations of containers.
 
 ## Combining packagers
 `CompositePackager` uses costly packagers only where cheaper packagers fall short:
@@ -305,10 +291,6 @@ CompositePackager packager = CompositePackager.newBuilder()
     .withPackager(FastBruteForcePackager.newBuilder().build(), 200)  // only where plain does not fit all boxes, for at most 200 ms
     .build();
 ```
-
-The first packager (or those added with `withBaselinePackager(..)`) first packs the whole order, giving a
-baseline result. Then, for each container the container packing strategy attempts, the packagers are tried in order
-until one fits all remaining boxes; a costlier packager only needs to beat the cheaper packagers' result.
 
 Details: [composite packager heuristics](docs/heuristics/composite.md), including a quality comparison.
 
@@ -326,9 +308,8 @@ boolean valid = validator.isValid(container.getStack().getPlacements(), reasons)
 
 `DefaultValidator` validates a whole `PackagerResult` against the input: box counts, containment, intersecting boxes, that the obstacles of
 the containers are left empty, insertion and extraction order, and the load constraints which the boxes declare (cheap if there are none).
-Stability is a policy, so a rule such as `FullySupportedStabilityValidator` is added with `withPlacementValidatorBuilderFactory(..)` on the
-container item of the validator's result builder, and the load validation is skipped with `withDefaultPlacementValidation(false)`. The
-validator result says what was validated: `isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()` (if false, the load validation had nothing to check).
+
+The validator result says what was validated: `isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()` (if false, the load validation had nothing to check).
 
 ## Packager controls
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
