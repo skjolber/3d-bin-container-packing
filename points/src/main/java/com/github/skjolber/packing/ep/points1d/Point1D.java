@@ -8,18 +8,25 @@ public class Point1D extends Point {
 		super(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
+	/**
+	 * Support is not tracked for 1D points; the placement controls calculate it when needed (as for 2D points).
+	 */
+	@Override
+	public boolean isSupportedXYPlane(int x, int y) {
+		return false;
+	}
+
 	@Override
 	public String toString() {
 		return "Point1D [" + minX + " " + maxX + "]";
 	}
 
 	@Override
-	public Point clone(int maxX, int maxY, int maxZ) {
+	public Point copy(int maxX, int maxY, int maxZ) {
 		return new Point1D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 
-	@Override
-	public Point1D clone() {
+	public Point1D copy() {
 		return new Point1D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
 	

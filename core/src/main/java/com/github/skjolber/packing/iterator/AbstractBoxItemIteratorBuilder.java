@@ -12,6 +12,8 @@ import com.github.skjolber.packing.api.BoxStackValue;
  * 
  * @see <a href=
  *      "https://www.sitepoint.com/self-types-with-javas-generics/">https://www.sitepoint.com/self-types-with-javas-generics/</a>
+ *      
+ * @param <B> builder
  */
 
 public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIteratorBuilder<B>> {
@@ -46,39 +48,46 @@ public abstract class AbstractBoxItemIteratorBuilder<B extends AbstractBoxItemIt
 		return (B)this;
 	}
 
-	protected BoxItem[] toMatrix() {
-		BoxItem[] results = new BoxItem[boxItems.size()];
+	/**
+	 * The box items of an iterator, by index: copies of the box items which fit the container (sharing their boxes), and
+	 * the rotations of each which fit (stack values of its box).
+	 */
+	protected record BoxItemMatrix(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded) {
+	}
 
+	protected BoxItemMatrix toMatrix() {
+		return toMatrix(boxItems, dx, dy, dz, volume, maxLoadWeight);
+	}
+
+	protected static BoxItemMatrix toMatrix(List<BoxItem> boxItems, int dx, int dy, int dz, long volume, int maxLoadWeight) {
+		BoxItem[] included = new BoxItem[boxItems.size()];
+		BoxStackValue[][] stackValues = new BoxStackValue[boxItems.size()][];
+		List<BoxItem> excluded = new ArrayList<>(boxItems.size());
+
+		// box item and box item groups indexes are unique and static
 		for (int i = 0; i < boxItems.size(); i++) {
-			BoxItem item = boxItems.get(i);
+			BoxItem boxItem = boxItems.get(i);
 
-			if(item.getCount() == 0) {
-				continue;
-			}
-
-			Box box = item.getBox();
+			Box box = boxItem.getBox();
 			if(box.getWeight() > maxLoadWeight) {
+				excluded.add(boxItem);
 				continue;
 			}
 
 			if(box.getVolume() > volume) {
+				excluded.add(boxItem);
 				continue;
 			}
 
-			List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-			if(boundRotations == null || boundRotations.isEmpty()) {
+			BoxStackValue[] rotations = AbstractBoxItemPermutationRotationIterator.getRotations(box, dx, dy, dz);
+			if(rotations == null) {
+				excluded.add(boxItem);
 				continue;
 			}
-			
-			List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
-			for(BoxStackValue v : boundRotations) {
-				cloned.add(v.clone());
-			}
-			Box clonedBox = new Box(box, cloned);
-
-			results[i] = new BoxItem(clonedBox, item.getCount(), i);
+			stackValues[i] = rotations;
+			included[i] = new BoxItem(box, boxItem.getCount(), i, boxItem.getGlobalIndex()).withOrderingOf(boxItem);
 		}
-		return results;
+		return new BoxItemMatrix(included, stackValues, excluded);
 	}
 
 	public abstract BoxItemPermutationRotationIterator build();

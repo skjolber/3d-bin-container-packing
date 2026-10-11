@@ -17,6 +17,22 @@ public class CustomIntArrayList extends IntArrayList {
         return this;
     }
 
+	/**
+	 * Insertion sort by the x comparator, see {@linkplain CustomIntXComparator#insertionSort(int[], int)}.
+	 */
+	public CustomIntArrayList insertionSortThis(CustomIntXComparator comparator) {
+		comparator.insertionSort(this.items, this.size);
+		return this;
+	}
+
+	/**
+	 * Insertion sort by the y comparator, see {@linkplain CustomIntYComparator#insertionSort(int[], int)}.
+	 */
+	public CustomIntArrayList insertionSortThis(CustomIntYComparator comparator) {
+		comparator.insertionSort(this.items, this.size);
+		return this;
+	}
+
     public static void insertionSort(int[] arr, int size, IntComparator comparator) {
         int n = size;
         for (int i = 1; i < n; i++) { // Start from the second element

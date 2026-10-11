@@ -7,6 +7,7 @@ Foundation layer of the 3D bin-packing library. Defines all public interfaces, a
 - `com.github.skjolber.packing.api` — Core types: `Packager`, `PackagerResult`, `PackagerResultBuilder`, `BoxStackValue`, `Rotation`, `Surface`
 - `com.github.skjolber.packing.api.packager` — Item source abstractions for boxes and containers
 - `com.github.skjolber.packing.api.packager.control` — Control framework: `ManifestControls`, `PlacementControls`, `PointControls`
+- `com.github.skjolber.packing.api.packager.strategy` — Container packing strategy contracts: `ContainerPackingStrategy`, `ContainerPackingStrategyFactory`, `PackagerSession`, `ContainerInventory`, `ContainerResult`
 - `com.github.skjolber.packing.api.point` — Point-related interfaces used by free-space tracking
 - `com.github.skjolber.packing.api.validator` — Validation interfaces for placement correctness
 

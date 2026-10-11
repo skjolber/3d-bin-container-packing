@@ -27,7 +27,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		long timestamp = System.currentTimeMillis();
 		
 		PackagerResultBuilder  builder = actual.newResultBuilder();
-		PackagerResult result = builder.withDeadline(timestamp + maxTime).withBoxItems(items).withContainerItems(containerItems).build();
+		PackagerResult result = builder.withInterruptDeadline(timestamp + maxTime).withBoxItems(items).withContainerItems(containerItems).build();
 		long packDuration = System.currentTimeMillis() - timestamp;
 
 		if(result.getContainers().isEmpty()) {
@@ -37,7 +37,7 @@ public abstract class AbstractPackagerAssert<SELF extends AbstractPackagerAssert
 		// shorter deadlines, halved until the packager gives up: it must not take much longer than the deadline
 		for(long unrealisticDuration = packDuration / 4; ; unrealisticDuration /= 2) {
 			timestamp = System.currentTimeMillis();
-			result = actual.newResultBuilder().withDeadline(timestamp + unrealisticDuration).withBoxItems(items).withContainerItems(containerItems).build();
+			result = actual.newResultBuilder().withInterruptDeadline(timestamp + unrealisticDuration).withBoxItems(items).withContainerItems(containerItems).build();
 			if(result.getContainers().isEmpty()) {
 				long elapsed = System.currentTimeMillis() - timestamp;
 				if(elapsed >= unrealisticDuration + LEEWAY) {

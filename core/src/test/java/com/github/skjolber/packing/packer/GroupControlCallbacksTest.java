@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -115,12 +116,12 @@ public class GroupControlCallbacksTest {
 		for (String id : List.of("a", "b", "c")) {
 			groups.add(new BoxItemGroup(id, List.of(new BoxItem(Box.newBuilder().withId(id).withSize(1, 1, 1).withWeight(1).build(), 1))));
 		}
-		Container container = Container.newBuilder().withDescription("c").withSize(2, 1, 1).withMaxLoadWeight(100).build();
+		Container container = Container.newBuilder().withId("c").withSize(2, 1, 1).withMaxLoadWeight(100).build();
 
 		packager.newResultBuilder()
 				.withContainerItem(b -> b
 						.withContainerItem(new ContainerItem(container, 2))
-						.withBoxItemControlsBuilderFactory(() -> new ManifestRecorderBuilder(events))
+						.withManifestControlsBuilderFactory(() -> new ManifestRecorderBuilder(events))
 						.withPointControlsBuilderFactory(() -> new PointRecorderBuilder(events)))
 				.withBoxItemGroups(groups)
 				.withMaxContainerCount(2)
@@ -128,31 +129,19 @@ public class GroupControlCallbacksTest {
 		return events;
 	}
 
-	@Test
-	public void largestAreaFitFirstNotifiesControlsOfGroupsLikePlain() {
-		assertNotifiesControlsOfGroupsLikePlain(() -> LargestAreaFitFirstPackager.newBuilder().build());
-	}
+	@ParameterizedTest
+	@ValueSource(strings = { "laff", "fastLaff" })
+	public void notifiesControlsOfGroupsLikePlain(String name) {
+		Supplier<AbstractPackager<?>> supplier = name.equals("laff") ? () -> LargestAreaFitFirstPackager.newBuilder().build() : () -> FastLargestAreaFitFirstPackager.newBuilder().build();
 
-	@Test
-	public void fastLargestAreaFitFirstNotifiesControlsOfGroupsLikePlain() {
-		assertNotifiesControlsOfGroupsLikePlain(() -> FastLargestAreaFitFirstPackager.newBuilder().build());
-	}
-
-	private static void assertNotifiesControlsOfGroupsLikePlain(Supplier<AbstractPackager<?>> supplier) {
-		PlainPackager plain = PlainPackager.newBuilder().build();
 		List<String> expected;
-		try {
+		try (PlainPackager plain = PlainPackager.newBuilder().build()) {
 			expected = pack(plain);
-		} finally {
-			plain.close();
 		}
 		assertThat(expected).contains("manifest attempt a", "manifest success a", "point success a");
 
-		AbstractPackager<?> packager = supplier.get();
-		try {
+		try (AbstractPackager<?> packager = supplier.get()) {
 			assertThat(pack(packager)).isEqualTo(expected);
-		} finally {
-			packager.close();
 		}
 	}
 }

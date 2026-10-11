@@ -1,13 +1,12 @@
 package com.github.skjolber.packing.ep.points2d;
 
-import java.util.Comparator;
 
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.point.Point;
 
 public abstract class Point2D extends Point {
 
-	public static final Comparator<Point2D> COMPARATOR_X_THEN_Y = new Comparator<Point2D>() {
+	public static final Point2DComparator COMPARATOR_X_THEN_Y = new Point2DComparator() {
 
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
@@ -33,7 +32,7 @@ public abstract class Point2D extends Point {
 		}
 	};
 
-	public static final Comparator<Point2D> COMPARATOR_MOVE_YY = new Comparator<Point2D>() {
+	public static final Point2DComparator COMPARATOR_MOVE_YY = new Point2DComparator() {
 
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
@@ -53,7 +52,7 @@ public abstract class Point2D extends Point {
 		}
 	};
 
-	public static final Comparator<Point2D> COMPARATOR_MOVE_XX = new Comparator<Point2D>() {
+	public static final Point2DComparator COMPARATOR_MOVE_XX = new Point2DComparator() {
 
 		@Override
 		public int compare(Point2D o1, Point2D o2) {
@@ -147,7 +146,7 @@ public abstract class Point2D extends Point {
 		return "Point2D [" + minX + "x" + minY + " " + maxX + "x" + maxY + "]";
 	}
 
-	public abstract Point2D clone(int maxX, int maxY);
+	public abstract SimplePoint2D copy(int maxX, int maxY);
 
 	public boolean eclipses(Point2D point) {
 		return minY <= point.getMinY() &&

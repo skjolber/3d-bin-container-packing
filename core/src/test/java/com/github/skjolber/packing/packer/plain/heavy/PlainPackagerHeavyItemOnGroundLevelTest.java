@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.plain.heavy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +18,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 
 public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTest {
 
@@ -51,6 +53,27 @@ public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTes
 				// strictly not necessary but included
 				b.withPointControlsBuilderFactory(HeavyItemsOnGroundLevelPointControls.newFactory(maxWeight));
 			}).withBoxItems(products).build();
+			// <figure>
+			//   z                         z                         y                         z
+			//                             3 +---------------+       1 +---------------+       3 +-------+
+			//   | /---------------|         |               |         |               |         |       |
+			//   |/               /|         |       C       |         |       C       |         |   C   |
+			// 3 |---------------| |         |               |         |               |         |       |
+			//   |               | |       2 +---------------+       0 +---------------+       2 +-------+
+			//   |       C       | |         |               |         0       1       2   x     |       |
+			//   |               |/|         |       B       |                                   |   B   |
+			// 2 |---------------| |         |               |                                   |       |
+			//   |               | |       1 +-------+-------+                                 1 +-------+
+			//   |       B       | |   y     |       |                                           |       |
+			//   |               |/          |   A   |                                           |   A   |
+			// 1 |-------|-------|   /       |       |                                           |       |
+			//   |       | |        /      0 +-------+                                         0 +-------+
+			//   |   A   | |       / 1       0       1       2   x                               0       1   y
+			//   |       |/       /
+			// 0 |-------|---------- x
+			//   0       1       2
+			// </figure>
+			figure(build);
 			
 			assertTrue(build.isSuccess());
 			
@@ -63,7 +86,7 @@ public class PlainPackagerHeavyItemOnGroundLevelTest extends AbstractPackagerTes
 			assertEquals("A", firstPlacement.getStackValue().getBox().getId());
 			assertEquals(0, firstPlacement.getAbsoluteZ());
 			
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 		} finally {
 			packager.close();
 		}

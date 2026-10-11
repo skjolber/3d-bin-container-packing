@@ -17,7 +17,7 @@ jobs:
         node: [ 22 ]
     name: Node ${{ matrix.node }} build
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Setup node
         uses: actions/setup-node@v7
         with:
@@ -25,6 +25,9 @@ jobs:
       - run: |
           cd visualizer/viewer
           npm ci
+      - run: |
+          cd visualizer/viewer
+          npm test -- --watchAll=false
       - run: |
           cd visualizer/viewer
           npm run build

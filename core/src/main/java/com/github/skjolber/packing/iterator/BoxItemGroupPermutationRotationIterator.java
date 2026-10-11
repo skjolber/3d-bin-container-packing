@@ -23,7 +23,7 @@ import com.github.skjolber.packing.api.BoxItemGroup;
  * do {
  * 	do {
  * 		for (int i = 0; i < n; i++) {
- * 			PermutationRotation box = instance.get(i);
+ * 			BoxStackValue stackValue = instance.getStackValue(i);
  * 			// .. your code here
  * 		}
  * 	} while (instance.nextRotation() != -1);

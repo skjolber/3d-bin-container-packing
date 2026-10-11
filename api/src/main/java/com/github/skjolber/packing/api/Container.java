@@ -26,6 +26,21 @@ public class Container {
 		protected int loadDy = -1; // y
 		protected int loadDz = -1; // z
 
+		protected ContainerAccess access = ContainerAccess.ANY;
+
+		protected Motion motion;
+
+		/**
+		 * Set how boxes get into the container. Default {@link ContainerAccess#ANY}.
+		 *
+		 * @param access container access
+		 * @return this builder
+		 */
+		public Builder withAccess(ContainerAccess access) {
+			this.access = java.util.Objects.requireNonNull(access);
+			return this;
+		}
+
 		public Builder withSize(int dx, int dy, int dz) {
 			this.dx = dx;
 			this.dy = dy;
@@ -66,6 +81,17 @@ public class Container {
 			return this;
 		}
 
+		/**
+		 * Set the motion (acceleration) which the container is exposed to. Default none.
+		 *
+		 * @param motion the motion, or null for none
+		 * @return this builder
+		 */
+		public Builder withMotion(Motion motion) {
+			this.motion = motion;
+			return this;
+		}
+
 		public Container build() {
 			if (dx == -1) {
 				throw new IllegalStateException("Expected size");
@@ -97,7 +123,7 @@ public class Container {
 			}
 
 			return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-					stack);
+					stack, motion, access);
 		}
 
 	}
@@ -125,9 +151,33 @@ public class Container {
 	protected final String description;
 
 	protected final Stack stack;
+	
+	protected final Motion motion;
+
+	protected final ContainerAccess access;
+
+	/** Boxes which are already in the container (obstacles), in its load coordinates */
+	protected final List<Placement> obstacles;
 
 	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
 			int loadDz, int maxLoadWeight, Stack stack) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, null);
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, motion, ContainerAccess.ANY);
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion, ContainerAccess access) {
+		this(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight, stack, motion, access, List.of());
+	}
+
+	public Container(String id, String description, int dx, int dy, int dz, int emptyWeight, int loadDx, int loadDy,
+			int loadDz, int maxLoadWeight, Stack stack, Motion motion, ContainerAccess access, List<Placement> obstacles) {
+		this.access = access;
+		this.obstacles = obstacles;
 		this.id = id;
 		this.description = description;
 
@@ -148,8 +198,9 @@ public class Container {
 		this.dy = dy;
 		this.dz = dz;
 		this.volume = (long) dx * (long) dy * (long) dz;
-
+		
 		this.stack = stack;
+		this.motion = motion;
 	}
 
 	public String getDescription() {
@@ -160,7 +211,7 @@ public class Container {
 		return id;
 	}
 
-	public int getWeight() {
+	public long getWeight() {
 		return emptyWeight + stack.getWeight();
 	}
 
@@ -176,11 +227,11 @@ public class Container {
 		return emptyWeight;
 	}
 
-	public int getMaxWeight() {
-		return emptyWeight + maxLoadWeight;
+	public long getMaxWeight() {
+		return (long)emptyWeight + maxLoadWeight;
 	}
 
-	public int getLoadWeight() {
+	public long getLoadWeight() {
 		return stack.getWeight();
 	}
 
@@ -196,6 +247,12 @@ public class Container {
 		return stack.getVolume();
 	}
 
+	/**
+	 * Whether the box fits: its weight and volume are within the load limits, and at least one of its stack values fits the load size.
+	 *
+	 * @param box the box
+	 * @return true if the box can be loaded, alone
+	 */
 	public boolean canLoad(Box box) {
 		if (box.getVolume() > maxLoadVolume) {
 			return false;
@@ -212,6 +269,13 @@ public class Container {
 		return false;
 	}
 
+	/**
+	 * Whether every box of the box item fits: the weight and volume of all its boxes together are within the load limits, and
+	 * at least one stack value of its box fits the load size.
+	 *
+	 * @param boxItem the box item
+	 * @return true if all the boxes of the box item can be loaded
+	 */
 	public boolean canLoad(BoxItem boxItem) {
 		if (boxItem.getVolume() > maxLoadVolume) {
 			return false;
@@ -228,10 +292,23 @@ public class Container {
 		return false;
 	}
 
+	/**
+	 * Whether the stack value fits the load size, ignoring weight and volume.
+	 *
+	 * @param stackValue the stack value
+	 * @return true if the stack value fits the load size
+	 */
 	public boolean canLoad(BoxStackValue stackValue) {
 		return stackValue.getDx() <= loadDx && stackValue.getDy() <= loadDy && stackValue.getDz() <= loadDz;
 	}
 
+	/**
+	 * Whether every box of the group fits: the weight and volume of the group are within the load limits, and each box
+	 * has at least one stack value which fits the load size. See also {@link #canLoadAtLeastOneBox(BoxItemGroup)}.
+	 *
+	 * @param group the box item group
+	 * @return true if every box of the group can be loaded
+	 */
 	public boolean canLoad(BoxItemGroup group) {
 		if (group.getVolume() > maxLoadVolume) {
 			return false;
@@ -250,6 +327,12 @@ public class Container {
 		return true;
 	}
 
+	/**
+	 * Whether at least one of the box items fits (see {@link #canLoad(Box)}).
+	 *
+	 * @param boxes the box items
+	 * @return true if at least one box item can be loaded
+	 */
 	public boolean canLoadAtLeastOneBox(List<BoxItem> boxes) {
 
 		for (BoxItem boxItem : boxes) {
@@ -261,6 +344,12 @@ public class Container {
 		return false;
 	}
 
+	/**
+	 * Whether at least one of the groups fits (see {@link #canLoad(BoxItemGroup)}: every box of the group must fit).
+	 *
+	 * @param boxes the box item groups
+	 * @return true if at least one group can be loaded
+	 */
 	public boolean canLoadAtLeastOneGroup(List<BoxItemGroup> boxes) {
 
 		for (BoxItemGroup group : boxes) {
@@ -271,10 +360,13 @@ public class Container {
 		return false;
 	}
 
-	@Override
-	public Container clone() {
+	public Container copy() {
+		return copy(0);
+	}
+
+	public Container copy(int stackCapacity) {
 		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
-				new Stack());
+				new Stack(stackCapacity), motion, access, obstacles);
 	}
 
 	public int getLoadDx() {
@@ -305,7 +397,14 @@ public class Container {
 		return dz;
 	}
 
-	public boolean fitsInside(BoxItemGroup boxItemGroup) {
+	/**
+	 * Whether at least one box of the group fits: the weight and volume of the group are within the load limits, and at least
+	 * one stack value of at least one of its boxes fits the load size. See also {@link #canLoad(BoxItemGroup)}, where every box must fit.
+	 *
+	 * @param boxItemGroup the box item group
+	 * @return true if at least one box of the group can be loaded
+	 */
+	public boolean canLoadAtLeastOneBox(BoxItemGroup boxItemGroup) {
 		if (boxItemGroup.getVolume() <= getMaxLoadVolume() && boxItemGroup.getWeight() <= getMaxLoadWeight()) {
 			for (int i = 0; i < boxItemGroup.size(); i++) {
 
@@ -320,30 +419,12 @@ public class Container {
 		return false;
 	}
 
-	public boolean fitsInside(BoxItem boxItem) {
-		if (boxItem.getVolume() <= getMaxLoadVolume() && boxItem.getWeight() <= getMaxLoadWeight()) {
-			Box box = boxItem.getBox();
-			for (BoxStackValue boxStackValue : box.getStackValues()) {
-				if (boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	public boolean fitsInside(Box box) {
-		if (box.getVolume() <= getMaxLoadVolume() && box.getWeight() <= getMaxLoadWeight()) {
-			for (BoxStackValue boxStackValue : box.getStackValues()) {
-				if (boxStackValue.fitsInside3D(loadDx, loadDy, loadDz)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
-
+	/**
+	 * Whether every placement of the stack is within the load size.
+	 *
+	 * @param stack the stack
+	 * @return true if all the placements of the stack are within the load size
+	 */
 	public boolean fitsInside(Stack stack) {
 		List<Placement> placements = stack.getPlacements();
 		for(int i = placements.size() - 1; i >= 0; i--) {
@@ -370,4 +451,32 @@ public class Container {
 		return "Container[" + (id != null ? id : "") + "[" + dx + "x" + dy + "x" + dz + "]";
 	}
 
+	public Motion getMotion() {
+		return motion;
+	}
+
+	/**
+	 * @param obstacles boxes which are already in the container, in its load coordinates
+	 * @return a copy of this container (with the same stack) with the given obstacles
+	 */
+	public Container withObstacles(List<Placement> obstacles) {
+		return new Container(id, description, dx, dy, dz, emptyWeight, loadDx, loadDy, loadDz, maxLoadWeight,
+				stack, motion, access, obstacles);
+	}
+
+	/**
+	 * Boxes which are already in the container: they are inserted before the packed boxes (see {@link ContainerAccess}).
+	 *
+	 * @return the obstacles, or an empty list
+	 */
+	public List<Placement> getObstacles() {
+		return obstacles;
+	}
+
+	/**
+	 * @return how boxes get into the container
+	 */
+	public ContainerAccess getAccess() {
+		return access;
+	}
 }

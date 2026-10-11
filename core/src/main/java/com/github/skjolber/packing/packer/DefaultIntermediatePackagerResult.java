@@ -1,19 +1,21 @@
 package com.github.skjolber.packing.packer;
 
+import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 
 public class DefaultIntermediatePackagerResult implements IntermediatePackagerResult {
 
-	protected ControlledContainerItem containerItem;
+	protected ContainerItem containerItem;
 	protected Stack stack;
 	
-	public DefaultIntermediatePackagerResult(ControlledContainerItem containerItem, Stack stack) {
+	public DefaultIntermediatePackagerResult(ContainerItem containerItem, Stack stack) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 	}
 
 	@Override
-	public ControlledContainerItem getContainerItem() {
+	public ContainerItem getContainerItem() {
 		return containerItem;
 	}
 	

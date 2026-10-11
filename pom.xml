@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 	<artifactId>parent</artifactId>
-	<version>4.2.6-SNAPSHOT</version>
+	<version>5.0.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
@@ -13,8 +13,7 @@
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 		<java.version>17</java.version>
 		<test.forkCount>1</test.forkCount>
-		<maven.compiler.source>${java.version}</maven.compiler.source>
-		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<maven.compiler.release>${java.version}</maven.compiler.release>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
 		<mockito.version>5.23.0</mockito.version>
@@ -42,8 +41,10 @@
 		<assertj.version>3.27.7</assertj.version>
 		<owasp-dependency-check.version>5.3.2</owasp-dependency-check.version>
 		<pitest.version>1.30.0</pitest.version>
+		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 		<jackson.version>2.22.2</jackson.version>
 		<spotless.version>3.10.2</spotless.version>
+		<spotbugs-maven-plugin.version>4.10.4.1</spotbugs-maven-plugin.version>
 	</properties>
 
 	<licenses>
@@ -92,32 +93,12 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>validators</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>open-api-model</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>open-api-client</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>open-api-server</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>open-api-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-				<artifactId>open-api-parent</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -233,9 +214,10 @@
 	</dependencyManagement>
 	<modules>
 		<module>api</module>
-		<module>open-api</module>
 		<module>test</module>
+		<module>legacy/v4</module>
 		<module>points</module>
+		<module>validators</module>
 		<module>core</module>
 		<module>jmh</module>
 		<module>visualizer/api</module>
@@ -245,15 +227,13 @@
 
 	<build>
 		<defaultGoal>test</defaultGoal>
-		<!--
 		<extensions>
 			<extension>
 				<groupId>org.apache.maven.extensions</groupId>
 				<artifactId>maven-build-cache-extension</artifactId>
-				<version>1.2.0</version>
+				<version>1.3.0</version>
 			</extension>
 		</extensions>
-		-->
 		<pluginManagement>
 			<plugins>
 				<plugin>
@@ -261,8 +241,8 @@
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven-compiler-plugin.version}</version>
 					<configuration>
-						<source>${maven.compiler.source}</source>
-						<target>${maven.compiler.target}</target>
+						<!-- compile against the Java 17 API, not only the Java 17 language level -->
+						<release>${maven.compiler.release}</release>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -271,6 +251,17 @@
 					<version>${maven-surefire-plugin.version}</version>
 					<configuration>
 						<forkCount>${test.forkCount}</forkCount>
+						<reuseForks>true</reuseForks>
+						<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					</configuration>
+				</plugin>
+				<plugin>
+					<!-- runs the slow integration tests (*IT) of the slow-tests profile; released in step with surefire -->
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven-surefire-plugin.version}</version>
+					<configuration>
+						<forkCount>1</forkCount>
 						<reuseForks>true</reuseForks>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					</configuration>
@@ -334,6 +325,10 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-javadoc-plugin</artifactId>
 					<version>${maven-javadoc-plugin.version}</version>
+					<configuration>
+						<!-- check references, HTML and syntax, but do not require a comment on every member -->
+						<doclint>all,-missing</doclint>
+					</configuration>
 					<executions>
 						<execution>
 							<id>attach-javadocs</id>
@@ -457,6 +452,14 @@
 					<groupId>org.pitest</groupId>
 					<artifactId>pitest-maven</artifactId>
 					<version>${pitest.version}</version>
+					<dependencies>
+						<!-- tests use JUnit 5 -->
+						<dependency>
+							<groupId>org.pitest</groupId>
+							<artifactId>pitest-junit5-plugin</artifactId>
+							<version>${pitest-junit5-plugin.version}</version>
+						</dependency>
+					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>com.diffplug.spotless</groupId>
@@ -470,30 +473,6 @@
 						</java>
 					</configuration>
 				</plugin>
-	   			<plugin>
-	   				<groupId>org.eclipse.m2e</groupId>
-	   			   	<artifactId>lifecycle-mapping</artifactId>
-	            	<version>1.0.0</version>
-	                <configuration>
-	                    <lifecycleMappingMetadata>
-	                        <pluginExecutions>
-	                            <pluginExecution>
-	                                <pluginExecutionFilter>
-										<groupId>org.openapitools</groupId>
-										<artifactId>openapi-generator-maven-plugin</artifactId>
-	                                    <versionRange>[1.0,)</versionRange>
-	                                    <goals>
-	                                        <goal>generate</goal>
-	                                    </goals>
-	                                </pluginExecutionFilter>
-	                                <action>
-	                                    <ignore />
-	                                </action>
-	                            </pluginExecution>
-	                        </pluginExecutions>
-	                    </lifecycleMappingMetadata>
-	                </configuration>
-	   			</plugin>
 	   		</plugins>
 		</pluginManagement>
 		<plugins>
@@ -552,6 +531,60 @@
 				<maven.javadoc.skip>true</maven.javadoc.skip>
 				<maven.source.skip>true</maven.source.skip>
 			</properties>
+		</profile>
+		<profile>
+			<!-- slow integration tests (*IT classes, run by failsafe): mvn -P slow-tests verify. Off by default: a default build has no failsafe execution -->
+			<id>slow-tests</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-failsafe-plugin</artifactId>
+						<configuration>
+							<!-- a hang backstop for the whole fork -->
+							<forkedProcessTimeoutInSeconds>1800</forkedProcessTimeoutInSeconds>
+						</configuration>
+						<executions>
+							<execution>
+								<id>slow-tests</id>
+								<goals>
+									<goal>integration-test</goal>
+									<goal>verify</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<!-- static analysis: mvn -P spotbugs verify; fails on findings, reports in target/spotbugsXml.xml -->
+			<id>spotbugs</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.github.spotbugs</groupId>
+						<artifactId>spotbugs-maven-plugin</artifactId>
+						<version>${spotbugs-maven-plugin.version}</version>
+						<configuration>
+							<effort>Max</effort>
+							<threshold>Low</threshold>
+							<xmlOutput>true</xmlOutput>
+							<failOnError>true</failOnError>
+							<excludeFilterFile>${maven.multiModuleProjectDirectory}/spotbugs-exclude.xml</excludeFilterFile>
+						</configuration>
+						<executions>
+							<execution>
+								<id>spotbugs-check</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<!-- mvn -P release release:perform -->

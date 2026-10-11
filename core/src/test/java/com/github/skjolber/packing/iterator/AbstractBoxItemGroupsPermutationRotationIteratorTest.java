@@ -179,7 +179,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		BoxItemPermutationRotationIterator iterator = newBuilder()
 				.withLoadSize(container.getDx(), container.getDy(), container.getDz())
 				.withBoxItemGroups(List.of(group))
-				.withMaxLoadWeight(100)
+				.withMaxLoadWeight(products.size())
 				.build();
 
 		assertEquals(0, iterator.nextPermutation());
@@ -188,6 +188,7 @@ public abstract class AbstractBoxItemGroupsPermutationRotationIteratorTest<T ext
 		assertEquals(1, iterator.length());
 		assertEquals("first", iterator.getStackValue(0).getBox().getDescription());
 	}
+
 
 	@Test
 	void testNextPermutationMaxIndexGroup1() {

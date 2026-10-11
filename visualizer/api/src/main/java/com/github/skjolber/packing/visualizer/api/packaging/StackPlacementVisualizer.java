@@ -12,6 +12,37 @@ public class StackPlacementVisualizer extends AbstractVisualizer {
 	private StackableVisualizer stackable;
 
 	private List<PointVisualizer> points = new ArrayList<>();
+	/** Area resting on boxes which count as support (the floor is not counted) */
+	private long supportedArea;
+	/** Total weight resting on the box, as calculated by the validators */
+	private double loadWeight;
+
+	public long getSupportedArea() {
+		return supportedArea;
+	}
+
+	public void setSupportedArea(long supportedArea) {
+		this.supportedArea = supportedArea;
+	}
+
+	public double getLoadWeight() {
+		return loadWeight;
+	}
+
+	public void setLoadWeight(double loadWeight) {
+		this.loadWeight = loadWeight;
+	}
+
+	/** Indexes of the validation reasons which concern this placement */
+	private List<Integer> reasons = new ArrayList<>();
+
+	public List<Integer> getReasons() {
+		return reasons;
+	}
+
+	public void setReasons(List<Integer> reasons) {
+		this.reasons = reasons;
+	}
 
 	public List<PointVisualizer> getPoints() {
 		return points;

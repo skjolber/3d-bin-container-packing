@@ -43,6 +43,31 @@ public class PointsBenchmark2D {
 		return size;
 	}
 
+	/** Replays 2D calculator operations recorded from a fast largest-area-fit-first packing of the Tycho 93-box set. */
+	@Benchmark
+	public int points2DRecorded(Points2DRecordedState state) throws Exception {
+		DefaultPointCalculator2D calculator = state.getCalculator();
+		for (Points2DRecordedState.Operation operation : state.getOperations()) {
+			switch (operation.type) {
+			case Points2DRecordedState.CLEAR_TO_SIZE:
+				calculator.clearToSize((int) operation.a, (int) operation.b, (int) operation.c);
+				break;
+			case Points2DRecordedState.SET_POINTS:
+				calculator.setPoints(operation.points);
+				break;
+			case Points2DRecordedState.CLEAR:
+				calculator.clear();
+				break;
+			case Points2DRecordedState.LIMIT:
+				calculator.setMinimumAreaAndVolumeLimit(operation.a, operation.b);
+				break;
+			default:
+				calculator.add((int) operation.a, operation.placement);
+			}
+		}
+		return calculator.size();
+	}
+
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()
 				.include(PointsBenchmark2D.class.getSimpleName())

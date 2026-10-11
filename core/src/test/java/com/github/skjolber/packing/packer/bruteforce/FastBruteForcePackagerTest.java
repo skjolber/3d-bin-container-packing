@@ -6,6 +6,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +26,8 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.impl.ValidatingStack;
+import com.github.skjolber.packing.test.assertj.ContainerAssert;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCode;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeDirectory;
 import com.github.skjolber.packing.test.bouwkamp.BouwkampCodeLine;
@@ -49,7 +52,20 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			Container fits = build.getContainers().get(0);
 	
@@ -63,7 +79,10 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -88,8 +107,34 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("B").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 2));
 	
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).withMaxContainerCount(5).build();
-			assertValid(build);
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(copy(products)).withMaxContainerCount(5).build();
+			// <figure>
+			// container 1 of 2: 1
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   A   |   B   |         |   A   |   A   |   B   |         |   B   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   A   |   B   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			//
+			// container 2 of 2: 1
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   B   |   C   |   C   |         |   B   |   C   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   B   |   C   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 	
 			List<Container> packList = build.getContainers();
 	
@@ -107,7 +152,10 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 2, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(2)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -181,7 +229,7 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			Container fits = build.get(0);
 	
 			assertNotNull(bouwkampCode.getName(), fits);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 			assertEquals(bouwkampCode.getName(), fits.getStack().size(), squares.size());
 		} finally {
 			packager.close();
@@ -284,9 +332,96 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 					new BoxItem(Box.newBuilder().withId("10").withSize(75, 17, 60).withRotate3D().withWeight(0).build(), 1));
 	
 			PackagerResult build = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertValid(build);
+			// <figure>
+			//     z                                             z
+			//                                                   200 +------------------+-----------------+
+			//     |                                                 |                  |                 |
+			//     |                                                 |                  |                 |
+			// 200 |-------1--------|-------1-------|                |                  |                 |
+			//     |                |               |                |                  |                 |
+			//     |                |               |                |                  |                 |
+			//     |                |               |                |                  |                 |
+			//     |                |               |            161 |                  |                 |
+			//     |       1        |               |            153 |                  |                 |
+			//     |--|             |               |            150 |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |            140 |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |       1       |                |                  |                 |
+			//     |  |             |               |                |        1         |        1        |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |             60 |                  |                 |
+			//     |  |             |               |        y       |                  |                 |
+			//     |  |             |               |                |                  |                 |
+			//     |  |             |               |      /      42 |                  |                 |
+			//     |  |             |               |     /          |                  |                 |
+			//     |  |             |               |    / 56        |                  |                 |
+			//     |--|------3------||              |   /            |                  |                 |
+			//     |                ||-----4------| || / 30       19 |                  |                 |
+			//     |                ||            | ||/ 19           |                  |                 |
+			//     |                ||            | |/ 11            |                  |                 |
+			//   0 |----------------||------------|-|-- x          3 |                  |                 |
+			//     0               50              100             0 +------------------+-----------------+
+			//                                                       0   10            48  58  69      92 100   x
+			//
+			// y                                                                                  z
+			// 56 +----------------------------------------------------+                          200 ++
+			//    |                                                    |                              ||
+			//    |                                                    |                              ||
+			//    |                         10                         |                              ||
+			//    |                                                    |                              ||
+			//    |                                                    |                              ||
+			// 39 +---------------------------------------------+------+                              ||
+			//    |                      9                      |                                 161 |+---+
+			// 35 +---------------------------------+------+----+                                 153 ||   +++
+			// 30 |                                 +------+                                      150 ||   |||     +-+
+			//    |                7                |      |                                          ||   |||     | |
+			//    |                                 |  8   |                                      140 ||   ||+---+ | |
+			//    |                                 |      |                                          ||   |||   | | |
+			// 19 +---------------------------------+------+----+--------------------+                ||   |||   | | |
+			//    |                      9                      |         6          |                ||   |||   | | |
+			// 14 +------+------------------------------+-------+------------------+-+                ||   |||   | | |
+			// 11 |      |                              +-------+--+---------------+                  ||   |||   | | |
+			//    |  8   |              3               |            4             |                  ||   |||   | | |
+			//  5 |      |                              |                          |                  ||   |||   | | |
+			//  2 +------+---------1--------1--------+--+-------------1--------1---+----+             ||   |||   | | |
+			//  0 +----------------------------------+----------------------------------+             || 8 |||   | | |
+			//    0      10                         48  54 58   65 69  75          92   100   x       ||   |||   | | |
+			//                                                                                        ||   |||   | | |
+			//                                                                                        ||   |||   | |9|
+			//                                                                                        ||   ||| 8 | | |
+			//                                                                                        ||   |||   | | |
+			//                                                                                     60 ||   |||   | | +-----+
+			//                                                                                        ||   |||   | | |     |
+			//                                                                                        ||   |||   | | |     |
+			//                                                                                     42 ||   |||   +-+ |     |
+			//                                                                                        ||   |||   | | |     |
+			//                                                                                        ||   |||   | | | 10  |
+			//                                                                                        ||   |||   | | |     |
+			//                                                                                     19 |+--+++|   |7| |     |
+			//                                                                                        ||  |3||   | | |     |
+			//                                                                                        ||4 | ||   | | |     |
+			//                                                                                      3 ||  ++++   | | |     |
+			//                                                                                      0 ++--++++---+-+-+-----+
+			//                                                                                        0 5 11 19  30  39    56   y
+			// </figure>
+			figure(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 			
-			assertValidUsingValidator(containerItems, 1, build, products);
+			PackagerResultAssert.assertThat(build).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -312,6 +447,24 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 			PackagerResult build9 = packager.newResultBuilder().withContainerItem( b -> {
 				b.withContainerItem(new ContainerItem(container, 1));
 			}).withBoxItems(products9).build();
+			// <figure>
+			//         /-------/-------/-------|   y   z                                 y                                 z
+			//        /   E   /   H   /   I   /|       1 +-------+-------+-------+       3 +-------+-------+-------+       1 +-------+-------+-------+
+			//   z   /-------/-------/-------| | /       |       |       |       |         |       |       |       |         |       |       |       |
+			//      /   D   /   F   /   G   /| |/        |   A   |   B   |   C   |         |   E   |   H   |   I   |         |   C   |   G   |   I   |
+			//   | /-------/-------/-------| | | 3       |       |       |       |         |       |       |       |         |       |       |       |
+			//   |/       /       /       /| |/        0 +-------+-------+-------+       2 +-------+-------+-------+       0 +-------+-------+-------+
+			// 1 |-------|-------|-------| | | 2         0       1       2       3   x     |       |       |       |         0       1       2       3   y
+			//   |       |       |       | |/                                              |   D   |   F   |   G   |
+			//   |   A   |   B   |   C   | | 1                                             |       |       |       |
+			//   |       |       |       |/                                              1 +-------+-------+-------+
+			// 0 |-------|-------|-------|-- x                                             |       |       |       |
+			//   0       1       2       3                                                 |   A   |   B   |   C   |
+			//                                                                             |       |       |       |
+			//                                                                           0 +-------+-------+-------+
+			//                                                                             0       1       2       3   x
+			// </figure>
+			figure(build9);
 			
 			List<Placement> placements = build9.getContainers().get(0).getStack().getPlacements();
 			
@@ -334,8 +487,26 @@ public class FastBruteForcePackagerTest extends AbstractBruteForcePackagerTest {
 							);
 					});
 				}).withBoxItems(products).build();
+				// <figure>
+				//         /-------/-------/-------|   y   z                                 y                                 z
+				//        /   D   /   G   /   H   /|       1 +-------+-------+-------+       3 +-------+-------+-------+       1 +-------+-------+-------+
+				//   z   /-------/-------/-------| | /       |#######|       |       |         |       |       |       |         |       |       |       |
+				//      /   C   /   E   /   F   /| |/        |#######|   A   |   B   |         |   D   |   G   |   H   |         |   B   |   F   |   H   |
+				//   | /-------/-------/-------| | | 3       |#######|       |       |         |       |       |       |         |       |       |       |
+				//   |/#######/       /       /| |/        0 +-------+-------+-------+       2 +-------+-------+-------+       0 +-------+-------+-------+
+				// 1 |-------|-------|-------| | | 2         0       1       2       3   x     |       |       |       |         0       1       2       3   y
+				//   |#######|       |       | |/                                              |   C   |   E   |   F   |
+				//   |#######|   A   |   B   | | 1                                             |       |       |       |
+				//   |#######|       |       |/                                              1 +-------+-------+-------+
+				// 0 |-------|-------|-------|-- x                                             |#######|       |       |
+				//   0       1       2       3                                                 |#######|   A   |   B   |
+				//                                                                             |#######|       |       |
+				//                                                                           0 +-------+-------+-------+
+				//                                                                             0       1       2       3   x
+				// </figure>
+				figure(build);
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {

@@ -22,9 +22,10 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.api.BoxItem;
-import com.github.skjolber.packing.deadline.PackagerInterruptSupplierBuilder;
 import com.github.skjolber.packing.packer.AbstractPackager;
 
 @State(Scope.Thread)
@@ -205,6 +206,25 @@ public class TychoBenchmark {
 
 	private List<BoxItem> products;
 
+	/** Product set for the {@code boxes} parameter value, for other benchmarks reusing the data. */
+	static List<BoxItem> getProducts(String boxes) {
+		switch (boxes) {
+		case "22":
+			return products22;
+		case "33":
+			return products33;
+		case "93":
+			return products93;
+		default:
+			throw new IllegalArgumentException(boxes);
+		}
+	}
+
+	/** For tests: select a product set, as the {@code boxes} parameter does. */
+	void setBoxes(String boxes) {
+		this.boxes = boxes;
+	}
+
 	@Setup
 	public void init() throws Exception {
 		switch (boxes) {
@@ -243,18 +263,51 @@ public class TychoBenchmark {
 	}
 
 	@Benchmark
+	public int fastLargestAreaFitFirstPackager(TychoPackagerState state) throws Exception {
+		return process(state.getFastLargestAreaFitFirstPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int plainSupportPackager(TychoPackagerState state) throws Exception {
+		return process(state.getPlainSupportPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
+	public int plainFullSupportPackager(TychoPackagerState state) throws Exception {
+		return process(state.getPlainFullSupportPackager(), Long.MAX_VALUE);
+	}
+
+	@Benchmark
 	public int plainPackager(TychoPackagerState state) throws Exception {
 		return process(state.getPlainPackager(), Long.MAX_VALUE);
 	}
 
+	/**
+	 * With a box item order: the packagers only place boxes which can be inserted after the boxes already there.
+	 */
+	@Benchmark
+	public int plainPackagerOrdered(TychoPackagerState state) throws Exception {
+		return process(state.getPlainPackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
+	@Benchmark
+	public int fastLargestAreaFitFirstPackagerOrdered(TychoPackagerState state) throws Exception {
+		return process(state.getFastLargestAreaFitFirstPackager(), Long.MAX_VALUE, Order.CHRONOLOGICAL_ALLOW_SKIPPING);
+	}
+
 	public int process(List<BenchmarkSet> sets, long deadline) {
+		return process(sets, deadline, Order.NONE);
+	}
+
+	public int process(List<BenchmarkSet> sets, long deadline, Order order) {
 		int i = 0;
 		for (BenchmarkSet set : sets) {
 			AbstractPackager packager = set.getPackager();
 			List<ContainerItem> containers = set.getContainers();
-			List<BoxItem> products = set.getProducts();
+			// products are selected by the boxes parameter
+			List<BoxItem> products = this.products;
 
-			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withDeadline(deadline).build();
+			PackagerResult build = packager.newResultBuilder().withContainerItems(containers).withMaxContainerCount(1).withBoxItems(products).withOrder(order).withInterruptDeadline(deadline).build();
 			if(build.isSuccess()) {
 				i++;
 			}

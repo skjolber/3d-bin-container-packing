@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.2.6-SNAPSHOT</version>
+		<version>5.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>jmh</artifactId>
@@ -39,6 +39,11 @@
 		</dependency>
 		<!-- test -->
 		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>validators</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-api</artifactId>
 			<scope>test</scope>
@@ -61,6 +66,11 @@
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>visualizer-packaging</artifactId>
 			<scope>test</scope>
 		</dependency>
 

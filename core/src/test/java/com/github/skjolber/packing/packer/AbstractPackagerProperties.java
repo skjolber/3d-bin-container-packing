@@ -16,9 +16,10 @@ import com.github.skjolber.packing.api.PackagerResultBuilder;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 import com.github.skjolber.packing.packer.laff.LargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
+import com.github.skjolber.packing.test.assertj.ContainerAssert;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Property;
 import com.pholser.junit.quickcheck.generator.InRange;
@@ -30,7 +31,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 	AbstractPackager<?> plainPackager = PlainPackager.newBuilder().build();
 	AbstractPackager<?> bruteForcePackager = BruteForcePackager.newBuilder().build();
 	AbstractPackager<?> fastBruteForcePackager = FastBruteForcePackager.newBuilder().build();
-	AbstractPackager<?> parallelBruteForcePackager = ParallelBoxItemBruteForcePackager.newBuilder().build();
+	AbstractPackager<?> parallelBruteForcePackager = ParallelBruteForcePackager.newBuilder().build();
 	AbstractPackager<?> largestAreaFitFirstPackager = LargestAreaFitFirstPackager.newBuilder().build();
 
 	@Property
@@ -41,8 +42,6 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 				2 * boxSize.getDy(),
 				2 * boxSize.getDz());
 
-		System.out.println("Test " + containerSize);
-		
 		runTest(containerSize, boxSize, count,
 				bruteForcePackager,
 				fastBruteForcePackager,
@@ -132,7 +131,7 @@ public class AbstractPackagerProperties extends AbstractPackagerTest {
 			
 			// identifies which packager has failed
 			Assert.assertNotNull(packager.getClass().getSimpleName() + " is expected to pack", fits);
-			assertValid(fits);
+			ContainerAssert.assertThat(fits).isStackedWithinConstraints();
 		}
 	}
 

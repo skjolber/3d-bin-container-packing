@@ -17,7 +17,8 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
-import com.github.skjolber.packing.packer.bruteforce.ParallelBoxItemBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.laff.FastLargestAreaFitFirstPackager;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 
 /**
@@ -38,6 +39,9 @@ public class TychoPackagerState {
 	private List<BenchmarkSet> bruteForcePackager = new ArrayList<>();
 	private List<BenchmarkSet> plainPackager = new ArrayList<>();
 	private List<BenchmarkSet> fastBruteForcePackager = new ArrayList<>();
+	private List<BenchmarkSet> fastLargestAreaFitFirstPackager = new ArrayList<>();
+	private List<BenchmarkSet> plainSupportPackager = new ArrayList<>();
+	private List<BenchmarkSet> plainFullSupportPackager = new ArrayList<>();
 
 	private List<BoxItem> stackableItems3D;
 
@@ -57,7 +61,7 @@ public class TychoPackagerState {
 
 	@Setup(Level.Trial)
 	public void init() {
-		ParallelBoxItemBruteForcePackager parallelPackager = ParallelBoxItemBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
+		ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16)
 				.build();
 
 		BruteForcePackager packager = BruteForcePackager.newBuilder().build();
@@ -70,6 +74,19 @@ public class TychoPackagerState {
 		this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
 
 		this.plainPackager.add(new BenchmarkSet(plainPackager, stackableItems3D, containers));
+
+		PlainPackager plainSupportPackager = PlainPackager.newBuilder()
+				.withCalculateSupport(true)
+				.build();
+		this.plainSupportPackager.add(new BenchmarkSet(plainSupportPackager, stackableItems3D, containers));
+
+		PlainPackager plainFullSupportPackager = PlainPackager.newBuilder()
+				.withRequireFullSupport(true)
+				.build();
+		this.plainFullSupportPackager.add(new BenchmarkSet(plainFullSupportPackager, stackableItems3D, containers));
+
+		FastLargestAreaFitFirstPackager fastLargestAreaFitFirstPackager = FastLargestAreaFitFirstPackager.newBuilder().build();
+		this.fastLargestAreaFitFirstPackager.add(new BenchmarkSet(fastLargestAreaFitFirstPackager, stackableItems3D, containers));
 		this.fastBruteForcePackager.add(new BenchmarkSet(fastPackager, stackableItems3D, containers));
 
 		// multi-threaded
@@ -90,6 +107,15 @@ public class TychoPackagerState {
 		for (BenchmarkSet benchmarkSet : plainPackager) {
 			benchmarkSet.getPackager().close();
 		}
+		for (BenchmarkSet benchmarkSet : fastLargestAreaFitFirstPackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : plainSupportPackager) {
+			benchmarkSet.getPackager().close();
+		}
+		for (BenchmarkSet benchmarkSet : plainFullSupportPackager) {
+			benchmarkSet.getPackager().close();
+		}
 		for (BenchmarkSet benchmarkSet : fastBruteForcePackager) {
 			benchmarkSet.getPackager().close();
 		}
@@ -107,6 +133,18 @@ public class TychoPackagerState {
 
 	public List<BenchmarkSet> getParallelBruteForcePackager() {
 		return parallelBruteForcePackager;
+	}
+
+	public List<BenchmarkSet> getFastLargestAreaFitFirstPackager() {
+		return fastLargestAreaFitFirstPackager;
+	}
+
+	public List<BenchmarkSet> getPlainSupportPackager() {
+		return plainSupportPackager;
+	}
+
+	public List<BenchmarkSet> getPlainFullSupportPackager() {
+		return plainFullSupportPackager;
 	}
 
 	public List<BenchmarkSet> getPlainPackager() {

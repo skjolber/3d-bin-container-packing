@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 
@@ -23,53 +22,26 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 			if(dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException();
 			}
-
-			if(maxLoadWeight == -1) {
-				throw new IllegalStateException();
-			}
 			
-			BoxItem[] included = new BoxItem[boxItems.size()];
-			List<BoxItem> excluded = new ArrayList<>(boxItems.size());
-			
-			// box item and box item groups indexes are unique and static
-			for (int i = 0; i < boxItems.size(); i++) {
-				BoxItem boxItem = boxItems.get(i);
-				
-				Box box = boxItem.getBox();
-				if(box.getWeight() > maxLoadWeight) {
-					excluded.add(boxItem);
-					continue;
-				}
-
-				if(box.getVolume() > volume) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-				if(boundRotations == null || boundRotations.isEmpty()) {
-					excluded.add(boxItem);
-					continue;
-				}
-				
-				List<BoxStackValue> cloned = new ArrayList<>(boundRotations.size());
-				for(BoxStackValue v : boundRotations) {
-					cloned.add(v.clone());
-				}
-				Box clonedBox = new Box(box, cloned);
-				
-				included[i] = new BoxItem(clonedBox, boxItem.getCount(), i);
-			}
-
-			return new DefaultBoxItemPermutationRotationIterator(included, excluded);
+			BoxItemMatrix matrix = toMatrix();
+			return new DefaultBoxItemPermutationRotationIterator(matrix.boxItems(), matrix.stackValues(), matrix.excluded());
 		}
 
 	}
 	
 	private List<BoxItem> excluded;
 
-	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, List<BoxItem> excluded) {
-		super(boxItems);
+	/**
+	 * The end positions of the blocks of boxes with the same container priority (the box items are sorted by container
+	 * priority), or an empty array for a single block. Boxes are only permuted within their block, so that the boxes of a
+	 * lower priority come first.
+	 */
+	protected int[] blockEnds = NO_BLOCKS;
+
+	private static final int[] NO_BLOCKS = new int[0];
+
+	public DefaultBoxItemPermutationRotationIterator(BoxItem[] boxItems, BoxStackValue[][] stackValues, List<BoxItem> excluded) {
+		super(boxItems, stackValues);
 		
 		this.excluded = excluded;
 		
@@ -85,9 +57,25 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 
 		initiatePermutation(count);
 	}
+
+	protected DefaultBoxItemPermutationRotationIterator(DefaultBoxItemPermutationRotationIterator source) {
+		super(copyBoxItems(source.stackableItems), source.stackValues);
+		this.excluded = new ArrayList<>(source.excluded);
+		this.rotations = source.rotations.clone();
+		this.reset = source.reset.clone();
+		this.permutations = source.permutations.clone();
+		this.minBoxVolume = source.minBoxVolume.clone();
+		this.blockEnds = source.blockEnds;
+	}
+
+
+
+	public DefaultBoxItemPermutationRotationIterator fork() {
+		return new DefaultBoxItemPermutationRotationIterator(this);
+	}
 	
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
+		return stackValues[permutations[index]][rotations[index]];
 	}
 
 	public void removePermutations(int count) {
@@ -124,10 +112,36 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		}
 		
 		this.permutations = permutations;
+		this.blockEnds = getBlockEnds(permutations);
 		
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
 		}
+	}
+
+	/**
+	 * @return the end positions of the blocks of boxes with the same container priority, or an empty array for a single
+	 *         block
+	 */
+	protected int[] getBlockEnds(int[] permutations) {
+		int count = 1;
+		for (int i = 1; i < permutations.length; i++) {
+			if(stackableItems[permutations[i]].getContainerPriority() != stackableItems[permutations[i - 1]].getContainerPriority()) {
+				count++;
+			}
+		}
+		if(count == 1) {
+			return NO_BLOCKS;
+		}
+		int[] ends = new int[count];
+		int block = 0;
+		for (int i = 1; i < permutations.length; i++) {
+			if(stackableItems[permutations[i]].getContainerPriority() != stackableItems[permutations[i - 1]].getContainerPriority()) {
+				ends[block++] = i;
+			}
+		}
+		ends[block] = permutations.length;
+		return ends;
 	}
 
 	public long getMinBoxVolume(int offset) {
@@ -165,7 +179,7 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
+			if(rotations[i] < stackValues[permutations[i]].length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
@@ -189,6 +203,9 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	public int nextPermutation(int maxIndex) {
+		if(blockEnds.length != 0) {
+			return nextBlockPermutation(maxIndex);
+		}
 		while (maxIndex >= 0) {
 			int[] permutations = this.permutations;
 
@@ -227,7 +244,58 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	
+	/**
+	 * As {@link #nextPermutation(int)}, permuting the boxes within their block only: the blocks after the max index
+	 * are reset to their first permutation, and when a block has no more permutations, the previous block is permuted.
+	 */
+	protected int nextBlockPermutation(int maxIndex) {
+		int[] permutations = this.permutations;
+		for (int b = blockEnds.length - 1; b >= 0; b--) {
+			int start = b == 0 ? 0 : blockEnds[b - 1];
+			int end = blockEnds[b];
+			if(start <= maxIndex) {
+				int index = Math.min(maxIndex, end - 1);
+				while (index >= start) {
+					int current = permutations[index];
+
+					// find the lexicographically next item to the right of the index, within the block
+					int minIndex = -1;
+					for (int i = index + 1; i < end; i++) {
+						if(permutations[i] > current && (minIndex == -1 || permutations[i] < permutations[minIndex])) {
+							minIndex = i;
+						}
+					}
+					if(minIndex == -1) {
+						index--;
+						continue;
+					}
+					permutations[index] = permutations[minIndex];
+					permutations[minIndex] = current;
+					Arrays.sort(permutations, index + 1, end);
+
+					resetRotations();
+					calculateMinStackableVolume(index);
+					return index;
+				}
+				// continue with the previous block, at any index
+				maxIndex = start - 1;
+			}
+			// back to the first permutation of the block
+			Arrays.sort(permutations, start, end);
+		}
+		// back at the first permutation
+		resetRotations();
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
+		return -1;
+	}
+
 	public int nextPermutation() {
+		if(blockEnds.length != 0) {
+			resetRotations();
+			return nextBlockPermutation(permutations.length - 1);
+		}
 		resetRotations();
 
 		int[] permutations = this.permutations;

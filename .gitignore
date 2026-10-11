@@ -1,5 +1,7 @@
 jmh/dependency-reduced-pom.xml
 visualizer/viewer/public/assets/containers.json
+# written by tests run with another working directory
+/viewer/
 .idea
 .metadata
 *.iml
@@ -89,3 +91,4 @@ release.properties
 apm_modules/
 
 .agents
+.claude

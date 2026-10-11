@@ -1,0 +1,32 @@
+package com.github.skjolber.packing.packer;
+
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.packager.BoxItemComparator;
+import com.github.skjolber.packing.api.packager.BoxItemSource;
+import com.github.skjolber.packing.api.packager.control.placement.PlacementComparator;
+import com.github.skjolber.packing.api.packager.control.point.PointControls;
+import com.github.skjolber.packing.api.point.PointCalculator;
+import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
+
+/**
+ * Load aware placement controls which validates weight constraints only.
+ */
+public class WeightLoadAwarePlacementControls extends AbstractLoadWeightComparatorPlacementControls {
+
+	public WeightLoadAwarePlacementControls(BoxItemSource boxItems,
+			PointControls pointControls, PointCalculator pointCalculator, Container container, Stack stack,
+			Order order, PlacementComparator placementComparator, BoxItemComparator boxItemComparator,
+			boolean fullSupport) {
+		super(boxItems, pointControls, pointCalculator, container, stack, order, placementComparator,
+				boxItemComparator, fullSupport);
+	}
+
+	@Override
+	protected LoadPlacementUtility createLoadPlacementUtility(Stack stack) {
+		return new WeightLoadAwarePlacementUtility(stack);
+	}
+}

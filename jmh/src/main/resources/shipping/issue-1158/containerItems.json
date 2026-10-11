@@ -1,0 +1,221 @@
+{
+    "containerItems": [
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 24500000000000,
+                "loadVolume": 0,
+                "emptyWeight": 1001,
+                "maxLoadVolume": 24500000000000,
+                "maxLoadWeight": 498999,
+                "maximumArea": 2450000000,
+                "dx": 70000,
+                "dy": 35000,
+                "dz": 10000,
+                "loadDx": 70000,
+                "loadDy": 35000,
+                "loadDz": 10000,
+                "id": "XPAK #000",
+                "description": "4 x 8 Poly Bubble Mailer",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 1001
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 30000000000000,
+                "loadVolume": 0,
+                "emptyWeight": 100,
+                "maxLoadVolume": 30000000000000,
+                "maxLoadWeight": 499900,
+                "maximumArea": 1500000000,
+                "dx": 75000,
+                "dy": 20000,
+                "dz": 20000,
+                "loadDx": 75000,
+                "loadDy": 20000,
+                "loadDz": 20000,
+                "id": "XPAK #000-1",
+                "description": "4 x 8 Bubble Mailer",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 100
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 133312500000000,
+                "loadVolume": 0,
+                "emptyWeight": 800,
+                "maxLoadVolume": 133312500000000,
+                "maxLoadWeight": 499200,
+                "maximumArea": 8887500000,
+                "dx": 98750,
+                "dy": 90000,
+                "dz": 15000,
+                "loadDx": 98750,
+                "loadDy": 90000,
+                "loadDz": 15000,
+                "id": "CURBY2SL",
+                "description": "CURBY2SL - 11.375 x 9.5",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 800
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 288000000000000,
+                "loadVolume": 0,
+                "emptyWeight": 2600,
+                "maxLoadVolume": 288000000000000,
+                "maxLoadWeight": 497400,
+                "maximumArea": 4800000000,
+                "dx": 80000,
+                "dy": 60000,
+                "dz": 60000,
+                "loadDx": 80000,
+                "loadDy": 60000,
+                "loadDz": 60000,
+                "id": "8x6x6-BOX",
+                "description": "8 x 6 x 6 Box",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 2600
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 306125000000000,
+                "loadVolume": 0,
+                "emptyWeight": 1200,
+                "maxLoadVolume": 306125000000000,
+                "maxLoadWeight": 498800,
+                "maximumArea": 15306250000,
+                "dx": 155000,
+                "dy": 98750,
+                "dz": 20000,
+                "loadDx": 155000,
+                "loadDy": 98750,
+                "loadDz": 20000,
+                "id": "CURBY5",
+                "description": "CURBY5 - 15.5 x 9.875",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 1200
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 715000000000000,
+                "loadVolume": 0,
+                "emptyWeight": 6001,
+                "maxLoadVolume": 715000000000000,
+                "maxLoadWeight": 493999,
+                "maximumArea": 14300000000,
+                "dx": 130000,
+                "dy": 110000,
+                "dz": 50000,
+                "loadDx": 130000,
+                "loadDy": 110000,
+                "loadDz": 50000,
+                "id": "13 x 11 x 5 Carton",
+                "description": "13 x 11 x 5 Carton - S-4131",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 6001
+            },
+            "index": -1,
+            "available": true
+        },
+        {
+            "count": 2147483647,
+            "container": {
+                "volume": 1657898437500000,
+                "loadVolume": 0,
+                "emptyWeight": 8001,
+                "maxLoadVolume": 1657898437500000,
+                "maxLoadWeight": 491999,
+                "maximumArea": 26006250000,
+                "dx": 182500,
+                "dy": 142500,
+                "dz": 63750,
+                "loadDx": 182500,
+                "loadDy": 142500,
+                "loadDz": 63750,
+                "id": "18x14x6 ECT32 Box",
+                "description": "18 x 14 x 6 ECT32 Box",
+                "stack": {
+                    "volume": 0,
+                    "placements": [],
+                    "dz": 0,
+                    "empty": true,
+                    "weight": 0
+                },
+                "maxWeight": 500000,
+                "loadWeight": 0,
+                "weight": 8001
+            },
+            "index": -1,
+            "available": true
+        }
+    ]
+}

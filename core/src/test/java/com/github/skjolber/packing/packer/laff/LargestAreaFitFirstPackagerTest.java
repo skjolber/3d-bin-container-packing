@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static com.github.skjolber.packing.test.ascii.PackagerResultFigures.figure;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +25,7 @@ import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.Rotation;
 import com.github.skjolber.packing.impl.ValidatingStack;
 import com.github.skjolber.packing.packer.AbstractPackagerTest;
+import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.test.assertj.StackAssert;
 
 public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
@@ -45,7 +47,20 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertTrue(result.isSuccess());
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(result);
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -61,7 +76,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -87,7 +105,20 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
-			assertTrue(result.isSuccess());
+			// <figure>
+			//   z                                 z                                 y                                 z
+			//                                     1 +-------+-------+-------+       1 +-------+-------+-------+       1 +-------+
+			//   | /-------/-------/-------|   y     |       |       |       |         |       |       |       |         |       |
+			//   |/       /       /       /|         |   A   |   B   |   C   |         |   A   |   B   |   C   |         |   C   |
+			// 1 |-------|-------|-------| | /       |       |       |       |         |       |       |       |         |       |
+			//   |       |       |       | |/      0 +-------+-------+-------+       0 +-------+-------+-------+       0 +-------+
+			//   |   A   |   B   |   C   | | 1       0       1       2       3   x     0       1       2       3   x     0       1   y
+			//   |       |       |       |/
+			// 0 |-------|-------|-------|-- x
+			//   0       1       2       3
+			// </figure>
+			figure(result);
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -103,7 +134,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(2)).followsAlongsideX(placements.get(1));
 			assertThat(placements.get(1)).preceedsAlongsideX(placements.get(2));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -127,6 +161,20 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /---------------/-------|   y   z                                 y                                 z
+			//      /       B       /       /|       1 +---------------+-------+       2 +---------------+-------+       1 +---------------+
+			//   | /---------------/       / | /       |               |       |         |               |       |         |               |
+			//   |/               /       /  |/        |       A       |   C   |         |       B       |       |         |       C       |
+			// 1 |---------------|-------|   | 2       |               |       |         |               |       |         |               |
+			//   |               |       |  /        0 +---------------+-------+       1 +---------------+   C   |       0 +---------------+
+			//   |       A       |   C   | / 1         0               2       3   x     |               |       |         0       1       2   y
+			//   |               |       |/                                              |       A       |       |
+			// 0 |---------------|-------|-- x                                           |               |       |
+			//   0               2       3                                             0 +---------------+-------+
+			//                                                                           0               2       3   x
+			// </figure>
+			figure(result);
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -138,7 +186,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(1)).isAt(0, 1, 0).hasBoxItemId("B");
 			assertThat(placements.get(2)).isAt(2, 0, 0).hasBoxItemId("C");
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -162,12 +213,89 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(5, 5, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//                       /---------------------------------------|       z
+			//                      /                                       /|       2 +---------------------------------------+
+			//                     /                                       / |         |                                       |
+			//                    /                                       /  |         |                   B                   |
+			//                   /                                       /   |   y     |                                       |
+			//                  /                   C                   /   /|       1 +---------------------------------------+
+			//                 /                                       /   / | /       |                                       |
+			//                /                                       /   /  |/        |                   A                   |
+			//               /                                       /   /   | 10      |                                       |
+			//              /                                       /   /   /        0 +---------------------------------------+
+			//             /---------------------------------------|   /   /           0                                       5   x
+			//            /                                       /|  /   /
+			//           /                                       / | /   /
+			//          /                                       /  |/   /
+			//         /                                       /   |   /
+			//        /                                       /   /   /
+			//   z   /                                       /   /   /
+			//      /                                       /   /   /
+			//   | /                                       /   /   / 5
+			//   |/                                       /   /   /
+			// 2 |---------------------------------------|   /   /
+			//   |                                       |  /   /
+			//   |                   B                   | /   /
+			//   |                                       |/   /
+			// 1 |---------------------------------------|   /
+			//   |                                       |  /
+			//   |                   A                   | /
+			//   |                                       |/
+			// 0 |---------------------------------------|-- x
+			//   0                                       5
+			//
+			// y                                               z
+			// 10 +------------------------------------+       2 +-----------------------------------+-----------------------------------+
+			//    |                                    |         |                 B                 |                 C                 |
+			//    |                                    |         |                                   |                                   |
+			//    |                                    |       1 +-----------------------------------+-----------------------------------+
+			//    |                                    |         |                                                                       |
+			//    |                                    |         |                                   A                                   |
+			//    |                                    |         |                                                                       |
+			//    |                                    |       0 +-----------------------------------------------------------------------+
+			//    |                                    |         0                                   5                                   10   y
+			//    |                 C                  |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//  5 +------------------------------------+
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                 B                  |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//    |                                    |
+			//  0 +------------------------------------+
+			//    0                                    5   x
+			// </figure>
+			figure(result);
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
 			validate(fits);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -190,6 +318,27 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(1, 1, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z                                                         z
+			//                                                             1 +-----------------------+---------------+-------+
+			//   | /-----------------------/---------------/-------|   y     |                       |               |       |
+			//   |/                       /               /       /|         |           A           |       B       |   C   |
+			// 1 |-----------------------|---------------|-------| | /       |                       |               |       |
+			//   |                       |               |       | |/      0 +-----------------------+---------------+-------+
+			//   |           A           |       B       |   C   | | 1       0                       3               5       6   x
+			//   |                       |               |       |/
+			// 0 |-----------------------|---------------|-------|-- x
+			//   0                       3               5       6
+			//
+			// y                                                         z
+			// 1 +-----------------------+---------------+-------+       1 +-------+
+			//   |                       |               |       |         |       |
+			//   |           A           |       B       |   C   |         |   C   |
+			//   |                       |               |       |         |       |
+			// 0 +-----------------------+---------------+-------+       0 +-------+
+			//   0                       3               5       6   x     0       1   y
+			// </figure>
+			figure(result);
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -201,7 +350,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			assertThat(placements.get(1)).isAt(3, 0, 0).hasBoxItemId("B"); // point with lowest x is selected first
 			assertThat(placements.get(2)).isAt(5, 0, 0).hasBoxItemId("C");
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -225,6 +377,23 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 1, 1).withWeight(1).build(), 2));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /---------------/-------|       z                                 y                                 z
+			//      /       C       /       /|       2 +---------------+-------+       2 +---------------+-------+       2 +---------------+
+			//   | /---------------/       / |         |               |       |         |               |       |         |               |
+			//   |/               /       /  |         |       B       |   C   |         |       C       |       |         |       C       |
+			// 2 |---------------|-------|   |   y     |               |       |         |               |       |         |               |
+			//   |               |       |  /|       1 +---------------+-------+       1 +---------------+   C   |       1 +---------------+
+			//   |       B       |   C   | / | /       |               |       |         |               |       |         |               |
+			//   |               |       |/  |/        |       A       |   B   |         |       B       |       |         |       B       |
+			// 1 |---------------|-------|   | 2       |               |       |         |               |       |         |               |
+			//   |               |       |  /        0 +---------------+-------+       0 +---------------+-------+       0 +---------------+
+			//   |       A       |   B   | / 1         0               2       3   x     0               2       3   x     0       1       2   y
+			//   |               |       |/
+			// 0 |---------------|-------|-- x
+			//   0               2       3
+			// </figure>
+			figure(result);
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -243,7 +412,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(2, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -269,6 +441,23 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			BoxItemGroup boxItemGroup1 = new BoxItemGroup("a", products);
 
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(Arrays.asList(boxItemGroup1)).build();
+			// <figure>
+			//   z   /---------------/-------|       z                                 y                                 z
+			//      /       C       /       /|       2 +---------------+-------+       2 +---------------+-------+       2 +---------------+
+			//   | /---------------/       / |         |               |       |         |               |       |         |               |
+			//   |/               /       /  |         |       B       |   C   |         |       C       |       |         |       C       |
+			// 2 |---------------|-------|   |   y     |               |       |         |               |       |         |               |
+			//   |               |       |  /|       1 +---------------+-------+       1 +---------------+   C   |       1 +---------------+
+			//   |       B       |   C   | / | /       |               |       |         |               |       |         |               |
+			//   |               |       |/  |/        |       A       |   B   |         |       B       |       |         |       B       |
+			// 1 |---------------|-------|   | 2       |               |       |         |               |       |         |               |
+			//   |               |       |  /        0 +---------------+-------+       0 +---------------+-------+       0 +---------------+
+			//   |       A       |   B   | / 1         0               2       3   x     0               2       3   x     0       1       2   y
+			//   |               |       |/
+			// 0 |---------------|-------|-- x
+			//   0               2       3
+			// </figure>
+			figure(result);
 			Container fits = result.get(0);
 	
 			assertNotNull(fits);
@@ -287,7 +476,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(2, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -310,6 +502,27 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			products.add(new BoxItem(Box.newBuilder().withId("C").withRotate3D().withSize(2, 2, 1).withWeight(1).build(), 1));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//   z   /---------------|       z                         y                         z
+			//      /               /|       3 +---------------+       2 +---------------+       3 +---------------+
+			//   | /               / |         |               |         |               |         |               |
+			//   |/               /  |         |       C       |         |               |         |       C       |
+			// 3 |---------------|   |         |               |         |               |         |               |
+			//   |               |  /|       2 +---------------+         |       C       |       2 +---------------+
+			//   |       C       | / |         |               |         |               |         |               |
+			//   |               |/  |         |       B       |         |               |         |       B       |
+			// 2 |---------------|   |   y     |               |         |               |         |               |
+			//   |               |  /|       1 +---------------+       0 +---------------+       1 +---------------+
+			//   |       B       | / | /       |               |         0               2   x     |               |
+			//   |               |/  |/        |       A       |                                   |       A       |
+			// 1 |---------------|   | 2       |               |                                   |               |
+			//   |               |  /        0 +---------------+                                 0 +---------------+
+			//   |       A       | /           0               2   x                               0               2   y
+			//   |               |/
+			// 0 |---------------|-- x
+			//   0               2
+			// </figure>
+			figure(result);
 	
 			Container fits = result.get(0);
 	
@@ -318,7 +531,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			
 			assertEquals(3, countLevels(fits));
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -375,11 +591,98 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					new BoxItem(Box.newBuilder().withId("Foot").withSize(7, 37, 39).withRotate3D().withWeight(0).build(), 20));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
-			assertTrue(result.isSuccess());
+			// <figure>
+			//                          /--/--|       z
+			//                         /  /  /|       74 +------+------+
+			//                        /Fo/  / |          |      |      |
+			//                       /  /  /  |          |      |      |
+			//                      /  /  /   |          |      |      |
+			//                     /--/--|    |          |      |      |
+			//                    /  /  /| Fo |          |      |      |
+			//                   /Fo/  / |    |          |      |      |
+			//                  /  /  /Fo|    |          |      |      |
+			//                 /--/--|   |   /|          |      |      |
+			//                /  /  /|   |  / |          | Foot | Foot |
+			//               /Fo/  / |   | /  |          |      |      |
+			//              /  /  /Fo|   |/   |   y      |      |      |
+			//             /--/--|   |   |    |          |      |      |
+			//            /  /  /|   |  /| Fo | /        |      |      |
+			//           /Fo/  / |   | / |    |/         |      |      |
+			//          /  /  /  |   |/Fo|    | 195      |      |      |
+			//         /  /  /   |   |   |   /           |      |      |
+			//    z   /--/--|    |  /|   |  /            |      |      |
+			//       /  /  /| Fo | / |   | /          37 +------+------+
+			//    | /  /  / |    |/Fo|   |/              |      |      |
+			//    |/  /  /Fo|    |   |   | 156           |      |      |
+			// 74 |--|--|   |   /|   |  /                |      |      |
+			//    |  |  |   |  / |   | /                 |      |      |
+			//    |  |  |   | /  |   |/                  |      |      |
+			//    |  |  |   |/   |   | 117               |      |      |
+			//    |Fo|  |   |    |  /                    |      |      |
+			//    |  |  |  /| Fo | /                     |      |      |
+			//    |  |  | / |    |/                      | Foot | Foot |
+			//    |  |  |/Fo|    | 78                    |      |      |
+			// 37 |--|--|   |   /                        |      |      |
+			//    |  |  |   |  /                         |      |      |
+			//    |  |  |   | /                          |      |      |
+			//    |  |  |   |/                           |      |      |
+			//    |Fo|  |   | 39                         |      |      |
+			//    |  |  |  /                             |      |      |
+			//    |  |  | /                              |      |      |
+			//    |  |  |/                               |      |      |
+			//  0 |--|--|-- x                          0 +------+------+
+			//    0  7 14                                0      7      14   x
+			//
+			// y                 z
+			// 195 +--+-+        74 +-------------+-------------+-------------+-------------+-------------+
+			//     |  | |           |             |             |             |             |             |
+			//     |  | |           |             |             |             |             |             |
+			//     |Fo|F|           |    Foot     |    Foot     |    Foot     |    Foot     |    Foot     |
+			//     |  | |           |             |             |             |             |             |
+			//     |  | |           |             |             |             |             |             |
+			//     |  | |        37 +-------------+-------------+-------------+-------------+-------------+
+			// 156 +--+-+           |             |             |             |             |             |
+			//     |  | |           |             |             |             |             |             |
+			//     |  | |           |    Foot     |    Foot     |    Foot     |    Foot     |    Foot     |
+			//     |  | |           |             |             |             |             |             |
+			//     |Fo|F|           |             |             |             |             |             |
+			//     |  | |           |             |             |             |             |             |
+			//     |  | |         0 +-------------+-------------+-------------+-------------+-------------+
+			//     |  | |           0             39            78            117           156           195   y
+			// 117 +--+-+
+			//     |  | |
+			//     |  | |
+			//     |Fo|F|
+			//     |  | |
+			//     |  | |
+			//     |  | |
+			//  78 +--+-+
+			//     |  | |
+			//     |  | |
+			//     |  | |
+			//     |Fo|F|
+			//     |  | |
+			//     |  | |
+			//     |  | |
+			//  39 +--+-+
+			//     |  | |
+			//     |  | |
+			//     |Fo|F|
+			//     |  | |
+			//     |  | |
+			//     |  | |
+			//   0 +--+-+
+			//     0  7 14   x
+			// </figure>
+			figure(result);
+			PackagerResultAssert.assertThat(result).isSuccess();
 			Container pack = result.get(0);
 			assertNotNull(pack);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -419,13 +722,100 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 						createStackableItem("9", 1120, 1700, 2120, 160, boxCountPerStackableItem),
 						createStackableItem("10", 1200, 1050, 2280, 390, boxCountPerStackableItem));
 	
-				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(clone(products)).build();
+				PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(copy(products)).build();
+				// <figure>
+				//              /-------|                     z
+				//             /       /|                     7670 +----------+
+				//            /       / |                          |          |
+				//           /       /  |                          |          |
+				//      z   /       /  /----|                      |          |
+				//         /       /  /    /||                6670 |          +-------+
+				//      | /       /  /    / ||                     |          |       |
+				//      |/       /  /    /  ||                     |          |       |
+				// 7670 |-------|  /    /   ||                     |    6     |       |
+				//      |       | /    /    ||                     |          |       |
+				//      |       |/    /     ||                     |          |   8   |
+				// 6670 |       |----|      ||                     |          |       |
+				//      |       |    |     / |                     |          |       |
+				//      |   6   |    |    / /                      |          |       |
+				//      |       | 8  |   / //                      |          |       |
+				//      |       |    |  /-------|                  |          |       |
+				//      |       |    | /       /|---|    y    4570 +----------++------+
+				//      |       |    |/       / |  /|              |     2     |
+				// 4570 |---2---|----|       / /  / |  /      4120 +-----------+
+				// 4120 |-------|  //       / /| /  | /            |           |
+				//      |   1   | //       / / |/   |/ 2280        |     1     |
+				//      |       |//       / / //   // 2190         |           |
+				// 3370 |-------|/       / / //   // 2060     3370 +-----------+
+				// 3070 |  10   |-------| / //   //           3070 |           +----------+
+				//      |       |   5   |/ //   // 1700            |    10     |          |
+				// 2320 |-------|-----|-| //   // 1450             |           |    5     |
+				//      |             |  //   // 1200              |           |          |
+				//      |      9      | //   //               2320 +-----------+--------+-+
+				//      |             |//   //                2000 |                    |
+				// 1200 |-------------||   //                 1770 |         9          |
+				//      |              |  //                       |                    |
+				//      |      4       | //                        |                    |
+				//      |              |//                    1200 +--------------------++
+				//    0 |--------------|--- x                      |                     |
+				//      0     1130    2340                         |                     |
+				//                                                 |          4          |
+				//                                                 |                     |
+				//                                                 |                     |
+				//                                               0 +---------------------+
+				//                                                 0          1130        2340   x
+				//
+				// y                                                                                  z
+				// 2280 +----------------------------------+                                          7670 +--------------+
+				// 2190 |                                  +-----------------------------+                 |              |
+				//      |                                  |              4              |                 |      6       |
+				// 2060 |                                  +-------+                     |                 |              |
+				//      |                                  |       |                     |            6670 +-----------+  |
+				//      |                2                 |   3   |                     |                 |           |  |
+				//      |                                  |       |                     |                 |           |  |
+				//      |                                  |       |                     |                 |           |  |
+				// 1700 |                                  +-------+-----------------+   |                 |           |  |
+				//      |                                  |                         |   |                 |     8     |  |
+				//      |                                  |            9            |   |                 |           |  |
+				// 1500 +--------------------------------+ |                         |   |                 |           |  |
+				// 1450 |                                | +-------------------------+---+-+               |           |  |
+				//      |                                | |                               |               |           |  |
+				//      |                                | |               5               |               |           |  |
+				//      |                                | |                               |          4570 +-----------+--+------+
+				// 1200 |                                +-+--------------------+          |               |          2          |
+				//      |                                |                      |          |          4120 +---------------------+
+				//      |                                |                      |          |               |                     |
+				//      |                                |                      |          |               |          1          |
+				//      |                                |                      |          |               |                     |
+				//      |                                |                      |          |          3370 +-------------+-------+
+				//      |               6                |                      |          |          3070 +-------------+       |
+				//      |                                |                      |          |               |             |  10   |
+				//      |                                |          8           |          |               |      5      |       |
+				//      |                                |                      |          |               |             |       |
+				//      |                                |                      |          |          2320 +-------------+--+---++
+				//      |                                |                      |          |          2000 |                +-7++
+				//      |                                |                      |          |          1770 |       9        +--++
+				//      |                                |                      |          |               |                |3 ||
+				//      |                                |                      |          |               |                |  ||
+				//      |                                |                      |          |          1200 +----------------+--+++
+				//      |                                |                      |          |               |                     |
+				//    0 +--------------------------------+----------------------+----------+               |                     |
+				//      0                                1130      1500         1930 2120  2340   x        |          4          |
+				//                                                                                         |                     |
+				//                                                                                         |                     |
+				//                                                                                       0 +---------------------+
+				//                                                                                         0           1200 1700 2280   y
+				// </figure>
+				figure(result);
 				if(result.isSuccess()) {
 					List<Container> packList = result.getContainers();
 					assertTrue(i >= packList.size());
 					
 					validate(packList);
-					assertValidUsingValidator(containerItems, packList.size(), result, products);
+					PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+							.withContainerItems(containerItems)
+							.withMaxContainerCount(packList.size())
+							.withBoxItems(products));
 				}
 			}
 		} finally {
@@ -464,10 +854,97 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					createStackableItem("7", 800, 490, 1140, 156, boxCountPerStackableItem));
 	
 			PackagerResult result = packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(products).build();
+			// <figure>
+			//           /------------|                        z
+			//      z   /            /|                        5500 +--------------+
+			//         /            / |                             |              |
+			//      | /            /  |                             |              |
+			//      |/            /   |                             |              |
+			// 5500 |------------|    |                             |              |
+			//      |            |    |                             |              |
+			//      |            |    |                             |              |
+			//      |            |    |                             |              |
+			//      |            |    |                             |              |
+			//      |            |    |                             |              |
+			//      |            |    |                             |      6       |
+			//      |            |    |                             |              |
+			//      |     6      |    |                             |              |
+			//      |            |    |--|                          |              |
+			//      |            |    | /|                          |              |
+			//      |            |    |/ |                          |              |
+			//      |            |    | /|                          |              |
+			//      |            |   / / |------------|             |              |
+			//      |            |  / /------------| /|             |              |
+			//      |            | /---|          /|/7|             |              |
+			//      |            |/   /|         / | /              |              |
+			// 2310 |------------|---| |        /  |/|         2310 +--------------++----+
+			//      |     2      | 3 |/        /   | |    y         |       2       | 3  |
+			// 1950 |------------|---|--------|   /  |              |               |    |
+			//      |            |            |  /   |  /      1950 +---------------+----+----------+
+			//      |     1      |     5      | /    | /       1690 |               |               |
+			//      |            |            |/     |/ 2280        |       1       |       5       |
+			// 1200 |------------|-----------||     //              |               |               |
+			//      |                        |     //               |               |               |
+			//      |                        |    // 1450      1200 +---------------+--------------++
+			//      |           4            |   //                 |                              |
+			//      |                        |  //                  |                              |
+			//      |                        | // 570               |                              |
+			//      |                        |//                    |              4               |
+			//    0 |------------------------|--- x                 |                              |
+			//      0          1130         2340                    |                              |
+			//                                                      |                              |
+			//                                                    0 +------------------------------+
+			//                                                      0              1130  1560       2340   x
+			//
+			// y                                                                                  z
+			// 2280 +----------------------------------+                                          5500 +-------------------+
+			// 2250 |                                  +-------------------------------+               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                2                 |                               |               |                   |
+			//      |                                  |               7               |               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                                  |                               |               |                   |
+			//      |                                  |                               |               |         6         |
+			// 1500 +--------------------------------+ |                               |               |                   |
+			// 1450 |                                | +-------------------------------+               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |               5               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |               |                   |
+			//      |                                | |                               |          2310 +-------+-----------+----------+
+			//      |               6                | |                               |               |   3   |          2           |
+			//      |                                | |                               |               |       |                      |
+			//      |                                | |                               |          1950 +-------+-----------+----1-----+
+			//  570 |                                | +---------+                     |          1690 |                   +----------+
+			//      |                                | |         |                     |               |         5         |          |
+			//      |                                | |         |                     |               |                   |    7     |
+			//      |                                | |         |                     |               |                   |          |
+			//      |                                | |    3    |                     |          1200 +-------------------+----------+
+			//      |                                | |         |                     |               |                              |
+			//      |                                | |         |                     |               |                              |
+			//      |                                | |         |                     |               |                              |
+			//    0 +--------------------------------+-+---------+---------------------+               |              4               |
+			//      0                                1130        1560                  2340   x        |                              |
+			//                                                                                         |                              |
+			//                                                                                         |                              |
+			//                                                                                       0 +------------------------------+
+			//                                                                                         0       570         1450       2280   y
+			// </figure>
+			figure(result);
 			List<Container> packList = result.getContainers();
 			validate(packList);
 			
-			assertValidUsingValidator(containerItems, 1, result, products);
+			PackagerResultAssert.assertThat(result).isAcceptedBy(validator.newResultBuilder()
+					.withContainerItems(containerItems)
+					.withMaxContainerCount(1)
+					.withBoxItems(products));
 		} finally {
 			packager.close();
 		}
@@ -554,8 +1031,26 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 							);
 					});
 				}).withBoxItems(products).build();
+				// <figure>
+				//         /-------/-------/-------|   y   z                                 y                                 z
+				//        /   B   /   E   /   H   /|       1 +-------+-------+-------+       3 +-------+-------+-------+       1 +-------+-------+-------+
+				//   z   /-------/-------/-------| | /       |#######|       |       |         |       |       |       |         |       |       |       |
+				//      /   A   /   D   /   G   /| |/        |#######|   C   |   F   |         |   B   |   E   |   H   |         |   F   |   G   |   H   |
+				//   | /-------/-------/-------| | | 3       |#######|       |       |         |       |       |       |         |       |       |       |
+				//   |/#######/       /       /| |/        0 +-------+-------+-------+       2 +-------+-------+-------+       0 +-------+-------+-------+
+				// 1 |-------|-------|-------| | | 2         0       1       2       3   x     |       |       |       |         0       1       2       3   y
+				//   |#######|       |       | |/                                              |   A   |   D   |   G   |
+				//   |#######|   C   |   F   | | 1                                             |       |       |       |
+				//   |#######|       |       |/                                              1 +-------+-------+-------+
+				// 0 |-------|-------|-------|-- x                                             |#######|       |       |
+				//   0       1       2       3                                                 |#######|   C   |   F   |
+				//                                                                             |#######|       |       |
+				//                                                                           0 +-------+-------+-------+
+				//                                                                             0       1       2       3   x
+				// </figure>
+				figure(build);
 				
-				assertValid(build);
+				PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 				
 				List<Placement> buildPlacements = build.getContainers().get(0).getStack().getPlacements();
 				for (Placement placement : buildPlacements) {
@@ -567,12 +1062,10 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 		}
 	}
 
-	//
-	//  container 2 x 2 x 2 with an obstacle (X) in a corner of the floor; groups of 3 (a) and 4 (b) unit cubes:
-	//
-	//   level 1:  a a      level 2:  b b
-	//             X a                b b
-	//
+	/**
+	 * Container 2 x 2 x 2 with a unit cube obstacle in a corner of the floor, and groups of 3 (a) and 4 (b) unit cubes: all 7 boxes fit around the
+	 * obstacle.
+	 */
 	@Test
 	void testStackingGroupsWithObstacles() {
 		LargestAreaFitFirstPackager packager = LargestAreaFitFirstPackager.newBuilder().build();
@@ -585,7 +1078,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 					.build();
 
 			List<BoxItemGroup> groups = new ArrayList<>();
-			for (String id : Arrays.asList("a", "b")) {
+			for (String id : List.of("a", "b")) {
 				List<BoxItem> products = new ArrayList<>();
 				int count = id.equals("a") ? 3 : 4;
 				for(int i = 0; i < count; i++) {
@@ -598,28 +1091,43 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				b.withContainerItem(new ContainerItem(container, 1));
 				b.withObstacles(o -> o.withObstacle(0, 0, 0, 1, 1, 1));
 			}).withBoxItemGroups(groups).build();
+			// <figure>
+			//   z   /-------/-------|       z                         y                         z
+			//      /  a0   /  a2   /|       2 +-------+-------+       2 +-------+-------+       2 +-------+-------+
+			//   | /-------/-------| |         |       |       |         |       |       |         |       |       |
+			//   |/       /       /| |         |  b3   |  a1   |         |  a0   |  a2   |         |  a1   |  a2   |
+			// 2 |-------|-------| | |   y     |       |       |         |       |       |         |       |       |
+			//   |       |       | |/|       1 +-------+-------+       1 +-------+-------+       1 +-------+-------+
+			//   |  b3   |  a1   | | | /       |#######|       |         |       |       |         |       |       |
+			//   |       |       |/|b|/        |#######|  b1   |         |  b3   |  a1   |         |  b1   |  b2   |
+			// 1 |-------|-------| | | 2       |#######|       |         |       |       |         |       |       |
+			//   |#######|       | |/        0 +-------+-------+       0 +-------+-------+       0 +-------+-------+
+			//   |#######|  b1   | | 1         0       1       2   x     0       1       2   x     0       1       2   y
+			//   |#######|       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			// </figure>
+			figure(build);
 
 			assertTrue(build.isSuccess());
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 
-			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
+			Container packed = build.getContainers().get(0);
+			Placement obstacle = packed.getObstacles().get(0);
+			List<Placement> placements = packed.getStack().getPlacements();
 			assertEquals(7, placements.size());
 			for (Placement placement : placements) {
-				// not in the obstacle's cell
-				assertFalse(placement.getAbsoluteX() == 0 && placement.getAbsoluteY() == 0 && placement.getAbsoluteZ() == 0);
+				assertFalse(placement.intersects3D(obstacle));
 			}
 		} finally {
 			packager.close();
 		}
 	}
 
+	//
 	//  container 2 x 1 x 3; boxes in order a (1 x 1 x 1), b (1 x 1 x 2), c (1 x 1 x 1). The first level is as high as
 	//  a, so b is skipped, and c is placed. Then b waits for the next container: on the next level of the first
 	//  container, it would be after c.
-	//
-	//   container 1     container 2
-	//    |   |           |   |
-	//    |   |           |b  |
-	//    |a c|           |b  |
 	//
 	@Test
 	void testSkippedBoxWaitsForTheNextContainer() {
@@ -640,9 +1148,39 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 			PackagerResult build = packager.newResultBuilder()
 					.withContainerItems(new ContainerItem(container, 2))
 					.withBoxItems(products)
-					.withOrder(Order.CRONOLOGICAL_ALLOW_SKIPPING)
+					.withOrder(Order.CHRONOLOGICAL_ALLOW_SKIPPING)
 					.withMaxContainerCount(2)
 					.build();
+			// <figure>
+			// container 1 of 2: 1
+			//   z                         z                         y                         z
+			//                             1 +-------+-------+       1 +-------+-------+       1 +-------+
+			//   | /-------/-------|   y     |       |       |         |       |       |         |       |
+			//   |/       /       /|         |   a   |   c   |         |   a   |   c   |         |   c   |
+			// 1 |-------|-------| | /       |       |       |         |       |       |         |       |
+			//   |       |       | |/      0 +-------+-------+       0 +-------+-------+       0 +-------+
+			//   |   a   |   c   | | 1       0       1       2   x     0       1       2   x     0       1   y
+			//   |       |       |/
+			// 0 |-------|-------|-- x
+			//   0       1       2
+			//
+			// container 2 of 2: 1
+			//   z                 z                 y                 z
+			//                     2 +-------+       1 +-------+       2 +-------+
+			//   | /-------|         |       |         |       |         |       |
+			//   |/       /|         |       |         |   b   |         |       |
+			// 2 |-------| |         |       |         |       |         |       |
+			//   |       | |         |   b   |       0 +-------+         |   b   |
+			//   |       | |   y     |       |         0       1   x     |       |
+			//   |       | |         |       |                           |       |
+			//   |   b   | | /       |       |                           |       |
+			//   |       | |/      0 +-------+                         0 +-------+
+			//   |       | | 1       0       1   x                       0       1   y
+			//   |       |/
+			// 0 |-------|-- x
+			//   0       1
+			// </figure>
+			figure(build);
 
 			assertTrue(build.isSuccess());
 			assertEquals(2, build.size());
@@ -678,7 +1216,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 
 			PackagerResult build = packager.newResultBuilder().withContainerItems(new ContainerItem(container, 1)).withBoxItems(products).build();
 			assertTrue(build.isSuccess());
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 
 			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
 			assertEquals(3, placements.size());
@@ -716,7 +1254,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				b.withObstacles(o -> o.withObstacle(0, 0, 0, 2, 2, 1));
 			}).withBoxItems(products).build();
 			assertTrue(build.isSuccess());
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 
 			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
 			assertEquals(1, placements.size());
@@ -753,7 +1291,7 @@ public class LargestAreaFitFirstPackagerTest extends AbstractPackagerTest {
 				b.withObstacles(o -> o.withObstacle(2, 0, 0, 2, 2, 1));
 			}).withBoxItems(products).build();
 			assertTrue(build.isSuccess());
-			assertValid(build);
+			PackagerResultAssert.assertThat(build).isStackedWithinConstraints();
 
 			List<Placement> placements = build.getContainers().get(0).getStack().getPlacements();
 			assertEquals(2, placements.size());

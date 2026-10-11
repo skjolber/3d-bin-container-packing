@@ -26,6 +26,20 @@ public class PermutationRotationState {
 		System.arraycopy(permutations, 0, this.permutations, 0, length);
 	}
 
+	/**
+	 * @param rotations rotations, with an offset
+	 * @param permutations permutations, with the same offset
+	 * @param offset the index of the first rotation and permutation
+	 * @param length the number of rotations and permutations
+	 */
+	PermutationRotationState(int[] rotations, int[] permutations, int offset, int length) {
+		super();
+		this.rotations = new int[length];
+		System.arraycopy(rotations, offset, this.rotations, 0, length);
+		this.permutations = new int[length];
+		System.arraycopy(permutations, offset, this.permutations, 0, length);
+	}
+
 	public int[] getPermutations() {
 		return permutations;
 	}

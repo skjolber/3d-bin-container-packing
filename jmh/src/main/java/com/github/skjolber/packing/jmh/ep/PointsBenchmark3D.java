@@ -42,6 +42,25 @@ public class PointsBenchmark3D {
 		return size;
 	}
 
+	/** Replays calculator operations recorded from a plain packing of the Tycho 93-box set (about 150 points per add). */
+	@Benchmark
+	public int points3DRecorded(Points3DRecordedState state) throws Exception {
+		DefaultPointCalculator3D calculator = state.getCalculator();
+		for (Points3DRecordedState.Operation operation : state.getOperations()) {
+			switch (operation.type) {
+			case Points3DRecordedState.CLEAR:
+				calculator.clearToSize((int) operation.a, (int) operation.b, (int) operation.c);
+				break;
+			case Points3DRecordedState.LIMIT:
+				calculator.setMinimumAreaAndVolumeLimit(operation.a, operation.b);
+				break;
+			default:
+				calculator.add((int) operation.a, operation.placement);
+			}
+		}
+		return calculator.size();
+	}
+
 	public static void main(String[] args) throws RunnerException {
 		Options opt = new OptionsBuilder()
 				.include(PointsBenchmark3D.class.getSimpleName())

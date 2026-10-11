@@ -19,6 +19,7 @@ import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -30,14 +31,26 @@ import com.github.skjolber.packing.test.bouwkamp.BouwkampCodes;
 
 public class AbstractPackagerTest {
 
+	/** The file shown by the viewer */
+	protected static final File OUTPUT = new File("../viewer/public/assets/containers.json");
+
 	protected ExecutorService executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(), new DefaultThreadFactory());
 
 	protected void write(PackagerResult result) throws Exception {
 		write(result, true);
 	}
 
+	/**
+	 * Write several results of the same order, to compare them in the viewer.
+	 *
+	 * @param validation validator result builder with the packager input, or null
+	 */
+	protected void write(Map<String, PackagerResult> results, ValidatorResultBuilder validation) throws Exception {
+		new DefaultPackagingResultVisualizerFactory(true).visualize(results, validation, OUTPUT);
+	}
+
 	protected void write(PackagerResult result, boolean calculatePoints) throws Exception {
-		write(result.getContainers(), calculatePoints);
+		new DefaultPackagingResultVisualizerFactory(calculatePoints).visualize(result, OUTPUT);
 	}
 
 	protected void write(Container container) throws Exception {
@@ -55,8 +68,7 @@ public class AbstractPackagerTest {
 	protected void write(List<Container> packList, boolean calculatePoints) throws Exception {
 		DefaultPackagingResultVisualizerFactory p = new DefaultPackagingResultVisualizerFactory(calculatePoints);
 
-		File file = new File("../viewer/public/assets/containers.json");
-		p.visualize(packList, file);
+		p.visualize(packList, OUTPUT);
 	}
 
 	protected <T> void pack(List<BouwkampCodes> codes, AbstractPackager packager) throws Exception {

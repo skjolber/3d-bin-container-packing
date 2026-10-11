@@ -108,5 +108,11 @@ public abstract class SimplePoint2D extends Point2D {
 
 	public abstract SimplePoint2D moveY(int y, Placement xSupport);
 
-	public abstract SimplePoint2D clone();
+	public abstract SimplePoint2D copy();
+	
+	@Override
+	public boolean isSupportedXYPlane(int x, int y) {
+		return false;
+	}
+
 }

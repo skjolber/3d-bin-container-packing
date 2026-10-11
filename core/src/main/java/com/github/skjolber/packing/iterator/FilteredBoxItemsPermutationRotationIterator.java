@@ -75,7 +75,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 	protected final BoxItemPermutationRotationIterator iterator;
 	
 	public FilteredBoxItemsPermutationRotationIterator(BoxItemPermutationRotationIterator iterator) {
-		super(iterator.getBoxItems());
+		super(iterator.getBoxItems(), iterator.getBoxItemStackValues());
 		
 		permutations = new int[0]; // n!
 		
@@ -156,7 +156,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		
 		int offset = 0;
 		for(int i = 0; i < this.permutations.length; i++) {
-			if(this.permutations[i] == mutableBoxItem.getIndex() && count > 0) {
+			if(this.permutations[i] == mutableBoxItem.getLocalIndex() && count > 0) {
 				count--;
 			} else {
 				permutations[offset] = this.permutations[i];
@@ -273,7 +273,7 @@ public class FilteredBoxItemsPermutationRotationIterator extends AbstractBoxItem
 		for (int i = 0; i < stackableItems.length; i++) {
 			BoxItem loadableItem = stackableItems[i];
 			if(loadableItem != null && !loadableItem.isEmpty()) {
-				boxItems.add(loadableItem.clone());
+				boxItems.add(loadableItem.copy());
 			}
 		}
 

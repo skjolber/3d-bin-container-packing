@@ -1,0 +1,163 @@
+package com.github.skjolber.packing.packer.bruteforce;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.Order;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.Stack;
+import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.PermutationRotationState;
+
+public abstract class AbstractSingleThreadedBruteForceBoxItemGroupSession extends AbstractBruteForceBoxItemGroupSession {
+
+	protected BoxItemGroupPermutationRotationIterator[] containerIterators;
+	protected Placement[] stackPlacements;
+	protected int stackPlacementCount;
+	/** Whether the boxes have load limits: then the placements track loads */
+	protected final boolean load;
+	protected PackagerInterruptSupplier interrupt;
+	
+	public AbstractSingleThreadedBruteForceBoxItemGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups,
+			List<ContainerItem> containers, int containerCount, BoxItemGroupPermutationRotationIterator[] containerIterators,
+			PackagerInterruptSupplier interrupt, boolean load) {
+		super(boxItems, containers, containerCount, boxItemGroups);
+		this.interrupt = interrupt;
+		this.containerIterators = containerIterators;
+		
+		int count = 0;
+		for(int i = 0; i < boxItems.size(); i++) {
+			BoxItem stackableItem = boxItems.get(i);
+			count += stackableItem.getCount();
+		}
+		
+		this.load = load;
+		this.stackPlacements = BruteForcePackager.getPlacements(count, load);
+		this.stackPlacementCount = count;
+	}
+
+	protected AbstractSingleThreadedBruteForceBoxItemGroupSession(AbstractSingleThreadedBruteForceBoxItemGroupSession source, boolean load) {
+		super(source);
+		this.interrupt = source.interrupt;
+		this.containerIterators = new BoxItemGroupPermutationRotationIterator[source.containerIterators.length];
+		for(int i = 0; i < containerIterators.length; i++) {
+			this.containerIterators[i] = ((DefaultBoxItemGroupPermutationRotationIterator) source.containerIterators[i]).fork();
+		}
+		this.stackPlacementCount = source.stackPlacementCount;
+		this.load = load;
+		this.stackPlacements = BruteForcePackager.getPlacements(stackPlacementCount, load);
+	}
+	
+	protected int getMaxIteratorLength() {
+		int maxIteratorLength = 0;
+		for (BoxItemPermutationRotationIterator iterator : containerIterators) {
+			maxIteratorLength = Math.max(maxIteratorLength, iterator.length());
+		}
+		return maxIteratorLength;
+	}
+
+	@Override
+	public Container accept(IntermediatePackagerResult result) {
+		
+		// results for another order of the groups (see attemptGroupOrders) hold any of the remaining groups
+		if(result instanceof BruteForceIntermediatePackagerResult bruteForceResult && !bruteForceResult.isAnyRemaining()) {
+			
+			bruteForceResult.markDirty();
+			Stack stack = bruteForceResult.getStack();
+			
+			int size = stack.size();
+			if(stackPlacementCount > size) {
+				// this result does not consume all placements
+				// remove consumed items from the iterators
+	
+				PermutationRotationState state = bruteForceResult.getPermutationRotationIteratorForState();
+				
+				// results from this session hold the first remaining groups
+				List<Integer> removedGroups = new ArrayList<>();
+				int wholeGroupBoxCount = 0;
+				for(int i = 0; i < boxItemGroups.size(); i++) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(i);
+					
+					int groupBoxCount = boxItemGroup.getBoxCount();
+					if(size < wholeGroupBoxCount + groupBoxCount) {
+						// the last group was not successful
+						throw new IllegalStateException("Expected to consume whole groups, but group " + i + " was not fully consumed");
+					}
+					
+					removedGroups.add(i);
+					
+					wholeGroupBoxCount += groupBoxCount;
+					
+					if(wholeGroupBoxCount == size) {
+						break;
+					}
+				}
+				
+				int[] permutations = state.getPermutations();
+				
+				List<Integer> p = new ArrayList<>();
+				for(Integer removedGroup: removedGroups) {
+					BoxItemGroup boxItemGroup = boxItemGroups.get(removedGroup);
+	
+					for (BoxItem boxItem : boxItemGroup.getItems()) {
+						for (int i = 0; i < boxItem.getCount(); i++) {
+							p.add(permutations[p.size()]);
+						}
+					}
+				}
+				
+				// remove stacked items which did not make it
+				stack.setSize(p.size());
+				
+				Container container = packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
+	
+				// remove session inventory
+				removeInventory(p);
+	
+				List<Integer> iteratorGroupIndexes = acceptGroups(removedGroups);
+				for (BoxItemGroupPermutationRotationIterator it : containerIterators) {
+					it.removeGroups(iteratorGroupIndexes);
+				}
+				
+				stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, p.size(), stackPlacementCount);
+				
+				return container;
+			} else {
+				stackPlacementCount = 0;
+				boxItemGroups = Collections.emptyList();
+				
+				return packagerContainerItems.toContainer(resolveContainerItem(bruteForceResult), stack);
+			}
+		} else {
+			refreshStack(result);
+			Stack stack = result.getStack();
+			AcceptedGroups accepted = getAcceptedGroups(stack);
+			Container container = packagerContainerItems.toContainer(resolveContainerItem(result), stack);
+
+			removeInventory(accepted.localIndexes());
+			List<Integer> iteratorGroupIndexes = acceptGroups(accepted.groupIndexes());
+			for (BoxItemGroupPermutationRotationIterator iterator : containerIterators) {
+				iterator.removeGroups(iteratorGroupIndexes);
+			}
+			stackPlacementCount = BruteForcePackager.removeFirstPlacements(stackPlacements, accepted.localIndexes().size(), stackPlacementCount);
+			return container;
+		}
+	}
+
+	@Override
+	public int countRemainingBoxes() {
+		return stackPlacementCount;
+	}
+
+
+
+}

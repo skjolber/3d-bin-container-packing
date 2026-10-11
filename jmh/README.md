@@ -1,6 +1,9 @@
 # jmh module
 Module for performance-testing using the [JMH](https://openjdk.java.net/projects/code-tools/jmh/) framework.
 
+See [PERFORMANCE.md](PERFORMANCE.md) for 5.0 against 4.2, and [EXPERIMENTS.md](EXPERIMENTS.md) for optimizations which
+were measured and did not help.
+
 ## Introduction
 Performance analysis is complicated due to the dynamic nature of the JVM Hotspot implementation. 
 
@@ -19,12 +22,12 @@ Get familiar with JMH:
  
 Download a profiler like [VisualVM](https://visualvm.github.io/) for drilling down to method level during development.
 
-In this project, there is end-to-end tests in the which touches the most commonly used code paths.
+In this project, there are end-to-end benchmarks which touch the most commonly used code paths: `EgyPackagerBenchmark` (small orders), `TychoBenchmark` and `BouwkampCodeBruteForcePackagerBenchmark`.
 
-Execute `PackagerBenchmark` using the command
+Execute `EgyPackagerBenchmark` using the command
 
 ```
-mvn clean package && java -jar jmh/target/benchmark.jar PackagerBenchmark -rf json
+mvn clean package && java -jar jmh/target/benchmark.jar EgyPackagerBenchmark -rf json
 ```
 
 and view the resulting `jmh-result.json` by dropping the file into a [visualizer](https://jmh.morethan.io).
@@ -46,6 +49,4 @@ Benchmarks can be executed as standalone programs (using `main(..)` method) dire
 ## Writing a benchmark
 Once a potential hotspot is identified, capture the initial state by writing a baseline benchmark. If missing, add unit tests, so you're sure to be comparing apples to apples. Also add a (as close as possible) no-operation / pass-through benchmark to sanity-check the upper limit on your results. Please note that this will need to be submitted in its own PR.
 
-Then add alternative implementations and their corresponding benchmarks. The benchmarks you want to compare go into the same class file (so that the visualizer presents them together). 
-
-
+Then add alternative implementations and their corresponding benchmarks. The benchmarks you want to compare go into the same class file (so that the visualizer presents them together).

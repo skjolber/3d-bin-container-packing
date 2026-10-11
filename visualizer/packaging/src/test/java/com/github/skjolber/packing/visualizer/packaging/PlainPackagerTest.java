@@ -26,6 +26,7 @@ public class PlainPackagerTest extends AbstractPackagerTest {
     @Test
     public void testPlainPackager() throws Exception {
     	PlainPackager p = PlainPackager.newBuilder()
+    			.withRequireFullSupport(true)
                 .build();
 
         List<ContainerItem> containerItems = ContainerItem

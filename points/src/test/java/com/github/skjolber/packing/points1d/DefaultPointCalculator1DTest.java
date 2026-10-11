@@ -2,6 +2,7 @@ package com.github.skjolber.packing.points1d;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Collections;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,9 @@ import org.junit.jupiter.api.Test;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
-import com.github.skjolber.packing.api.Dimension;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points1d.DefaultPointCalculator1D;
+import com.github.skjolber.packing.ep.points1d.DefaultPointCalculator1D.Axis;
 import com.github.skjolber.packing.ep.points1d.Point1D;
 import com.github.skjolber.packing.ep.points2d.DefaultPoint2D;
 
@@ -24,8 +25,7 @@ public class DefaultPointCalculator1DTest {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, 1, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, 1).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		
 		BoxItem boxItem = new BoxItem(box, 1);
 		
@@ -34,7 +34,7 @@ public class DefaultPointCalculator1DTest {
 	
 	@Test
 	public void testSinglePoint() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 10, 10));
 		assertThat(ep.getAll()).hasSize(1);
@@ -44,23 +44,8 @@ public class DefaultPointCalculator1DTest {
 	}
 
 	@Test
-	public void testRemoveByPredicateRemovesTheMatchingPoint() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
-		ep.clearToSize(100, 100, 0);
-		ep.add(0, createStackPlacement(0, 0, 10, 10));
-		assertThat(ep.getAll()).hasSize(1);
-
-		// removes the points which match: a point which does not match is kept
-		ep.remove(point -> point.getMinX() == 0);
-		assertThat(ep.getAll()).hasSize(1);
-
-		ep.remove(point -> point.getMinX() == 11);
-		assertThat(ep.getAll()).isEmpty();
-	}
-
-	@Test
 	public void testSinglePointCornerCase() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 0, 0));
 		assertThat(ep.getAll()).hasSize(1);
@@ -71,7 +56,7 @@ public class DefaultPointCalculator1DTest {
 
 	@Test
 	public void testSinglePointCoveringAllX() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 99, 10));
 		assertThat(ep.getAll()).hasSize(0);
@@ -79,7 +64,7 @@ public class DefaultPointCalculator1DTest {
 
 	@Test
 	public void testSinglePointCoveringWholeContainer() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 99, 99));
 		assertThat(ep.getAll()).hasSize(0);
@@ -87,7 +72,7 @@ public class DefaultPointCalculator1DTest {
 
 	@Test
 	public void testStackInXDirection() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 0);
 		ep.add(0, createStackPlacement(0, 0, 9, 49));
 
@@ -104,7 +89,7 @@ public class DefaultPointCalculator1DTest {
 	
 	@Test
 	public void testPointsX() {
-		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Dimension.X);
+		DefaultPointCalculator1D ep = new DefaultPointCalculator1D(16, Axis.X);
 		ep.clearToSize(100, 100, 100);
 		
 		//

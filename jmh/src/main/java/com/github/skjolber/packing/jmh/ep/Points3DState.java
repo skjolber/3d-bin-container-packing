@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.jmh.ep;
 
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,8 +32,7 @@ public class Points3DState {
 	private Placement createStackPlacement(int x, int y, int z, int endX, int endY, int endZ) {
 		BoxStackValue stackValue = new BoxStackValue(endX + 1 - x, endY + 1 - y, endZ + 1 - z, null, -1);
 		
-		Box box = Box.newBuilder().withSize(endX + 1 - x, endY + 1 - y, endZ + 1 - z).withWeight(0).build();
-		stackValue.setBox(box);
+		Box box = new Box(null, null, stackValue.getVolume(), 0, new BoxStackValue[] { stackValue }, Collections.emptyMap());
 		return new Placement(stackValue, new DefaultPoint3D(x, y, z, 0, 0, 0));
 	}
 	

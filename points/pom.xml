@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
-		<version>4.2.6-SNAPSHOT</version>
+		<version>5.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>points</artifactId>
@@ -27,6 +27,13 @@
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<!-- version 4 with relocated packages, to compare the point calculators with -->
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>shadowed-v4</artifactId>
+			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 		

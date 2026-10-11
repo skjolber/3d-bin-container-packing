@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.BoxStackValue;
 
 public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxItemGroupsPermutationRotationIterator {
-	
+
+	/** The number of boxes of each group (by group index, zero for removed groups), valid as long as the permutations. */
+	private int[] groupBoxCounts;
+
 	public static Builder newBuilder() {
 		return new Builder();
 	}
@@ -25,53 +27,14 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 				throw new IllegalStateException();
 			}
 			
-			List<BoxItemGroup> included = new ArrayList<>(boxItemGroups.size());
-			List<BoxItemGroup> excluded = new ArrayList<>(boxItemGroups.size());
-			
-			// box item and box item groups indexes are unique and static
-			
-			int offset = 0;
-			for (int i = 0; i < boxItemGroups.size(); i++) {
-				BoxItemGroup group = boxItemGroups.get(i);
-				if(fitsInside(group)) {
-					List<BoxItem> loadableItems = new ArrayList<>(group.size());
-					for (int k = 0; k < group.size(); k++) {
-						BoxItem item = group.get(k);
-	
-						Box box = item.getBox();
-						
-						List<BoxStackValue> boundRotations = box.rotations(dx, dy, dz);
-						Box boxClone = new Box(box, boundRotations);
-						
-						loadableItems.add(new BoxItem(boxClone, item.getCount(), offset));
-						
-						offset++;
-					}
-					included.add(new BoxItemGroup(group.getId(), loadableItems, i));
-				} else {
-					excluded.add(group);
-					
-					offset += group.size();
-				}
-			}
-
-			BoxItemGroup[] groupIndex = new BoxItemGroup[boxItemGroups.size()];
-			BoxItem[] boxIndex = new BoxItem[offset];
-			
-			for (BoxItemGroup loadableItemGroup : included) {
-				groupIndex[loadableItemGroup.getIndex()] = loadableItemGroup;
-				for (int k = 0; k < loadableItemGroup.size(); k++) {
-					BoxItem item = loadableItemGroup.get(k);
-					boxIndex[item.getIndex()] = item;
-				}
-			}
-			
-			return new DefaultBoxItemGroupPermutationRotationIterator(groupIndex, boxIndex, excluded);
+			BoxItemGroupMatrix matrix = toMatrix();
+			return new DefaultBoxItemGroupPermutationRotationIterator(matrix.groups(), matrix.boxItems(), matrix.stackValues(), matrix.excluded());
 		}
+
 	}
 	
-	public DefaultBoxItemGroupPermutationRotationIterator(BoxItemGroup[] groupIndex, BoxItem[] boxIndex, List<BoxItemGroup> excluded) {
-		super(groupIndex, boxIndex, excluded);
+	public DefaultBoxItemGroupPermutationRotationIterator(BoxItemGroup[] groupIndex, BoxItem[] boxIndex, BoxStackValue[][] stackValues, List<BoxItemGroup> excluded) {
+		super(groupIndex, boxIndex, stackValues, excluded);
 		
 		int count = getBoxCount();
 		
@@ -79,9 +42,26 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 		initiatePermutation(count);
 	}
+
+	protected DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source) {
+		this(source, copyGroupState(source));
+	}
+
+	private DefaultBoxItemGroupPermutationRotationIterator(DefaultBoxItemGroupPermutationRotationIterator source, GroupState state) {
+		super(state.groups(), state.boxes(), source.stackValues, new ArrayList<>(source.excludedBoxItemGroups));
+		this.rotations = source.rotations.clone();
+		this.reset = source.reset.clone();
+		this.permutations = source.permutations.clone();
+		this.minBoxVolume = source.minBoxVolume.clone();
+		this.groupBoxCounts = source.groupBoxCounts.clone();
+	}
+
+	public DefaultBoxItemGroupPermutationRotationIterator fork() {
+		return new DefaultBoxItemGroupPermutationRotationIterator(this);
+	}
 	
 	public BoxStackValue getStackValue(int index) {
-		return stackableItems[permutations[index]].getBox().getStackValue(rotations[index]);
+		return stackValues[permutations[index]][rotations[index]];
 	}
 
 	public void removePermutations(int count) {
@@ -137,6 +117,14 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 		}
 		
 		this.permutations = permutations;
+
+		int[] groupBoxCounts = new int[groupsMatrix.length];
+		for (int g = 0; g < groupBoxCounts.length; g++) {
+			if(groupsMatrix[g] != null) {
+				groupBoxCounts[g] = groupsMatrix[g].getBoxCount();
+			}
+		}
+		this.groupBoxCounts = groupBoxCounts;
 		
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
@@ -165,7 +153,7 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	public int nextRotation(int maxIndex) {
 		// next rotation
 		for (int i = maxIndex; i >= 0; i--) {
-			if(rotations[i] < stackableItems[permutations[i]].getBox().getStackValues().length - 1) {
+			if(rotations[i] < stackValues[permutations[i]].length - 1) {
 				rotations[i]++;
 
 				System.arraycopy(reset, 0, rotations, i + 1, rotations.length - (i + 1));
@@ -197,10 +185,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
-
 			// Find longest non-increasing suffix
-			int startIndex = limit - loadableItemGroup.getBoxCount();
+			int startIndex = limit - groupBoxCounts[g];
 
 			if(startIndex <= maxIndex && maxIndex < limit) {
 				while (maxIndex >= startIndex) {
@@ -238,18 +224,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 					return maxIndex;
 				}				
 			}
-			// reset current group
-			// TODO system arraycopy?
-			int i = startIndex;
-			
-			for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-				BoxItem indexedStackableItem = (BoxItem)loadableItem;
-				for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-					permutations[i] = indexedStackableItem.getIndex();
-							
-					i++;
-				}
-			}
+			// reset current group: the block holds the group's box indexes, which are in ascending order in the first permutation
+			Arrays.sort(permutations, startIndex, limit);
 
 			// skip to next group
 			limit = startIndex;
@@ -274,11 +250,9 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 			if(groupsMatrix[g] == null) {
 				continue;
 			}
-			BoxItemGroup loadableItemGroup = groupsMatrix[g];
-
 			// Find longest non-increasing suffix
 			int i = endIndex;
-			int startIndex = endIndex - loadableItemGroup.getBoxCount() + 1;
+			int startIndex = endIndex - groupBoxCounts[g] + 1;
 
 			while (i > startIndex && permutations[i - 1] >= permutations[i])
 				i--;
@@ -286,18 +260,8 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 
 			// Are we at the last permutation already?
 			if(i <= startIndex) {
-				// reset current group
-				// TODO system arraycopy?
-				i = startIndex;
-				
-				for (BoxItem loadableItem : loadableItemGroup.getItems()) {
-					BoxItem indexedStackableItem = (BoxItem)loadableItem;
-					for(int k = 0; k < indexedStackableItem.getCount(); k++) {
-						permutations[i] = indexedStackableItem.getIndex();
-								
-						i++;
-					}
-				}
+				// reset current group: the block holds the group's box indexes, which are in ascending order in the first permutation
+				Arrays.sort(permutations, startIndex, endIndex + 1);
 
 				// skip to next group
 				endIndex = startIndex - 1;

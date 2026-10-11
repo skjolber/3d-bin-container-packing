@@ -64,10 +64,12 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	public void ensureCapacity(int size) {
 		if(points.length < size) {
-			SimplePoint3D[] nextPoints = new SimplePoint3D[size];
+			// grow geometrically, so that a growing point count does not reallocate on every add
+			int capacity = Math.max(size, points.length + (points.length >> 1) + 1);
+			SimplePoint3D[] nextPoints = new SimplePoint3D[capacity];
 			System.arraycopy(this.points, 0, nextPoints, 0, this.size);
 
-			boolean[] nextFlag = new boolean[size];
+			boolean[] nextFlag = new boolean[capacity];
 			System.arraycopy(this.flag, 0, nextFlag, 0, this.size);
 
 			this.points = nextPoints;
@@ -140,8 +142,8 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 			}
 			index++;
 		}
-		Arrays.fill(points, offset, previousSize, null);
-		Arrays.fill(flag, offset, previousSize, false);
+		// no point fill: the vacated slots [offset, previousSize) keep their stale references, see resetWithoutFlags()
+		// no flag fill: the loop above has already cleared every flag in [offset, previousSize)
 		size = offset;
 
 		return index - offset;
@@ -174,7 +176,7 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 
 	public void copyInto(Point3DFlagList destination) {
 		if(size < destination.size) {
-			Arrays.fill(destination.points, size, destination.size, null);
+			// no point fill: the destination tail keeps its stale references, see resetWithoutFlags()
 			Arrays.fill(destination.flag, size, destination.size, false);
 		} else if(size > destination.size) {
 			destination.ensureCapacity(size);
@@ -242,21 +244,21 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		points[i] = point;
 	}
 	
-	public Point3DFlagList clone(boolean clonePoints) {
-		Point3DFlagList clone = new Point3DFlagList(points.length);
+	public Point3DFlagList copy(boolean copyPoints) {
+		Point3DFlagList copy = new Point3DFlagList(points.length);
 
-		clone.size = size;
+		copy.size = size;
 
-		System.arraycopy(flag, 0, clone.flag, 0, flag.length);
-		if(clonePoints) {
+		System.arraycopy(flag, 0, copy.flag, 0, flag.length);
+		if(copyPoints) {
 			for(int i = 0; i < size; i++) {
-				clone.points[i] = points[i].clone();
+				copy.points[i] = points[i].copy();
 			}
 		} else {
-			System.arraycopy(points, 0, clone.points, 0, points.length);
+			System.arraycopy(points, 0, copy.points, 0, points.length);
 		}
 		
-		return clone;
+		return copy;
 	}
 
 	@Override
@@ -426,8 +428,21 @@ public class Point3DFlagList implements Serializable, Iterable<Point> {
 		this.size = i;
 	}
 	
+	/**
+	 * Empty the list, assuming that no flag is set.
+	 * <p>
+	 * The point slots are deliberately not nulled: every reader is bounded by {@link #size()} and every writer
+	 * stores a point into a slot before it makes the slot visible by increasing the size, so a slot at or after the
+	 * size is never read. Such a slot keeps its stale point reference only until the next pass through the list
+	 * overwrites it, so at most {@link #getCapacity()} unreachable points are retained per list.
+	 * <p>
+	 * The same holds for the other hot paths which shrink a list: {@link #removeFlagged()} (the slots vacated by the
+	 * compaction) and {@link #copyInto(Point3DFlagList)} (the tail of a larger destination) do not null them either.
+	 * Only the cold lifecycle methods {@link #clear()}, {@link #reset()} and {@link #setSize(int)} release the
+	 * references, so that a long-lived list does not keep points alive. The flags are not covered by this: a flag
+	 * at or after the size must always be false, because {@link #add(SimplePoint3D)} does not write it.
+	 */
 	public void resetWithoutFlags() {
-		Arrays.fill(points, 0, size, null);
 		this.size = 0;
 	}
 

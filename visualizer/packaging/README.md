@@ -1,2 +1,4 @@
 # packaging visualizer
-Simple visualization of packaging results. This module convert one or more containers to a JSON file for use in the viewer.
+Simple visualization of packaging results. This module converts one or more containers to a JSON file for use in the viewer.
+
+A packager result can be visualized with `DefaultPackagingResultVisualizerFactory.visualize(PackagerResult, File)`, and validated against the packager input at the same time with `visualize(PackagerResult, ValidatorResultBuilder, File)`: the validation reasons are logged and added to the boxes they concern. Several results of the same order (for example from different packagers) can be compared in the viewer with `visualize(Map<String, PackagerResult>, ValidatorResultBuilder, File)`; the validator result builder (for example from `DefaultValidator`, in the `validators` artifact) is used for every result, or may be `null` to validate only the load limits of the boxes.

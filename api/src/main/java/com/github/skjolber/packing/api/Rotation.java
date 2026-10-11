@@ -2,7 +2,6 @@ package com.github.skjolber.packing.api;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 
@@ -144,9 +143,12 @@ public class Rotation {
 	protected Surface rear0; // xz
 	protected Surface rear90;
 
-	public Rotation(List<SurfaceRotate> sides) {
+	private Rotation(List<SurfaceRotate> sides) {
 		super();
-		this.surfaces = sides.stream().map(s -> s.getSurface()).collect(Collectors.toList());
+		this.surfaces = new ArrayList<>(sides.size());
+		for (SurfaceRotate surfaceRotate : sides) {
+			this.surfaces.add(surfaceRotate.getSurface());
+		}
 		for (SurfaceRotate surfaceRotate : sides) {
 
 			switch (surfaceRotate.getSurface().label) {

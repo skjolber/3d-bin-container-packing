@@ -1,19 +1,19 @@
 # Visualizer API Module
 
 ## Purpose
-Defines the JSON serialisation interfaces and data structures used to represent packing results for the Three.js viewer. Acts as the contract between the Java back-end and the front-end visualizer.
+JSON data types for packing results, written by `visualizer/packaging` and read by the viewer (`visualizer/viewer`).
 
 ## Key Packages
-- `com.github.skjolber.packing.visualizer.api.packaging` — Core visualizer types:
-  - `AbstractVisualizer`, `PackagingResultVisualizer` — root visualizer interfaces
-  - `BoxVisualizer`, `ContainerVisualizer`, `StackVisualizer`, `StackPlacementVisualizer` — per-object serialisation wrappers
-  - `PointVisualizer` — free-point visualisation
-  - `VisualizerPlugin` — extension point for custom rendering data
+- `com.github.skjolber.packing.visualizer.api.packaging`:
+  - `PackagingResultVisualizer`: the root object (`toJson()`), a list of containers
+  - `ContainerVisualizer`, `StackVisualizer`, `StackPlacementVisualizer`, `BoxVisualizer`: a container, its stack, the placements and their boxes
+  - `PointVisualizer`: a free point (extreme point) after a placement
+- `com.github.skjolber.packing.visualizer.api.VisualizerPlugin`: extension point for extra data
 
 ## Architecture Notes
-- Depends on **core** (consumes `PackagerResult`, `StackPlacement`, etc.).
-- Jackson annotations drive JSON output format; the viewer (`visualizer/viewer`) parses this JSON — any field renaming is a breaking change to the front-end.
-- `VisualizerPlugin` follows the plugin pattern: implement and register to attach extra data to the JSON output.
+- Plain Jackson beans; the field names are the JSON format.
+- The viewer parses the JSON in `visualizer/viewer/src/model.ts` (`parsePackaging`). When changing the format, update the parser and regenerate the shared sample
+  (see `visualizer/packaging/agents.md`). Backwards compatibility is not needed: the viewer runs locally, from the same checkout.
 
 ## Dependencies
 | Scope   | Artifact |

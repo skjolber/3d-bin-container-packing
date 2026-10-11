@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 
 const CONTAINERS_FILE = path.resolve(__dirname, '..', 'public', 'assets', 'containers.json');
-const EMPTY_RESPONSE = '{"containers":[]}';
+const EMPTY_RESPONSE = '{"results":[]}';
 
 console.log('[viewer] setupProxy: watching containers.json at', CONTAINERS_FILE);
 
@@ -17,8 +17,8 @@ module.exports = function (app) {
     try {
       data = fs.readFileSync(CONTAINERS_FILE, 'utf8');
       const parsed = JSON.parse(data);
-      const count = parsed.containers ? parsed.containers.length : 0;
-      console.log(`[viewer] Serving containers.json: ${count} container(s) from ${CONTAINERS_FILE}`);
+      const count = parsed.results ? parsed.results.length : 0;
+      console.log(`[viewer] Serving containers.json: ${count} result(s) from ${CONTAINERS_FILE}`);
     } catch (e) {
       data = EMPTY_RESPONSE;
       console.log('[viewer] containers.json not found or invalid — serving empty response');

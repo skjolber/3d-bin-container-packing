@@ -334,7 +334,7 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 		do {
 			count++;
 
-			int[] permutations = cloneArray(rotator.getPermutations());
+			int[] permutations = copyArray(rotator.getPermutations());
 
 			int length = rotator.nextPermutation();
 
@@ -357,10 +357,10 @@ public abstract class AbstractBoxItemPermutationRotationIteratorTest<T extends A
 		return -1;
 	}
 
-	public static int[] cloneArray(int[] permutations) {
-		int[] clone = new int[permutations.length];
-		System.arraycopy(permutations, 0, clone, 0, permutations.length);
-		return clone;
+	public static int[] copyArray(int[] permutations) {
+		int[] copy = new int[permutations.length];
+		System.arraycopy(permutations, 0, copy, 0, permutations.length);
+		return copy;
 	}
 
 	@Test

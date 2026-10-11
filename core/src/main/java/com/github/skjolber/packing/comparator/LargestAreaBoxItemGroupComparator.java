@@ -1,11 +1,10 @@
 package com.github.skjolber.packing.comparator;
 
-import java.util.Comparator;
-
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 
-public class LargestAreaBoxItemGroupComparator implements Comparator<BoxItemGroup> {
+public class LargestAreaBoxItemGroupComparator implements BoxItemGroupComparator {
 
 	protected static final LargestAreaBoxItemGroupComparator INSTANCE = new LargestAreaBoxItemGroupComparator();
 	
