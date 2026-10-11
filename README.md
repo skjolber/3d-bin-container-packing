@@ -324,7 +324,10 @@ List<ValidatorResultReason> reasons = new ArrayList<>();
 boolean valid = validator.isValid(container.getStack().getPlacements(), reasons);
 ```
 
-`DefaultValidator` validates a whole `PackagerResult` against the input.
+`DefaultValidator` validates a whole `PackagerResult` against the input: box counts, containment, intersecting boxes, that the obstacles of
+the containers are left empty, and insertion and extraction order. For the container items which are given a placement validator
+(`withPlacementValidatorBuilderFactory(..)` on the container item of the validator's result builder), it also validates the load
+constraints of the boxes, and, if set, a stability rule such as `FullySupportedStabilityValidator`.
 
 ## Packager controls
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 

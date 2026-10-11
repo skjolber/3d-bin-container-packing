@@ -174,7 +174,7 @@ the packager. It covers, among other checks:
 - box counts and box-item order;
 - insertion order, groups inserted together, extraction order and container
   priority;
-- containment and box intersection;
+- containment, box intersection and obstacles left empty;
 - weight, pressure, supported-count, and identical-supporter constraints;
 - stability and centre-of-gravity rules;
 - manifest rules;

@@ -33,7 +33,8 @@ without regard to the door when there is no box item order).
 
 Boxes which are already in a container (obstacles, see `withObstacles(..)` on the container item builder) are
 inserted first: the packagers only place boxes where no obstacle rests on them or is in their path, and the result
-containers keep the obstacles (`Container.getObstacles()`), which the validator includes.
+containers keep the obstacles (`Container.getObstacles()`), which the validator includes. `ObstacleIntersectionValidator` (part of
+`DefaultValidator`) checks that no box takes up space of an obstacle.
 
 ## Box item groups
 

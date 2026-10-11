@@ -85,6 +85,7 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 	private BoxCountValidator boxCountValidator = new BoxCountValidator();
 	private ContainerCountValidator containerCountValidator = new ContainerCountValidator();
 	private StackValidator stackValidator = new StackValidator();
+	private ObstacleIntersectionValidator obstacleValidator = new ObstacleIntersectionValidator();
 	private InsertionOrderValidator insertionOrderValidator = new InsertionOrderValidator();
 	private ExtractionOrderValidator extractionOrderValidator = new ExtractionOrderValidator();
 	private GroupInsertionValidator groupInsertionValidator = new GroupInsertionValidator();
@@ -162,6 +163,10 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			checkInterrupted(interrupt);
 			ValidatorContainerItem referenceItem = containersById.get(container.getId());
 
+			// the boxes leave the obstacles of the container empty
+			if(!obstacleValidator.validate(container, reasons)) {
+				return false;
+			}
 			// the placements must be in a possible insertion order
 			if(!insertionOrderValidator.validate(container, reasons)) {
 				return false;

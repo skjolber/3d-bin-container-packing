@@ -32,6 +32,7 @@ import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadWeightRea
 import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
 import com.github.skjolber.packing.validator.reasons.BlockedExtractionReason;
 import com.github.skjolber.packing.validator.reasons.BlockedInsertionReason;
+import com.github.skjolber.packing.validator.reasons.BoxIntersectsObstacleReason;
 import com.github.skjolber.packing.validator.reasons.ContainerPriorityReason;
 import com.github.skjolber.packing.validator.reasons.InterleavedGroupReason;
 import com.github.skjolber.packing.validator.reasons.InsertedBeforeSupporterReason;
@@ -377,6 +378,10 @@ public class DefaultPackagingResultVisualizerFactory extends AbstractPackagingRe
 		}
 		if(reason instanceof ContainerPriorityReason r) {
 			return List.of(r.getPlacement(), r.getEarlier());
+		}
+		if(reason instanceof BoxIntersectsObstacleReason r) {
+			// the obstacle is not a placement of the stack
+			return List.of(r.getPlacement());
 		}
 		if(reason instanceof ExcessiveLoadPressureReason r) {
 			return List.of(r.getPlacement());
