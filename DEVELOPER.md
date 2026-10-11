@@ -53,11 +53,14 @@ level; configure both when a rule must apply throughout the packing. Brute-force
 packagers use their own point-filter/comparator extension points instead.
 
 Check that the packager does not already have the rule before writing placement controls: `PlacementRulesExampleTest` in the test sources
-of `core` (package `com.github.skjolber.packing.packer.example`) packs four rules which need none, each next to the same input without the rule:
-full support (`withRequireFullSupport(true)` on the packager), keeping boxes out of a region (the obstacles of the container item), a box
-which carries boxes of its own type only (`withMaxLoadIdenticalBoxCount(-1)` on the box) and a box which must be on the floor (point
-controls of the container item, see `HeavyItemsOnGroundLevelPointControls`). Custom placement controls replace the default ones, so they
-retain none of these.
+of `core` (package `com.github.skjolber.packing.packer.example`) packs three rules which need none, each next to the same input without
+the rule, in a single container: full support (`withRequireFullSupport(true)` on the packager), keeping boxes out of a region (the
+obstacles of the container item) and a box which carries boxes of its own type only (`withMaxLoadIdenticalBoxCount(-1)` on the box),
+and checks the layouts with the validators. Custom placement controls replace the default ones, so they retain none of these.
+
+A rule which is about which box it is needs code. The worked example of point controls is `GroundLevelBoxIdPointControls`, in the same
+package: it keeps the boxes with given ids on the floor, by giving them only the points at the floor. It extends `DefaultPointControls`,
+has a builder which extends `AbstractPointControlsBuilder`, and a factory (`newFactory(String... boxIds)`) with an id, see below.
 
 For the common case of ranking boxes and positions differently, the plain and LAFF builders also take a consumer:
 `withPlacementControlsBuilderFactory(b -> b.withPlacementComparator(..))` (and
@@ -123,12 +126,14 @@ Packagers reuse the result of a container for another container when the contain
 factories are the same instance or carry the same id (`getId()`; the default is `null`, which never matches another instance).
 Containers without controls match each other, but a result which was packed without controls is not reused for a container with them.
 The id must cover everything which changes the controls' behaviour, so put the configuration in it, for example
-`"heavyItemsOnGroundLevel:" + maxWeight`. A lambda has no id; wrap it to let it take part in reuse:
+`"groundLevelBoxId:" + boxIds`. A lambda has no id; wrap it to let it take part in reuse:
 
 ```java
-PointControlsBuilderFactory factory = PointControlsBuilderFactory.of("heavyItemsOnGroundLevel:" + maxWeight,
-    () -> HeavyItemsOnGroundLevelPointControls.newBuilder().withMaxWeight(maxWeight));
+PointControlsBuilderFactory factory = PointControlsBuilderFactory.of("groundLevelBoxId:" + boxIds,
+    () -> new MyPointControlsBuilder(boxIds));
 ```
+
+`GroundLevelBoxIdPointControls.newFactory(..)` does this.
 
 Packagers run concurrently (for example under `ParallelContainerPackingStrategy` and the parallel brute-force packager), so
 factories and comparators you supply (the controls factories, `PlacementComparatorFactory`, `BoxItemComparator`,
