@@ -21,9 +21,8 @@ import com.github.skjolber.packing.api.interrupt.DefaultPackagerInterrupt;
 import com.github.skjolber.packing.api.validator.ValidatorResult;
 import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.manifest.ManifestValidator;
-import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
-import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
+import com.github.skjolber.packing.validator.load.DefaultLoadValidatorBuilder;
 import com.github.skjolber.packing.validator.reasons.ValidatorInterruptedException;
 
 public class DefaultValidator extends AbstractValidator<DefaultValidator.DefaultValidatorResultBuilder> {
@@ -59,19 +58,21 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			}
 
 			PackagerInterruptSupplier interrupt = interruptBuilder.build();
+			PlacementCoverage coverage = new PlacementCoverage(defaultPlacementValidation);
 			try {
 				checkInterrupted(interrupt);
 				List<ValidatorResultReason> reasons = new ArrayList<>();
 				boolean valid;
 				if(items != null && !items.isEmpty()) {
-					valid = validateBoxItems(items, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
+					valid = validateBoxItems(items, order, maxContainerCount, containers, packagerResult, interrupt, coverage, reasons);
 				} else {
-					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containers, packagerResult, interrupt, reasons);
+					valid = validateBoxItemGroups(itemGroups, order, maxContainerCount, containers, packagerResult, interrupt, coverage, reasons);
 				}
 				
 				long duration = System.currentTimeMillis() - start;
 				
-				return new ValidatorResult(duration, valid, false, reasons);
+				int containerCount = packagerResult.getContainers().size();
+				return new ValidatorResult(duration, valid, false, reasons, coverage.isLoadValidated(containerCount), coverage.isStabilityValidated(containerCount), coverage.isLoadConstrained());
 			} catch (ValidatorInterruptedException e) {
 				long duration = System.currentTimeMillis() - start;
 				return new ValidatorResult(duration, false, true, Collections.emptyList());
@@ -96,7 +97,8 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 		return new DefaultValidatorResultBuilder();
 	}
 
-	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	private boolean validateBoxItems(List<BoxItem> items, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result,
+			PackagerInterruptSupplier interrupt, PlacementCoverage coverage, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
 		checkInterrupted(interrupt);
 		if(!orderValidator.validate(items, order, result.getContainers())) {
@@ -121,10 +123,11 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons);
+		return validate(containers, result, interrupt, coverage, reasons);
 	}
 
-	public boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	private boolean validateBoxItemGroups(List<BoxItemGroup> itemGroups, Order order, int maxContainerCount, List<ValidatorContainerItem> containers, PackagerResult result,
+			PackagerInterruptSupplier interrupt, PlacementCoverage coverage, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 
 		checkInterrupted(interrupt);
 		if(!orderValidator.validate(itemGroups, order, result)) {
@@ -149,10 +152,11 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 			return false;
 		}
 
-		return validate(containers, result, interrupt, reasons);
+		return validate(containers, result, interrupt, coverage, reasons);
 	}
 
-	protected boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
+	private boolean validate(List<ValidatorContainerItem> containers, PackagerResult result, PackagerInterruptSupplier interrupt, PlacementCoverage coverage,
+			List<ValidatorResultReason> reasons) throws ValidatorInterruptedException {
 		
 		Map<String, ValidatorContainerItem> containersById = new HashMap<>();
 		for (ValidatorContainerItem validatorContainerItem : containers) {
@@ -191,15 +195,41 @@ public class DefaultValidator extends AbstractValidator<DefaultValidator.Default
 					return false;
 				}
 			}
-			if(referenceItem.hasPlacementValidatorBuilderFactory()) {
-				PlacementValidator placementValidator = referenceItem.createPlacementValidator(referenceItem.getContainer(), container.getStack().getPlacements());
-				if(!placementValidator.isValid(container.getStack().getPlacements(), reasons)) {
-					return false;
-				}
+			if(!validatePlacements(referenceItem, container, coverage, reasons)) {
+				return false;
 			}
 		}
 		
 		return true;
+	}
+
+	/**
+	 * Validate the placements of a container. With a placement validator builder factory, that decides what is validated. Without, the load
+	 * constraints which the boxes declare are validated (unless opted out of), and there is no stability rule. As the load validators
+	 * build a support graph, nothing is created if no box declares a load constraint.
+	 */
+
+	private boolean validatePlacements(ValidatorContainerItem referenceItem, Container container, PlacementCoverage coverage, List<ValidatorResultReason> reasons) {
+		List<Placement> placements = container.getStack().getPlacements();
+		if(referenceItem.hasPlacementValidatorBuilderFactory()) {
+			PlacementValidator placementValidator = referenceItem.createPlacementValidator(referenceItem.getContainer(), placements);
+			boolean valid = placementValidator.isValid(placements, reasons);
+			boolean loadValidated = placementValidator.isLoadValidated();
+			coverage.add(loadValidated, placementValidator.isStabilityValidated(), loadValidated && DefaultLoadValidatorBuilder.hasLoadConstraints(placements));
+			return valid;
+		}
+		if(!coverage.isDefaultPlacementValidation()) {
+			return true;
+		}
+		if(!DefaultLoadValidatorBuilder.hasLoadConstraints(placements)) {
+			// the loads are validated, but there is nothing to check
+			coverage.add(true, false, false);
+			return true;
+		}
+		PlacementValidator placementValidator = referenceItem.createPlacementValidator(referenceItem.getContainer(), placements);
+		boolean valid = placementValidator.isValid(placements, reasons);
+		coverage.add(placementValidator.isLoadValidated(), placementValidator.isStabilityValidated(), true);
+		return valid;
 	}
 
 	protected void checkInterrupted(PackagerInterruptSupplier interrupt) throws ValidatorInterruptedException {

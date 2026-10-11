@@ -298,4 +298,32 @@ public class DefaultLoadValidatorBuilderTest {
 
 		assertThat(result).isInstanceOf(WeightLoadValidator.class);
 	}
+
+	// -----------------------------------------------------------------------
+	// hasLoadConstraints: the cheap check which tells whether build() returns a validator
+	// -----------------------------------------------------------------------
+
+	/**
+	 * No placement has a load constraint: nothing to validate, so {@link DefaultLoadValidatorBuilder#build()} returns {@code null} too.
+	 */
+	@Test
+	void testHasLoadConstraints_noConstraints_false() {
+		List<Placement> placements = List.of(placement("A", 10, 10, 1, 5, 0, 0, 0), placement("B", 10, 10, 1, 5, 0, 0, 1));
+
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(placements)).isFalse();
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(List.of())).isFalse();
+	}
+
+	/**
+	 * Every kind of load constraint is found, also on the last of the placements.
+	 */
+	@Test
+	void testHasLoadConstraints_anyKindOfConstraint_true() {
+		Placement plain = placement("A", 10, 10, 1, 5, 0, 0, 0);
+
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(List.of(plain, placementWithWeightLimit("B", 10, 10, 1, 5, 20L, 0, 0, 1)))).isTrue();
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(List.of(plain, placementWithPressureLimit("B", 10, 10, 1, 5, 2.0, 0, 0, 1)))).isTrue();
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(List.of(plain, placementWithBoxCountLimit("B", 10, 10, 1, 5, 2, 0, 0, 1)))).isTrue();
+		assertThat(DefaultLoadValidatorBuilder.hasLoadConstraints(List.of(plain, placementIdenticalOnly("B", 10, 10, 1, 5, 0, 0, 1)))).isTrue();
+	}
 }

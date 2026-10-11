@@ -49,6 +49,8 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 	protected List<ValidatorContainerItem> containers;
 
 	protected PackagerResult packagerResult;
+
+	protected boolean defaultPlacementValidation = true;
 	
 	public static class DefaultPlacementValidatorBuilderFactoryBuilder implements PlacementValidatorBuilderFactoryBuilder {
 
@@ -165,6 +167,12 @@ public abstract class AbstractValidatorResultBuilder<B extends AbstractValidator
 	@Override
 	public B withPackagerResult(PackagerResult packagerResult) {
 		this.packagerResult = packagerResult;
+		return (B) this;
+	}
+
+	@Override
+	public B withDefaultPlacementValidation(boolean defaultPlacementValidation) {
+		this.defaultPlacementValidation = defaultPlacementValidation;
 		return (B) this;
 	}
 	

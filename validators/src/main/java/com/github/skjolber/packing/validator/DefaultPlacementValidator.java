@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.validator.ValidatorResultReason;
 import com.github.skjolber.packing.api.validator.placement.LoadValidator;
 import com.github.skjolber.packing.api.validator.placement.PlacementValidator;
 import com.github.skjolber.packing.api.validator.placement.StabilityValidator;
+import com.github.skjolber.packing.validator.stability.NoStabilityValidator;
 
 public class DefaultPlacementValidator implements PlacementValidator {
 
@@ -51,6 +52,24 @@ public class DefaultPlacementValidator implements PlacementValidator {
 		}
 
 		return true;
+	}
+
+	/**
+	 * @return true if there is a load validator (which may have nothing to check, see {@linkplain DefaultPlacementValidatorBuilder})
+	 */
+
+	@Override
+	public boolean isLoadValidated() {
+		return loadValidator != null;
+	}
+
+	/**
+	 * @return true if there is a stability validator which validates something, so not {@linkplain NoStabilityValidator}
+	 */
+
+	@Override
+	public boolean isStabilityValidated() {
+		return stabilityValidator != null && !(stabilityValidator instanceof NoStabilityValidator);
 	}
 
 }

@@ -40,6 +40,24 @@ import com.github.skjolber.packing.api.validator.placement.LoadValidator;
  */
 public class DefaultLoadValidatorBuilder {
 
+	/**
+	 * Whether any of the placements has a load constraint: a cheap check (the flags of the stack values), which does not build a support
+	 * graph. If not, {@link #build()} returns {@code null}, and there is nothing to validate.
+	 *
+	 * @param placements the placements
+	 * @return true if the stack value of at least one placement has a maximum load weight, pressure or box count, or the constraint that
+	 *         only identical boxes may be stacked on top
+	 */
+	public static boolean hasLoadConstraints(List<Placement> placements) {
+		for(Placement placement : placements) {
+			BoxStackValue sv = placement.getStackValue();
+			if(sv.isMaxLoadWeight() || sv.isMaxLoadPressure() || sv.isMaxLoadBoxCount() || sv.isLoadIdenticalBoxOnly()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	private List<Placement> placements;
 	private Container container;
 

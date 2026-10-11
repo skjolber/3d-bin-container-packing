@@ -183,6 +183,13 @@ the packager. It covers, among other checks:
 Load and stability rules use the placements' positions to find which boxes rest
 on which, so results from any packager can be validated.
 
+The load constraints which the boxes declare are validated by default, without
+any configuration (and at no cost if no box declares one); this can be switched
+off per validation with `withDefaultPlacementValidation(false)`. Stability rules
+are a policy, and are added per container item with a placement validator
+builder factory. The validator result reports what was validated:
+`isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()`.
+
 ## Integration and tooling
 
 - Java API module with builder-based model and result APIs.

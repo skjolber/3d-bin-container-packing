@@ -47,11 +47,11 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
  * same input without the rule. Another test combines the rules.
  * <p>
  * The layouts are checked with the validators module, which has the rules too: {@linkplain DefaultValidator} checks that the obstacles of
- * the result containers are left empty, and, for container items which have a placement validator builder factory (without one, loads and
- * stability are not validated), the load constraints which the boxes carry, such as identical boxes only. Full support is a stability rule
- * of the placement validator. The validator checks the rules it sees in the result or is told about, so a test which only calls it would
- * pass if the rule had been left out of the input. Each test therefore also checks one position directly, which differs without the rule,
- * and that the result has the obstacle.
+ * the result containers are left empty, and the load constraints which the boxes carry, such as identical boxes only, with no configuration
+ * (the load constraints are validated by default). Full support is a stability rule, which is a policy, so it is added to the container item with a
+ * placement validator builder factory which has a stability validator. The validator checks the rules it sees in the result or is told
+ * about, so a test which only calls it would pass if the rule had been left out of the input. Each test therefore also checks one position
+ * directly, which differs without the rule, and that the result has the obstacle.
  * <p>
  * The positions follow from how the plain packager ranks the choices, by default: the box with the largest volume (then the largest weight)
  * is placed first, and boxes which are alike in that are placed in the order they are listed in. A box which is not rotated is placed in
@@ -596,17 +596,19 @@ class PlacementRulesExampleTest {
 
 	/**
 	 * The validator, for the same single container and boxes as the packager: it finds the obstacles in the result containers, and the load
-	 * constraints in the box stack values of the placements.
+	 * constraints in the box stack values of the placements (validated by default).
 	 *
-	 * @param requireFullSupport whether to also validate that every box is fully supported
+	 * @param requireFullSupport whether to also validate that every box is fully supported: a stability rule, so the container item is
+	 *        given a placement validator builder factory with the stability validator
 	 */
 	private ValidatorResultBuilder validation(Container container, boolean requireFullSupport, BoxItem... boxItems) {
 		return validator.newResultBuilder()
-				.withContainerItem(b -> b.withContainerItem(container, 1).withPlacementValidatorBuilderFactory(f -> {
+				.withContainerItem(b -> {
+					b.withContainerItem(container, 1);
 					if(requireFullSupport) {
-						f.withStabilityValidator(new FullySupportedStabilityValidator());
+						b.withPlacementValidatorBuilderFactory(f -> f.withStabilityValidator(new FullySupportedStabilityValidator()));
 					}
-				}))
+				})
 				.withMaxContainerCount(1)
 				.withBoxItems(boxItems);
 	}

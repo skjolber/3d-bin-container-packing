@@ -325,9 +325,10 @@ boolean valid = validator.isValid(container.getStack().getPlacements(), reasons)
 ```
 
 `DefaultValidator` validates a whole `PackagerResult` against the input: box counts, containment, intersecting boxes, that the obstacles of
-the containers are left empty, and insertion and extraction order. For the container items which are given a placement validator
-(`withPlacementValidatorBuilderFactory(..)` on the container item of the validator's result builder), it also validates the load
-constraints of the boxes, and, if set, a stability rule such as `FullySupportedStabilityValidator`.
+the containers are left empty, insertion and extraction order, and the load constraints which the boxes declare (cheap if there are none).
+Stability is a policy, so a rule such as `FullySupportedStabilityValidator` is added with `withPlacementValidatorBuilderFactory(..)` on the
+container item of the validator's result builder, and the load validation is skipped with `withDefaultPlacementValidation(false)`. The
+validator result says what was validated: `isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()` (if false, the load validation had nothing to check).
 
 ## Packager controls
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 

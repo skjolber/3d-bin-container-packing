@@ -18,6 +18,9 @@ import com.github.skjolber.packing.api.validator.placement.PlacementValidatorBui
 
 public class ValidatorContainerItem extends ContainerItem {
 
+	/** Load validation only: stateless, so shared */
+	private static final PlacementValidatorBuilderFactory DEFAULT_PLACEMENT_VALIDATOR_BUILDER_FACTORY = new DefaultPlacementValidatorBuilderFactory(null);
+
 	protected ManifestValidatorBuilderFactory manifestValidatorBuilderFactory;
 	protected PlacementValidatorBuilderFactory placementValidatorBuilderFactory;
 
@@ -46,11 +49,19 @@ public class ValidatorContainerItem extends ContainerItem {
 				.build();
 	}
 	
+	/**
+	 * @param container the container
+	 * @param placements the placements to validate
+	 * @return the placement validator of the factory of this container item, or, if there is none, a validator of the load constraints
+	 *         which the boxes declare (and no stability rule)
+	 */
+
 	public PlacementValidator createPlacementValidator(Container container, List<Placement> placements) {
-		if(placementValidatorBuilderFactory == null) {
-			placementValidatorBuilderFactory = new DefaultPlacementValidatorBuilderFactory(null);
+		PlacementValidatorBuilderFactory factory = placementValidatorBuilderFactory;
+		if(factory == null) {
+			factory = DEFAULT_PLACEMENT_VALIDATOR_BUILDER_FACTORY;
 		}
-		return placementValidatorBuilderFactory.createPlacementValidatorBuilder()
+		return factory.createPlacementValidatorBuilder()
 				.withContainer(container)
 				.withPlacements(placements)
 				.build();
