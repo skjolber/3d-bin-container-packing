@@ -52,6 +52,10 @@ try (PlainPackager packager = PlainPackager.newBuilder()
 level; configure both when a rule must apply throughout the packing. Brute-force
 packagers use their own point-filter/comparator extension points instead.
 
+Worked examples: see `ConstrainedPlacementControlsExampleTest` in `core`, for controls which depend on the `api` module only
+(`ConstrainedPlacementControlsBuilderFactory` in the `test` module, package `com.github.skjolber.packing.test.example`): full support as a
+setting of the whole packager, per-box constraints (stack on the same type only, floor only) and a region where nothing is placed.
+
 For the common case of ranking boxes and positions differently, the plain and LAFF builders also take a consumer:
 `withPlacementControlsBuilderFactory(b -> b.withPlacementComparator(..))` (and
 `withFirstPlacementControlsBuilderFactory(b -> ..)` for LAFF) configure the default controls, including
