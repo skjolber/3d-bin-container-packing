@@ -24,19 +24,19 @@
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>api</artifactId>
-			<version>${v4.version}</version>
+			<version>4.2.5</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>points</artifactId>
-			<version>${v4.version}</version>
+			<version>4.2.5</version>
 			<optional>true</optional>
 		</dependency>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 			<artifactId>core</artifactId>
-			<version>${v4.version}</version>
+			<version>4.2.5</version>
 			<optional>true</optional>
 		</dependency>
 		<!-- used by version 4 and kept under its own package: the same version as 5.x uses -->
