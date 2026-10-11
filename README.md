@@ -362,9 +362,9 @@ npm start
 
 The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes; write it with `DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`).
 
-Details: [visualizer](docs/visualizer.md), including the setup, what the viewer shows and the example tests.
+Details: [visualizer](docs/visualizer.md), including the setup, what the viewer shows (with screenshots) and the example tests.
 
-![Alt text](visualizer/viewer/images/view.png?raw=true "Demo")
+![Four results of one order compared in the viewer](docs/images/visualizer-compare-results.gif)
 
 # Get involved
 If you have any questions, comments or improvement suggestions, please file an issue or submit a pull-request. 
