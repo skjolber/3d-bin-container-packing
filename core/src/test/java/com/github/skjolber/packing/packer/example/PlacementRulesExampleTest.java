@@ -15,11 +15,15 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.packager.control.point.PointControlsBuilderFactory;
 import com.github.skjolber.packing.api.validator.ValidatorResultBuilder;
 import com.github.skjolber.packing.packer.plain.PlainPackager;
 import com.github.skjolber.packing.test.assertj.PackagerResultAssert;
 import com.github.skjolber.packing.validator.DefaultValidator;
+import com.github.skjolber.packing.validator.SupportGraph;
+import com.github.skjolber.packing.validator.load.reasons.ExcessiveLoadBoxCountReason;
+import com.github.skjolber.packing.validator.load.reasons.NonIdenticalLoadBoxReason;
 import com.github.skjolber.packing.validator.stability.FullySupportedStabilityValidator;
 import com.github.skjolber.packing.validator.stability.reasons.InsufficientSupportAreaReason;
 
@@ -31,8 +35,8 @@ import com.github.skjolber.packing.validator.stability.reasons.InsufficientSuppo
  * <li>Full support is an option of the packager: {@code withRequireFullSupport(true)}.
  * <li>Keeping boxes out of a part of the container is done with the obstacles of the container item. An obstacle which runs from the
  * floor to the roof is a column which no box can be placed in or over.
- * <li>A box which carries boxes of its own type only is a load constraint of the box: {@code withMaxLoadIdenticalBoxCount(-1)} (no
- * limit on the number of boxes on top, but they must be identical).
+ * <li>A box which carries boxes of its own type only is a load constraint of the box: {@code withMaxLoadIdenticalBoxCount(count)}. The
+ * boxes on top must be identical, and there are at most {@code count} levels of them (through all the boxes above; -1 for no limit).
  * <li>A box which must be on the floor is a rule for which points are available to the box: point controls of the container item,
  * here for the box with a given id.
  * </ul>
@@ -220,67 +224,161 @@ class PlacementRulesExampleTest {
 	}
 
 	/**
-	 * Container 3 x 1 x 3. The crate is placed first (it is heavier than the tray), then the tray beside it, then the cup. The lowest
-	 * position of the cup is on the tray, unless the tray carries identical boxes only: then the cup is placed on the crate.
+	 * Container 3 x 1 x 6 for a crate, four trays and a cup. The crate is placed first (it has the largest volume), and takes up two
+	 * thirds of the floor; the trays are placed next (they are heavier than the cup), the cup last. Each box is placed in the lowest
+	 * position where it fits: the trays are stacked in the column beside the crate, and the cup on top of them, as that is lower than
+	 * the top of the crate.
+	 * <p>
+	 * If the trays carry identical boxes only ({@code withMaxLoadIdenticalBoxCount(-1)}), they are still stacked on each other, but the
+	 * cup is placed on the crate. If they also carry two levels of boxes at most ({@code withMaxLoadIdenticalBoxCount(2)}), the first tray
+	 * carries the second and the third, but not the fourth: the levels are counted through all the boxes above. The fourth tray is placed
+	 * on the crate instead, next to the cup.
+	 * <p>
+	 * The validator rejects layouts which break the rules: a tower of four trays, and a cup on a tray. The packager does not build
+	 * them, so they are laid out by hand.
 	 */
 	@Test
-	void identicalOnlyBoxCarriesOnlyTheSameType() {
-		Container container = container(3, 1, 3);
-		BoxItem crate = new BoxItem(box("crate", 1, 1, 2, 2), 1);
+	void identicalBoxCarriesOnlyTheSameTypeUpToTheMaximumCount() {
+		Container container = container(3, 1, 6);
+		BoxItem crate = new BoxItem(box("crate", 2, 1, 5, 5), 1);
 		BoxItem cup = new BoxItem(cube("cup"), 1);
 
-		BoxItem plainTray = new BoxItem(box("tray", 2, 1, 1, 1), 1);
-		PackagerResult mixed = pack(false, null, container, null, crate, plainTray, cup);
-		// without the constraint, the cup is stacked on the tray
+		BoxItem plainTrays = new BoxItem(cube("tray", 2), 4);
+		PackagerResult mixed = pack(false, null, container, null, crate, plainTrays, cup);
+		// without the constraint, the trays are stacked four high, and the cup is stacked on top of them
 		// <figure>
 		//   z                                 z                                 y                                 z
-		//                                     2 +-------+-------+               1 +-------+-------+-------+       2 +-------+
-		//   | /-------/-------|                 |       |       |                 |       |       |       |         |       |
-		//   |/       /       /|                 |       |  cup  |                 | crate |  cup  | tray  |         |  cup  |
-		// 2 |-------|-------| |                 |       |       |                 |       |       |       |         |       |
-		//   |       |       | |               1 | crate +-------+-------+       0 +-------+-------+-------+       1 +-------+
-		//   |       |  cup  | |-------|   y     |       |               |         0       1       2       3   x     |       |
-		//   |       |       |/       /|         |       |     tray      |                                           | tray  |
-		// 1 | crate |-------|-------| | /       |       |               |                                           |       |
-		//   |       |               | |/      0 +-------+---------------+                                         0 +-------+
-		//   |       |     tray      | | 1       0       1       2       3   x                                       0       1   y
-		//   |       |               |/
-		// 0 |-------|---------------|-- x
-		//   0       1       2       3
+		//                                     5 +---------------+-------+       1 +---------------+-------+       5 +-------+
+		//   | /---------------/-------|         |               |       |         |               |       |         |       |
+		//   |/               /       /|         |               |  cup  |         |     crate     |  cup  |         |  cup  |
+		// 5 |---------------|-------| |         |               |       |         |               |       |         |       |
+		//   |               |       | |       4 |               +-------+       0 +---------------+-------+       4 +-------+
+		//   |               |  cup  | |         |               |       |         0               2       3   x     |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 4 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       3 |               +-------+                                         3 +-------+
+		//   |               | tray  | |         |               |       |                                           |       |
+		//   |               |       |/|         |     crate     | tray  |                                           | tray  |
+		// 3 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       2 |               +-------+                                         2 +-------+
+		//   |     crate     | tray  | |         |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 2 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       1 |               +-------+                                         1 +-------+
+		//   |               | tray  | |   y     |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 1 |               |-------| | /       |               |       |                                           |       |
+		//   |               |       | |/      0 +---------------+-------+                                         0 +-------+
+		//   |               | tray  | | 1       0               2       3   x                                       0       1   y
+		//   |               |       |/
+		// 0 |---------------|-------|-- x
+		//   0               2       3
 		// </figure>
 		figure(mixed);
 
 		PackagerResultAssert.assertThat(mixed).isSuccess().hasContainerCount(1);
-		assertThat(placement(mixed, "cup").getAbsoluteZ()).isEqualTo(1);
+		assertThat(placements(mixed, "tray")).extracting(Placement::getAbsoluteZ).containsExactlyInAnyOrder(0, 1, 2, 3);
+		assertThat(placement(mixed, "cup").getAbsoluteZ()).isEqualTo(4);
 
-		BoxItem identicalTray = new BoxItem(Box.newBuilder().withId("tray").withSize(2, 1, 1).withWeight(1).withMaxLoadIdenticalBoxCount(-1).build(), 1);
-		PackagerResult identicalOnly = pack(false, null, container, null, crate, identicalTray, cup);
-		// the tray carries identical boxes only: the cup is stacked on the crate
+		BoxItem identicalTrays = new BoxItem(tray(-1), 4);
+		PackagerResult identicalOnly = pack(false, null, container, null, crate, identicalTrays, cup);
+		// the trays carry identical boxes only: they are still stacked four high, but the cup is on the crate
 		// <figure>
 		//   z                                 z                                 y                                 z
-		//                                     3 +-------+                       1 +-------+---------------+       3 +-------+
-		//   | /-------|                         |       |                         |       |               |         |       |
-		//   |/       /|                         |  cup  |                         |  cup  |     tray      |         |  cup  |
-		// 3 |-------| |                         |       |                         |       |               |         |       |
-		//   |       | |                       2 +-------+                       0 +-------+---------------+       2 +-------+
-		//   |  cup  | |                         |       |                         0       1               3   x     |       |
-		//   |       |/|                         |       |                                                           | crate |
-		// 2 |-------| |                         |       |                                                           |       |
-		//   |       | |                       1 | crate +---------------+                                         1 +-------+
-		//   |       | |---------------|   y     |       |               |                                           |       |
-		//   |       |/               /|         |       |     tray      |                                           | tray  |
-		// 1 | crate |---------------| | /       |       |               |                                           |       |
-		//   |       |               | |/      0 +-------+---------------+                                         0 +-------+
-		//   |       |     tray      | | 1       0       1               3   x                                       0       1   y
-		//   |       |               |/
-		// 0 |-------|---------------|-- x
-		//   0       1               3
+		//                                     6 +-------+                       1 +-------+-------+-------+       6 +-------+
+		//   | /-------|                         |       |                         |       |       |       |         |       |
+		//   |/       /|                         |  cup  |                         |  cup  | crate | tray  |         |  cup  |
+		// 6 |-------| |                         |       |                         |       |       |       |         |       |
+		//   |       | |                       5 +-------+-------+               0 +-------+-------+-------+       5 +-------+
+		//   |  cup  | |-------|                 |               |                 0       1       2       3   x     |       |
+		//   |       |/       /|                 |               |                                                   | crate |
+		// 5 |-------|-------| |                 |               |                                                   |       |
+		//   |               | |               4 |               +-------+                                         4 +-------+
+		//   |               | |-------|         |               |       |                                           |       |
+		//   |               |/       /|         |               | tray  |                                           | tray  |
+		// 4 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       3 |               +-------+                                         3 +-------+
+		//   |               | tray  | |         |               |       |                                           |       |
+		//   |               |       |/|         |     crate     | tray  |                                           | tray  |
+		// 3 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       2 |               +-------+                                         2 +-------+
+		//   |     crate     | tray  | |         |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 2 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       1 |               +-------+                                         1 +-------+
+		//   |               | tray  | |   y     |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 1 |               |-------| | /       |               |       |                                           |       |
+		//   |               |       | |/      0 +---------------+-------+                                         0 +-------+
+		//   |               | tray  | | 1       0       1       2       3   x                                       0       1   y
+		//   |               |       |/
+		// 0 |---------------|-------|-- x
+		//   0       1       2       3
 		// </figure>
 		figure(identicalOnly);
 
 		PackagerResultAssert.assertThat(identicalOnly).isSuccess().hasContainerCount(1);
-		assertThat(placement(identicalOnly, "cup").getAbsoluteZ()).isEqualTo(2);
-		PackagerResultAssert.assertThat(identicalOnly).isAcceptedBy(validation(container, false, crate, identicalTray, cup));
+		assertThat(placements(identicalOnly, "tray")).extracting(Placement::getAbsoluteZ).containsExactlyInAnyOrder(0, 1, 2, 3);
+		assertThat(placement(identicalOnly, "cup").getAbsoluteZ()).isEqualTo(5);
+		// the trays do carry trays, and trays only (in the support graph which the validator uses)
+		assertThat(boxesOnTrays(identicalOnly)).isNotEmpty().extracting(placement -> placement.getBox().getId()).containsOnly("tray");
+		assertThat(levelsOnTrays(identicalOnly)).isEqualTo(3);
+		PackagerResultAssert.assertThat(identicalOnly).isAcceptedBy(validation(container, false, crate, identicalTrays, cup));
+
+		BoxItem trays = new BoxItem(tray(2), 4);
+		PackagerResult capped = pack(false, null, container, null, crate, trays, cup);
+		// the trays also carry two levels at most: three are stacked, the fourth is on the crate, next to the cup
+		// <figure>
+		//   z                                 z                                 y                                 z
+		//                                     6 +-------+-------+               1 +-------+-------+-------+       6 +-------+
+		//   | /-------/-------|                 |       |       |                 |       |       |       |         |       |
+		//   |/       /       /|                 | tray  |  cup  |                 | tray  |  cup  | tray  |         |  cup  |
+		// 6 |-------|-------| |                 |       |       |                 |       |       |       |         |       |
+		//   |       |       | |               5 +-------+-------+               0 +-------+-------+-------+       5 +-------+
+		//   | tray  |  cup  | |                 |               |                 0       1       2       3   x     |       |
+		//   |       |       |/|                 |               |                                                   |       |
+		// 5 |-------|-------| |                 |               |                                                   |       |
+		//   |               | |                 |               |                                                   | crate |
+		//   |               | |                 |               |                                                   |       |
+		//   |               | |                 |               |                                                   |       |
+		//   |               | |                 |               |                                                   |       |
+		//   |               | |               3 |               +-------+                                         3 +-------+
+		//   |               | |-------|         |               |       |                                           |       |
+		//   |               |/       /|         |     crate     | tray  |                                           | tray  |
+		// 3 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       2 |               +-------+                                         2 +-------+
+		//   |     crate     | tray  | |         |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 2 |               |-------| |         |               |       |                                           |       |
+		//   |               |       | |       1 |               +-------+                                         1 +-------+
+		//   |               | tray  | |   y     |               |       |                                           |       |
+		//   |               |       |/|         |               | tray  |                                           | tray  |
+		// 1 |               |-------| | /       |               |       |                                           |       |
+		//   |               |       | |/      0 +---------------+-------+                                         0 +-------+
+		//   |               | tray  | | 1       0       1       2       3   x                                       0       1   y
+		//   |               |       |/
+		// 0 |---------------|-------|-- x
+		//   0       1       2       3
+		// </figure>
+		figure(capped);
+
+		PackagerResultAssert.assertThat(capped).isSuccess().hasContainerCount(1);
+		assertThat(placements(capped, "tray")).extracting(Placement::getAbsoluteZ).containsExactlyInAnyOrder(0, 1, 2, 5);
+		assertThat(placement(capped, "cup").getAbsoluteZ()).isEqualTo(5);
+		// still trays on trays, only trays, and the most levels on top of a tray are the maximum
+		assertThat(boxesOnTrays(capped)).isNotEmpty().extracting(placement -> placement.getBox().getId()).containsOnly("tray");
+		assertThat(levelsOnTrays(capped)).isEqualTo(2);
+		PackagerResultAssert.assertThat(capped).isAcceptedBy(validation(container, false, crate, trays, cup));
+
+		// the fourth tray on the tower: the first tray carries three levels
+		PackagerResult tower = layout(container,
+				place(crate, 0, 0, 0), place(trays, 2, 0, 0), place(trays, 2, 0, 1), place(trays, 2, 0, 2), place(trays, 2, 0, 3), place(cup, 0, 0, 5));
+		PackagerResultAssert.assertThat(tower).isRejectedBy(validation(container, false, crate, trays, cup), ExcessiveLoadBoxCountReason.class);
+
+		// the cup on the second tray, in place of the third tray: it rests on trays which carry trays only
+		PackagerResult cupOnTray = layout(container,
+				place(crate, 0, 0, 0), place(trays, 2, 0, 0), place(trays, 2, 0, 1), place(cup, 2, 0, 2), place(trays, 0, 0, 5), place(trays, 1, 0, 5));
+		PackagerResultAssert.assertThat(cupOnTray).isRejectedBy(validation(container, false, crate, trays, cup), NonIdenticalLoadBoxReason.class, NonIdenticalLoadBoxReason.class);
 	}
 
 	/**
@@ -453,6 +551,19 @@ class PlacementRulesExampleTest {
 	}
 
 	/**
+	 * @param maxLoadIdenticalBoxCount the most levels of identical boxes on top of the tray, or -1 for no limit
+	 * @return a tray, which carries identical boxes only
+	 */
+	private static Box tray(int maxLoadIdenticalBoxCount) {
+		return Box.newBuilder()
+				.withId("tray")
+				.withSize(1, 1, 1)
+				.withWeight(2)
+				.withMaxLoadIdenticalBoxCount(maxLoadIdenticalBoxCount)
+				.build();
+	}
+
+	/**
 	 * @return an obstacle of one box by one box, from the floor to the roof of the container: x, y, z, dx, dy and dz
 	 */
 	private static int[] column(Container container, int x, int y) {
@@ -506,6 +617,60 @@ class PlacementRulesExampleTest {
 			placements.addAll(container.getStack().getPlacements());
 		}
 		return placements;
+	}
+
+	/** The placements of the boxes with an id */
+	private static List<Placement> placements(PackagerResult result, String boxId) {
+		List<Placement> placements = new ArrayList<>();
+		for(Placement placement : placements(result)) {
+			if(boxId.equals(placement.getBox().getId())) {
+				placements.add(placement);
+			}
+		}
+		return placements;
+	}
+
+	/** The boxes which rest directly on a tray, in the support graph of the placements (the validators use it too) */
+	private static List<Placement> boxesOnTrays(PackagerResult result) {
+		SupportGraph graph = new SupportGraph(placements(result));
+		List<Placement> placements = new ArrayList<>();
+		for(Placement tray : placements(result, "tray")) {
+			for(PlacementLoad load : graph.getSupportees(tray)) {
+				placements.add(load.getPlacement());
+			}
+		}
+		return placements;
+	}
+
+	/** The most levels of boxes on top of a tray, through all the boxes above it */
+	private static int levelsOnTrays(PackagerResult result) {
+		SupportGraph graph = new SupportGraph(placements(result));
+		int levels = 0;
+		for(Placement tray : placements(result, "tray")) {
+			levels = Math.max(levels, levelsAbove(graph, tray));
+		}
+		return levels;
+	}
+
+	/** The levels of boxes on top of a placement: the longest chain of boxes which rest on each other */
+	private static int levelsAbove(SupportGraph graph, Placement placement) {
+		int levels = 0;
+		for(PlacementLoad load : graph.getSupportees(placement)) {
+			levels = Math.max(levels, 1 + levelsAbove(graph, load.getPlacement()));
+		}
+		return levels;
+	}
+
+	/** A box in the container, in its first position (rotation) */
+	private static Placement place(BoxItem boxItem, int x, int y, int z) {
+		return new Placement(boxItem, boxItem.getBox().getStackValue(0), 0, x, y, z);
+	}
+
+	/** A result with a single container with the placements (in the order of the stack: from the bottom up): a layout which the packager does not build */
+	private static PackagerResult layout(Container container, Placement... placements) {
+		Container result = container.copy();
+		result.getStack().addAll(List.of(placements));
+		return new PackagerResult(List.of(result), 0, false);
 	}
 
 	/** The (first) placement of a box, with its id */

@@ -55,8 +55,9 @@ packagers use their own point-filter/comparator extension points instead.
 Check that the packager does not already have the rule before writing placement controls: `PlacementRulesExampleTest` in the test sources
 of `core` (package `com.github.skjolber.packing.packer.example`) packs three rules which need none, each next to the same input without
 the rule, in a single container: full support (`withRequireFullSupport(true)` on the packager), keeping boxes out of a region (the
-obstacles of the container item) and a box which carries boxes of its own type only (`withMaxLoadIdenticalBoxCount(-1)` on the box),
-and checks the layouts with the validators. Custom placement controls replace the default ones, so they retain none of these.
+obstacles of the container item) and a box which carries boxes of its own type only, up to a number of levels
+(`withMaxLoadIdenticalBoxCount(2)` on the box), and checks the layouts with the validators. Custom placement controls replace the
+default ones, so they retain none of these.
 
 A rule which is about which box it is needs code. The worked example of point controls is `GroundLevelBoxIdPointControls`, in the same
 package: it keeps the boxes with given ids on the floor, by giving them only the points at the floor. It extends `DefaultPointControls`,
