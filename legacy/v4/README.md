@@ -49,11 +49,14 @@ The two versions share no objects: build the input for each version with its own
 
 ## Version
 
-The 4.x version is the property `v4.version` in `pom.xml`. To try another 4.x build, for example a snapshot installed
-locally with `mvn install` on the 4.x branch, override it on the command line:
+The 4.x version is set literally on the three dependencies in this module's `pom.xml` (a version property does
+not work here: the release plugin refuses to release a reactor artifact which is depended upon with a property
+resolving to another version). To try another 4.x build, for example a snapshot installed locally with
+`mvn install` on the 4.x branch, edit the versions temporarily:
 
 ```sh
-./mvnw -B -ntp -Dmaven.build.cache.enabled=false -Dv4.version=4.2.5-SNAPSHOT -pl points -am test
+sed -i 's|<version>4.2.5</version>|<version>4.2.5-SNAPSHOT</version>|' legacy/v4/pom.xml
+./mvnw -B -ntp -Dmaven.build.cache.enabled=false -pl points -am test
 ```
 
 Do not commit a snapshot version: the CI build cannot resolve a snapshot which only exists in a local repository.

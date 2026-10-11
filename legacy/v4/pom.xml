@@ -12,7 +12,6 @@
 	<description>Version 4 (api, points and core) with its packages moved to com.github.skjolber.packing.v4, so that tests can compare 5.x with 4.x in one JVM. Not published; see README.md.</description>
 
 	<properties>
-		<v4.version>4.2.5</v4.version>
 		<!-- no sources of its own -->
 		<maven.javadoc.skip>true</maven.javadoc.skip>
 		<maven.source.skip>true</maven.source.skip>
@@ -20,6 +19,8 @@
 	</properties>
 
 	<dependencies>
+		<!-- the released 4.x baseline: literal versions, as the release plugin refuses to release
+		     a reactor artifact depended upon with a version property resolving to another version -->
 		<!-- optional: shaded into this jar, and not passed on to the modules which use it, where they would clash with 5.x -->
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
