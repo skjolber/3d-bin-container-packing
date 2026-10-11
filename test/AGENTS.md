@@ -23,4 +23,4 @@ Shared testing utilities consumed by every other module's test scope. Provides c
 | compile | assertj-core, truth, truth-java8-extension |
 | compile | jackson-databind (test data serialization) |
 | compile | commons-math3 (statistical helpers) |
-| test    | junit-jupiter, jqwik, mockito-core |
+| test    | junit-jupiter, mockito-core |
