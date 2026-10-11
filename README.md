@@ -24,7 +24,7 @@ feature (generated from the conformance tests), known limitations and non-goals.
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
-For the previous version, see the [4.2.3](https://github.com/skjolber/3d-bin-container-packing/tree/parent-4.2.3) tag. See [the migration guide](legacy/MIGRATION-v4-TO-v5.md) for upgrading from 4.x to 5.0.
+For the previous version, see the [4.x](https://github.com/skjolber/3d-bin-container-packing/tree/4.x) branch. See [the migration guide](legacy/MIGRATION-v4-TO-v5.md) for upgrading from 4.x to 5.0.
 
 <details>
   <summary>Maven coordinates</summary>
