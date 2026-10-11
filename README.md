@@ -206,9 +206,6 @@ Details: [virtual-box preprocessing](docs/heuristics/virtual-box.md).
 
 # Packager customizations
 
-## Obstacles within containers
-Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within the container loading area.
-
 ## Load constraints
 Boxes can limit what is stacked on top of them:
 
@@ -239,7 +236,7 @@ Container container = Container.newBuilder()
     .build();
 ```
 
-## Extraction order and container priority
+## [Extraction order and container priority](docs/deliveries.md)
 Examples
 
 ```java
@@ -259,9 +256,7 @@ BoxItemGroup group = new BoxItemGroup("order-1", items).withExtractionOrder(2);
    which is extracted earlier, so the boxes of each stop can be taken out without moving the boxes for later stops.
  * **Container priority**: a hard constraint on which boxes go in earlier containers.
 
-Details: [deliveries](docs/deliveries.md), including the packager support.
-
-## Support
+## [Support](docs/support.md)
 Support (the area resting on boxes below) can be calculated, or full support required:
 
 ```java
@@ -274,25 +269,13 @@ PlainPackager packager = PlainPackager
 
 The LAFF packager builders have the same options.
 
-Details: [support](docs/support.md), including the placement controls and the brute-force packagers.
+## Obstacles within containers
+Make the packager account for non-rectangular packaging space, i.e. pillars or other obstacles within the container loading area.
 
-## Container packing strategies
-A [container packing strategy](docs/container-packing-strategies.md) decides which containers to use, and in which order.
-
-## Container costs
+## Container cost and packing strategies
 Give container types [a cost](docs/container-costs.md) to prefer cheaper combinations of containers.
 
-## Combining packagers
-`CompositePackager` uses costly packagers only where cheaper packagers fall short:
-
-```java
-CompositePackager packager = CompositePackager.newBuilder()
-    .withPackager(PlainPackager.newBuilder().build())                // tried first, for every container
-    .withPackager(FastBruteForcePackager.newBuilder().build(), 200)  // only where plain does not fit all boxes, for at most 200 ms
-    .build();
-```
-
-Details: [composite packager heuristics](docs/heuristics/composite.md), including a quality comparison.
+A [container packing strategy](docs/container-packing-strategies.md) decides which containers to use, and in which order.
 
 ## Validating results
 The optional `validators` artifact checks packing results, for example the load constraints:
@@ -311,7 +294,7 @@ the containers are left empty, insertion and extraction order, and the load cons
 
 The validator result says what was validated: `isLoadValidated()`, `isStabilityValidated()` and `hasLoadConstraints()` (if false, the load validation had nothing to check).
 
-## Packager controls
+## [Packager controls](docs/packager-controls.md)
 The packagers (excluding brute force) can be extended to handle specialized needs via various `control` (plugins) types. 
 
 In a nutshell, the `controls` are stateful objects which are handed various resources from the packagers during construction, and then notified and/or invoked at certain milestones within the packaging process.
@@ -334,10 +317,18 @@ PackagerResult result = packager
     .build();
 ```
 
-Details: [packager controls](docs/packager-controls.md), including placement controls and the manifest, point and placement control types.
+## [Combining packagers](docs/heuristics/composite.md)
+`CompositePackager` uses costly packagers only where cheaper packagers fall short:
+
+```java
+CompositePackager packager = CompositePackager.newBuilder()
+    .withPackager(PlainPackager.newBuilder().build())                // tried first, for every container
+    .withPackager(FastBruteForcePackager.newBuilder().build(), 200)  // only where plain does not fit all boxes, for at most 200 ms
+    .build();
+```
 
 # Visualizer
-There is a simple output [visualizer](visualizer) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
+There is a simple output [visualizer](docs/visualizer.md) included in this project, based of [three.js](https://threejs.org/). This visualizer is currently intended as a tool for developing better algorithms; not as stacking instructions.
 
 ```
 cd visualizer/viewer
@@ -346,8 +337,6 @@ npm start
 ```
 
 The viewer shows `visualizer/viewer/public/assets/containers.json`, and reloads it when it changes; write it with `DefaultPackagingResultVisualizerFactory` (module `visualizer/packaging`).
-
-Details: [visualizer](docs/visualizer.md), including the setup, what the viewer shows (with screenshots) and the example tests.
 
 ![Four results of one order compared in the viewer](docs/images/visualizer-compare-results.gif)
 
