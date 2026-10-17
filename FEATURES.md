@@ -23,6 +23,11 @@ Containers are not automatically rotated. When different orientations of the
 same physical container are valid, provide each orientation as a separate
 `ContainerItem`.
 
+## Point calculators
+
+The 1D, 2D and 3D calculators support terminal placements through `PointCalculator.addLast(..)`, recording
+placement history and totals without calculating unused free space. See [point calculators](docs/point-calculators.md).
+
 ## Packing algorithms
 
 | Packager | Intended use |

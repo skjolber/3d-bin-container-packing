@@ -106,6 +106,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ), false);
 	}
 	
+	@Override
+	public void addLast(Point point, Placement placement) {
+		placements.add(placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		placements.add(placement);
+	}
+
 	public boolean add(Point point, Placement placement) {
 		return add(indexOf(point), placement);
 	}

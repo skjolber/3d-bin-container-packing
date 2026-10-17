@@ -90,6 +90,17 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
+	public void addLast(Point point, Placement placement) {
+		stackItems[stackIndex].point = (SimplePoint3D) point;
+		super.addLast(point, placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		addLast(values.get(index), placement);
+	}
+
+	@Override
 	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		stackItems[stackIndex].point = values.get(index);
 		stackItems[stackIndex].batch = true;
