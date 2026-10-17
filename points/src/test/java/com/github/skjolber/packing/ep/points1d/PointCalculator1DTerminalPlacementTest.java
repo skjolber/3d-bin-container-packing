@@ -19,7 +19,6 @@ class PointCalculator1DTerminalPlacementTest {
 		calculator.clearToSize(3, 1, 1);
 		Placement first = placement(0);
 		calculator.add(0, first);
-		
 		Placement terminal = placement(1);
 		PointCalculator api = calculator;
 		if(indexed) {
