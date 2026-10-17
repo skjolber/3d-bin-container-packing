@@ -37,6 +37,32 @@ public interface PointCalculator extends PointSource {
 	boolean add(int index, Placement placement);
 
 	/**
+	 * Record the final placement at a point. Implementations may skip updating the free points, since no subsequent
+	 * placement will use them. Placement history, used volume and used weight include this placement.
+	 * <p>
+	 * After this call, free-point queries are unspecified. Clear the calculator, or restore a saved search state,
+	 * before using its free points or adding another placement. The default implementation delegates to
+	 * {@link #add(Point, Placement)} for compatibility with existing implementations.
+	 *
+	 * @param point a point of this calculator containing the placement
+	 * @param placement the placement, with absolute coordinates
+	 */
+	default void addLast(Point point, Placement placement) {
+		add(point, placement);
+	}
+
+	/**
+	 * Record the final placement at an indexed point, see {@link #addLast(Point, Placement)}.
+	 * The default implementation delegates to {@link #add(int, Placement)}.
+	 *
+	 * @param index the index of a point in this calculator, see {@link #get(int)}
+	 * @param placement the placement, with absolute coordinates
+	 */
+	default void addLast(int index, Placement placement) {
+		add(index, placement);
+	}
+
+	/**
 	 * Set the size of the container and {@linkplain #clear() clear} the calculator: there are no placements, the free
 	 * space is the whole container (or the initial points, see {@link #setPoints(List)}) and the minimum area and volume
 	 * limits are removed.

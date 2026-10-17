@@ -98,6 +98,16 @@ public class DefaultPointCalculator2D implements PointCalculator {
 		return point;
 	}
 
+	@Override
+	public void addLast(Point point, Placement placement) {
+		placements.add(placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		placements.add(placement);
+	}
+
 	public boolean add(Point point, Placement placement) {
 		if(point.getIndex() == -1) {
 			return add(values.getIndex(point, 0), placement);
