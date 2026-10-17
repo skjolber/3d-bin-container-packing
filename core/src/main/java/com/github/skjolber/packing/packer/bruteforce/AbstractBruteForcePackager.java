@@ -1202,12 +1202,17 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 						placement.setIndex(stack.size());
 						placement.setSupportedArea(supportedArea);
 					}
-					pointCalculator.add(pointIndex, placement, point);
+					int nextLevel = level + 1;
+					if(nextLevel == length) {
+						// The leaf keeps the placement, but never searches the free space after it.
+						pointCalculator.addLast(point, placement);
+					} else {
+						pointCalculator.add(pointIndex, placement, point);
+					}
 					stack.add(placement);
 					if(utility != null) {
 						utility.addSupportersLoad(placement);
 					}
-					int nextLevel = level + 1;
 					if(nextLevel < length) {
 						if(minAreas[nextLevel] != minAreas[level]) {
 							pointCalculator.setMinimumAreaAndVolumeLimit(minAreas[nextLevel], iterator.getMinBoxVolume(nextLevel));

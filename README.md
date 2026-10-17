@@ -21,6 +21,12 @@ Bugs, feature suggestions and help requests can be filed with the [issue-tracker
 See [FEATURES.md](FEATURES.md) for a capability overview, including which packager supports which
 feature (generated from the conformance tests), known limitations and non-goals.
 
+## Point calculators
+
+Custom packing algorithms can use `PointCalculator.addLast(point, placement)` for their final box to avoid
+calculating unused free space. Clear or restore the calculator before continuing a search;
+see [point calculators](docs/point-calculators.md) for the contract and an example.
+
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
