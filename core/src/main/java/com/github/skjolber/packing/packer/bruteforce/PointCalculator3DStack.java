@@ -89,6 +89,12 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return result;
 	}
 
+	/** Record a terminal placement. The search must pop or redo this level before using its free points again. */
+	void addLast(Placement placement, SimplePoint3D position) {
+		stackItems[stackIndex].point = position;
+		placements.add(placement);
+	}
+
 	@Override
 	protected boolean addBatch(int index, List<Placement> batch, long remainingMinimumArea, long remainingMinimumVolume) {
 		stackItems[stackIndex].point = values.get(index);
