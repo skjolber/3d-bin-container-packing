@@ -17,7 +17,9 @@ The placement must fit within the selected point, as with `add(..)`. Terminal in
 in history and used volume/weight. The built-in 1D, 2D and 3D calculators skip free-space calculation.
 Free-point queries are unspecified after `addLast(..)`; clear the calculator or restore a saved search state
 before using those points or adding another placement. Mark/reset calculators can restore a state saved
-before terminal insertion.
+before terminal insertion. The brute-force stacks also record the selected point, so `getPoints()` includes it,
+and restore the state before it with `redo()` or `pop()` (`PointCalculator3DStack`) or `setStackSize(..)`
+(`FastPointCalculator3DStack`).
 
 The interface provides default methods which delegate to ordinary `add(..)`, so existing custom calculators
 remain compatible. They can override the methods to skip free-space calculation under the same contract.
