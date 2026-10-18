@@ -3,6 +3,8 @@ package com.github.skjolber.packing.api.point;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.math.BigInteger;
+
 import org.junit.jupiter.api.Test;
 
 class PointTest {
@@ -60,5 +62,37 @@ class PointTest {
 
 		assertThrows(RuntimeException.class, () -> point.setMaxX(-1));
 		assertThrows(RuntimeException.class, () -> point.setMaxY(-1));
+	}
+
+	@Test
+	void volumeTracksMixedExtentUpdates() {
+		Point point = new TestPoint(2, 3, 4, 11, 22, 33);
+		assertEquals(6000L, point.getVolume());
+
+		point.setMaxX(21);
+		assertEquals(400L, point.getArea());
+		assertEquals(12000L, point.getVolume());
+		point.setMaxZ(13);
+		assertEquals(4000L, point.getVolume());
+		point.setMaxY(7);
+		assertEquals(100L, point.getArea());
+		assertEquals(1000L, point.getVolume());
+		point.setMaxZ(24);
+		assertEquals(2100L, point.getVolume());
+	}
+
+	@Test
+	void volumePreservesLongOverflowAfterExtentUpdates() {
+		Point point = new TestPoint(0, 0, 0, 2000000000, 2000000000, 2000000000);
+		BigInteger initialExtent = BigInteger.valueOf(2000000001L);
+		assertEquals(initialExtent.pow(3).longValue(), point.getVolume());
+
+		point.setMaxX(1500000000);
+		point.setMaxY(1700000000);
+		point.setMaxZ(1900000000);
+		BigInteger expected = BigInteger.valueOf(1500000001L)
+				.multiply(BigInteger.valueOf(1700000001L))
+				.multiply(BigInteger.valueOf(1900000001L));
+		assertEquals(expected.longValue(), point.getVolume());
 	}
 }

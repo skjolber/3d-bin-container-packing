@@ -288,7 +288,7 @@ public abstract class Point {
 	}
 
 	private void calculateVolume() {
-		this.volume = (long)dz * (long)dy * (long)dx;
+		this.volume = area * (long)dz;
 	}
 
 	public boolean isWithin(int dx, int dy, int dz) {
