@@ -869,7 +869,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			index--;
 		}
 		for (; index >= 0; index--) {
-			if(otherValues.get(index).eclipses(point)) {
+			SimplePoint3D otherValue = otherValues.get(index);
+			// The sorted prefix already guarantees otherValue.minX <= point.minX.
+			if(point.getMaxX() <= otherValue.getMaxX() && otherValue.eclipsesY(point) && otherValue.eclipsesZ(point)) {
 				// discard 
 				return true;
 			}
