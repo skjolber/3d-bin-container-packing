@@ -84,8 +84,8 @@ public class CustomIntYComparator implements IntComparator {
 		}
 
 		// the moved forms are geometrically identical: richest supports first
-		int supports1 = supports(o1.moveY(yy));
-		int supports2 = supports(o2.moveY(yy));
+		int supports1 = o1.getSupportMaskAfterMoveY(yy);
+		int supports2 = o2.getSupportMaskAfterMoveY(yy);
 		if(supports1 != supports2) {
 			return supports1 > supports2 ? -1 : 1;
 		}

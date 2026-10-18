@@ -133,6 +133,21 @@ public final class DefaultPoint3D extends SimplePoint3D {
 		return new DefaultPoint3D(minX, minY, z, maxX, maxY, maxZ, yz, xz, xySupport);
 	}
 
+	@Override
+	protected int getSupportMaskAfterMoveX(int x) {
+		return (xyPlane != null && x <= xyPlane.getAbsoluteEndX() ? 4 : 0) + (xzPlane != null && x <= xzPlane.getAbsoluteEndX() ? 2 : 0);
+	}
+
+	@Override
+	protected int getSupportMaskAfterMoveY(int y) {
+		return (xyPlane != null && y <= xyPlane.getAbsoluteEndY() ? 4 : 0) + (yzPlane != null && y <= yzPlane.getAbsoluteEndY() ? 1 : 0);
+	}
+
+	@Override
+	protected int getSupportMaskAfterMoveZ(int z) {
+		return (xzPlane != null && z <= xzPlane.getAbsoluteEndZ() ? 2 : 0) + (yzPlane != null && z <= yzPlane.getAbsoluteEndZ() ? 1 : 0);
+	}
+
 	/** Equal coordinates and the same supporting planes present (previously: the same point class). */
 	@Override
 	public boolean equals(Object obj) {

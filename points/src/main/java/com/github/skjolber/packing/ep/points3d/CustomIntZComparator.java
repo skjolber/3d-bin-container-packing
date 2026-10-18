@@ -83,8 +83,8 @@ public class CustomIntZComparator implements IntComparator {
 		}
 
 		// the moved forms are geometrically identical: richest supports first
-		int supports1 = supports(o1.moveZ(zz));
-		int supports2 = supports(o2.moveZ(zz));
+		int supports1 = o1.getSupportMaskAfterMoveZ(zz);
+		int supports2 = o2.getSupportMaskAfterMoveZ(zz);
 		if(supports1 != supports2) {
 			return supports1 > supports2 ? -1 : 1;
 		}

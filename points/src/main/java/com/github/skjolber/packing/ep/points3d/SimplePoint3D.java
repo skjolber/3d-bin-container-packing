@@ -137,6 +137,39 @@ public abstract class SimplePoint3D extends Point {
 	public abstract SimplePoint3D moveZ(int z);
 
 	public abstract SimplePoint3D moveZ(int z, Placement xySupport);
+
+	/**
+	 * Return the moved point's support mask, with xy, xz and yz planes represented by bits 4, 2 and 1.
+	 *
+	 * @param x the x coordinate of the moved point
+	 * @return the support mask after moving along x
+	 */
+	protected int getSupportMaskAfterMoveX(int x) {
+		SimplePoint3D moved = moveX(x);
+		return (moved.isSupportedXYPlane() ? 4 : 0) + (moved.isSupportedXZPlane() ? 2 : 0) + (moved.isSupportedYZPlane() ? 1 : 0);
+	}
+
+	/**
+	 * Return the moved point's support mask, with xy, xz and yz planes represented by bits 4, 2 and 1.
+	 *
+	 * @param y the y coordinate of the moved point
+	 * @return the support mask after moving along y
+	 */
+	protected int getSupportMaskAfterMoveY(int y) {
+		SimplePoint3D moved = moveY(y);
+		return (moved.isSupportedXYPlane() ? 4 : 0) + (moved.isSupportedXZPlane() ? 2 : 0) + (moved.isSupportedYZPlane() ? 1 : 0);
+	}
+
+	/**
+	 * Return the moved point's support mask, with xy, xz and yz planes represented by bits 4, 2 and 1.
+	 *
+	 * @param z the z coordinate of the moved point
+	 * @return the support mask after moving along z
+	 */
+	protected int getSupportMaskAfterMoveZ(int z) {
+		SimplePoint3D moved = moveZ(z);
+		return (moved.isSupportedXYPlane() ? 4 : 0) + (moved.isSupportedXZPlane() ? 2 : 0) + (moved.isSupportedYZPlane() ? 1 : 0);
+	}
 	
 	public abstract SimplePoint3D copy(int maxX, int maxY, int maxZ);
 
