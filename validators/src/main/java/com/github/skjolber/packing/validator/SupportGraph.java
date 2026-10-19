@@ -30,7 +30,7 @@ public class SupportGraph {
 
 	private final Map<Placement, Node> nodes;
 	/** The weight resting on each placement calculated so far */
-	private final Map<Placement, Double> loadWeights = new IdentityHashMap<>();
+	private Map<Placement, Double> loadWeights;
 
 	public SupportGraph(List<Placement> placements) {
 		nodes = new IdentityHashMap<>(placements.size() * 2);
@@ -123,6 +123,9 @@ public class SupportGraph {
 	 * @return the weight resting on it
 	 */
 	public double getLoadWeight(Placement placement) {
+		if(loadWeights == null) {
+			loadWeights = new IdentityHashMap<>();
+		}
 		Double known = loadWeights.get(placement);
 		if(known != null) {
 			return known;
