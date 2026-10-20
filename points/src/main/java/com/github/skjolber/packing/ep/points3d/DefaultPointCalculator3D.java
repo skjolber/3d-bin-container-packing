@@ -689,8 +689,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	/** Merge existing, moved and constrained points, in x order, into the output list, dropping eclipsed points. */
 	private void merge(Point3DFlagList values, Point3DFlagList otherValues, int endIndex, int xx) {
 		int added = addedXX.size() + addedYY.size() + addedZZ.size() + constrainXX.size() + constrainYY.size() + constrainZZ.size();
+		int valuesSize = values.size();
 
-		otherValues.ensureCapacity(values.size() + added);
+		otherValues.ensureCapacity(valuesSize + added);
 
 		for (int i = 0; i < endIndex; i++) {
 
@@ -771,7 +772,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addYYPoint3d.clear();
 		}
 
-		for (int i = endIndex; i < values.size(); i++) {
+		for (int i = endIndex; i < valuesSize; i++) {
 			Point3DList addXXPoint3d = addXX.get(i);
 			if(!addXXPoint3d.isEmpty()) {
 				for (int k = 0; k < addXXPoint3d.size(); k++) {
@@ -798,7 +799,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 
 		// get the last element, if any
-		Point3DList addXXPoint3d = addXX.get(values.size());
+		Point3DList addXXPoint3d = addXX.get(valuesSize);
 		if(!addXXPoint3d.isEmpty()) {
 			for (int k = 0; k < addXXPoint3d.size(); k++) {
 				SimplePoint3D p = addXXPoint3d.get(k);
