@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.Placement;
 
@@ -183,4 +185,35 @@ class PointCalculator3DBatchStackTest {
 		calculator.add(0, List.of(a, b), 1, 1);
 		assertThat(calculator.getPlacements()).hasSize(2);
 	}
+
+	@ParameterizedTest
+	@ValueSource(booleans = {false, true})
+	void fastTerminalInsertionRestoresThePreviousDepth(boolean indexed) {
+		FastPointCalculator3DStack calculator = new FastPointCalculator3DStack(3);
+		calculator.clearToSize(3, 1, 1);
+		Placement first = placement(0, 0, 0);
+		calculator.add(0, first);
+		var origin = calculator.get(0);
+		int terminalIndex = calculator.findPoint(1, 0, 0);
+		assertThat(terminalIndex).isNotNegative();
+		var terminalPoint = calculator.get(terminalIndex);
+		Placement terminal = placement(1, 0, 0);
+
+		if(indexed) {
+			calculator.addLast(terminalIndex, terminal);
+		} else {
+			calculator.addLast(terminalPoint, terminal);
+		}
+
+		assertThat(calculator.getPlacements()).containsExactly(first, terminal);
+		assertThat(calculator.calculateUsedVolume()).isEqualTo(2);
+		assertThat(calculator.getPoints()).containsExactly(origin, terminalPoint);
+
+		calculator.setStackSize(1);
+
+		assertThat(calculator.getPlacements()).containsExactly(first);
+		assertThat(calculator.calculateUsedVolume()).isEqualTo(1);
+		assertThat(calculator.getPoints()).containsExactly(origin);
+	}
+
 }

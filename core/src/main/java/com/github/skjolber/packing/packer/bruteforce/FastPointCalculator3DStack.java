@@ -38,6 +38,16 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	@Override
+	public void addLast(Point point, Placement placement) {
+		add(point, placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		add(index, placement);
+	}
+
+	@Override
 	public boolean add(int index, Placement placement) {
 		// copy state before it is updated
 		SimplePoint3D point3d = values.get(index);
