@@ -705,16 +705,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				addZZPoint3d.clear();
 			}
 
-			Point3DList addYYPoint3d = addYY.get(i);
-			if(!addYYPoint3d.isEmpty()) {
-				for (int k = 0; k < addYYPoint3d.size(); k++) {
-					SimplePoint3D p = addYYPoint3d.get(k);
-					if(!isEclipsed(p)) {
-						otherValues.add(p);
-					}
-				}
-				addYYPoint3d.clear();
-			}
+			mergeMovedYPoints(addYY.get(i), otherValues);
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
@@ -760,16 +751,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			addZZPoint3d.clear();
 		}
 
-		Point3DList addYYPoint3d = addYY.get(endIndex);
-		if(!addYYPoint3d.isEmpty()) {
-			for (int k = 0; k < addYYPoint3d.size(); k++) {
-				SimplePoint3D p = addYYPoint3d.get(k);
-				if(!isEclipsed(p)) {
-					otherValues.add(p);
-				}
-			}
-			addYYPoint3d.clear();
-		}
+		mergeMovedYPoints(addYY.get(endIndex), otherValues);
 
 		for (int i = endIndex; i < values.size(); i++) {
 			Point3DList addXXPoint3d = addXX.get(i);
@@ -814,6 +796,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				}
 			}
 			addXXPoint3d.clear();
+		}
+	}
+
+	private void mergeMovedYPoints(Point3DList points, Point3DFlagList otherValues) {
+		if(!points.isEmpty()) {
+			for (int k = 0; k < points.size(); k++) {
+				SimplePoint3D p = points.get(k);
+				if(!isEclipsed(p)) {
+					otherValues.add(p);
+				}
+			}
+			points.clear();
 		}
 	}
 
