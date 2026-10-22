@@ -1416,16 +1416,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					}
 
 					// is the point now eclipsed by current points?
-					for (int j = 0; j < i - 1; j++) {
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-						if(point3d.eclipses(point)) {
-							values.flag(i);
+					if(isEclipsedByExistingValue(point, i - 1)) {
+						values.flag(i);
 
-							continue limitLoop;
-						}
+						continue limitLoop;
 					}
 
 					if(splitXX) {
@@ -1457,16 +1451,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					}
 
 					// is the point now eclipsed by current points?
-					for (int j = 0; j < i - 1; j++) {
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-						if(point3d.eclipses(point)) {
-							values.flag(i);
+					if(isEclipsedByExistingValue(point, i - 1)) {
+						values.flag(i);
 
-							continue limitLoop;
-						}
+						continue limitLoop;
 					}
 
 					if(splitYY) {
@@ -1499,16 +1487,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					}
 
 					// is the point now eclipsed by current points?
-					for (int j = 0; j < i - 1; j++) {
-						SimplePoint3D point3d = values.get(j);
-						if(point3d.getMinX() > point.getMinX()) {
-							break;
-						}
-						if(point3d.eclipses(point)) {
-							values.flag(i);
+					if(isEclipsedByExistingValue(point, i - 1)) {
+						values.flag(i);
 
-							continue limitLoop;
-						}
+						continue limitLoop;
 					}
 
 					if(splitZZ) {
@@ -1555,6 +1537,19 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			values.flag(i);
 		}
 
+	}
+
+	private boolean isEclipsedByExistingValue(SimplePoint3D point, int endExclusive) {
+		for (int j = 0; j < endExclusive; j++) {
+			SimplePoint3D point3d = values.get(j);
+			if(point3d.getMinX() > point.getMinX()) {
+				break;
+			}
+			if(point3d.eclipses(point)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	protected boolean withinX(int x, Placement placement) {
