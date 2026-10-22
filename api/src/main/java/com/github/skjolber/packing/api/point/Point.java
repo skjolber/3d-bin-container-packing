@@ -243,13 +243,11 @@ public abstract class Point {
 		this.dx = maxX - minX + 1;
 		this.dy = maxY - minY + 1;
 
-		calculateArea();
-
 		this.minZ = minZ;
 		this.maxZ = maxZ;
 		this.dz = maxZ - minZ + 1;
 
-		calculateVolume();
+		calculateVolumeAndArea();
 	}
 
 	public void setMaxZ(int maxZ) {
@@ -260,7 +258,7 @@ public abstract class Point {
 
 		this.dz = maxZ - minZ + 1;
 
-		calculateVolume();
+		calculateVolumeAndArea();
 	}
 
 	public void setMaxX(int maxX) {
@@ -271,8 +269,7 @@ public abstract class Point {
 
 		this.dx = maxX - minX + 1;
 
-		calculateArea();
-		calculateVolume();
+		calculateVolumeAndArea();
 	}
 
 	public void setMaxY(int maxY) {
@@ -283,12 +280,12 @@ public abstract class Point {
 
 		this.dy = maxY - minY + 1;
 		
-		calculateArea();
-		calculateVolume();
+		calculateVolumeAndArea();
 	}
 
-	private void calculateVolume() {
-		this.volume = (long)dz * (long)dy * (long)dx;
+	private void calculateVolumeAndArea() {
+		this.area = (long)dx * (long)dy;
+		this.volume = area * (long)dz;
 	}
 
 	public boolean isWithin(int dx, int dy, int dz) {
@@ -361,10 +358,6 @@ public abstract class Point {
 
 	public boolean swallowsMinZ(int min, int max) {
 		return min <= minZ && minZ <= max;
-	}
-
-	private void calculateArea() {
-		this.area = (long)dx * (long)dy;
 	}
 	
 	public abstract Point copy(int maxX, int maxY, int maxZ);
