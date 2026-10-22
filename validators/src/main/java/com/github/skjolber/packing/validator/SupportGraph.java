@@ -23,9 +23,23 @@ import com.github.skjolber.packing.api.PlacementLoad;
 public class SupportGraph {
 
 	private static final class Node {
-		private final List<PlacementLoad> supporters = new ArrayList<>(2);
-		private final List<PlacementLoad> supportees = new ArrayList<>(2);
+		private List<PlacementLoad> supporters;
+		private List<PlacementLoad> supportees;
 		private long supportedArea;
+
+		private List<PlacementLoad> getSupporters() {
+			if(supporters == null) {
+				supporters = new ArrayList<>(2);
+			}
+			return supporters;
+		}
+
+		private List<PlacementLoad> getSupportees() {
+			if(supportees == null) {
+				supportees = new ArrayList<>(2);
+			}
+			return supportees;
+		}
 	}
 
 	private final Map<Placement, Node> nodes;
@@ -49,9 +63,9 @@ public class SupportGraph {
 			for (Placement supporter : candidates) {
 				long area = getContactArea(supporter, supportee);
 				if(area > 0) {
-					supporteeNode.supporters.add(new PlacementLoad(supporter, area));
+					supporteeNode.getSupporters().add(new PlacementLoad(supporter, area));
 					supporteeNode.supportedArea += area;
-					nodes.get(supporter).supportees.add(new PlacementLoad(supportee, area));
+					nodes.get(supporter).getSupportees().add(new PlacementLoad(supportee, area));
 				}
 			}
 		}
@@ -77,7 +91,7 @@ public class SupportGraph {
 	 */
 	public List<PlacementLoad> getSupportees(Placement placement) {
 		Node node = nodes.get(placement);
-		return node != null ? node.supportees : Collections.emptyList();
+		return node != null ? node.getSupportees() : Collections.emptyList();
 	}
 
 	/**
@@ -85,7 +99,7 @@ public class SupportGraph {
 	 */
 	public List<PlacementLoad> getSupporters(Placement placement) {
 		Node node = nodes.get(placement);
-		return node != null ? node.supporters : Collections.emptyList();
+		return node != null ? node.getSupporters() : Collections.emptyList();
 	}
 
 	/**
