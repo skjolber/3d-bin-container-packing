@@ -84,8 +84,8 @@ public class CustomIntXComparator implements IntComparator {
 		}
 
 		// the moved forms are geometrically identical: richest supports first
-		int supports1 = supports(o1.moveX(xx));
-		int supports2 = supports(o2.moveX(xx));
+		int supports1 = o1.getSupportMaskAfterMoveX(xx);
+		int supports2 = o2.getSupportMaskAfterMoveX(xx);
 		if(supports1 != supports2) {
 			return supports1 > supports2 ? -1 : 1;
 		}
