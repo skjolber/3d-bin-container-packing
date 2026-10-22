@@ -772,22 +772,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 
 		for (int i = endIndex; i < values.size(); i++) {
-			Point3DList addXXPoint3d = addXX.get(i);
-			if(!addXXPoint3d.isEmpty()) {
-				for (int k = 0; k < addXXPoint3d.size(); k++) {
-					SimplePoint3D p = addXXPoint3d.get(k);
-					if(p.isSupportedYZPlane()) {
-						if(!isEclipsedAtXX(p, xx)) {
-							otherValues.add(p);
-						}
-					} else {
-						if(!isEclipsed(p)) {
-							otherValues.add(p);
-						}
-					}
-				}
-				addXXPoint3d.clear();
-			}
+			mergeMovedXPoints(addXX.get(i), otherValues, xx);
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
@@ -798,11 +783,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 
 		// get the last element, if any
-		Point3DList addXXPoint3d = addXX.get(values.size());
-		if(!addXXPoint3d.isEmpty()) {
-			for (int k = 0; k < addXXPoint3d.size(); k++) {
-				SimplePoint3D p = addXXPoint3d.get(k);
-				
+		mergeMovedXPoints(addXX.get(values.size()), otherValues, xx);
+	}
+
+	private void mergeMovedXPoints(Point3DList points, Point3DFlagList otherValues, int xx) {
+		if(!points.isEmpty()) {
+			for (int k = 0; k < points.size(); k++) {
+				SimplePoint3D p = points.get(k);
 				if(p.isSupportedYZPlane()) {
 					if(!isEclipsedAtXX(p, xx)) {
 						otherValues.add(p);
@@ -813,7 +800,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					}
 				}
 			}
-			addXXPoint3d.clear();
+			points.clear();
 		}
 	}
 
