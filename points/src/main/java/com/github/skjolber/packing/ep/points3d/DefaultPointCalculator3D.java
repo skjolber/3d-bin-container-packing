@@ -656,7 +656,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 				// add point on the other side
 				for (int k = 0; k < addedZZ.size(); k++) {
 					SimplePoint3D add = addedZZ.get(k);
-					if(add.eclipsesMovedZ(p, zz)) {
+					// Earlier moved points have minZ = zz and minX <= p.minX (the sort's first key).
+					if(p.getMaxZ() <= add.getMaxZ() && p.getMaxX() <= add.getMaxX() && add.eclipsesY(p)) {
 						continue add;
 					}
 				}
