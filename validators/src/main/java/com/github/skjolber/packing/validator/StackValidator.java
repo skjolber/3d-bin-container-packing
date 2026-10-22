@@ -69,9 +69,6 @@ public class StackValidator {
 				checkInterrupted(interrupt);
 				Placement placement1 = placements.get(i);
 				for(int k = i + 1; k < placements.size(); k++) {
-					if((k & 63) == 0) {
-						checkInterrupted(interrupt);
-					}
 					Placement placement2 = placements.get(k);
 					
 					if(placement1.intersects(placement2)) {
