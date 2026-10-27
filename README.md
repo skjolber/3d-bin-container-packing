@@ -343,7 +343,7 @@ Note on bugs: Please follow [shuairan's](https://github.com/shuairan) example an
  * [The Art of Stacking: Challenges Faced While Developing a Packing Algorithm](https://medium.com/@fayyazawais1412/the-art-of-stacking-challenges-faced-while-developing-a-packing-algorithm-64d869b924ab)
 
 # History
- * 5.0.1:
+ * 5.1.0 (pending):
      * New API: `PointCalculator.addLast(..)` places the final box without updating the free points.
      * Performance: compared with 5.0.0, the packagers are up to 6% faster, validation up to 16%, and point calculation up to 17%.
  * 5.0.0: Major release. Breaking changes. A ton of new features. Assisted by AI. 
