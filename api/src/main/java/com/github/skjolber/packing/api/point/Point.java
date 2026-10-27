@@ -258,7 +258,7 @@ public abstract class Point {
 
 		this.dz = maxZ - minZ + 1;
 
-		calculateVolumeAndArea();
+		calculateVolume();
 	}
 
 	public void setMaxX(int maxX) {
@@ -285,6 +285,11 @@ public abstract class Point {
 
 	private void calculateVolumeAndArea() {
 		this.area = (long)dx * (long)dy;
+		calculateVolume();
+	}
+
+	private void calculateVolume() {
+		// the area is kept current by every change to x or y
 		this.volume = area * (long)dz;
 	}
 
@@ -496,11 +501,11 @@ public abstract class Point {
 	}
 
 	public long getVolumeAtZ(int zz) {
-		return (long)dx * (long)dy * (maxZ - zz + 1);
+		return area * (maxZ - zz + 1);
 	}
 
 	public long getVolumeAtMaxZ(int maxZ) {
-		return (long)dx * (long)dy * (maxZ - minZ + 1);
+		return area * (maxZ - minZ + 1);
 	}
 
 	public int getMinX() {
