@@ -928,6 +928,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 	
 	private void constrainMaxXY(Placement placement, int startIndex, int endIndex) {
+		final int placementZ = placement.getAbsoluteZ();
+
 		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -940,7 +942,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// maxZ must be above
 			
 			// below?
-			if(point.getMinZ() >= placement.getAbsoluteZ() || placement.getAbsoluteZ() > point.getMaxZ()) {
+			if(point.getMinZ() >= placementZ || placementZ > point.getMaxZ()) {
 				continue;
 			}
 			
@@ -954,10 +956,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			if(immutablePoints) {
 				// area is same as before, so not necessary to constrain
-				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placementZ - 1);
 				constrainZZ.set(copy, i);
 			} else {
-				point.setMaxZ(placement.getAbsoluteZ() - 1);
+				point.setMaxZ(placementZ - 1);
 				constrainZZ.set(point, i);
 			}
 			values.flag(i);
@@ -966,6 +968,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 
 	private void constrainMaxXZ(Placement placement, int startIndex, int endIndex) {
+		final int placementY = placement.getAbsoluteY();
+
 		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -978,7 +982,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// maxY must be above
 			
 			// in front?
-			if(point.getMinY() >= placement.getAbsoluteY() || placement.getAbsoluteY() > point.getMaxY()) {
+			if(point.getMinY() >= placementY || placementY > point.getMaxY()) {
 				continue;
 			}
 			
@@ -991,13 +995,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 
 			if(immutablePoints) {
-				long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
+				long area = (placementY - point.getMinY()) * (long)point.getDx();
 				if(area >= minAreaLimit) {
-					SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					SimplePoint3D copy = point.copy(point.getMaxX(), placementY - 1, point.getMaxZ());
 					constrainYY.set(copy, i);
 				}
 			} else {
-				point.setMaxY(placement.getAbsoluteY() - 1);
+				point.setMaxY(placementY - 1);
 				/*
 				if(point.getArea() >= minAreaLimit) {
 					constrainYY.set(point, i);
