@@ -885,9 +885,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private void constrainMaxYZ(Placement placement, int endIndex) {
 		// minX must be to the left 
 		// maxX must be above
+		final int placementX = placement.getAbsoluteX();
 
 		// only get the ones to the left of the placement
-		endIndex = constrainMaxYZLimit(placement.getAbsoluteX(), endIndex);
+		endIndex = constrainMaxYZLimit(placementX, endIndex);
 		
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
@@ -908,18 +909,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 			
 			// needs constrain?
-			if(placement.getAbsoluteX() > point.getMaxX()) {
+			if(placementX > point.getMaxX()) {
 				continue;
 			}
 			
 			if(immutablePoints) {
-				long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
+				long area = (placementX - point.getMinX()) * (long)point.getDy();
 				if(area >= minAreaLimit) {
-					SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D copy = point.copy(placementX - 1, point.getMaxY(), point.getMaxZ());
 					constrainXX.set(copy, i);
 				}
 			} else {
-				point.setMaxX(placement.getAbsoluteX() - 1);
+				point.setMaxX(placementX - 1);
 				constrainXX.set(point, i);
 			}
 			values.flag(i);
