@@ -45,7 +45,7 @@ class FlatTreeEngineTest {
 
 	@Test
 	void winnerIsTheWinnerOfThePermutationLoop() throws PackagerInterruptedException {
-		FlatEngine loop = FlatEngine.newBuilder().withThreads(1).withMinBoxes(1).build();
+		FlatEngine loop = FlatEngine.newBuilder().withJointTree(false).withThreads(1).withMinBoxes(1).build();
 		FlatEngine[] engines = engines();
 		try {
 			for (long seed = 0; seed < 120; seed++) {

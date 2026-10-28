@@ -47,18 +47,21 @@ Limits:
 
 ## The joint tree
 
-`FlatJointSearch` searches all box orders as one tree instead of one permutation at a time: a node is a prefix of placed boxes, its children the remaining
-box types in each rotation, so a prefix is placed once where the loop places it again for every order which starts with it. The leaves are the same
-arrangements, and the winner is the loop's (the same comparison, the lexicographically first permutation on ties, the first rotations among equals),
-which `FlatJointSearchTest` checks against `FlatEngine` on random problems. It prunes a box before placing it when no completion with it next can beat
-the best (the best sub-multiset of the remaining boxes within the load limits, by volume, weight and boxes, computed once per multiset), skips the
-other rotations of a box once one of them settled every order through it (the loop stops an order at its first complete rotation path), and tries the
-largest boxes first so that a strong arrangement is found early.
+By default `FlatEngine` searches the orders of an item as one tree (`FlatTreeItem`) instead of one permutation at a time (`FlatSubtree`): a node is a
+prefix of placed boxes, its children the remaining box types in each rotation, so a prefix is placed once where the loop places it again for every
+order which starts with it. The leaves are the same arrangements, and the winner is the loop's (the same comparison, the lexicographically first
+permutation on ties, the first rotations among equals), which `FlatJointSearchTest` and `FlatTreeEngineTest` check against the loop on random problems,
+with threads, pausing and bounds, and `FlatAcceleratedPackagerTest` through the packager. The tree prunes a box before placing it when no completion with
+it next can beat the best (the best sub-multiset of the remaining boxes within the load limits, by volume, weight and boxes, computed once per multiset),
+skips the other rotations of a box once one of them settled every order through it (the loop stops an order at its first complete rotation path),
+and tries the largest boxes first so that a strong arrangement is found early; the engine runs the items in that order too, and shares the best
+arrangement of the items with the item which found it, so that a later item also prunes what can only equal it.
 
-On 42 random problems of 11 to 12 boxes in tight containers (`FlatJointStats`), one thread: the loop searches 208 million nodes in 85 s, the tree 53
-million in 30 s; the tree needs 3 to 13 times fewer nodes on every hard problem (seed 109: 52 million to 5 million, 25 s to 2.3 s; seed 138: 125 million to
-42 million, 50 s to 24 s). It is not yet an accelerator: it runs on one thread without pausing, so the next step is to split it in items for threads and
-devices as `FlatSubtree` is, which also gives the level-by-level expansion that a device wants.
+On 42 random problems of 11 to 12 boxes in tight containers (`FlatJointStats`), 8 threads on 4 cores: the loop searches 211 million nodes in 38.6 s,
+the tree 7 million in 2.6 s, and the tree is never slower; the hardest problem (seed 109) goes from 52 million nodes and 14 s to 13,000 nodes and 6 ms,
+the largest (seed 138) from 125 million nodes and 19 s to 2 million and 0.5 s. The tree costs about three times more per node than the loop (its bounds
+and candidates), which is why problems with few nodes to prune gain less. The device accelerators still run the loop; the tree is the shape to port next,
+and its level-by-level expansion is what a device wants.
 
 ## Speed
 

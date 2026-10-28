@@ -16,12 +16,14 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 
 /**
- * A {@linkplain BruteForceAccelerator} which searches the permutations on threads of the CPU, on the flat model (see {@linkplain FlatSubtree}): the
- * permutations are split in items by the first boxes, the items are searched in parallel (a few nodes at a time, so that the interrupt can be polled
- * between the rounds), and the best arrangements of the items are reduced in the order of the items.
+ * A {@linkplain BruteForceAccelerator} which searches the permutations on threads of the CPU, on the flat model: the permutations are split in items by
+ * the first boxes, the items are searched in parallel (a few nodes at a time, so that the interrupt can be polled between the rounds), and the best
+ * arrangements of the items are reduced in the order of the items. By default the orders of an item are searched as one tree ({@linkplain FlatTreeItem}),
+ * which places every prefix once and prunes with bounds, and needs far fewer nodes than the loop over the permutations ({@linkplain FlatSubtree}, the
+ * search of the packager itself, see {@link Builder#withJointTree(boolean)}); the winner is the same.
  * <p>
- * It is the reference for devices which run the same flat search (the work of an item is the same), and not a replacement for the packager's own loop
- * on one thread: the flat search is not faster per node, so speed-up comes from the threads only.
+ * With the loop it is the reference for devices which run the same flat search (the work of an item is the same); the flat search is then not faster per
+ * node than the packager, so speed-up comes from the threads only.
  * <p>
  * The interrupt is polled between the items of a round; a single permutation is never interrupted, so how long it takes to react depends on the cost of
  * a permutation.
@@ -54,7 +56,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		private int maxItems = DEFAULT_MAX_ITEMS;
 		private int minBoxes = DEFAULT_MIN_BOXES;
 		private int maxBoxes = DEFAULT_MAX_BOXES;
-		private boolean jointTree = false;
+		private boolean jointTree = true;
 
 		/**
 		 * @param threads the number of threads; with one, the search runs on the thread which calls it
@@ -141,8 +143,9 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 
 		/**
-		 * @param jointTree true to search the orders of an item as one tree ({@linkplain FlatTreeItem}: every prefix placed once), false for the loop over
-		 *        the permutations ({@linkplain FlatSubtree}); the winner is the same
+		 * @param jointTree true (the default) to search the orders of an item as one tree ({@linkplain FlatTreeItem}: every prefix placed once, with the
+		 *        bounds of the tree), false for the loop over the permutations ({@linkplain FlatSubtree}, the search of the packager itself); the winner
+		 *        is the same, the tree needs far fewer nodes
 		 * @return this builder
 		 */
 		public Builder withJointTree(boolean jointTree) {

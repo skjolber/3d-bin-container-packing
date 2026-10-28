@@ -101,7 +101,7 @@ class FlatJointSearchTest {
 
 	@Test
 	void winnerIsTheWinnerOfThePermutationLoop() throws PackagerInterruptedException {
-		FlatEngine engine = FlatEngine.newBuilder().withThreads(1).withMinBoxes(1).build();
+		FlatEngine engine = FlatEngine.newBuilder().withJointTree(false).withThreads(1).withMinBoxes(1).build();
 		try {
 			for (long seed = 0; seed < 200; seed++) {
 				FlatTestInstances.Instance instance = FlatTestInstances.random(seed, 4, 9);
@@ -117,7 +117,7 @@ class FlatJointSearchTest {
 
 	@Test
 	void winnerWithABoundIsTheWinnerOfThePermutationLoop() throws PackagerInterruptedException {
-		FlatEngine engine = FlatEngine.newBuilder().withThreads(1).withMinBoxes(1).build();
+		FlatEngine engine = FlatEngine.newBuilder().withJointTree(false).withThreads(1).withMinBoxes(1).build();
 		try {
 			for (long seed = 1; seed <= 40; seed++) {
 				FlatProblem problem = tight(seed, 8, 9);

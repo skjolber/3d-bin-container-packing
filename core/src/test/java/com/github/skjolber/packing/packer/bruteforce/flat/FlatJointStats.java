@@ -16,7 +16,7 @@ public class FlatJointStats {
 		int repeats = args.length > 4 ? Integer.parseInt(args[4]) : 2;
 		int threads = args.length > 5 ? Integer.parseInt(args[5]) : 1;
 
-		FlatEngine engine = FlatEngine.newBuilder().withThreads(threads).withMinBoxes(1).build();
+		FlatEngine engine = FlatEngine.newBuilder().withJointTree(false).withThreads(threads).withMinBoxes(1).build();
 		FlatEngine tree = FlatEngine.newBuilder().withThreads(threads).withMinBoxes(1).withJointTree(true).build();
 		try {
 			for (int i = 0; i < seeds; i++) {

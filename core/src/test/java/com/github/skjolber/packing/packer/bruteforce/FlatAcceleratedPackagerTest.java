@@ -63,8 +63,9 @@ class FlatAcceleratedPackagerTest {
 		return builder.build();
 	}
 
+	/** the engine with the loop over the permutations; the tree is the default and has its own test below */
 	private static FlatEngine engine(int threads) {
-		return FlatEngine.newBuilder().withThreads(threads).withMinBoxes(1).build();
+		return FlatEngine.newBuilder().withJointTree(false).withThreads(threads).withMinBoxes(1).build();
 	}
 
 	/**
@@ -106,7 +107,7 @@ class FlatAcceleratedPackagerTest {
 
 	@Test
 	void samePlacementsWithTheJointTree() {
-		FlatEngine engine = FlatEngine.newBuilder().withJointTree(true).withThreads(4).withMinBoxes(1).build();
+		FlatEngine engine = FlatEngine.newBuilder().withThreads(4).withMinBoxes(1).build();
 		try {
 			FastBruteForcePackager accelerated = comparePacking(engine, 0, 80, 5, 8, b -> b, Instance::copyBoxItems);
 			assertThat(accelerated.acceleratedCount.get()).isGreaterThan(80);

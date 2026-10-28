@@ -109,12 +109,18 @@ class FlatEngineTest {
 		assertThat(Arrays.copyOf(winner.getRotations(), expected.count)).as(message).containsExactly(expected.rotations);
 	}
 
+	/** the engines with the loop come first; the tree engines follow */
+	private static final int LOOP_ENGINES = 4;
+
 	private static FlatEngine[] engines() {
 		return new FlatEngine[] {
-				FlatEngine.newBuilder().withThreads(1).withMinBoxes(1).build(),
-				FlatEngine.newBuilder().withThreads(4).withMinBoxes(1).build(),
+				FlatEngine.newBuilder().withJointTree(false).withThreads(1).withMinBoxes(1).build(),
+				FlatEngine.newBuilder().withJointTree(false).withThreads(4).withMinBoxes(1).build(),
 				// many small items, paused after every permutation
-				FlatEngine.newBuilder().withThreads(3).withItemsPerThread(1).withNodeBudget(1).withMinBoxes(1).build(),
+				FlatEngine.newBuilder().withJointTree(false).withThreads(3).withItemsPerThread(1).withNodeBudget(1).withMinBoxes(1).build(),
+				FlatEngine.newBuilder().withJointTree(false).withThreads(1).withItemsPerThread(1024).withNodeBudget(1).withMinBoxes(1).build(),
+				// the tree, the default
+				FlatEngine.newBuilder().withThreads(4).withMinBoxes(1).build(),
 				FlatEngine.newBuilder().withThreads(1).withItemsPerThread(1024).withNodeBudget(1).withMinBoxes(1).build(),
 		};
 	}
@@ -175,6 +181,13 @@ class FlatEngineTest {
 				Reference expected = reference(iterator, container, n, bound);
 				for (int e = 0; e < engines.length; e++) {
 					Optional<AcceleratorWinner> actual = engines[e].search(problem, bound, () -> false);
+					if(e >= LOOP_ENGINES && expected.count > 0 && expected.volume < bound) {
+						// nothing reaches the bound: the loop returns the best of the orders it searched, which depends on its skipping, the tree prunes them
+						// all; the packager discards both
+						assertThat(actual).as("seed " + seed + ", engine " + e + ", bound " + bound).isPresent();
+						assertThat(actual.get().getLoadVolume()).as("seed " + seed + ", engine " + e + ", bound " + bound).isLessThan(bound);
+						continue;
+					}
 					assertWinner(actual, expected, "seed " + seed + ", engine " + e + ", bound " + bound);
 				}
 				if(expected.count == 0) {
