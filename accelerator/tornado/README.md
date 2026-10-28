@@ -82,22 +82,31 @@ Verified: the 7.3.1 `jdk22plus` OpenCL SDK on JDK 25, with the ROCm 7.1 OpenCL r
 ## Speed
 
 Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X (the CPU engine does the
-same work per node as the packager's own loop, so this is the packager with 8 threads), on random problems of 11 to 12 boxes in tight containers. The device time includes the host
-loop, the transfers and, for the first search, about 400 ms to compile the kernel and allocate the scratch; "again" is a second search of the same problem.
+same work per node as the packager's own loop, so this is the packager with 8 threads), with a warm JVM, on 42 random problems of 11 to 12 boxes in tight containers, every
+problem different. The device time includes the host loop, the transfers and, for each problem, about 0.4 s to compile the kernel and allocate the scratch; the compiled kernel
+and the memory are reused only for a problem of the same shape (number of boxes and sizes of the problem arrays).
 
-| Seed | Nodes on the device | 8 CPU threads | Device, first search | Device, again |
-|---|---|---|---|---|
-| 138 | 126 million | 23.2 s | 10.8 s | 10.3 s |
-| 109 | 55 million | 15.4 s | 27.2 s | 26.3 s |
-| 122 | 9.0 million | 4.0 s | 2.1 s | 1.5 s |
-| 112 | 6.9 million | 3.3 s | 1.1 s | 0.6 s |
-| 128 | 6.2 million | 3.9 s | 1.1 s | 0.5 s |
-| 129 | 5.4 million | 2.9 s | 0.9 s | 0.4 s |
-| easy problems (most seeds) | up to 0.5 million | 0 to 20 ms | 0.4 s | 1 to 40 ms |
+| Problems | 8 CPU threads | Device |
+|---|---|---|
+| 35 easy ones (the CPU under 0.5 s each) | 1.3 s in all | 16.3 s in all, 0.46 s each |
+| seed 112, 7 million nodes | 0.54 s | 1.03 s |
+| seed 115, 6 million nodes | 0.52 s | 0.81 s |
+| seed 122, 9 million nodes | 1.53 s | 2.01 s |
+| seed 128, 6 million nodes | 0.63 s | 0.93 s |
+| seed 140, 5 million nodes | 0.63 s | 0.74 s |
+| seed 109, 55 million nodes | 12.0 s | 26.5 s |
+| seed 138, 126 million nodes | 19.1 s | 10.7 s |
+| all 42 | 36.3 s | 59.0 s |
 
-So the device is 2 to 8 times faster than 8 CPU threads on most hard problems, and 1.8 times slower on one (seed 109, whose items are very uneven), which puts it at roughly 0.5 to 2 times
-the 32 threads of the whole CPU, the expectation stated in [accelerated brute force](../../docs/heuristics/accelerated-brute-force.md). On easy problems the compilation of the kernel
-dominates the first search; the following searches of a packing (the same number of boxes and problem sizes) reuse it. The defaults come from these runs:
+So the device is 1.6 times slower than 8 CPU threads over the whole set: the compilation makes the easy problems 12 times slower, the medium ones lose by 1.2 to 1.9 times, and
+only the largest problem wins, by 1.8 times (seed 109, whose items are very uneven, loses by 2.2 times). Against the 32 threads of the whole CPU the device loses everywhere.
+A second search of a problem of the same shape saves the 0.4 s, which does not change the picture for the medium problems. The target of the design (3 times the whole CPU)
+is not reached, and the expectation of 0.5 to 2 times only for the largest problems.
+
+Note on measuring: the CPU times must be taken with a warm JVM. A first search in a fresh JVM includes the JIT compilation of the search and is 2 to 6 times slower, which made
+an earlier version of this table claim the opposite.
+
+The defaults come from tuning runs on seeds 112 to 115:
 
  * `withLocalWorkSize(1)`: one work item per work group. The search diverges so much that the lanes of a wavefront mostly wait for each other; a work group of one
    was 2.5 times faster than the choice of the runtime (a work group of 32 was no better than that).
@@ -105,7 +114,8 @@ dominates the first search; the following searches of a packing (the same number
    with a budget of 5000, and 47 million with 20,000); 500 was slightly faster still, 2000 slower.
  * `withWindow(2048)`: 1024 and 4096 were the same; 512 was 2.5 times slower (too few work items in flight). `withMaxPoints(64)` and `withTargetItems(65536)` made no difference.
 
-The CPU times vary a lot between runs of the same problem (the threads find the bounds in a different order), so single numbers are rough.
+What could still change the picture: compiling the kernel once per JVM instead of once per shape (the kernel does not depend on the sizes, only the plan does), and a layout of the
+scratch which coalesces the memory accesses of a wavefront; neither has been tried.
 
 ## Why the kernel is written by hand
 

@@ -76,9 +76,10 @@ FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccele
 It needs the TornadoVM SDK with an OpenCL, CUDA or Metal backend for the device (AMD cards use OpenCL), which is not on Maven Central; without a runtime the accelerator gives up and
 the packager searches itself. The module README shows how to run with the SDK.
 
-On a Radeon RX 7600 against 8 CPU threads (4 cores of a Ryzen 9 9950X), random problems of 11 to 12 boxes: the device is 2 to 8 times faster on most hard problems (5 to 126 million
-nodes), and 1.8 times slower on one; that is roughly 0.5 to 2 times the whole CPU with 32 threads, as expected above. On easy problems the compilation of the kernel (about 400 ms,
-paid once per packing) dominates. The numbers and the tuning are in the module README.
+On a Radeon RX 7600 against 8 CPU threads (4 cores of a Ryzen 9 9950X, a warm JVM), 42 random problems of 11 to 12 boxes, every problem different: the device is 1.6 times
+slower over the whole set. It pays about 0.4 s of kernel compilation per problem shape, which makes the easy problems 12 times slower; the medium ones (5 to 9 million
+nodes) lose by 1.2 to 1.9 times, and only the largest (126 million nodes) wins, by 1.8 times. Against the whole CPU with 32 threads it loses everywhere, so the accelerator
+is not worth using as it is; the numbers, the tuning and what could still change the picture are in the module README.
 
 To write another kernel, port the flat package as the tornado module does and keep both in step, see [DEVELOPER.md](../../DEVELOPER.md#flat-search-and-accelerators).
 
