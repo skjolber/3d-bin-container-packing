@@ -522,11 +522,16 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			// nothing can load more than the best result: pack(..) returns at once
 			return null;
 		}
-		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit);
-		if(!accelerator.supports(problem)) {
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
+		FlatProblem problem = null;
+		if(accelerator != treeEngine) {
+			problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit);
+			if(!accelerator.supports(problem)) {
+				return null;
+			}
+		} else if(length < treeSearchMinBoxes) {
 			return null;
 		}
-		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
 		if(allItemsFit) {
 			// the first order wins outright if it places all boxes, as it does for the loop; that is one search, which no accelerator beats
 			iterator.reset();
@@ -543,6 +548,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			} finally {
 				iterator.reset();
 			}
+		}
+		if(problem == null) {
+			problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit);
 		}
 		Optional<AcceleratorWinner> found = accelerator.search(problem, minLoadVolume, interrupt);
 		if(found.isEmpty()) {

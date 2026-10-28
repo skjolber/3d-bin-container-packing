@@ -48,7 +48,10 @@ Limits:
 ## The joint tree
 
 `FastBruteForcePackager` itself searches the box orders of a container as this tree by default, on the calling thread, where no accelerator is set and the
-conditions above hold (`withTreeSearch(false)` keeps the loop); it places the winning order as it does for an accelerator. `FlatEngine` searches the
+conditions above hold (`withTreeSearch(false)` keeps the loop); it places the winning order as it does for an accelerator. When all boxes fit, the first
+order is tried before the tree and wins outright if it places them all, as it does for the loop: one search, which nothing beats. On the packager
+benchmarks (JMH, 3 forks, JDK 25) the Bouwkamp fast packager is 2.5 times faster with the tree, and Egy and Tycho (22 boxes), where the first order
+places everything, are within 2% of the loop. `FlatEngine` searches the
 orders of an item as the tree too (`FlatTreeItem`) instead of one permutation at a time (`FlatSubtree`): a node is a
 prefix of placed boxes, its children the remaining box types in each rotation, so a prefix is placed once where the loop places it again for every
 order which starts with it. The leaves are the same arrangements, and the winner is the loop's (the same comparison, the lexicographically first
