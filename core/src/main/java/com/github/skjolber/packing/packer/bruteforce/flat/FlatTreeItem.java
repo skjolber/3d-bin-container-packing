@@ -454,6 +454,25 @@ public final class FlatTreeItem {
 	 */
 	private static boolean isBetter(boolean haveBest, int bestCount, long bestVolume, long bestWeight, int[] best, int bestPermutation, int[] out, int levels, int count, int failingType,
 			int[] remaining, int types, long volume, long weight, int[] candidate, int n) {
+		boolean equal = false;
+		if(haveBest) {
+			// the values first: the permutation is only needed when the arrangement is at least as good
+			if(volume != bestVolume) {
+				if(volume < bestVolume) {
+					return false;
+				}
+			} else if(weight != bestWeight) {
+				if(weight < bestWeight) {
+					return false;
+				}
+			} else if(count != bestCount) {
+				if(count < bestCount) {
+					return false;
+				}
+			} else {
+				equal = true;
+			}
+		}
 		for (int i = 0; i < count; i++) {
 			candidate[i] = out[levels + i * LEVEL_INTS + L_PLACED_TYPE];
 		}
@@ -467,17 +486,8 @@ public final class FlatTreeItem {
 				candidate[index++] = t;
 			}
 		}
-		if(!haveBest) {
+		if(!equal) {
 			return true;
-		}
-		if(volume != bestVolume) {
-			return volume > bestVolume;
-		}
-		if(weight != bestWeight) {
-			return weight > bestWeight;
-		}
-		if(count != bestCount) {
-			return count > bestCount;
 		}
 		for (int i = 0; i < n; i++) {
 			if(candidate[i] != best[bestPermutation + i]) {
