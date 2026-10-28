@@ -17,6 +17,7 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 | `core` | Packager algorithm implementations |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |
+| `accelerator/tornado` | TornadoVM accelerator (experimental, Java 22+); only with `-Ptornado`, e.g. `./mvnw -B -ntp -Ptornado,dev -pl accelerator/tornado -am test` |
 | `visualizer/api` | Visualizer JSON contract types |
 | `visualizer/algorithm` | Algorithm state capture |
 | `visualizer/packaging` | Packing result → JSON conversion |

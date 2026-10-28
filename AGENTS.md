@@ -9,6 +9,7 @@
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `legacy/v4` | `shadowed-v4`: version 4 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published (see its README) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
+| `accelerator/tornado` | `tornado-accelerator`: experimental TornadoVM accelerator for the fast brute force packager (Java 22+); only in the `-Ptornado` profile, not in the default build (see its README) |
 | `visualizer/*` | Visualizer applications |
 
 Documentation: `README.md` (usage: each section an example and a few sentences, linking to

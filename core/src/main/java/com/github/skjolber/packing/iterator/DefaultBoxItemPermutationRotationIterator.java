@@ -202,6 +202,44 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		System.arraycopy(reset, 0, rotations, 0, rotations.length);
 	}
 
+	/**
+	 * @return true if the boxes have different container priorities, so that they are permuted within their blocks only
+	 */
+	public boolean hasBlocks() {
+		return blockEnds.length != 0;
+	}
+
+	/**
+	 * Move to a permutation, with the first rotation of each box: as if reached by {@link #nextPermutation(int)}.
+	 *
+	 * @param permutation the box item of each position, with the same boxes as the current permutation (within each block, if there are blocks)
+	 * @throws IllegalArgumentException if the permutation does not hold the same boxes
+	 */
+	public void setPermutation(int[] permutation) {
+		if(permutation.length != permutations.length) {
+			throw new IllegalArgumentException("Expected " + permutations.length + " boxes, got " + permutation.length);
+		}
+		int[] expected = permutations.clone();
+		int[] actual = permutation.clone();
+		int start = 0;
+		int blocks = Math.max(blockEnds.length, 1);
+		for (int b = 0; b < blocks; b++) {
+			int end = blockEnds.length == 0 ? permutations.length : blockEnds[b];
+			Arrays.sort(expected, start, end);
+			Arrays.sort(actual, start, end);
+			start = end;
+		}
+		if(!Arrays.equals(expected, actual)) {
+			throw new IllegalArgumentException("Expected a permutation of the current boxes");
+		}
+
+		System.arraycopy(permutation, 0, permutations, 0, permutation.length);
+		resetRotations();
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
+	}
+
 	public int nextPermutation(int maxIndex) {
 		if(blockEnds.length != 0) {
 			return nextBlockPermutation(maxIndex);

@@ -731,3 +731,39 @@ When you pack box item groups, groups are accepted in order: a result must hold 
 To let a costly packager skip work, compare results by load volume first and say so, as shown under
 [Comparing results](#comparing-results). See also [Composite packager](docs/heuristics/composite.md) for budgets and how
 the composite chooses between results.
+
+## Flat search and accelerators
+
+`FastBruteForcePackager` can delegate the search of all box orders to a `BruteForceAccelerator` (see
+[accelerated brute force](docs/heuristics/accelerated-brute-force.md)). An accelerator, such as a GPU kernel, gets a
+`FlatProblem` (the boxes of one container on primitive arrays) and returns the best box order as an `AcceleratorWinner`:
+
+```java
+public interface BruteForceAccelerator extends AutoCloseable {
+    boolean supports(FlatProblem problem);
+    Optional<AcceleratorWinner> search(FlatProblem problem, long boundVolume, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
+}
+```
+
+The winner must be the one which the packager's own loop picks: the most load volume, then load weight, then boxes; the
+earlier permutation wins a tie, and the first permutation which places all boxes wins at once. The packager places the
+winner itself, and searches the box orders itself when the accelerator returns nothing, so an accelerator may give up on
+any problem, but must not return a worse or a different winner. Test it as `FlatEngineTest` and
+`FlatAcceleratedPackagerTest` do: against a reference loop, and by comparing the placements with and without it.
+
+Code which should run on a device is written in the style of the `flat` package, so that it can be compiled to a kernel:
+
+ * `static` methods on `int[]` and `long[]` and offsets into them, with no objects, allocation, `System.arraycopy`, recursion,
+   exceptions, assertions, strings, boxing, interfaces or virtual calls; copy with loops
+ * small methods (a kernel compiler inlines them), and statistics in a counter array, not by logging
+ * the same tie-breaking as the object version; the comparator which picks the best point is not a total order, so
+   copy it as it is
+ * the kernel of the tornado module (`accelerator/tornado/src/main/resources/.../subtree.cl`) is a hand-written OpenCL C port of the flat package, function
+   by function, with the same names and the same order of statements: a change to `FlatPoints`, `FlatSearch`, `FlatPermutation` or `FlatSubtree` is made
+   in both, and `KernelParityTest` (with a device) shows that they still agree. It is written by hand because the TornadoVM JIT (7.3.1, OpenCL) compiles the
+   search but miscompiles its control flow without an error (a kernel which never ends; see the README of the module). The flat Java therefore keeps a
+   C-like shape: one exit per method, no `return` or `continue` in a loop, boolean predicates (`isAfterX(..)`) instead of three-way comparators, which is
+   also what the port needs
+ * scratch in one array per work item, with the sizes set up front (`FlatLayout`), and a flag, not an exception, when
+   the scratch is too small, so that the packager can fall back to its own search
+ * write the test with the code: compare each function with the object version on random input, as `FlatPointsAddTest` does

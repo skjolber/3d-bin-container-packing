@@ -1,0 +1,103 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+		<artifactId>parent</artifactId>
+		<version>5.0.1-SNAPSHOT</version>
+		<relativePath>../../pom.xml</relativePath>
+	</parent>
+	<artifactId>tornado-accelerator</artifactId>
+	<name>tornado-accelerator</name>
+	<description>TornadoVM accelerator for the fast brute force packager (experimental)</description>
+
+	<properties>
+		<!-- tornado-api 7.x for JDK 22+ -->
+		<java.version>22</java.version>
+		<tornado.version>7.3.1-jdk22plus</tornado.version>
+		<!-- set by jacoco when it runs -->
+		<argLine></argLine>
+	</properties>
+
+	<profiles>
+		<profile>
+			<!-- run the tests against a device: -Dtornado.argfile=<the JVM options of the TornadoVM SDK>, see the README. Without it the tests which need a device are skipped -->
+			<id>tornado-device</id>
+			<activation>
+				<property>
+					<name>tornado.argfile</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<!-- surefire enables assertions, and an assertion in the Graal of TornadoVM 7.3.1 (an invocation plugin for a method which JDK 12+ lacks) then stops the OpenCL backend -->
+							<argLine>@{argLine} @${tornado.argfile} -da:tornado...</argLine>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+			<artifactId>core</artifactId>
+		</dependency>
+		<dependency>
+			<!-- the API only: the runtime (native drivers) comes with the TornadoVM installation, which is not on Maven Central -->
+			<groupId>io.github.beehive-lab</groupId>
+			<artifactId>tornado-api</artifactId>
+			<version>${tornado.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<!-- test -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.assertj</groupId>
+			<artifactId>assertj-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Automatic-Module-Name>com.github.skjolber.packing.tornado</Automatic-Module-Name>
+						</manifestEntries>
+					</archive>
+				</configuration>
+			</plugin>
+			<plugin>
+				<!-- no module descriptor: tornado-api is on the class path or an automatic module -->
+				<groupId>org.moditect</groupId>
+				<artifactId>moditect-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>add-module-infos</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

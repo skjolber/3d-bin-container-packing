@@ -163,6 +163,15 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
+`FastBruteForcePackager` can hand the search of the box orders to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
+
+```java
+FastBruteForcePackager packager = FastBruteForcePackager
+    .newBuilder()
+    .withAccelerator(FlatEngine.newBuilder().withThreads(8).build())
+    .build();
+```
+
 Using a deadline is recommended whenever brute-forcing in a real-time application:
 
 ```java

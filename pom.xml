@@ -517,6 +517,13 @@
 
 	<profiles>
 		<profile>
+			<!-- TornadoVM accelerator for the fast brute force packager, needs Java 22+ and tornado-api: mvn -P tornado ... Off by default: the default reactor does not contain the module -->
+			<id>tornado</id>
+			<modules>
+				<module>accelerator/tornado</module>
+			</modules>
+		</profile>
+		<profile>
 			<id>dev</id>
 			<properties>
 				<jacoco.skip>true</jacoco.skip>
