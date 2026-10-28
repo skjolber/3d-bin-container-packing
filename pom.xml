@@ -339,6 +339,8 @@
 						<useReleaseProfile>false</useReleaseProfile>
 						<releaseProfiles>release</releaseProfiles>
 						<goals>deploy</goals>
+						<!-- build every module in full: the build cache ignores the version, and a module restored from it is not deployed -->
+						<arguments>-Dmaven.build.cache.enabled=false</arguments>
 					</configuration>
 				</plugin>
 				<plugin>
