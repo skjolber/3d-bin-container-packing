@@ -21,6 +21,8 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		protected int placementCount;
 		protected long minVolumeLimit;
 		protected long minAreaLimit;
+		/** the placement did not update the free points (see addLast), so restoring keeps the current list */
+		protected boolean terminal;
 	}
 
 	private int stackSize = 0;
@@ -45,6 +47,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		stackItem.placementCount = placements.size();
 		stackItem.minVolumeLimit = minVolumeLimit;
 		stackItem.minAreaLimit = minAreaLimit;
+		stackItem.terminal = false;
 		// add(..) writes a new output list and only flags its input temporarily:
 		// keep the input list itself as the snapshot (see saveValues)
 		snapshot = stackItem;
@@ -64,6 +67,31 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		boolean result = add(index, placement);
 		stackItems[stackSize - 1].point = position;
 		return result;
+	}
+
+	/**
+	 * As {@link #add(int, Placement, SimplePoint3D)}, for the final placement: records the placement and its point
+	 * without updating the free points, see {@link com.github.skjolber.packing.api.point.PointCalculator#addLast(Point, Placement)}.
+	 * Restore a lower stack size before using the free points or adding another placement.
+	 */
+	@Override
+	public void addLast(Point point, Placement placement) {
+		StackItem stackItem = frame();
+		stackItem.point = (SimplePoint3D) point;
+		stackItem.placementCount = placements.size();
+		stackItem.minVolumeLimit = minVolumeLimit;
+		stackItem.minAreaLimit = minAreaLimit;
+		stackItem.terminal = true;
+		snapshot = null;
+
+		stackSize++;
+
+		super.addLast(point, placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		addLast(values.get(index), placement);
 	}
 
 	private FullSupportCandidates fullSupportCandidates;
@@ -93,6 +121,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		frame.placementCount = placements.size();
 		frame.minAreaLimit = minAreaLimit;
 		frame.minVolumeLimit = minVolumeLimit;
+		frame.terminal = false;
 		// a batch makes several insertions, so take an explicit copy before the first
 		if(frame.values == null) {
 			frame.values = new Point3DFlagList();
@@ -175,13 +204,17 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 
 	private void reload() {
 		StackItem stackItem = stackItems[stackSize];
+		minVolumeLimit = stackItem.minVolumeLimit;
+		minAreaLimit = stackItem.minAreaLimit;
+		if(stackItem.terminal) {
+			// the current list is still the one before the final placement
+			return;
+		}
 		// the frame's snapshot becomes the current list; the current list becomes the frame's spare, and is not read
 		// again before the next add(..) at this level takes the frame's list as the output buffer (see saveValues)
 		Point3DFlagList current = values;
 		values = stackItem.values;
 		stackItem.values = current;
-		minVolumeLimit = stackItem.minVolumeLimit;
-		minAreaLimit = stackItem.minAreaLimit;
 	}
 
 }

@@ -1205,7 +1205,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					int nextLevel = level + 1;
 					if(nextLevel == length) {
 						// The leaf keeps the placement, but never searches the free space after it.
-						pointCalculator.addLast(placement, point);
+						pointCalculator.addLast(point, placement);
 					} else {
 						pointCalculator.add(pointIndex, placement, point);
 					}

@@ -106,6 +106,16 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		return new Placement(value, new DefaultPoint3D(0, 0, 0, containerMaxX, containerMaxY, containerMaxZ), false);
 	}
 	
+	@Override
+	public void addLast(Point point, Placement placement) {
+		placements.add(placement);
+	}
+
+	@Override
+	public void addLast(int index, Placement placement) {
+		placements.add(placement);
+	}
+
 	public boolean add(Point point, Placement placement) {
 		return add(indexOf(point), placement);
 	}
@@ -684,27 +694,9 @@ public class DefaultPointCalculator3D implements PointCalculator {
 
 		for (int i = 0; i < endIndex; i++) {
 
-			Point3DList addZZPoint3d = addZZ.get(i);
-			if(!addZZPoint3d.isEmpty()) {
-				for (int k = 0; k < addZZPoint3d.size(); k++) {
-					SimplePoint3D p = addZZPoint3d.get(k);
-					if(!isEclipsed(p)) {
-						otherValues.add(p);
-					}
-				}
-				addZZPoint3d.clear();
-			}
+			mergeMovedZPoints(addZZ.get(i), otherValues);
 
-			Point3DList addYYPoint3d = addYY.get(i);
-			if(!addYYPoint3d.isEmpty()) {
-				for (int k = 0; k < addYYPoint3d.size(); k++) {
-					SimplePoint3D p = addYYPoint3d.get(k);
-					if(!isEclipsed(p)) {
-						otherValues.add(p);
-					}
-				}
-				addYYPoint3d.clear();
-			}
+			mergeMovedYPoints(addYY.get(i), otherValues);
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
@@ -739,45 +731,12 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 		}
 
-		Point3DList addZZPoint3d = addZZ.get(endIndex);
-		if(!addZZPoint3d.isEmpty()) {
-			for (int k = 0; k < addZZPoint3d.size(); k++) {
-				SimplePoint3D p = addZZPoint3d.get(k);
-				if(!isEclipsed(p)) {
-					otherValues.add(p);
-				}
-			}
-			addZZPoint3d.clear();
-		}
+		mergeMovedZPoints(addZZ.get(endIndex), otherValues);
 
-		Point3DList addYYPoint3d = addYY.get(endIndex);
-		if(!addYYPoint3d.isEmpty()) {
-			for (int k = 0; k < addYYPoint3d.size(); k++) {
-				SimplePoint3D p = addYYPoint3d.get(k);
-				if(!isEclipsed(p)) {
-					otherValues.add(p);
-				}
-			}
-			addYYPoint3d.clear();
-		}
+		mergeMovedYPoints(addYY.get(endIndex), otherValues);
 
 		for (int i = endIndex; i < values.size(); i++) {
-			Point3DList addXXPoint3d = addXX.get(i);
-			if(!addXXPoint3d.isEmpty()) {
-				for (int k = 0; k < addXXPoint3d.size(); k++) {
-					SimplePoint3D p = addXXPoint3d.get(k);
-					if(p.isSupportedYZPlane()) {
-						if(!isEclipsedAtXX(p, xx)) {
-							otherValues.add(p);
-						}
-					} else {
-						if(!isEclipsed(p)) {
-							otherValues.add(p);
-						}
-					}
-				}
-				addXXPoint3d.clear();
-			}
+			mergeMovedXPoints(addXX.get(i), otherValues, xx);
 
 			if(!values.isFlag(i)) {
 				otherValues.add(values.get(i));
@@ -788,11 +747,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 		}
 
 		// get the last element, if any
-		Point3DList addXXPoint3d = addXX.get(values.size());
-		if(!addXXPoint3d.isEmpty()) {
-			for (int k = 0; k < addXXPoint3d.size(); k++) {
-				SimplePoint3D p = addXXPoint3d.get(k);
-				
+		mergeMovedXPoints(addXX.get(values.size()), otherValues, xx);
+	}
+
+	private void mergeMovedXPoints(Point3DList points, Point3DFlagList otherValues, int xx) {
+		if(!points.isEmpty()) {
+			for (int k = 0; k < points.size(); k++) {
+				SimplePoint3D p = points.get(k);
 				if(p.isSupportedYZPlane()) {
 					if(!isEclipsedAtXX(p, xx)) {
 						otherValues.add(p);
@@ -803,7 +764,31 @@ public class DefaultPointCalculator3D implements PointCalculator {
 					}
 				}
 			}
-			addXXPoint3d.clear();
+			points.clear();
+		}
+	}
+
+	private void mergeMovedZPoints(Point3DList points, Point3DFlagList otherValues) {
+		if(!points.isEmpty()) {
+			for (int k = 0; k < points.size(); k++) {
+				SimplePoint3D p = points.get(k);
+				if(!isEclipsed(p)) {
+					otherValues.add(p);
+				}
+			}
+			points.clear();
+		}
+	}
+
+	private void mergeMovedYPoints(Point3DList points, Point3DFlagList otherValues) {
+		if(!points.isEmpty()) {
+			for (int k = 0; k < points.size(); k++) {
+				SimplePoint3D p = points.get(k);
+				if(!isEclipsed(p)) {
+					otherValues.add(p);
+				}
+			}
+			points.clear();
 		}
 	}
 
@@ -900,9 +885,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	private void constrainMaxYZ(Placement placement, int endIndex) {
 		// minX must be to the left 
 		// maxX must be above
+		final int placementX = placement.getAbsoluteX();
 
 		// only get the ones to the left of the placement
-		endIndex = constrainMaxYZLimit(placement.getAbsoluteX(), endIndex);
+		endIndex = constrainMaxYZLimit(placementX, endIndex);
 		
 		for (int i = 0; i < endIndex; i++) {
 			if(values.isFlag(i)) {
@@ -923,18 +909,18 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 			
 			// needs constrain?
-			if(placement.getAbsoluteX() > point.getMaxX()) {
+			if(placementX > point.getMaxX()) {
 				continue;
 			}
 			
 			if(immutablePoints) {
-				long area = (placement.getAbsoluteX() - point.getMinX()) * (long)point.getDy();
+				long area = (placementX - point.getMinX()) * (long)point.getDy();
 				if(area >= minAreaLimit) {
-					SimplePoint3D copy = point.copy(placement.getAbsoluteX() - 1, point.getMaxY(), point.getMaxZ());
+					SimplePoint3D copy = point.copy(placementX - 1, point.getMaxY(), point.getMaxZ());
 					constrainXX.set(copy, i);
 				}
 			} else {
-				point.setMaxX(placement.getAbsoluteX() - 1);
+				point.setMaxX(placementX - 1);
 				constrainXX.set(point, i);
 			}
 			values.flag(i);
@@ -942,6 +928,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	}
 	
 	private void constrainMaxXY(Placement placement, int startIndex, int endIndex) {
+		final int placementZ = placement.getAbsoluteZ();
+
 		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -954,7 +942,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// maxZ must be above
 			
 			// below?
-			if(point.getMinZ() >= placement.getAbsoluteZ() || placement.getAbsoluteZ() > point.getMaxZ()) {
+			if(point.getMinZ() >= placementZ || placementZ > point.getMaxZ()) {
 				continue;
 			}
 			
@@ -968,10 +956,10 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			
 			if(immutablePoints) {
 				// area is same as before, so not necessary to constrain
-				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placement.getAbsoluteZ() - 1);
+				SimplePoint3D copy = point.copy(point.getMaxX(), point.getMaxY(), placementZ - 1);
 				constrainZZ.set(copy, i);
 			} else {
-				point.setMaxZ(placement.getAbsoluteZ() - 1);
+				point.setMaxZ(placementZ - 1);
 				constrainZZ.set(point, i);
 			}
 			values.flag(i);
@@ -980,6 +968,8 @@ public class DefaultPointCalculator3D implements PointCalculator {
 	
 
 	private void constrainMaxXZ(Placement placement, int startIndex, int endIndex) {
+		final int placementY = placement.getAbsoluteY();
+
 		for (int i = startIndex; i < endIndex; i++) {
 			if(values.isFlag(i)) {
 				continue;
@@ -992,7 +982,7 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			// maxY must be above
 			
 			// in front?
-			if(point.getMinY() >= placement.getAbsoluteY() || placement.getAbsoluteY() > point.getMaxY()) {
+			if(point.getMinY() >= placementY || placementY > point.getMaxY()) {
 				continue;
 			}
 			
@@ -1005,13 +995,13 @@ public class DefaultPointCalculator3D implements PointCalculator {
 			}
 
 			if(immutablePoints) {
-				long area = (placement.getAbsoluteY() - point.getMinY()) * (long)point.getDx();
+				long area = (placementY - point.getMinY()) * (long)point.getDx();
 				if(area >= minAreaLimit) {
-					SimplePoint3D copy = point.copy(point.getMaxX(), placement.getAbsoluteY() - 1, point.getMaxZ());
+					SimplePoint3D copy = point.copy(point.getMaxX(), placementY - 1, point.getMaxZ());
 					constrainYY.set(copy, i);
 				}
 			} else {
-				point.setMaxY(placement.getAbsoluteY() - 1);
+				point.setMaxY(placementY - 1);
 				/*
 				if(point.getArea() >= minAreaLimit) {
 					constrainYY.set(point, i);

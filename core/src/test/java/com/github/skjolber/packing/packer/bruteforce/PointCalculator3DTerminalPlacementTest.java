@@ -35,7 +35,7 @@ class PointCalculator3DTerminalPlacementTest {
 		ordinary.add(0, ordinaryPlacement, ordinaryPoint);
 		ordinary.updateBest();
 		terminal.push();
-		terminal.addLast(terminalPlacement, terminalPoint);
+		terminal.addLast(terminalPoint, terminalPlacement);
 		terminal.updateBest();
 
 		assertThat(ordinary.getPlacements()).containsExactly(ordinaryPlacement);
@@ -59,7 +59,7 @@ class PointCalculator3DTerminalPlacementTest {
 		int firstLeafIndex = calculator.findPoint(1, 0, 0);
 		assertThat(firstLeafIndex).isNotNegative();
 		SimplePoint3D firstLeafPoint = calculator.get(firstLeafIndex);
-		calculator.addLast(firstLeafPlacement, firstLeafPoint);
+		calculator.addLast(firstLeafPoint, firstLeafPlacement);
 		assertThat(calculator.getPlacements()).containsExactly(rootPlacement, firstLeafPlacement);
 
 		calculator.redo();
@@ -87,7 +87,7 @@ class PointCalculator3DTerminalPlacementTest {
 		Placement leafPlacement = placement(0);
 
 		calculator.push();
-		calculator.addLast(leafPlacement, calculator.get(0));
+		calculator.addLast(0, leafPlacement);
 		assertThat(calculator.getStackIndex()).isEqualTo(1);
 		assertThat(calculator.getPlacements()).containsExactly(leafPlacement);
 
@@ -101,7 +101,7 @@ class PointCalculator3DTerminalPlacementTest {
 		SimplePoint3D freshPoint = calculator.get(0);
 		Placement nextLeafPlacement = placement(0);
 		calculator.push();
-		calculator.addLast(nextLeafPlacement, freshPoint);
+		calculator.addLast(freshPoint, nextLeafPlacement);
 		assertThat(calculator.getPoints()).containsExactly(freshPoint);
 		assertThat(calculator.getPlacements()).containsExactly(nextLeafPlacement);
 	}

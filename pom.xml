@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 	<artifactId>parent</artifactId>
-	<version>5.0.1-SNAPSHOT</version>
+	<version>5.1.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<name>3D Bin Container Packing</name>
 	<description>Library for 3D rectangular bin packing</description>
@@ -16,7 +16,7 @@
 		<maven.compiler.release>${java.version}</maven.compiler.release>
 
 		<commons-math3.version>3.6.1</commons-math3.version>
-		<mockito.version>5.23.0</mockito.version>
+		<mockito.version>5.24.0</mockito.version>
 
 		<eclipse-collections.version>13.0.0</eclipse-collections.version>
 		<google-truth.version>1.4.5</google-truth.version>
@@ -40,8 +40,8 @@
 		<assertj.version>3.27.7</assertj.version>
 		<pitest.version>1.30.0</pitest.version>
 		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
-		<jackson.version>2.22.2</jackson.version>
-		<spotless.version>3.10.2</spotless.version>
+		<jackson.version>2.22.3</jackson.version>
+		<spotless.version>3.10.3</spotless.version>
 		<spotbugs-maven-plugin.version>4.10.4.1</spotbugs-maven-plugin.version>
 	</properties>
 
@@ -339,6 +339,8 @@
 						<useReleaseProfile>false</useReleaseProfile>
 						<releaseProfiles>release</releaseProfiles>
 						<goals>deploy</goals>
+						<!-- build every module in full: the build cache ignores the version, and a module restored from it is not deployed -->
+						<arguments>-Dmaven.build.cache.enabled=false</arguments>
 					</configuration>
 				</plugin>
 				<plugin>
