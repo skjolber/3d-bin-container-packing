@@ -47,7 +47,9 @@ Limits:
 
 ## The joint tree
 
-By default `FlatEngine` searches the orders of an item as one tree (`FlatTreeItem`) instead of one permutation at a time (`FlatSubtree`): a node is a
+`FastBruteForcePackager` itself searches the box orders of a container as this tree by default, on the calling thread, where no accelerator is set and the
+conditions above hold (`withTreeSearch(false)` keeps the loop); it places the winning order as it does for an accelerator. `FlatEngine` searches the
+orders of an item as the tree too (`FlatTreeItem`) instead of one permutation at a time (`FlatSubtree`): a node is a
 prefix of placed boxes, its children the remaining box types in each rotation, so a prefix is placed once where the loop places it again for every
 order which starts with it. The leaves are the same arrangements, and the winner is the loop's (the same comparison, the lexicographically first
 permutation on ties, the first rotations among equals), which `FlatJointSearchTest` and `FlatTreeEngineTest` check against the loop on random problems,

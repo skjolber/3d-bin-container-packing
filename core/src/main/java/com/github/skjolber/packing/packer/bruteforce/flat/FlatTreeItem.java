@@ -18,7 +18,9 @@ import static com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout.POIN
  * rotation settles every order through it (each ends at the load limits, the limit of boxes or a hopeless prefix), the other rotations of the box at that
  * node are skipped, since the loop stops an order at its first complete rotation path and they could only repeat arrangements of settled orders; after
  * an arrangement places all boxes, prefixes after it in the order are not expanded; and the types are tried largest first, so that a strong arrangement
- * is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner).
+ * is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner). Once an arrangement places all boxes,
+ * only an earlier order can still win, and the search starts again in the lexicographic order: there the first full leaf settles everything after it, so
+ * the search ends at the first order which places all boxes, as the loop does.
  * <p>
  * An item can pause after a number of nodes and be run again: the path of the search is in the output ints, and the frames of the path are made again
  * by placing it again. The output has the layout of {@linkplain FlatSubtree} ({@link FlatSubtree#OUT_STATUS} to the best rotations), followed by the state
@@ -26,7 +28,7 @@ import static com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout.POIN
  */
 public final class FlatTreeItem {
 
-	/** the state of the search, after the output of FlatSubtree: the depth of the path, whether there is a best, then {@link #LEVEL_INTS} ints per level */
+	/** the state of the search, after the output of FlatSubtree: the depth of the path, whether there is a best, the phase, then {@link #LEVEL_INTS} ints per level */
 	private static final int LEVEL_INTS = 7;
 	private static final int L_TYPE = 0;
 	private static final int L_ROTATION = 1;
@@ -41,7 +43,7 @@ public final class FlatTreeItem {
 
 	/** @return the number of ints of the output of an item: the output of {@linkplain FlatSubtree}, then the state of the search */
 	public static int outInts(int n) {
-		return FlatSubtree.outInts(n) + 2 + LEVEL_INTS * (n + 1);
+		return FlatSubtree.outInts(n) + 3 + LEVEL_INTS * (n + 1);
 	}
 
 	/**
@@ -65,10 +67,11 @@ public final class FlatTreeItem {
 	 * @param boundItem the item which found it, so that an arrangement which can only equal it is not searched for by a later item (the earlier wins the
 	 *        tie); {@link Integer#MAX_VALUE} for a bound which only a better arrangement beats
 	 * @param budgetNodes the number of nodes after which to pause
+	 * @param bound the bound of the problem ({@link #newBound(int[], long[])}), reused by the items and the runs of a thread, or null to make one for this run
 	 * @return the status of the item
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, int base, int[] out, int outBase, long[] outLongs,
-			int outLongBase, long boundVolume, long boundWeight, int boundCount, int boundItem, int budgetNodes) {
+			int outLongBase, long boundVolume, long boundWeight, int boundCount, int boundItem, int budgetNodes, Bound bound) {
 		final int[] p = problem;
 		final long[] pl = problemLongs;
 		final int n = p[FlatProblem.N];
@@ -89,26 +92,33 @@ public final class FlatTreeItem {
 		final int bestPermutation = outBase + FlatSubtree.outBestPermutation(n);
 		final int bestRotations = outBase + FlatSubtree.outBestRotations(n);
 		final int state = outBase + FlatSubtree.outInts(n);
-		final int levels = state + 2;
+		final int levels = state + 3;
 
-		final Bound bounds = new Bound(p, pl, types, maxLoadVolume, maxLoadWeight, boundVolume, boundWeight, boundCount, boundItem < item);
+		final Bound bounds = bound != null ? bound : newBound(p, pl);
+		final boolean boundWinsTies = boundItem < item;
 		// the order in which the types are tried at a node: by volume, the largest first
-		final int[] typeOrder = new int[types];
+		final int[] volumeOrder = new int[types];
 		for (int i = 0; i < types; i++) {
-			typeOrder[i] = i;
+			volumeOrder[i] = i;
 		}
 		for (int i = 1; i < types; i++) {
-			int t = typeOrder[i];
+			int t = volumeOrder[i];
 			int j = i - 1;
-			while (j >= 0 && pl[typeOrder[j]] < pl[t]) {
-				typeOrder[j + 1] = typeOrder[j];
+			while (j >= 0 && pl[volumeOrder[j]] < pl[t]) {
+				volumeOrder[j + 1] = volumeOrder[j];
 				j--;
 			}
-			typeOrder[j + 1] = t;
+			volumeOrder[j + 1] = t;
 		}
-		final int[] typeRank = new int[types];
+		final int[] volumeRank = new int[types];
 		for (int i = 0; i < types; i++) {
-			typeRank[typeOrder[i]] = i;
+			volumeRank[volumeOrder[i]] = i;
+		}
+		// the lexicographic order, for the phase after a full arrangement: the loop stops at the first order which places all boxes, and in this order
+		// the first full leaf settles everything after it, so the search ends there as the loop does
+		final int[] lexOrder = new int[types];
+		for (int i = 0; i < types; i++) {
+			lexOrder[i] = i;
 		}
 
 		final int[] remaining = new int[types];
@@ -133,6 +143,7 @@ public final class FlatTreeItem {
 		int bestCount;
 		long bestVolume;
 		long bestWeight;
+		int phase;
 		if(status == FlatSubtree.NOT_STARTED) {
 			haveBest = false;
 			bestCount = 0;
@@ -141,8 +152,12 @@ public final class FlatTreeItem {
 			out[outBase + FlatSubtree.OUT_COUNT] = 0;
 			outLongs[outLongBase + FlatSubtree.OUT_VOLUME] = 0L;
 			outLongs[outLongBase + FlatSubtree.OUT_WEIGHT] = 0L;
+			// the largest boxes first, unless an arrangement which places all boxes is known already
+			phase = boundCount == n ? 1 : 0;
+			out[state + 2] = phase;
 		} else {
 			// paused: place the path again, which makes its frames
+			phase = out[state + 2];
 			haveBest = out[state + 1] != 0;
 			bestCount = out[outBase + FlatSubtree.OUT_COUNT];
 			bestVolume = outLongs[outLongBase + FlatSubtree.OUT_VOLUME];
@@ -178,6 +193,9 @@ public final class FlatTreeItem {
 			level = pathDepth;
 		}
 
+		int[] typeOrder = phase == 0 ? volumeOrder : lexOrder;
+		int[] typeRank = phase == 0 ? volumeRank : lexOrder;
+
 		int nodes = 0;
 		int result = -1;
 		while (level >= 0) {
@@ -188,8 +206,7 @@ public final class FlatTreeItem {
 				if(expand) {
 					// no completion of this prefix can beat the best
 					if(haveBest || boundVolume > 0L) {
-						int fit = bounds.maxFit(remaining);
-						if(bounds.isHopeless(fit, volume[level], weight[level], level, haveBest, bestVolume, bestWeight, bestCount)) {
+						if(bounds.isHopeless(remaining, volume[level], weight[level], level, boundVolume, boundWeight, boundCount, boundWinsTies, haveBest, bestVolume, bestWeight, bestCount)) {
 							expand = false;
 						}
 					}
@@ -202,6 +219,25 @@ public final class FlatTreeItem {
 						bestWeight = weight[level];
 						System.arraycopy(candidate, 0, out, bestPermutation, n);
 						copyRotations(out, levels, level, bestRotations);
+						if(bestCount == n && phase == 0) {
+							// all boxes placed: only an earlier order can still win, so search again in the lexicographic order, where the first full leaf
+							// settles everything after it
+							phase = 1;
+							out[state + 2] = 1;
+							typeOrder = lexOrder;
+							typeRank = lexOrder;
+							for (int t = 0; t < types; t++) {
+								remaining[t] = p[FlatProblem.HEADER + t];
+							}
+							minima(remaining, types, pl, minAreas, minArea, minVolume, 0);
+							FlatPoints.clear(layout, s, base, p[FlatProblem.CX], p[FlatProblem.CY], p[FlatProblem.CZ]);
+							if(minArea[0] != 0L || minVolume[0] != 0L) {
+								FlatPoints.filterMinimums(layout, s, base, 0, minArea[0], minVolume[0]);
+							}
+							level = 0;
+							descend = true;
+							continue;
+						}
 					}
 				}
 				if(!expand) {
@@ -238,9 +274,10 @@ public final class FlatTreeItem {
 					} else if(haveBest || boundVolume > 0L) {
 						// no completion with this box next can beat the best: skip it before placing it, as the loop skips the order
 						remaining[t]--;
-						int fit = bounds.maxFit(remaining);
+						boolean hopeless = bounds.isHopeless(remaining, volume[level] + pl[t], weight[level] + pl[weights + t], level + 1, boundVolume, boundWeight, boundCount, boundWinsTies,
+								haveBest, bestVolume, bestWeight, bestCount);
 						remaining[t]++;
-						if(bounds.isHopeless(fit, volume[level] + pl[t], weight[level] + pl[weights + t], level + 1, haveBest, bestVolume, bestWeight, bestCount)) {
+						if(hopeless) {
 							skip = true;
 						}
 					}
@@ -450,16 +487,23 @@ public final class FlatTreeItem {
 		return false;
 	}
 
+	/** @return the bound of a problem, for {@link #run}: the memo of the best fits of the remaining multisets, for one thread */
+	public static Bound newBound(int[] problem, long[] problemLongs) {
+		return new Bound(problem, problemLongs);
+	}
+
 	/**
 	 * The most the remaining boxes can add: the sub-multiset of them within the load volume and weight left with the most volume, then weight, then
 	 * boxes, which is what the first boxes of the best order of them can load. It depends only on the remaining multiset (the placed boxes are the
-	 * rest), so it is computed once per multiset, by enumerating its sub-multisets.
+	 * rest), so it is computed once per multiset, by enumerating its sub-multisets. When all boxes fit the load limits there is nothing to compute:
+	 * every prefix can be completed with all the remaining boxes.
 	 */
-	static final class Bound {
+	public static final class Bound {
 
 		private final long[] pl;
 		private final int types;
 		private final int weights;
+		private final boolean allFit;
 		private final long maxLoadVolume;
 		private final long maxLoadWeight;
 		private final long totalVolume;
@@ -471,22 +515,14 @@ public final class FlatTreeItem {
 		private long bestVolume;
 		private long bestWeight;
 		private int bestCount;
-		/* the arrangement of another item, which an arrangement of this item must beat, or equal if the other item is later (the earlier wins the tie) */
-		private final long boundVolume;
-		private final long boundWeight;
-		private final int boundCount;
-		private final boolean boundWinsTies;
 
-		Bound(int[] p, long[] pl, int types, long maxLoadVolume, long maxLoadWeight, long boundVolume, long boundWeight, int boundCount, boolean boundWinsTies) {
+		private Bound(int[] p, long[] pl) {
 			this.pl = pl;
-			this.types = types;
+			this.types = p[FlatProblem.TYPES];
 			this.weights = FlatProblem.weights(types);
-			this.maxLoadVolume = maxLoadVolume;
-			this.maxLoadWeight = maxLoadWeight;
-			this.boundVolume = boundVolume;
-			this.boundWeight = boundWeight;
-			this.boundCount = boundCount;
-			this.boundWinsTies = boundWinsTies;
+			this.allFit = p[FlatProblem.ALL_FIT] != 0;
+			this.maxLoadVolume = pl[FlatProblem.maxLoad(types)];
+			this.maxLoadWeight = pl[FlatProblem.maxLoad(types) + 1];
 			radix = new int[types];
 			int size = 1;
 			long volume = 0L;
@@ -499,14 +535,50 @@ public final class FlatTreeItem {
 			}
 			totalVolume = volume;
 			totalWeight = weight;
-			fitVolume = new long[size];
-			fitWeight = new long[size];
-			fitCount = new int[size];
-			java.util.Arrays.fill(fitVolume, -1L);
+			if(allFit) {
+				fitVolume = null;
+				fitWeight = null;
+				fitCount = null;
+			} else {
+				fitVolume = new long[size];
+				fitWeight = new long[size];
+				fitCount = new int[size];
+				java.util.Arrays.fill(fitVolume, -1L);
+			}
 		}
 
-		/** @return the key of the best fit of the remaining multiset, for {@link #isHopeless} */
-		int maxFit(int[] remaining) {
+		/**
+		 * Whether a prefix with the volume, weight and count, plus the best fit of the remaining boxes, can beat neither the bound (or equal it, if the
+		 * bound wins ties) nor the best arrangement of the item.
+		 */
+		boolean isHopeless(int[] remaining, long volume, long weight, int count, long boundVolume, long boundWeight, int boundCount, boolean boundWinsTies, boolean haveBest,
+				long bestVolume, long bestWeight, int bestCount) {
+			long v;
+			long w;
+			int c;
+			if(allFit) {
+				// every remaining box can be added
+				v = totalVolume;
+				w = totalWeight;
+				c = count;
+				for (int t = 0; t < types; t++) {
+					c += remaining[t];
+				}
+			} else {
+				int key = maxFit(remaining);
+				v = volume + fitVolume[key];
+				w = weight + fitWeight[key];
+				c = count + fitCount[key];
+			}
+			int bound = compare(v, w, c, boundVolume, boundWeight, boundCount);
+			if(bound < 0 || (bound == 0 && boundWinsTies)) {
+				return true;
+			}
+			return haveBest && compare(v, w, c, bestVolume, bestWeight, bestCount) < 0;
+		}
+
+		/** @return the key of the best fit of the remaining multiset, computed if not known */
+		private int maxFit(int[] remaining) {
 			int key = 0;
 			long volume = 0L;
 			long weight = 0L;
@@ -530,18 +602,6 @@ public final class FlatTreeItem {
 				fitCount[key] = bestCount;
 			}
 			return key;
-		}
-
-		/** whether a prefix with the volume, weight and count, plus the best fit of its remaining boxes, can beat neither the best arrangement of this item nor the bound */
-		boolean isHopeless(int fit, long volume, long weight, int count, boolean haveBest, long bestVolume, long bestWeight, int bestCount) {
-			long v = volume + fitVolume[fit];
-			long w = weight + fitWeight[fit];
-			int c = count + fitCount[fit];
-			int bound = compare(v, w, c, boundVolume, boundWeight, boundCount);
-			if(bound < 0 || (bound == 0 && boundWinsTies)) {
-				return true;
-			}
-			return haveBest && compare(v, w, c, bestVolume, bestWeight, bestCount) < 0;
 		}
 
 		private static int compare(long volume, long weight, int count, long otherVolume, long otherWeight, int otherCount) {

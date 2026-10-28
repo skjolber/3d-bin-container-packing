@@ -75,7 +75,8 @@ class FlatAcceleratedPackagerTest {
 	 */
 	private static FastBruteForcePackager comparePacking(FlatEngine engine, int fromSeed, int toSeed, int minBoxes, int maxBoxes, UnaryOperator<FastBruteForcePackager.Builder> configure,
 			Function<Instance, List<BoxItem>> boxItems) {
-		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).build();
+		// the plain packager searches with the loop over the permutations, which the other tests pin
+		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearch(false).build();
 		FastBruteForcePackager accelerated = configure.apply(FastBruteForcePackager.newBuilder()).withAccelerator(engine).build();
 		try {
 			for (int seed = fromSeed; seed < toSeed; seed++) {

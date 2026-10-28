@@ -32,6 +32,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIte
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorWinner;
 import com.github.skjolber.packing.packer.bruteforce.flat.BruteForceAccelerator;
+import com.github.skjolber.packing.packer.bruteforce.flat.FlatEngine;
 import com.github.skjolber.packing.packer.bruteforce.flat.FlatProblem;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
@@ -82,6 +83,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		protected BruteForceAccelerator accelerator;
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
@@ -148,6 +151,32 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		/**
+		 * Search the box orders of a container as one tree ({@link com.github.skjolber.packing.packer.bruteforce.flat.FlatTreeItem}), on the calling thread,
+		 * where no accelerator is set and the search is the one of the loop over the permutations (the conditions of {@link #withAccelerator}): every prefix
+		 * of boxes is placed once and the tree prunes with bounds, which needs far fewer nodes than the loop. The result is the one of the loop. On by default.
+		 *
+		 * @param treeSearch false to search with the loop over the permutations only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search; with fewer, the loop over the permutations is quicker. The default is
+		 *        {@value #DEFAULT_TREE_SEARCH_MIN_BOXES}.
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			if(minBoxes < 0) {
+				throw new IllegalArgumentException("Expected zero or more boxes, got " + minBoxes);
+			}
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
+
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
@@ -155,6 +184,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			
 			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
 			packager.accelerator = accelerator;
+			packager.treeSearch = treeSearch;
+			packager.treeSearchMinBoxes = treeSearchMinBoxes;
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
@@ -333,10 +364,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;
 
+	/** the fewest boxes of a container for the tree search by default, see {@link Builder#withTreeSearchMinBoxes(int)} */
+	public static final int DEFAULT_TREE_SEARCH_MIN_BOXES = 6;
+
 	/** The accelerator which searches the permutations, or null, see {@link Builder#withAccelerator(BruteForceAccelerator)} */
 	private BruteForceAccelerator accelerator;
+	/** whether to search the box orders as a tree where no accelerator is set, see {@link Builder#withTreeSearch(boolean)} */
+	private boolean treeSearch = true;
+	private int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+	/** the tree search on the calling thread, made when first needed */
+	private volatile FlatEngine treeEngine;
 
-	/** containers searched by the accelerator, with a result which the replay confirmed (statistics) */
+	/** containers packed by the accelerated search: by the first order when all boxes fit, or by the accelerator with a result which the replay confirmed (statistics) */
 	final AtomicLong acceleratedCount = new AtomicLong();
 	/** containers where the accelerator gave up, so the packager searched the permutations */
 	final AtomicLong acceleratorFallbackCount = new AtomicLong();
@@ -465,6 +504,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit) throws PackagerInterruptedException {
 		BruteForceAccelerator accelerator = this.accelerator;
+		if(accelerator == null && treeSearch) {
+			accelerator = treeEngine();
+		}
 		if(accelerator == null || limit == 0 || !isAcceleratable(containerItem, iterator)) {
 			return null;
 		}
@@ -480,10 +522,27 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			// nothing can load more than the best result: pack(..) returns at once
 			return null;
 		}
-
 		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit);
 		if(!accelerator.supports(problem)) {
 			return null;
+		}
+		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
+		if(allItemsFit) {
+			// the first order wins outright if it places all boxes, as it does for the loop; that is one search, which no accelerator beats
+			iterator.reset();
+			try {
+				pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+				PrefixBest prefix = new PrefixBest(length);
+				searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, null, fastPointComparator, false, getInsertAfterCounts(iterator), length, null,
+						Integer.MAX_VALUE, null, prefix);
+				if(prefix.count == length) {
+					result.setState(prefix.toList(), getState(iterator, prefix.rotations, prefix.count), stackPlacements, stackPlacementCount);
+					acceleratedCount.incrementAndGet();
+					return result;
+				}
+			} finally {
+				iterator.reset();
+			}
 		}
 		Optional<AcceleratorWinner> found = accelerator.search(problem, minLoadVolume, interrupt);
 		if(found.isEmpty()) {
@@ -491,7 +550,6 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return null;
 		}
 		AcceleratorWinner winner = found.get();
-		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
 		if(winner.getCount() == 0) {
 			acceleratedCount.incrementAndGet();
 			return result;
@@ -516,6 +574,31 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		} finally {
 			// the packager searches the permutations from the first (and the other attempts reset the iterator themselves)
 			iterator.reset();
+		}
+	}
+
+	/** the tree search of this packager, on the calling thread */
+	private FlatEngine treeEngine() {
+		FlatEngine engine = treeEngine;
+		if(engine == null) {
+			synchronized (this) {
+				engine = treeEngine;
+				if(engine == null) {
+					// one item: the whole tree, with the most prefixes shared; the interrupt is polled when the tree pauses
+					engine = FlatEngine.newBuilder().withThreads(1).withItemsPerThread(1).withMinBoxes(treeSearchMinBoxes).build();
+					treeEngine = engine;
+				}
+			}
+		}
+		return engine;
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		FlatEngine engine = treeEngine;
+		if(engine != null) {
+			engine.close();
 		}
 	}
 

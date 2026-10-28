@@ -305,12 +305,14 @@ public final class FlatEngine implements BruteForceAccelerator {
 
 		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume, jointTree ? FlatTreeItem.outInts(n) : FlatSubtree.outInts(n), jointTree);
 
-		// the scratch of each thread: one scratch is reused for all the items of the thread
+		// the scratch of each thread: one scratch is reused for all the items of the thread, as is the bound of the tree
 		int[][] scratch = new int[threads][];
 		long[][] scratchLongs = new long[threads][];
+		FlatTreeItem.Bound[] bounds = new FlatTreeItem.Bound[threads];
 		for (int t = 0; t < threads; t++) {
 			scratch[t] = run.layout.newScratch();
 			scratchLongs[t] = new long[run.layout.longSize];
+			bounds[t] = jointTree ? FlatTreeItem.newBound(ints, problem.longs()) : null;
 		}
 
 		while (true) {
@@ -350,10 +352,10 @@ public final class FlatEngine implements BruteForceAccelerator {
 					if(interrupt.getAsBoolean()) {
 						throw new PackagerInterruptedException();
 					}
-					runItem(run, run.pending[index], scratch[0], scratchLongs[0]);
+					runItem(run, run.pending[index], scratch[0], scratchLongs[0], bounds[0]);
 				}
 			} else {
-				runThreads(run, scratch, scratchLongs, interrupt);
+				runThreads(run, scratch, scratchLongs, bounds, interrupt);
 			}
 			if(run.overflow) {
 				return Optional.empty();
@@ -362,13 +364,14 @@ public final class FlatEngine implements BruteForceAccelerator {
 		return Optional.of(run.flat.reduce());
 	}
 
-	private void runThreads(Run run, int[][] scratch, long[][] scratchLongs, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	private void runThreads(Run run, int[][] scratch, long[][] scratchLongs, FlatTreeItem.Bound[] bounds, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		ExecutorService executor = getExecutor();
 		List<Future<?>> futures = new ArrayList<>(threads);
 		for (int t = 0; t < threads; t++) {
 			int[] s = scratch[t];
 			long[] sl = scratchLongs[t];
-			futures.add(executor.submit(() -> work(run, s, sl)));
+			FlatTreeItem.Bound bound = bounds[t];
+			futures.add(executor.submit(() -> work(run, s, sl, bound)));
 		}
 
 		boolean interrupted = false;
@@ -405,17 +408,17 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 	}
 
-	private void work(Run run, int[] s, long[] sl) {
+	private void work(Run run, int[] s, long[] sl, FlatTreeItem.Bound bound) {
 		while (!run.abort && !run.overflow) {
 			int index = run.next.getAndIncrement();
 			if(index >= run.pendingCount) {
 				return;
 			}
-			runItem(run, run.pending[index], s, sl);
+			runItem(run, run.pending[index], s, sl, bound);
 		}
 	}
 
-	private void runItem(Run run, int item, int[] s, long[] sl) {
+	private void runItem(Run run, int item, int[] s, long[] sl, FlatTreeItem.Bound bound) {
 		if(item > run.fullItem.get()) {
 			// an earlier item places all boxes
 			return;
@@ -435,7 +438,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 				boundItem = run.bestItem;
 			}
 			status = FlatTreeItem.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, 0, run.out, base, run.outLongs, longBase, boundVolume, boundWeight, boundCount,
-					boundItem, nodeBudget);
+					boundItem, nodeBudget, bound);
 		} else {
 			status = FlatSubtree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
 		}

@@ -169,7 +169,7 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
-`FastBruteForcePackager` can hand the search of the box orders to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
+`FastBruteForcePackager` searches the box orders of a container as one tree by default, which needs far fewer nodes than one order at a time for the same result (see [brute force](docs/heuristics/brute-force.md#variants)). It can also hand the search to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
 
 ```java
 FastBruteForcePackager packager = FastBruteForcePackager
