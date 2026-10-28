@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -42,6 +44,9 @@ final class BruteForceSearchFrames {
 	final int[] placedPermutations;
 	/** The rotation of each placement */
 	final int[] placedRotations;
+	/** the candidate found by {@link AbstractBruteForcePackager#nextPlacement}: its point, and with load limits its supported area */
+	SimplePoint3D candidatePoint;
+	long candidateSupportedArea;
 	/** The volume of the boxes from the level on */
 	final long[] remainingVolumes;
 	/** The smallest area of the boxes from the level on, in any rotation */

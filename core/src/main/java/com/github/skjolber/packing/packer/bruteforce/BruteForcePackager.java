@@ -360,6 +360,29 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected IntermediatePackagerResultComparator comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+		/**
+		 * Search the box orders of a container as one tree where that gives the result of the loop over the permutations: every prefix of boxes is placed
+		 * once and the tree prunes with bounds, see {@link BruteForceTreeSearch}. On by default.
+		 *
+		 * @param treeSearch false to search with the loop only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
 		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
@@ -418,6 +441,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			BruteForcePackager packager = new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+			packager.setTreeSearch(treeSearch);
+			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}

@@ -28,7 +28,9 @@ import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
@@ -79,6 +81,47 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 
 	/** Place boxes only where they rest completely on the floor or on the boxes below (see {@link FullSupportCandidates}) */
 	protected boolean requireFullSupport;
+
+	/** the fewest boxes of a container for the tree search by default, see {@link #setTreeSearchMinBoxes(int)} */
+	public static final int DEFAULT_TREE_SEARCH_MIN_BOXES = 6;
+
+	/** whether to search the box orders of a container as one tree ({@link BruteForceTreeSearch}) where that gives the loop's result */
+	protected boolean treeSearch = true;
+	protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+	/**
+	 * @param treeSearch false to search with the loop over the permutations only; true (the default) to search the box orders of a container as one
+	 *        tree where the search is the one of the loop (box order {@link com.github.skjolber.packing.api.Order#NONE}, no box item groups, no container
+	 *        priorities, the default result comparator), which places every prefix of boxes once and prunes with bounds; the result is the loop's
+	 */
+	public void setTreeSearch(boolean treeSearch) {
+		this.treeSearch = treeSearch;
+	}
+
+	/**
+	 * @param minBoxes the fewest boxes of a container for the tree search; with fewer, the loop over the permutations is quicker
+	 */
+	public void setTreeSearchMinBoxes(int minBoxes) {
+		if(minBoxes < 0) {
+			throw new IllegalArgumentException("Expected zero or more boxes, got " + minBoxes);
+		}
+		this.treeSearchMinBoxes = minBoxes;
+	}
+
+	/**
+	 * @return true if the search of the loop for the iterator's boxes is the one which the tree runs, see {@link BruteForceTreeSearch}
+	 */
+	protected boolean isTreeSearchable(ContainerItem containerItem, BoxItemPermutationRotationIterator iterator) {
+		if(!treeSearch || !prefersHigherLoadVolume || iterator.length() < treeSearchMinBoxes) {
+			return false;
+		}
+		Class<?> comparatorClass = intermediatePackagerResultComparator.getClass();
+		if(comparatorClass != BruteForceIntermediatePackagerResultComparator.class && comparatorClass != DefaultIntermediatePackagerResultComparator.class) {
+			return false;
+		}
+		// without box item groups there are no insert-after counts (an empty array)
+		return iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator && !defaultIterator.hasBlocks() && getInsertAfterCounts(iterator).length == 0;
+	}
 
 	protected void setRequireFullSupport(boolean requireFullSupport) {
 		this.requireFullSupport = requireFullSupport;
@@ -408,6 +451,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		int[] prefixRotations = new int[iterator.length()];
 		boolean checkExtraction = hasExtractionOrders(iterator);
+		if(isTreeSearchable(containerItem, iterator)) {
+			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (DefaultBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
+					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations);
+		}
 		// permutations
 		do {
 			if(interrupt.getAsBoolean()) {
@@ -1152,48 +1199,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				BoxStackValue stackValue = placement.getStackValue();
 				int insertAfterCount = insertAfterCounts == null ? placedCount : insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
 				FullSupportCandidates candidates = fullSupport ? frames.getFullSupportCandidates(level) : null;
-				int pointIndex = -1;
-				SimplePoint3D point = null;
-				long supportedArea = 0L;
-				while(true) {
-					int candidate = nextCandidate(pointCalculator, pointFilter, candidates, frames, level, stackValue);
-					if(candidate == -1) {
-						// no more positions for this rotation: the next rotation
-						int rotationIndex = rotationIndexes[level] + 1;
-						if(rotationIndex == levelStackValues.length) {
-							break;
-						}
-						rotationIndexes[level] = rotationIndex;
-						stackValue = levelStackValues[rotationIndex];
-						placement.setStackValue(items[level], stackValue);
-						startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
-						continue;
-					}
-					SimplePoint3D candidatePoint = candidates != null ? candidates.getPoint(candidate) : pointCalculator.get(candidate);
-					if(insertAfterCount > 0 && !isInsertableAfter(candidatePoint, stackValue, stack, insertAfterCount, access)) {
-						continue;
-					}
-					if(checkObstacles && !isInsertable(candidatePoint, stackValue, obstacles, access)) {
-						continue;
-					}
-					if(checkExtraction && !isExtractable(candidatePoint, items[level], stackValue, stack, access)) {
-						continue;
-					}
-					if(utility != null) {
-						// -1 if the boxes below cannot carry the box at this position
-						utility.populatePointSupporters(candidatePoint);
-						utility.populatePointSupportees(candidatePoint, stackValue.getDz(), stackValue.getDz());
-						supportedArea = utility.getSupportedAreaAtPoint(candidatePoint, stackValue, false);
-						if(supportedArea == -1L) {
-							continue;
-						}
-					}
-					pointIndex = candidates != null ? candidates.getPointIndex(candidate) : candidate;
-					point = candidatePoint;
-					break;
-				}
+				int pointIndex = nextPlacement(pointCalculator, pointFilter, fullSupport, frames, level, stack, items[level], levelStackValues, placement, insertAfterCount, access,
+						checkObstacles, obstacles, checkExtraction, utility);
 				if(pointIndex != -1) {
 					// place the box and continue with the next level
+					SimplePoint3D point = frames.candidatePoint;
+					long supportedArea = frames.candidateSupportedArea;
+					stackValue = placement.getStackValue();
 					placement.setPoint(pointIndex, point.getMinX(), point.getMinY(), point.getMinZ());
 					if(utility != null) {
 						// results link the loads of the placements they build their stack from (see
@@ -1262,8 +1274,97 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 	}
 
+	/**
+	 * The next position of a level's box: the next candidate of its current rotation which passes the checks (insertable after the boxes before it,
+	 * obstacles, extraction, and with load limits carried by the boxes below), or of its next rotations. The rotation is advanced in the frames
+	 * ({@code rotationIndexes}) and set on the placement; the point and the supported area are left in the frames.
+	 *
+	 * @return the point index, or -1 if the box has no more positions in any rotation
+	 */
+	static int nextPlacement(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames, int level, Stack stack,
+			BoxItem item, BoxStackValue[] levelStackValues, Placement placement, int insertAfterCount, ContainerAccess access, boolean checkObstacles, List<Placement> obstacles,
+			boolean checkExtraction, LoadPlacementUtility utility) {
+		int[] rotationIndexes = frames.rotationIndexes;
+		FullSupportCandidates candidates = fullSupport ? frames.getFullSupportCandidates(level) : null;
+		BoxStackValue stackValue = placement.getStackValue();
+		while(true) {
+			int candidate = nextCandidate(pointCalculator, pointFilter, candidates, frames, level, stackValue);
+			if(candidate == -1) {
+				// no more positions for this rotation: the next rotation
+				int rotationIndex = rotationIndexes[level] + 1;
+				if(rotationIndex == levelStackValues.length) {
+					return -1;
+				}
+				rotationIndexes[level] = rotationIndex;
+				stackValue = levelStackValues[rotationIndex];
+				placement.setStackValue(item, stackValue);
+				startCandidates(pointCalculator, pointFilter, fullSupport, frames, level, stack, stackValue);
+				continue;
+			}
+			SimplePoint3D candidatePoint = candidates != null ? candidates.getPoint(candidate) : pointCalculator.get(candidate);
+			if(insertAfterCount > 0 && !isInsertableAfter(candidatePoint, stackValue, stack, insertAfterCount, access)) {
+				continue;
+			}
+			if(checkObstacles && !isInsertable(candidatePoint, stackValue, obstacles, access)) {
+				continue;
+			}
+			if(checkExtraction && !isExtractable(candidatePoint, item, stackValue, stack, access)) {
+				continue;
+			}
+			long supportedArea = 0L;
+			if(utility != null) {
+				// -1 if the boxes below cannot carry the box at this position
+				utility.populatePointSupporters(candidatePoint);
+				utility.populatePointSupportees(candidatePoint, stackValue.getDz(), stackValue.getDz());
+				supportedArea = utility.getSupportedAreaAtPoint(candidatePoint, stackValue, false);
+				if(supportedArea == -1L) {
+					continue;
+				}
+			}
+			frames.candidatePoint = candidatePoint;
+			frames.candidateSupportedArea = supportedArea;
+			return candidates != null ? candidates.getPointIndex(candidate) : candidate;
+		}
+	}
+
+	/**
+	 * Pack the boxes of the iterator into one container as the loop of {@link #pack} would, with the box orders searched as one tree: when all boxes fit,
+	 * the first order first, which wins outright if it places them all, then the tree.
+	 */
+	private BruteForceIntermediatePackagerResult packTree(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int index, DefaultBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int limit, Container holder,
+			Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] prefixRotations) throws PackagerInterruptedException {
+		int length = iterator.length();
+		if(allItemsFit) {
+			// the first order wins outright if it places all boxes, as it does for the loop: one search
+			pointCalculator.resetBest();
+			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+			if(containerItem.getInitialPoints() != null) {
+				pointCalculator.setPoints(containerItem.getInitialPoints());
+				pointCalculator.clear();
+			}
+			if(utility != null) {
+				utility.initialize(length);
+			}
+			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointFilter, requireFullSupport, checkExtraction, NO_COUNTS, length, null,
+					Integer.MAX_VALUE, null, prefixRotations);
+			stack.clear();
+			List<Point> points = pointCalculator.getBestPoints();
+			if(points.size() == length) {
+				BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), index, iterator, utility != null);
+				result.setStateFromReusablePoints(points, getState(iterator, prefixRotations, length), stackPlacements, stackPlacementCount);
+				return result;
+			}
+		}
+		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter,
+				requireFullSupport, checkExtraction, utility, holder, stack, limit, minLoadVolume);
+		stack.clear();
+		result.markDirty();
+		return result;
+	}
+
 	/** Start the candidate positions of a level's box in a rotation (see {@link #nextCandidate}) */
-	private static void startCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames,
+	static void startCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames,
 			int level, Stack stack, BoxStackValue stackValue) {
 		if(fullSupport) {
 			frames.getFullSupportCandidates(level).populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
