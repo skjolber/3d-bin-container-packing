@@ -45,6 +45,21 @@ Limits:
    hard inputs. A box order is never interrupted halfway.
  * With one thread the engine runs on the calling thread.
 
+## The joint tree
+
+`FlatJointSearch` searches all box orders as one tree instead of one permutation at a time: a node is a prefix of placed boxes, its children the remaining
+box types in each rotation, so a prefix is placed once where the loop places it again for every order which starts with it. The leaves are the same
+arrangements, and the winner is the loop's (the same comparison, the lexicographically first permutation on ties, the first rotations among equals),
+which `FlatJointSearchTest` checks against `FlatEngine` on random problems. It prunes a box before placing it when no completion with it next can beat
+the best (the best sub-multiset of the remaining boxes within the load limits, by volume, weight and boxes, computed once per multiset), skips the
+other rotations of a box once one of them settled every order through it (the loop stops an order at its first complete rotation path), and tries the
+largest boxes first so that a strong arrangement is found early.
+
+On 42 random problems of 11 to 12 boxes in tight containers (`FlatJointStats`), one thread: the loop searches 208 million nodes in 85 s, the tree 53
+million in 30 s; the tree needs 3 to 13 times fewer nodes on every hard problem (seed 109: 52 million to 5 million, 25 s to 2.3 s; seed 138: 125 million to
+42 million, 50 s to 24 s). It is not yet an accelerator: it runs on one thread without pausing, so the next step is to split it in items for threads and
+devices as `FlatSubtree` is, which also gives the level-by-level expansion that a device wants.
+
 ## Speed
 
 The flat search does the same work per node as the object search: on a single thread it is about as fast (0.98 to 1.09 times), because the extreme-point
