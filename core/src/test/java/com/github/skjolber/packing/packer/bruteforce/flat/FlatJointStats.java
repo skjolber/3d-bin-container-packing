@@ -3,8 +3,8 @@ package com.github.skjolber.packing.packer.bruteforce.flat;
 import java.util.Optional;
 
 /**
- * Run by hand: the nodes and the time of the permutation loop ({@linkplain FlatEngine}, one thread) against the joint tree ({@linkplain FlatJointSearch})
- * on the tight random problems of the parity tests. Arguments: first seed, number of seeds, fewest boxes, most boxes, repeats.
+ * Run by hand: the nodes and the time of the permutation loop against the joint tree, both as {@linkplain FlatEngine} with the given threads, on the tight
+ * random problems of the parity tests. Arguments: first seed, number of seeds, fewest boxes, most boxes, repeats, threads.
  */
 public class FlatJointStats {
 
@@ -14,8 +14,10 @@ public class FlatJointStats {
 		int minBoxes = args.length > 2 ? Integer.parseInt(args[2]) : 11;
 		int maxBoxes = args.length > 3 ? Integer.parseInt(args[3]) : 12;
 		int repeats = args.length > 4 ? Integer.parseInt(args[4]) : 2;
+		int threads = args.length > 5 ? Integer.parseInt(args[5]) : 1;
 
-		FlatEngine engine = FlatEngine.newBuilder().withThreads(1).withMinBoxes(1).build();
+		FlatEngine engine = FlatEngine.newBuilder().withThreads(threads).withMinBoxes(1).build();
+		FlatEngine tree = FlatEngine.newBuilder().withThreads(threads).withMinBoxes(1).withJointTree(true).build();
 		try {
 			for (int i = 0; i < seeds; i++) {
 				long seed = firstSeed + i;
@@ -31,7 +33,7 @@ public class FlatJointStats {
 				AcceleratorWinner actual = null;
 				for (int r = 0; r < repeats; r++) {
 					long start = System.nanoTime();
-					actual = FlatJointSearch.search(problem, 0L, 128);
+					actual = tree.search(problem, 0L, () -> false).orElse(null);
 					treeBest = Math.min(treeBest, System.nanoTime() - start);
 				}
 				String same;
@@ -49,6 +51,7 @@ public class FlatJointStats {
 			}
 		} finally {
 			engine.close();
+			tree.close();
 		}
 	}
 }

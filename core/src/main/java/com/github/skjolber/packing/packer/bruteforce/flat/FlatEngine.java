@@ -170,6 +170,13 @@ public final class FlatEngine implements BruteForceAccelerator {
 		final int[] out;
 		final long[] outLongs;
 		final AtomicLong bound;
+		/** for the tree: the best arrangement of the items so far (volume, weight, boxes) and the item which found it, or the bound given */
+		long bestVolume;
+		long bestWeight;
+		int bestCount;
+		int bestItem;
+		/** for the tree: the items in the order in which to run them, the largest boxes first, so that a strong arrangement is found early */
+		final int[] itemOrder;
 		/** the first item which places all boxes, or the number of items */
 		final AtomicInteger fullItem;
 		volatile boolean overflow;
@@ -179,7 +186,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		int pendingCount;
 		AtomicInteger next;
 
-		Run(int n, int[] problem, long[] problemLongs, FlatLayout layout, int depth, int[] prefixes, long boundVolume, int outInts) {
+		Run(int n, int[] problem, long[] problemLongs, FlatLayout layout, int depth, int[] prefixes, long boundVolume, int outInts, boolean jointTree) {
 			this.n = n;
 			this.problem = problem;
 			this.problemLongs = problemLongs;
@@ -192,8 +199,59 @@ public final class FlatEngine implements BruteForceAccelerator {
 			this.out = flat.out();
 			this.outLongs = flat.outLongs();
 			this.bound = new AtomicLong(boundVolume);
+			this.bestVolume = boundVolume;
+			this.bestWeight = 0L;
+			this.bestCount = 0;
+			this.bestItem = Integer.MAX_VALUE;
+			this.itemOrder = jointTree ? itemOrder(problem, problemLongs, prefixes, n, depth, items) : null;
 			this.fullItem = new AtomicInteger(items);
 			this.pending = new int[items];
+		}
+
+		/** the items sorted by their prefixes, with the types in the order of their volume, the largest first (as the tree tries them at a node) */
+		private static int[] itemOrder(int[] problem, long[] problemLongs, int[] prefixes, int n, int depth, int items) {
+			int types = problem[FlatProblem.TYPES];
+			// the rank of a type: by volume descending, then by type
+			int[] rank = new int[types];
+			for (int t = 0; t < types; t++) {
+				int r = 0;
+				for (int u = 0; u < types; u++) {
+					if(problemLongs[u] > problemLongs[t] || (problemLongs[u] == problemLongs[t] && u < t)) {
+						r++;
+					}
+				}
+				rank[t] = r;
+			}
+			Integer[] order = new Integer[items];
+			for (int i = 0; i < items; i++) {
+				order[i] = i;
+			}
+			java.util.Arrays.sort(order, (a, b) -> {
+				for (int i = 0; i < depth; i++) {
+					int ra = rank[prefixes[a * n + i]];
+					int rb = rank[prefixes[b * n + i]];
+					if(ra != rb) {
+						return ra < rb ? -1 : 1;
+					}
+				}
+				return Integer.compare(a, b);
+			});
+			int[] result = new int[items];
+			for (int i = 0; i < items; i++) {
+				result[i] = order[i];
+			}
+			return result;
+		}
+
+		/** record the arrangement of an item, if it beats the best of the items so far, or equals it from an earlier item */
+		synchronized void offer(int item, long volume, long weight, int count) {
+			int c = volume != bestVolume ? (volume < bestVolume ? -1 : 1) : weight != bestWeight ? (weight < bestWeight ? -1 : 1) : Integer.compare(count, bestCount);
+			if(c > 0 || (c == 0 && item < bestItem)) {
+				bestVolume = volume;
+				bestWeight = weight;
+				bestCount = count;
+				bestItem = item;
+			}
 		}
 	}
 
@@ -242,7 +300,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 			return Optional.empty();
 		}
 
-		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume, jointTree ? FlatTreeItem.outInts(n) : FlatSubtree.outInts(n));
+		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume, jointTree ? FlatTreeItem.outInts(n) : FlatSubtree.outInts(n), jointTree);
 
 		// the scratch of each thread: one scratch is reused for all the items of the thread
 		int[][] scratch = new int[threads][];
@@ -259,6 +317,20 @@ public final class FlatEngine implements BruteForceAccelerator {
 			int pendingCount = run.flat.pending(fullItem, run.pending);
 			if(pendingCount == 0) {
 				break;
+			}
+			if(run.itemOrder != null) {
+				// the items which are pending, in the order of the tree
+				int count = 0;
+				boolean[] isPending = new boolean[run.items];
+				for (int i = 0; i < pendingCount; i++) {
+					isPending[run.pending[i]] = true;
+				}
+				for (int i = 0; i < run.items; i++) {
+					int item = run.itemOrder[i];
+					if(isPending[item]) {
+						run.pending[count++] = item;
+					}
+				}
 			}
 			if(interrupt.getAsBoolean()) {
 				throw new PackagerInterruptedException();
@@ -349,7 +421,18 @@ public final class FlatEngine implements BruteForceAccelerator {
 		int longBase = item * FlatSubtree.OUT_LONGS;
 		int status;
 		if(jointTree) {
-			status = FlatTreeItem.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
+			long boundVolume;
+			long boundWeight;
+			int boundCount;
+			int boundItem;
+			synchronized (run) {
+				boundVolume = run.bestVolume;
+				boundWeight = run.bestWeight;
+				boundCount = run.bestCount;
+				boundItem = run.bestItem;
+			}
+			status = FlatTreeItem.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, 0, run.out, base, run.outLongs, longBase, boundVolume, boundWeight, boundCount,
+					boundItem, nodeBudget);
 		} else {
 			status = FlatSubtree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
 		}
@@ -360,6 +443,9 @@ public final class FlatEngine implements BruteForceAccelerator {
 		if(run.out[base + FlatSubtree.OUT_COUNT] > 0) {
 			// a load volume which another permutation reaches: permutations which cannot load more need not be searched
 			run.bound.accumulateAndGet(run.outLongs[longBase + FlatSubtree.OUT_VOLUME], Math::max);
+			if(jointTree) {
+				run.offer(item, run.outLongs[longBase + FlatSubtree.OUT_VOLUME], run.outLongs[longBase + FlatSubtree.OUT_WEIGHT], run.out[base + FlatSubtree.OUT_COUNT]);
+			}
 		}
 		if(status == FlatSubtree.DONE && run.out[base + FlatSubtree.OUT_FULL] != 0) {
 			run.fullItem.accumulateAndGet(item, Math::min);

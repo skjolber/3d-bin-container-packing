@@ -24,7 +24,8 @@ public final class FlatJointSearch {
 		FlatItems items = new FlatItems(n, 1, FlatTreeItem.outInts(n));
 		int status;
 		do {
-			status = FlatTreeItem.run(layout, problem.ints(), problem.longs(), 0, new int[0], 0, s, 0, items.out(), 0, items.outLongs(), 0, boundVolume, Integer.MAX_VALUE);
+			status = FlatTreeItem.run(layout, problem.ints(), problem.longs(), 0, new int[0], 0, s, 0, items.out(), 0, items.outLongs(), 0, boundVolume, 0L, 0, Integer.MAX_VALUE,
+					Integer.MAX_VALUE);
 		} while (status == FlatSubtree.PAUSED);
 		if(status == FlatSubtree.OVERFLOW) {
 			return null;

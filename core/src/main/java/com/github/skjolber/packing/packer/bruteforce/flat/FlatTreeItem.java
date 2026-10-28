@@ -58,13 +58,17 @@ public final class FlatTreeItem {
 	 * @param outBase the offset of the item in the output ints
 	 * @param outLongs the output longs
 	 * @param outLongBase the offset of the item in the output longs
-	 * @param boundVolume a load volume which has been reached (by another item, or by an earlier container): an arrangement which cannot load more is
+	 * @param boundVolume the load volume of the best arrangement of the other items (or of an earlier container): an arrangement which cannot beat it is
 	 *        not searched for
+	 * @param boundWeight the load weight of that arrangement
+	 * @param boundCount the boxes of that arrangement
+	 * @param boundItem the item which found it, so that an arrangement which can only equal it is not searched for by a later item (the earlier wins the
+	 *        tie); {@link Integer#MAX_VALUE} for a bound which only a better arrangement beats
 	 * @param budgetNodes the number of nodes after which to pause
 	 * @return the status of the item
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, int base, int[] out, int outBase, long[] outLongs,
-			int outLongBase, long boundVolume, int budgetNodes) {
+			int outLongBase, long boundVolume, long boundWeight, int boundCount, int boundItem, int budgetNodes) {
 		final int[] p = problem;
 		final long[] pl = problemLongs;
 		final int n = p[FlatProblem.N];
@@ -87,7 +91,7 @@ public final class FlatTreeItem {
 		final int state = outBase + FlatSubtree.outInts(n);
 		final int levels = state + 2;
 
-		final Bound bounds = new Bound(p, pl, types, maxLoadVolume, maxLoadWeight);
+		final Bound bounds = new Bound(p, pl, types, maxLoadVolume, maxLoadWeight, boundVolume, boundWeight, boundCount, boundItem < item);
 		// the order in which the types are tried at a node: by volume, the largest first
 		final int[] typeOrder = new int[types];
 		for (int i = 0; i < types; i++) {
@@ -185,7 +189,7 @@ public final class FlatTreeItem {
 					// no completion of this prefix can beat the best
 					if(haveBest || boundVolume > 0L) {
 						int fit = bounds.maxFit(remaining);
-						if(bounds.isHopeless(fit, volume[level], weight[level], level, boundVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+						if(bounds.isHopeless(fit, volume[level], weight[level], level, haveBest, bestVolume, bestWeight, bestCount)) {
 							expand = false;
 						}
 					}
@@ -236,7 +240,7 @@ public final class FlatTreeItem {
 						remaining[t]--;
 						int fit = bounds.maxFit(remaining);
 						remaining[t]++;
-						if(bounds.isHopeless(fit, volume[level] + pl[t], weight[level] + pl[weights + t], level + 1, boundVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+						if(bounds.isHopeless(fit, volume[level] + pl[t], weight[level] + pl[weights + t], level + 1, haveBest, bestVolume, bestWeight, bestCount)) {
 							skip = true;
 						}
 					}
@@ -467,13 +471,22 @@ public final class FlatTreeItem {
 		private long bestVolume;
 		private long bestWeight;
 		private int bestCount;
+		/* the arrangement of another item, which an arrangement of this item must beat, or equal if the other item is later (the earlier wins the tie) */
+		private final long boundVolume;
+		private final long boundWeight;
+		private final int boundCount;
+		private final boolean boundWinsTies;
 
-		Bound(int[] p, long[] pl, int types, long maxLoadVolume, long maxLoadWeight) {
+		Bound(int[] p, long[] pl, int types, long maxLoadVolume, long maxLoadWeight, long boundVolume, long boundWeight, int boundCount, boolean boundWinsTies) {
 			this.pl = pl;
 			this.types = types;
 			this.weights = FlatProblem.weights(types);
 			this.maxLoadVolume = maxLoadVolume;
 			this.maxLoadWeight = maxLoadWeight;
+			this.boundVolume = boundVolume;
+			this.boundWeight = boundWeight;
+			this.boundCount = boundCount;
+			this.boundWinsTies = boundWinsTies;
 			radix = new int[types];
 			int size = 1;
 			long volume = 0L;
@@ -519,23 +532,26 @@ public final class FlatTreeItem {
 			return key;
 		}
 
-		/** whether a prefix with the volume, weight and count, plus the best fit of its remaining boxes, cannot beat the best arrangement or the bound */
-		boolean isHopeless(int fit, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume, long bestWeight, int bestCount) {
+		/** whether a prefix with the volume, weight and count, plus the best fit of its remaining boxes, can beat neither the best arrangement of this item nor the bound */
+		boolean isHopeless(int fit, long volume, long weight, int count, boolean haveBest, long bestVolume, long bestWeight, int bestCount) {
 			long v = volume + fitVolume[fit];
-			if(v < boundVolume) {
+			long w = weight + fitWeight[fit];
+			int c = count + fitCount[fit];
+			int bound = compare(v, w, c, boundVolume, boundWeight, boundCount);
+			if(bound < 0 || (bound == 0 && boundWinsTies)) {
 				return true;
 			}
-			if(!haveBest) {
-				return false;
+			return haveBest && compare(v, w, c, bestVolume, bestWeight, bestCount) < 0;
+		}
+
+		private static int compare(long volume, long weight, int count, long otherVolume, long otherWeight, int otherCount) {
+			if(volume != otherVolume) {
+				return volume < otherVolume ? -1 : 1;
 			}
-			if(v != bestVolume) {
-				return v < bestVolume;
+			if(weight != otherWeight) {
+				return weight < otherWeight ? -1 : 1;
 			}
-			long w = weight + fitWeight[fit];
-			if(w != bestWeight) {
-				return w < bestWeight;
-			}
-			return count + fitCount[fit] < bestCount;
+			return Integer.compare(count, otherCount);
 		}
 
 		/** the sub-multisets of the remaining boxes of the types from t on, within the limits, keeping the best by volume, weight and count */
