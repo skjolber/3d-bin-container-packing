@@ -105,6 +105,19 @@ class FlatAcceleratedPackagerTest {
 	}
 
 	@Test
+	void samePlacementsWithTheJointTree() {
+		FlatEngine engine = FlatEngine.newBuilder().withJointTree(true).withThreads(4).withMinBoxes(1).build();
+		try {
+			FastBruteForcePackager accelerated = comparePacking(engine, 0, 80, 5, 8, b -> b, Instance::copyBoxItems);
+			assertThat(accelerated.acceleratedCount.get()).isGreaterThan(80);
+			assertThat(accelerated.acceleratorMismatchCount.get()).isZero();
+			assertThat(accelerated.acceleratorFallbackCount.get()).isZero();
+		} finally {
+			engine.close();
+		}
+	}
+
+	@Test
 	void samePlacementsWhenTheEngineRunsOnTheCallingThread() {
 		FlatEngine engine = engine(1);
 		try {

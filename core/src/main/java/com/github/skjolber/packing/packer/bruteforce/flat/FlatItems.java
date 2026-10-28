@@ -17,9 +17,19 @@ public final class FlatItems {
 	 * @param items the number of items
 	 */
 	public FlatItems(int n, int items) {
+		this(n, items, FlatSubtree.outInts(n));
+	}
+
+	/**
+	 * @param n the number of boxes of a permutation
+	 * @param items the number of items
+	 * @param outInts the ints of the output of an item: at least {@link FlatSubtree#outInts(int)}, with that layout first ({@link FlatTreeItem#outInts(int)}
+	 *        for the tree)
+	 */
+	public FlatItems(int n, int items, int outInts) {
 		this.n = n;
 		this.items = items;
-		this.outInts = FlatSubtree.outInts(n);
+		this.outInts = outInts;
 		this.out = new int[items * outInts];
 		this.outLongs = new long[items * FlatSubtree.OUT_LONGS];
 	}

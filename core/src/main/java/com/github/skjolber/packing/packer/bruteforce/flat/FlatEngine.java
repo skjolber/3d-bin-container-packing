@@ -54,6 +54,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		private int maxItems = DEFAULT_MAX_ITEMS;
 		private int minBoxes = DEFAULT_MIN_BOXES;
 		private int maxBoxes = DEFAULT_MAX_BOXES;
+		private boolean jointTree = false;
 
 		/**
 		 * @param threads the number of threads; with one, the search runs on the thread which calls it
@@ -139,8 +140,18 @@ public final class FlatEngine implements BruteForceAccelerator {
 			return this;
 		}
 
+		/**
+		 * @param jointTree true to search the orders of an item as one tree ({@linkplain FlatTreeItem}: every prefix placed once), false for the loop over
+		 *        the permutations ({@linkplain FlatSubtree}); the winner is the same
+		 * @return this builder
+		 */
+		public Builder withJointTree(boolean jointTree) {
+			this.jointTree = jointTree;
+			return this;
+		}
+
 		public FlatEngine build() {
-			return new FlatEngine(threads, maxPoints, nodeBudget, itemsPerThread, maxItems, minBoxes, maxBoxes);
+			return new FlatEngine(threads, maxPoints, nodeBudget, itemsPerThread, maxItems, minBoxes, maxBoxes, jointTree);
 		}
 	}
 
@@ -168,14 +179,14 @@ public final class FlatEngine implements BruteForceAccelerator {
 		int pendingCount;
 		AtomicInteger next;
 
-		Run(int n, int[] problem, long[] problemLongs, FlatLayout layout, int depth, int[] prefixes, long boundVolume) {
+		Run(int n, int[] problem, long[] problemLongs, FlatLayout layout, int depth, int[] prefixes, long boundVolume, int outInts) {
 			this.n = n;
 			this.problem = problem;
 			this.problemLongs = problemLongs;
 			this.layout = layout;
 			this.depth = depth;
 			this.prefixes = prefixes;
-			this.flat = new FlatItems(n, prefixes.length / n);
+			this.flat = new FlatItems(n, prefixes.length / n, outInts);
 			this.items = flat.items();
 			this.outInts = flat.outInts();
 			this.out = flat.out();
@@ -193,11 +204,12 @@ public final class FlatEngine implements BruteForceAccelerator {
 	private final int maxItems;
 	private final int minBoxes;
 	private final int maxBoxes;
+	private final boolean jointTree;
 
 	private ExecutorService executor;
 	private boolean closed;
 
-	private FlatEngine(int threads, int maxPoints, int nodeBudget, int itemsPerThread, int maxItems, int minBoxes, int maxBoxes) {
+	private FlatEngine(int threads, int maxPoints, int nodeBudget, int itemsPerThread, int maxItems, int minBoxes, int maxBoxes, boolean jointTree) {
 		this.threads = threads;
 		this.maxPoints = maxPoints;
 		this.nodeBudget = nodeBudget;
@@ -205,6 +217,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		this.maxItems = maxItems;
 		this.minBoxes = minBoxes;
 		this.maxBoxes = maxBoxes;
+		this.jointTree = jointTree;
 	}
 
 	@Override
@@ -229,7 +242,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 			return Optional.empty();
 		}
 
-		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume);
+		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume, jointTree ? FlatTreeItem.outInts(n) : FlatSubtree.outInts(n));
 
 		// the scratch of each thread: one scratch is reused for all the items of the thread
 		int[][] scratch = new int[threads][];
@@ -334,7 +347,12 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 		int base = item * run.outInts;
 		int longBase = item * FlatSubtree.OUT_LONGS;
-		int status = FlatSubtree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
+		int status;
+		if(jointTree) {
+			status = FlatTreeItem.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
+		} else {
+			status = FlatSubtree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), nodeBudget);
+		}
 		if(status == FlatSubtree.OVERFLOW) {
 			run.overflow = true;
 			return;
