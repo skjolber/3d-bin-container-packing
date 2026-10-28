@@ -13,9 +13,11 @@ import static com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout.POIN
  * order, which is the first permutation of the loop with that arrangement); among equal permutations the first rotations found. This is the winner of
  * the loop, which skips the permutations it can prove not to win and takes the first one on ties.
  * <p>
- * Pruning: a box is not placed when no completion with it next can load more than the best so far (the volume of the prefix and the box, plus the most
- * the remaining boxes can add within the load limits, which is the volume of their best sub-multiset, computed once per multiset), and once a permutation
- * places all boxes, prefixes after it in the order are not expanded.
+ * Pruning: a box is not placed when no completion with it next can beat the best so far (the volume, weight and boxes of the prefix and the box, plus
+ * the most the remaining boxes can add within the load limits, which is their best sub-multiset, computed once per multiset), and once a permutation
+ * places all boxes, prefixes after it in the order are not expanded. The loop stops an order at its first complete rotation path; here, when the subtree
+ * of a rotation settles every order through it (each ends at the load limits, the limit of boxes, or a hopeless prefix), the other rotations of the box at
+ * that node are skipped, since they can only repeat arrangements of settled orders.
  */
 public final class FlatJointSearch {
 
@@ -51,6 +53,26 @@ public final class FlatJointSearch {
 			remaining[t] = p[FlatProblem.HEADER + t];
 		}
 		final Bound bounds = new Bound(p, pl, types, maxLoadVolume, maxLoadWeight);
+		// the order in which the types are tried at a node: by volume, the largest first, so that a strong arrangement is found early and the bound has
+		// something to prune with. The winner does not depend on it: ties are decided by comparing the permutations, and the rotation paths of a
+		// permutation are still visited in their order.
+		final int[] typeOrder = new int[types];
+		for (int i = 0; i < types; i++) {
+			typeOrder[i] = i;
+		}
+		for (int i = 1; i < types; i++) {
+			int t = typeOrder[i];
+			int j = i - 1;
+			while (j >= 0 && pl[typeOrder[j]] < pl[t]) {
+				typeOrder[j + 1] = typeOrder[j];
+				j--;
+			}
+			typeOrder[j + 1] = t;
+		}
+		final int[] typeRank = new int[types];
+		for (int i = 0; i < types; i++) {
+			typeRank[typeOrder[i]] = i;
+		}
 
 		// the state of the levels: the type and the rotation placed, the next type being tried and its next rotation, whether any rotation of it fit
 		final int[] placedType = new int[n + 1];
@@ -58,6 +80,9 @@ public final class FlatJointSearch {
 		final int[] typeAt = new int[n + 1];
 		final int[] rotationIndex = new int[n + 1];
 		final boolean[] fitAt = new boolean[n + 1];
+		// whether every order through the node is solved (has a complete path), and whether the type being tried at the node is
+		final boolean[] nodeSolved = new boolean[n + 2];
+		final boolean[] typeSolved = new boolean[n + 1];
 		final long[] volume = new long[n + 1];
 		final long[] weight = new long[n + 1];
 		final long[] minArea = new long[n + 1];
@@ -86,10 +111,12 @@ public final class FlatJointSearch {
 				descend = false;
 				boolean expand = level < depthLimit;
 				if(expand) {
-					// no completion of this prefix can load more than the best
-					long bound = Math.max(boundVolume, bestVolume);
-					if(bound > 0L && volume[level] + bounds.maxFit(remaining) < bound) {
-						expand = false;
+					// no completion of this prefix can beat the best
+					if(haveBest || boundVolume > 0L) {
+						int fit = bounds.maxFit(remaining);
+						if(bounds.isHopeless(fit, volume[level], weight[level], level, boundVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+							expand = false;
+						}
 					}
 				} else if(level > 0) {
 					// every box which may be placed is placed
@@ -104,11 +131,15 @@ public final class FlatJointSearch {
 					}
 				}
 				if(!expand) {
+					// a leaf, or a hopeless prefix: every order through it is settled
 					typeAt[level] = -1;
+					nodeSolved[level] = true;
 				} else {
-					typeAt[level] = nextType(remaining, types, -1);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, -1);
 					rotationIndex[level] = 0;
 					fitAt[level] = false;
+					nodeSolved[level] = true;
+					typeSolved[level] = false;
 				}
 			}
 
@@ -130,23 +161,22 @@ public final class FlatJointSearch {
 							System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 						}
 						skip = true;
-					} else {
-						// no completion with this box next can load more than the best: skip it before placing it, as the loop skips the order
-						long bound = Math.max(boundVolume, bestVolume);
-						if(bound > 0L) {
-							remaining[t]--;
-							long fit = bounds.maxFit(remaining);
-							remaining[t]++;
-							if(volume[level] + pl[t] + fit < bound) {
-								skip = true;
-							}
+					} else if(haveBest || boundVolume > 0L) {
+						// no completion with this box next can beat the best: skip it before placing it, as the loop skips the order
+						remaining[t]--;
+						int fit = bounds.maxFit(remaining);
+						remaining[t]++;
+						if(bounds.isHopeless(fit, volume[level] + pl[t], weight[level] + pl[weights + t], level + 1, boundVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+							skip = true;
 						}
 					}
 				}
 				if(skip) {
-					typeAt[level] = nextType(remaining, types, t);
+					// over the load limits, hopeless, or after the full arrangement: the orders through the box are settled
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, t);
 					rotationIndex[level] = 0;
 					fitAt[level] = false;
+					typeSolved[level] = false;
 					continue;
 				}
 
@@ -168,6 +198,11 @@ public final class FlatJointSearch {
 				}
 				rotationIndex[level] = r;
 				if(pointIndex == -1) {
+					if(!fitAt[level] || !typeSolved[level]) {
+						// no rotation of the box has a position, or none of them settled every order with it next: those orders are not complete on this
+						// path, so the prefix must be tried on its other paths
+						nodeSolved[level] = false;
+					}
 					if(!fitAt[level] && level > 0) {
 						// no rotation of the box has a position: the arrangement ends at this box
 						if(isBetter(haveBest, bestCount, bestVolume, bestWeight, bestPermutation, placedType, level, t, remaining, types, volume[level], weight[level], candidate, n)) {
@@ -179,9 +214,10 @@ public final class FlatJointSearch {
 							System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 						}
 					}
-					typeAt[level] = nextType(remaining, types, t);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, t);
 					rotationIndex[level] = 0;
 					fitAt[level] = false;
+					typeSolved[level] = false;
 				} else {
 					int point = frame + 1 + pointIndex * POINT_INTS;
 					int x = s[point];
@@ -210,10 +246,17 @@ public final class FlatJointSearch {
 				}
 			}
 			if(!placed) {
+				boolean solved = nodeSolved[level];
 				level--;
 				if(level >= 0) {
 					int t = placedType[level];
 					remaining[t]++;
+					if(solved) {
+						// the subtree of the rotation settled every order with the box next: the loop stops an order at its first complete path, so the
+						// other rotations of the box can only repeat arrangements of settled orders
+						rotationIndex[level] = p[rotationOffsets + t + 1] - p[rotationOffsets + t];
+						typeSolved[level] = true;
+					}
 				}
 			}
 		}
@@ -242,8 +285,10 @@ public final class FlatJointSearch {
 		minVolume[level] = volume;
 	}
 
-	private static int nextType(int[] remaining, int types, int after) {
-		for (int t = after + 1; t < types; t++) {
+	/** the next type with boxes remaining, in the order of the types, after the given type (or the first, for -1) */
+	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int after) {
+		for (int i = after == -1 ? 0 : typeRank[after] + 1; i < typeOrder.length; i++) {
+			int t = typeOrder[i];
 			if(remaining[t] > 0) {
 				return t;
 			}
@@ -252,9 +297,9 @@ public final class FlatJointSearch {
 	}
 
 	/**
-	 * The most load volume the remaining boxes can add: the largest volume of a sub-multiset of them within the load volume and weight left, which is
-	 * what the first boxes of the best order of them can load. It depends only on the remaining multiset (the placed boxes are the rest), so it is
-	 * computed once per multiset, by enumerating its sub-multisets.
+	 * The most the remaining boxes can add: the sub-multiset of them within the load volume and weight left with the most volume, then weight, then
+	 * boxes, which is what the first boxes of the best order of them can load. It depends only on the remaining multiset (the placed boxes are the
+	 * rest), so it is computed once per multiset, by enumerating its sub-multisets.
 	 */
 	private static final class Bound {
 
@@ -266,8 +311,12 @@ public final class FlatJointSearch {
 		private final long totalVolume;
 		private final long totalWeight;
 		private final int[] radix;
-		private final long[] memo;
-		private final int[] counts;
+		private final long[] fitVolume;
+		private final long[] fitWeight;
+		private final int[] fitCount;
+		private long bestVolume;
+		private long bestWeight;
+		private int bestCount;
 
 		Bound(int[] p, long[] pl, int types, long maxLoadVolume, long maxLoadWeight) {
 			this.pl = pl;
@@ -276,7 +325,6 @@ public final class FlatJointSearch {
 			this.maxLoadVolume = maxLoadVolume;
 			this.maxLoadWeight = maxLoadWeight;
 			radix = new int[types];
-			counts = new int[types];
 			int size = 1;
 			long volume = 0L;
 			long weight = 0L;
@@ -288,11 +336,14 @@ public final class FlatJointSearch {
 			}
 			totalVolume = volume;
 			totalWeight = weight;
-			memo = new long[size];
-			java.util.Arrays.fill(memo, -1L);
+			fitVolume = new long[size];
+			fitWeight = new long[size];
+			fitCount = new int[size];
+			java.util.Arrays.fill(fitVolume, -1L);
 		}
 
-		long maxFit(int[] remaining) {
+		/** @return the key of the best fit of the remaining multiset, for {@link #isHopeless} */
+		int maxFit(int[] remaining) {
 			int key = 0;
 			long volume = 0L;
 			long weight = 0L;
@@ -301,37 +352,62 @@ public final class FlatJointSearch {
 				volume += remaining[t] * pl[t];
 				weight += remaining[t] * pl[weights + t];
 			}
-			long result = memo[key];
-			if(result == -1L) {
+			if(fitVolume[key] == -1L) {
 				// the load left for the remaining boxes: the placed ones are the rest
 				long volumeLeft = maxLoadVolume - (totalVolume - volume);
 				long weightLeft = maxLoadWeight - (totalWeight - weight);
-				result = volumeLeft < 0L || weightLeft < 0L ? 0L : best(remaining, 0, volumeLeft, weightLeft);
-				memo[key] = result;
+				bestVolume = 0L;
+				bestWeight = 0L;
+				bestCount = 0;
+				if(volumeLeft >= 0L && weightLeft >= 0L) {
+					best(remaining, 0, volumeLeft, weightLeft, 0L, 0L, 0);
+				}
+				fitVolume[key] = bestVolume;
+				fitWeight[key] = bestWeight;
+				fitCount[key] = bestCount;
 			}
-			return result;
+			return key;
 		}
 
-		/** the largest volume of a sub-multiset of the remaining boxes of the types from t on, within the limits */
-		private long best(int[] remaining, int t, long volumeLeft, long weightLeft) {
-			if(t == types) {
-				return 0L;
+		/** whether a prefix with the volume, weight and count, plus the best fit of its remaining boxes, cannot beat the best arrangement or the bound */
+		boolean isHopeless(int fit, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume, long bestWeight, int bestCount) {
+			long v = volume + fitVolume[fit];
+			if(v < boundVolume) {
+				return true;
 			}
-			long result = 0L;
+			if(!haveBest) {
+				return false;
+			}
+			if(v != bestVolume) {
+				return v < bestVolume;
+			}
+			long w = weight + fitWeight[fit];
+			if(w != bestWeight) {
+				return w < bestWeight;
+			}
+			return count + fitCount[fit] < bestCount;
+		}
+
+		/** the sub-multisets of the remaining boxes of the types from t on, within the limits, keeping the best by volume, weight and count */
+		private void best(int[] remaining, int t, long volumeLeft, long weightLeft, long volume, long weight, int count) {
+			if(t == types) {
+				if(volume > bestVolume || (volume == bestVolume && (weight > bestWeight || (weight == bestWeight && count > bestCount)))) {
+					bestVolume = volume;
+					bestWeight = weight;
+					bestCount = count;
+				}
+				return;
+			}
 			long v = pl[t];
 			long w = pl[weights + t];
 			for (int k = 0; k <= remaining[t]; k++) {
-				long volume = k * v;
-				long weight = k * w;
-				if(volume > volumeLeft || weight > weightLeft) {
+				long kv = k * v;
+				long kw = k * w;
+				if(kv > volumeLeft || kw > weightLeft) {
 					break;
 				}
-				long candidate = volume + best(remaining, t + 1, volumeLeft - volume, weightLeft - weight);
-				if(candidate > result) {
-					result = candidate;
-				}
+				best(remaining, t + 1, volumeLeft - kv, weightLeft - kw, volume + kv, weight + kw, count + k);
 			}
-			return result;
 		}
 	}
 
