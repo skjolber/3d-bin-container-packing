@@ -121,14 +121,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(comparatorClass != BruteForceIntermediatePackagerResultComparator.class && comparatorClass != DefaultIntermediatePackagerResultComparator.class) {
 			return false;
 		}
+		// the exact classes: a parallel work unit's iterator (a subclass) holds a range of the permutations, which the tree would not keep to
 		AbstractBoxItemPermutationRotationIterator supported;
-		if(iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
+		if(iterator.getClass() == DefaultBoxItemPermutationRotationIterator.class) {
+			DefaultBoxItemPermutationRotationIterator defaultIterator = (DefaultBoxItemPermutationRotationIterator)iterator;
 			if(defaultIterator.hasBlocks()) {
 				return false;
 			}
 			supported = defaultIterator;
-		} else if(iterator instanceof DefaultBoxItemGroupPermutationRotationIterator groupIterator) {
-			supported = groupIterator;
+		} else if(iterator.getClass() == DefaultBoxItemGroupPermutationRotationIterator.class) {
+			supported = (DefaultBoxItemGroupPermutationRotationIterator)iterator;
 		} else {
 			return false;
 		}
