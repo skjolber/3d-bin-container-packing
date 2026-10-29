@@ -35,6 +35,24 @@ class ParallelBruteForceTreeSearchTest {
 	private static boolean stealing;
 
 	@Test
+	void sameValuesWithStealingAndAnyBest() {
+		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		ParallelBruteForcePackager tree = ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true)
+				.withTreeSearchAnyBest(true).build();
+		try {
+			for (int seed = 0; seed < 80; seed++) {
+				Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(1000 + seed, 7, 8);
+				List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
+				String expected = BruteForceTreeSearchTest.describeValues(pack(loop, containerItems, instance.copyBoxItems()));
+				assertThat(BruteForceTreeSearchTest.describeValues(pack(tree, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
+	}
+
+	@Test
 	void samePlacementsAsTheLoopWithStealing() {
 		stealing = true;
 		try {

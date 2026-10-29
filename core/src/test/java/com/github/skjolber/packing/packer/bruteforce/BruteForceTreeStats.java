@@ -9,7 +9,7 @@ import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
 
 /**
  * Run by hand: the time of the regular (or, with "parallel" as the seventh argument, the parallel) packager with the loop and with the tree on random
- * problems. Arguments: first seed, seeds, min boxes, max boxes, "tight" for tight problems, "both"/"loop"/"tree", "parallel".
+ * problems. Arguments: first seed, seeds, min boxes, max boxes, "tight" for tight problems, "both"/"loop"/"tree", "parallel", "anybest".
  */
 public class BruteForceTreeStats {
 
@@ -21,9 +21,11 @@ public class BruteForceTreeStats {
 		boolean tight = args.length > 4 && args[4].equals("tight");
 		String mode = args.length > 5 ? args[5] : "both";
 		boolean parallel = args.length > 6 && args[6].equals("parallel");
+		boolean anyBest = args.length > 7 && args[7].equals("anybest");
 		AbstractBruteForcePackager loop = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearch(false).build()
 				: BruteForcePackager.newBuilder().withTreeSearch(false).build();
-		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchStealing(true).build() : BruteForcePackager.newBuilder().build();
+		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchStealing(true).withTreeSearchAnyBest(anyBest).build()
+				: BruteForcePackager.newBuilder().withTreeSearchAnyBest(anyBest).build();
 		long loopTotal = 0;
 		long treeTotal = 0;
 		for (int seed = firstSeed; seed < firstSeed + seeds; seed++) {

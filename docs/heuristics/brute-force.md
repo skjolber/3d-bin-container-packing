@@ -44,6 +44,13 @@ boxes remaining). Other searches, reverse-filtered permutations (`withSkipRevers
 distinct box multisets (over 2^18) and containers with fewer boxes than `withTreeSearchMinBoxes(..)` (default 6, where
 the loop is quicker) use the loop. `withTreeSearch(false)` always uses the loop.
 
+`withTreeSearchAnyBest(true)` lets the tree return any arrangement of the best value (load volume, then weight, then
+boxes) instead of the loop's choice among equally good ones (the first order's, its first rotations and positions): the
+search ends at the first arrangement which places all boxes, tries the largest boxes first even when all boxes fit, and
+does not expand prefixes which can at most tie the best. Where all boxes fit and the first order does not place them
+all, this is the difference between finding the lexicographically first complete arrangement and any: on the Bouwkamp
+benchmark (squared squares) the plain packager runs 260 times faster and the fast packager 12 times. Off by default.
+
 With box load limits, removing a placement subtracts its shares from the loads below, which leaves floating-point
 residue; the searches save the loads a placement changes and restore them exactly when it is removed, so a box exactly
 at a load limit is placed the same way on every path.
