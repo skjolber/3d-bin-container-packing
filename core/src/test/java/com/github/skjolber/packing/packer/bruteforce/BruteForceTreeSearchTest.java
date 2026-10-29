@@ -25,6 +25,16 @@ class BruteForceTreeSearchTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
+	@org.junit.jupiter.api.BeforeAll
+	static void treeForEveryContainer() {
+		AbstractBruteForcePackager.treeSearchMinPrefixes = 1;
+	}
+
+	@org.junit.jupiter.api.AfterAll
+	static void restore() {
+		AbstractBruteForcePackager.treeSearchMinPrefixes = 64;
+	}
+
 	static String describe(PackagerResult result) {
 		StringBuilder builder = new StringBuilder();
 		for (Container container : result.getContainers()) {

@@ -121,11 +121,29 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(comparatorClass != BruteForceIntermediatePackagerResultComparator.class && comparatorClass != DefaultIntermediatePackagerResultComparator.class) {
 			return false;
 		}
+		AbstractBoxItemPermutationRotationIterator supported;
 		if(iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
-			return !defaultIterator.hasBlocks() && BruteForceTreeSearch.isSupported(defaultIterator, insertAfterCounts);
+			if(defaultIterator.hasBlocks()) {
+				return false;
+			}
+			supported = defaultIterator;
+		} else if(iterator instanceof DefaultBoxItemGroupPermutationRotationIterator groupIterator) {
+			supported = groupIterator;
+		} else {
+			return false;
 		}
-		return iterator instanceof DefaultBoxItemGroupPermutationRotationIterator groupIterator && BruteForceTreeSearch.isSupported(groupIterator, insertAfterCounts);
+		if(!BruteForceTreeSearch.isSupported(supported, insertAfterCounts)) {
+			return false;
+		}
+		// the loop skips the orders which share the boxes which fit the load limits: with few such prefixes, the loop is quicker than the tree's setup
+		Container container = containerItem.getContainer();
+		int depth = Math.min(iterator.length(), getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight()));
+		int minPrefixes = treeSearchMinPrefixes;
+		return BruteForceTreeSearch.countPrefixes(supported, insertAfterCounts, depth, minPrefixes) >= minPrefixes;
 	}
+
+	/** the fewest distinct prefixes of the boxes which fit the load limits for the tree search; tests lower it */
+	static volatile int treeSearchMinPrefixes = 64;
 
 	protected void setRequireFullSupport(boolean requireFullSupport) {
 		this.requireFullSupport = requireFullSupport;

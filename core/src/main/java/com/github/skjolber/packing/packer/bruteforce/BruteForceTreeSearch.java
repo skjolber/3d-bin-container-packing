@@ -1045,6 +1045,39 @@ final class BruteForceTreeSearch {
 		}
 	}
 
+	/**
+	 * @param depth the length of the prefixes
+	 * @param limit the count at which to stop counting
+	 * @return the number of distinct prefixes of the length of the orders (keeping box item groups in sequence), at least the limit if there are more
+	 */
+	static long countPrefixes(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, int depth, long limit) {
+		int[] permutations = iterator.getPermutations();
+		int types = iterator.getBoxItemStackValues().length;
+		int[] counts = new int[types];
+		for (int value : permutations) {
+			counts[value]++;
+		}
+		return countPrefixes(counts, groupEnds(permutations, insertAfterCounts, types), depth, limit);
+	}
+
+	private static long countPrefixes(int[] remaining, int[] groupEnd, int depth, long limit) {
+		if(depth == 0) {
+			return 1L;
+		}
+		long count = 0L;
+		int end = remaining.length;
+		for (int t = 0; t < end && count < limit; t++) {
+			if(remaining[t] > 0) {
+				// the first group with boxes remaining
+				end = groupEnd[t];
+				remaining[t]--;
+				count += countPrefixes(remaining, groupEnd, depth - 1, limit - count);
+				remaining[t]++;
+			}
+		}
+		return count;
+	}
+
 	/** @return the first order with the prefix: the prefix, then the remaining boxes by type (which keeps the groups in sequence) */
 	static int[] firstOrder(AbstractBoxItemPermutationRotationIterator iterator, int[] prefix) {
 		int[] permutations = iterator.getPermutations();

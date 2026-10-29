@@ -23,6 +23,16 @@ class FastBruteForceTreeSearchTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
+	@org.junit.jupiter.api.BeforeAll
+	static void treeForEveryContainer() {
+		AbstractBruteForcePackager.treeSearchMinPrefixes = 1;
+	}
+
+	@org.junit.jupiter.api.AfterAll
+	static void restore() {
+		AbstractBruteForcePackager.treeSearchMinPrefixes = 64;
+	}
+
 	private static PackagerResult pack(FastBruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
 		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(INTERRUPT_MILLIS).build();
 	}
