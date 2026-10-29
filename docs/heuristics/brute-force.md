@@ -19,6 +19,35 @@ waits for a later container. With container priorities, they only permute the bo
 For box item groups without a box item order, the packagers also search the orders of the groups, see
 [deliveries](../deliveries.md#packager-support) and [FEATURES.md](../../FEATURES.md#packing-algorithms).
 
+## Tree search
+
+By default (`withTreeSearch(true)`) the box orders of a container are not searched one at a time but as one tree
+(`BruteForceTreeSearch`): a node is a prefix of placed boxes (each in a rotation, at a position), and its children are
+the remaining boxes in each rotation at each candidate position. Every prefix of placements is placed once, where the
+loop over the orders places it again for every order which starts with it. The candidates of a box at a node are the
+ones the packager's own search tries (`BruteForcePackager` all free points where the box fits, or the point filter's;
+`FastBruteForcePackager` the best point per rotation), on the same point calculator, so the positions are the loop's.
+
+The result is exactly the loop's: the loop stops an order at its first complete path (every box which fits the load
+limits placed) and keeps, among the orders, the best arrangement by the result comparator (load volume, then weight,
+then boxes), the first order on ties. The tree keeps the orders settled that way per type prefix (the orders through a
+prefix are a block of the lexicographic order), expands a prefix only while an order through it is open, and compares
+equal arrangements by their first order. It also prunes with a bound: a box is not placed when the prefix, the box and
+the best sub-multiset of the remaining boxes within the load limits cannot beat the best arrangement (computed once
+per remaining multiset). When not all boxes fit the load limits, the largest boxes are tried first, so that a strong
+arrangement is found early; once an arrangement places all boxes the search restarts in the lexicographic order, where
+the first full arrangement ends it, as the loop ends at the first order which places all boxes.
+
+The tree applies to the search which the loop makes: no box item order, no container priorities and the default result
+comparator; box item groups keep their sequence (the children of a node are the remaining boxes of the first group with
+boxes remaining). Other searches, reverse-filtered permutations (`withSkipReversePermutations(..)`), too many
+distinct box multisets (over 2^18) and containers with fewer boxes than `withTreeSearchMinBoxes(..)` (default 6, where
+the loop is quicker) use the loop. `withTreeSearch(false)` always uses the loop.
+
+With box load limits, removing a placement subtracts its shares from the loads below, which leaves floating-point
+residue; the searches save the loads a placement changes and restore them exactly when it is removed, so a box exactly
+at a load limit is placed the same way on every path.
+
 ## Pruning
 
 The algorithm tries to skip combinations which will obviously not yield a (better) result:
@@ -39,7 +68,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
  * `FastBruteForcePackager`: each rotation at its best point only. The point is chosen by a `FastBruteForceBoxStackValuePointComparator` (`withPointComparator(..)`).
  * `ParallelBruteForcePackager`: the same search on several threads, see [parallel brute-force](parallel-brute-force.md).
 
-All of them can require full support (`withRequireFullSupport(true)`, see [support](../support.md)), enforce box load limits, and reject manifest and point controls (see [FEATURES.md](../../FEATURES.md#constraints-and-controls)).
+All of them search the box orders as a [tree](#tree-search) by default (`withTreeSearch(..)`, `withTreeSearchMinBoxes(..)`), can require full support (`withRequireFullSupport(true)`, see [support](../support.md)), enforce box load limits, and reject manifest and point controls (see [FEATURES.md](../../FEATURES.md#constraints-and-controls)).
 
 ## Complexity and limits
 
@@ -54,5 +83,6 @@ Use a deadline whenever brute-forcing in a real-time application, with `withInte
 ## Tests and benchmarks
 
  * `BruteForcePackagerTest`, `FastBruteForcePackagerTest`, `BruteForceReversePermutationsTest`, `BruteForceInterruptTest` and `BruteForceBoxItemGroupsTest` in `core`, and the permutation and rotation iterator tests in `core` (package `iterator`).
+ * `BruteForceTreeSearchTest`, `FastBruteForceTreeSearchTest` and `ParallelBruteForceTreeSearchTest` in `core`: the tree search against the loop over the orders on random problems (tight problems, full support, point filters, box item groups and box load limits). `BruteForceTreeStats` times the two by hand.
  * The differential tests in `core` (package `packer.bruteforce.reference`) compare the searches and iterators with the 4.x brute force, see [legacy/v4/README.md](../../legacy/v4/README.md).
  * `EgyPackagerBenchmark` (small orders), `TychoBenchmark`, `BouwkampCodeBruteForcePackagerBenchmark`, `GroupBruteForceBenchmark` (box item groups) and `DeadlineBenchmark` in the `jmh` module; see [jmh/README.md](../../jmh/README.md) and [jmh/PERFORMANCE.md](../../jmh/PERFORMANCE.md).
