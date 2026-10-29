@@ -4,7 +4,9 @@
 
 ## Algorithm
 
-It runs the same search as [`BruteForcePackager`](brute-force.md#algorithm), split into tasks on several threads. With the [tree search](brute-force.md#tree-search) (the default), the box orders of a container are split into units by their first boxes (the shortest prefixes of box types which number at least a quarter of the parallelization count), which the threads take in turn; each unit is searched as a tree restricted to the orders with its prefix, on the thread's own point calculator. The units share their best arrangement for pruning, the units after a unit with a complete result stop, and the units' results compare in the order of the orders, so the result is exactly the single-threaded one. With the loop (`withTreeSearch(false)`, or reverse-filtered permutations), the permutations of the boxes are split into different tasks, and for box item groups without a box item order, the orders of the groups (by their first groups). The rotations and point placements of a permutation are not split.
+It runs the same search as [`BruteForcePackager`](brute-force.md#algorithm), split into tasks on several threads. The permutations of the boxes are split into different tasks, and for box item groups without a box item order, the orders of the groups (by their first groups). The rotations and point placements of a permutation are not split. Containers with few permutations are searched on one thread, with the [tree search](brute-force.md#tree-search) by default.
+
+With `withTreeSearchUnits(true)`, the box orders of a container are instead split into units by their first boxes (the shortest prefixes of box types which number at least a quarter of the parallelization count, at most one per 256 orders), which the threads take in turn; each unit is searched as a tree restricted to the orders with its prefix, on the thread's own point calculator. The units share their best arrangement for pruning, a complete result stops the other units, and the units' results compare in the order of the orders. It is off by default: the tree prunes the first boxes it tries last with the arrangements it found under the first ones, which units searching the first boxes side by side cannot, so they do more work in total, and on the benchmarks the permutation units are quicker.
 
 The parallel packager searches a box item order, or box items with container priorities, on one thread, as the permutations
 cannot be split between threads. For box item groups without a box item order, it splits the orders of the groups between
@@ -15,7 +17,7 @@ its threads (or, for a few groups with many boxes, the permutations of each orde
  * `withThreads(..)` and `withAvailableProcessors(..)`: the number of threads (the latter as the available processors divided by a factor).
  * `withParallelizationCount(..)`: the number of units to split the work into, which should be an order of magnitude larger than the number of threads.
  * `withExecutorService(..)`: run the tasks on an executor service of your own.
- * `withPointFilter(..)`, `withSkipReversePermutations(..)`, `withRequireFullSupport(..)`, `withTreeSearch(..)`, `withTreeSearchMinBoxes(..)`: as for the [brute-force packager](brute-force.md#variants).
+ * `withPointFilter(..)`, `withSkipReversePermutations(..)`, `withRequireFullSupport(..)`, `withTreeSearch(..)`, `withTreeSearchMinBoxes(..)`: as for the [brute-force packager](brute-force.md#variants); `withTreeSearchUnits(..)`: see above.
 
 ## Thread priority
 

@@ -7,7 +7,10 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
 
-/** Run by hand: the time of the regular packager with the loop and with the tree on random problems. Arguments: first seed, seeds, min boxes, max boxes. */
+/**
+ * Run by hand: the time of the regular (or, with "parallel" as the seventh argument, the parallel) packager with the loop and with the tree on random
+ * problems. Arguments: first seed, seeds, min boxes, max boxes, "tight" for tight problems, "both"/"loop"/"tree", "parallel".
+ */
 public class BruteForceTreeStats {
 
 	public static void main(String[] args) {
@@ -17,8 +20,10 @@ public class BruteForceTreeStats {
 		int maxBoxes = args.length > 3 ? Integer.parseInt(args[3]) : 8;
 		boolean tight = args.length > 4 && args[4].equals("tight");
 		String mode = args.length > 5 ? args[5] : "both";
-		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
-		BruteForcePackager tree = BruteForcePackager.newBuilder().build();
+		boolean parallel = args.length > 6 && args[6].equals("parallel");
+		AbstractBruteForcePackager loop = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearch(false).build()
+				: BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchUnits(true).build() : BruteForcePackager.newBuilder().build();
 		long loopTotal = 0;
 		long treeTotal = 0;
 		for (int seed = firstSeed; seed < firstSeed + seeds; seed++) {
@@ -44,7 +49,7 @@ public class BruteForceTreeStats {
 		tree.close();
 	}
 
-	private static PackagerResult pack(BruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
+	private static PackagerResult pack(AbstractBruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
 		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(600_000).build();
 	}
 }
