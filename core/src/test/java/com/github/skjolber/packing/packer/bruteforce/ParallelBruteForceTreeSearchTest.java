@@ -26,19 +26,9 @@ class ParallelBruteForceTreeSearchTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
-	/** few permutations per unit, so that every container is split between the threads, and the tree for every container */
+	/** few permutations per unit, so that every container is split between the threads */
 	private static ParallelBruteForcePackager parallel() {
 		return ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).build();
-	}
-
-	@org.junit.jupiter.api.BeforeAll
-	static void treeForEveryContainer() {
-		AbstractBruteForcePackager.treeSearchMinPrefixes = 1;
-	}
-
-	@org.junit.jupiter.api.AfterAll
-	static void restore() {
-		AbstractBruteForcePackager.treeSearchMinPrefixes = 64;
 	}
 
 	private static PackagerResult pack(AbstractPackager<?> packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {

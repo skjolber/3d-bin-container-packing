@@ -72,24 +72,12 @@ final class BruteForceTreeSearch {
 		for (int value : permutations) {
 			counts[value]++;
 		}
-		if(insertAfterCounts.length != 0) {
-			// the box item indexes must ascend through the sequence of the groups, so that the orders are lexicographic over the box item indexes
-			// (the first permutation lists each group's box items in ascending order)
-			int[] expected = permutations.clone();
-			int start = 0;
-			for (int i = 1; i <= permutations.length; i++) {
-				if(i == permutations.length || insertAfterCounts[i] == i) {
-					Arrays.sort(expected, start, i);
-					start = i;
-				}
-			}
-			for (int i = 1; i < expected.length; i++) {
-				if(expected[i] < expected[i - 1]) {
-					return false;
-				}
-			}
+		// the box item indexes must ascend through the sequence of the groups, so that the orders are lexicographic over the box item indexes
+		int[] groupEnd = new int[counts.length];
+		for (int t = 0; t < counts.length; t++) {
+			groupEnd[t] = t + 1;
 		}
-		return Multisets.count(counts, groupEnds(permutations, insertAfterCounts, counts.length)) <= MAX_MULTISETS;
+		return groupEnds(permutations, insertAfterCounts, groupEnd) && Multisets.count(counts, groupEnd) <= MAX_MULTISETS;
 	}
 
 	/**
@@ -139,46 +127,6 @@ final class BruteForceTreeSearch {
 			}
 		}
 		return true;
-	}
-
-	/**
-	 * Whether to search the boxes of the iterator as a tree: the groups' box items in sequence, not too many multisets of the boxes, and at least
-	 * the given number of distinct prefixes of the boxes which fit the load limits (the loop skips the orders which share such a prefix, so with
-	 * few it is quicker than the tree's setup). Cheap: it is checked for every container attempt.
-	 *
-	 * @param insertAfterCounts the loop's, see {@link AbstractBruteForcePackager#getInsertAfterCounts}
-	 */
-	static boolean isApplicable(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, long maxLoadVolume, long maxLoadWeight, int minPrefixes) {
-		int[] permutations = iterator.getPermutations();
-		int n = permutations.length;
-		int types = iterator.getBoxItemStackValues().length;
-		int[] counts = new int[types];
-		for (int value : permutations) {
-			counts[value]++;
-		}
-		int[] groupEnd = new int[types];
-		for (int t = 0; t < types; t++) {
-			groupEnd[t] = t + 1;
-		}
-		if(!groupEnds(permutations, insertAfterCounts, groupEnd) || Multisets.count(counts, groupEnd) > MAX_MULTISETS) {
-			return false;
-		}
-		// the boxes of the order which fit the load limits, as the loop limits each order (see AbstractBruteForcePackager#getMaxPackableCount)
-		long loadVolume = 0L;
-		long loadWeight = 0L;
-		int depth = n;
-		for (int i = 0; i < n; i++) {
-			BoxStackValue stackValue = iterator.getStackValue(i);
-			long volume = stackValue.getBox().getVolume();
-			long weight = stackValue.getBox().getWeight();
-			if(volume > maxLoadVolume - loadVolume || weight > maxLoadWeight - loadWeight) {
-				depth = i;
-				break;
-			}
-			loadVolume += volume;
-			loadWeight += weight;
-		}
-		return countPrefixes(counts, groupEnd, depth, minPrefixes) >= minPrefixes;
 	}
 
 	/**
@@ -1108,39 +1056,6 @@ final class BruteForceTreeSearch {
 		}
 	}
 
-	/**
-	 * @param depth the length of the prefixes
-	 * @param limit the count at which to stop counting
-	 * @return the number of distinct prefixes of the length of the orders (keeping box item groups in sequence), at least the limit if there are more
-	 */
-	static long countPrefixes(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, int depth, long limit) {
-		int[] permutations = iterator.getPermutations();
-		int types = iterator.getBoxItemStackValues().length;
-		int[] counts = new int[types];
-		for (int value : permutations) {
-			counts[value]++;
-		}
-		return countPrefixes(counts, groupEnds(permutations, insertAfterCounts, types), depth, limit);
-	}
-
-	private static long countPrefixes(int[] remaining, int[] groupEnd, int depth, long limit) {
-		if(depth == 0) {
-			return 1L;
-		}
-		long count = 0L;
-		int end = remaining.length;
-		for (int t = 0; t < end && count < limit; t++) {
-			if(remaining[t] > 0) {
-				// the first group with boxes remaining
-				end = groupEnd[t];
-				remaining[t]--;
-				count += countPrefixes(remaining, groupEnd, depth - 1, limit - count);
-				remaining[t]++;
-			}
-		}
-		return count;
-	}
-
 	/** @return the first order with the prefix: the prefix, then the remaining boxes by type (which keeps the groups in sequence) */
 	static int[] firstOrder(AbstractBoxItemPermutationRotationIterator iterator, int[] prefix) {
 		int[] permutations = iterator.getPermutations();
@@ -1247,6 +1162,8 @@ final class BruteForceTreeSearch {
 		private final long[] sequences;
 		/** the settled orders per depth and prefix rank */
 		private final int[][] settled;
+		/** the number of prefixes per depth: the size of the settled counts of the depth */
+		private final int[] prefixSizes;
 		/**
 		 * per level, the number of sequences of each length from the multisets which remain after a type before the level's type: the rank of the
 		 * level's prefix among longer prefixes is the sum over the levels before it
@@ -1277,11 +1194,13 @@ final class BruteForceTreeSearch {
 			boolean fits = orders <= maxPrefixes && keys * (n + 1) <= MAX_SEQUENCES;
 			long[] sequences = null;
 			int[][] settled = null;
+			int[] prefixSizes = null;
 			if(fits) {
 				sequences = new long[(int)keys * (n + 1)];
 				Arrays.fill(sequences, -1L);
 				long total = 0;
 				settled = new int[n + 1][];
+				prefixSizes = new int[n + 1];
 				int rootKey = multisets.fullKey;
 				for (int d = 0; d <= n && fits; d++) {
 					long prefixes = sequences(sequences, counts, rootKey, d);
@@ -1289,14 +1208,16 @@ final class BruteForceTreeSearch {
 					if(total > maxPrefixes) {
 						fits = false;
 					} else {
-						settled[d] = new int[(int)prefixes];
+						// allocated when first used: a search often reaches a few depths only
+						prefixSizes[d] = (int)prefixes;
 					}
 				}
 			}
 			this.exact = fits;
 			this.sequences = fits ? sequences : null;
 			this.settled = fits ? settled : null;
-			this.before = fits ? new long[n + 1][n + 1] : null;
+			this.prefixSizes = fits ? prefixSizes : null;
+			this.before = fits ? new long[n + 1][] : null;
 		}
 
 		/** the number of distinct sequences of the length from the remaining boxes (with the key) */
@@ -1331,7 +1252,7 @@ final class BruteForceTreeSearch {
 
 		/** @return whether every order through the level's prefix is settled */
 		boolean isSettled(int level, int rank, int[] remaining, int key) {
-			return exact && settled[level][rank] == orders(level, remaining, key);
+			return exact && counts(level)[rank] == orders(level, remaining, key);
 		}
 
 		/** the rank of the first child of the level's prefix among the prefixes of the next depth */
@@ -1366,6 +1287,9 @@ final class BruteForceTreeSearch {
 				return;
 			}
 			long[] counts = before[level];
+			if(counts == null) {
+				counts = before[level] = new long[n + 1];
+			}
 			Arrays.fill(counts, 0L);
 			for (int t = 0; t < type; t++) {
 				if(remaining[t] > 0) {
@@ -1385,7 +1309,7 @@ final class BruteForceTreeSearch {
 				return false;
 			}
 			remaining[type]--;
-			boolean settled = this.settled[level + 1][rank] == orders(level + 1, remaining, childKey);
+			boolean settled = counts(level + 1)[rank] == orders(level + 1, remaining, childKey);
 			remaining[type]++;
 			return settled;
 		}
@@ -1395,15 +1319,24 @@ final class BruteForceTreeSearch {
 			if(!exact) {
 				return;
 			}
-			int[] counts = settled[level];
+			int[] counts = counts(level);
 			long delta = orders(level, remaining, key) - counts[rankAt[level]];
 			if(delta == 0) {
 				return;
 			}
 			counts[rankAt[level]] += (int)delta;
 			for (int i = 0; i < level; i++) {
-				settled[i][rankAt[i]] += (int)delta;
+				counts(i)[rankAt[i]] += (int)delta;
 			}
+		}
+
+		/** the settled counts of a depth, allocated when first used */
+		private int[] counts(int depth) {
+			int[] counts = settled[depth];
+			if(counts == null) {
+				counts = settled[depth] = new int[prefixSizes[depth]];
+			}
+			return counts;
 		}
 
 		/** settle every order with the type next at the level */
@@ -1412,14 +1345,15 @@ final class BruteForceTreeSearch {
 				return;
 			}
 			remaining[type]--;
-			long delta = orders(level + 1, remaining, childKey) - settled[level + 1][rank];
+			int[] childCounts = counts(level + 1);
+			long delta = orders(level + 1, remaining, childKey) - childCounts[rank];
 			remaining[type]++;
 			if(delta == 0) {
 				return;
 			}
-			settled[level + 1][rank] += (int)delta;
+			childCounts[rank] += (int)delta;
 			for (int i = 0; i <= level; i++) {
-				settled[i][rankAt[i]] += (int)delta;
+				counts(i)[rankAt[i]] += (int)delta;
 			}
 		}
 	}

@@ -132,12 +132,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		} else {
 			return false;
 		}
-		Container container = containerItem.getContainer();
-		return BruteForceTreeSearch.isApplicable(supported, insertAfterCounts, container.getMaxLoadVolume(), container.getMaxLoadWeight(), treeSearchMinPrefixes);
+		return BruteForceTreeSearch.isSupported(supported, insertAfterCounts);
 	}
-
-	/** the fewest distinct prefixes of the boxes which fit the load limits for the tree search; tests lower it */
-	static volatile int treeSearchMinPrefixes = 64;
 
 	protected void setRequireFullSupport(boolean requireFullSupport) {
 		this.requireFullSupport = requireFullSupport;

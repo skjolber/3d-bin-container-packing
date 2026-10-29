@@ -41,10 +41,8 @@ the first full arrangement ends it, as the loop ends at the first order which pl
 The tree applies to the search which the loop makes: no box item order, no container priorities and the default result
 comparator; box item groups keep their sequence (the children of a node are the remaining boxes of the first group with
 boxes remaining). Other searches, reverse-filtered permutations (`withSkipReversePermutations(..)`), too many
-distinct box multisets (over 2^18), containers with fewer boxes than `withTreeSearchMinBoxes(..)` (default 6) and
-containers with fewer than 64 distinct prefixes of the boxes which fit their load limits (the loop skips the orders which
-share such a prefix, so it is quicker there than the tree's setup) use the loop. `withTreeSearch(false)` always uses the
-loop.
+distinct box multisets (over 2^18) and containers with fewer boxes than `withTreeSearchMinBoxes(..)` (default 6, where
+the loop is quicker) use the loop. `withTreeSearch(false)` always uses the loop.
 
 With box load limits, removing a placement subtracts its shares from the loads below, which leaves floating-point
 residue; the searches save the loads a placement changes and restore them exactly when it is removed, so a box exactly
