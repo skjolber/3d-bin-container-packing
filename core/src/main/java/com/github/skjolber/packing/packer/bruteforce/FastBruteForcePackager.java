@@ -168,8 +168,9 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		/**
 		 * Search a container's orders as one tree on several threads, with work stealing (see {@link BruteForceTreeStealing}), for containers with
-		 * many orders whose boxes do not all fit (or any, with {@link #withTreeSearchAnyBest}); a complete result stops the other threads, so among
-		 * several complete arrangements the threads' timing decides. The packager creates the threads, and shuts them down when closed.
+		 * many orders whose boxes do not all fit (when all fit, the bound prunes nothing and one thread finds a complete arrangement sooner); a
+		 * complete result stops the other threads, so among several complete arrangements the threads' timing decides. The packager creates the
+		 * threads, and shuts them down when closed.
 		 *
 		 * @param threads the number of threads, at least 1 (the default: one thread, the calling one)
 		 * @return this builder
@@ -497,7 +498,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
 			AbstractBoxItemPermutationRotationIterator treeIterator = (AbstractBoxItemPermutationRotationIterator)iterator;
-			if(executorService != null && threads > 1 && limit >= iterator.length() && (treeSearchAnyBest || !allItemsFit) && iterator.countPermutations() > 32L * threads) {
+			if(executorService != null && threads > 1 && limit >= iterator.length() && !allItemsFit && iterator.countPermutations() > 32L * threads) {
 				// on the threads, each on its own point calculator and placements
 				int length = iterator.length();
 				boolean load = loadPlacementUtility != null;
