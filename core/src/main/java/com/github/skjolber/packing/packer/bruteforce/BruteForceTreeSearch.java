@@ -97,25 +97,88 @@ final class BruteForceTreeSearch {
 	 *         order, and the types ascend through the groups (see {@link #isSupported}), so the types of a group are a range
 	 */
 	private static int[] groupEnds(int[] permutations, int[] insertAfterCounts, int types) {
-		int n = permutations.length;
 		int[] groupEnd = new int[types];
 		for (int t = 0; t < types; t++) {
 			groupEnd[t] = t + 1;
 		}
-		// the block start..i of the permutation holds a group's types (in any order: the permutation may be a unit's first order)
-		int[] sorted = permutations.clone();
+		groupEnds(permutations, insertAfterCounts, groupEnd);
+		return groupEnd;
+	}
+
+	/**
+	 * @param groupEnd per type, set to the end of its group's range of types (the types of a block of the permutation, in any order: the
+	 *        permutation may be a unit's first order)
+	 * @return whether the ranges of the groups ascend through the sequence of the groups, so that the orders are lexicographic over the box item
+	 *         indexes
+	 */
+	private static boolean groupEnds(int[] permutations, int[] insertAfterCounts, int[] groupEnd) {
+		int n = permutations.length;
 		int start = 0;
+		int previousMax = -1;
 		for (int i = 1; i <= n; i++) {
 			if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
-				Arrays.sort(sorted, start, i);
-				int end = sorted[i - 1] + 1;
+				int min = Integer.MAX_VALUE;
+				int max = -1;
 				for (int k = start; k < i; k++) {
-					groupEnd[sorted[k]] = end;
+					int t = permutations[k];
+					if(t < min) {
+						min = t;
+					}
+					if(t > max) {
+						max = t;
+					}
+				}
+				if(min <= previousMax) {
+					return false;
+				}
+				previousMax = max;
+				for (int t = min; t <= max; t++) {
+					groupEnd[t] = max + 1;
 				}
 				start = i;
 			}
 		}
-		return groupEnd;
+		return true;
+	}
+
+	/**
+	 * Whether to search the boxes of the iterator as a tree: the groups' box items in sequence, not too many multisets of the boxes, and at least
+	 * the given number of distinct prefixes of the boxes which fit the load limits (the loop skips the orders which share such a prefix, so with
+	 * few it is quicker than the tree's setup). Cheap: it is checked for every container attempt.
+	 *
+	 * @param insertAfterCounts the loop's, see {@link AbstractBruteForcePackager#getInsertAfterCounts}
+	 */
+	static boolean isApplicable(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, long maxLoadVolume, long maxLoadWeight, int minPrefixes) {
+		int[] permutations = iterator.getPermutations();
+		int n = permutations.length;
+		int types = iterator.getBoxItemStackValues().length;
+		int[] counts = new int[types];
+		for (int value : permutations) {
+			counts[value]++;
+		}
+		int[] groupEnd = new int[types];
+		for (int t = 0; t < types; t++) {
+			groupEnd[t] = t + 1;
+		}
+		if(!groupEnds(permutations, insertAfterCounts, groupEnd) || Multisets.count(counts, groupEnd) > MAX_MULTISETS) {
+			return false;
+		}
+		// the boxes of the order which fit the load limits, as the loop limits each order (see AbstractBruteForcePackager#getMaxPackableCount)
+		long loadVolume = 0L;
+		long loadWeight = 0L;
+		int depth = n;
+		for (int i = 0; i < n; i++) {
+			BoxStackValue stackValue = iterator.getStackValue(i);
+			long volume = stackValue.getBox().getVolume();
+			long weight = stackValue.getBox().getWeight();
+			if(volume > maxLoadVolume - loadVolume || weight > maxLoadWeight - loadWeight) {
+				depth = i;
+				break;
+			}
+			loadVolume += volume;
+			loadWeight += weight;
+		}
+		return countPrefixes(counts, groupEnd, depth, minPrefixes) >= minPrefixes;
 	}
 
 	/**

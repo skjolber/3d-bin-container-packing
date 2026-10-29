@@ -132,14 +132,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		} else {
 			return false;
 		}
-		if(!BruteForceTreeSearch.isSupported(supported, insertAfterCounts)) {
-			return false;
-		}
-		// the loop skips the orders which share the boxes which fit the load limits: with few such prefixes, the loop is quicker than the tree's setup
 		Container container = containerItem.getContainer();
-		int depth = Math.min(iterator.length(), getMaxPackableCount(iterator, container.getMaxLoadVolume(), container.getMaxLoadWeight()));
-		int minPrefixes = treeSearchMinPrefixes;
-		return BruteForceTreeSearch.countPrefixes(supported, insertAfterCounts, depth, minPrefixes) >= minPrefixes;
+		return BruteForceTreeSearch.isApplicable(supported, insertAfterCounts, container.getMaxLoadVolume(), container.getMaxLoadWeight(), treeSearchMinPrefixes);
 	}
 
 	/** the fewest distinct prefixes of the boxes which fit the load limits for the tree search; tests lower it */
