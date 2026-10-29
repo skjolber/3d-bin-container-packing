@@ -16,6 +16,8 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -43,6 +45,10 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * strong arrangement is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner), and once an
  * arrangement places all boxes the search starts again in the lexicographic order, where the first full leaf settles everything after it, so the
  * search ends at the first order which places all boxes, as the loop does.
+ * <p>
+ * With box item groups the orders keep the groups in their sequence (each group's boxes are a block of the order, see
+ * {@link DefaultBoxItemGroupPermutationRotationIterator}), so the children of a node are the remaining boxes of the first group with boxes
+ * remaining, and a box must be insertable after the boxes of the groups before its own, as in the loop.
  */
 final class BruteForceTreeSearch {
 
@@ -52,10 +58,15 @@ final class BruteForceTreeSearch {
 	private BruteForceTreeSearch() {
 	}
 
-	/** @return whether the boxes of the iterator can be searched as a tree: not too many multisets of them */
-	static boolean isSupported(DefaultBoxItemPermutationRotationIterator iterator) {
+	/**
+	 * @param insertAfterCounts the loop's, see {@link AbstractBruteForcePackager#getInsertAfterCounts}: with box item groups, per position the start
+	 *        of its group's block
+	 * @return whether the boxes of the iterator can be searched as a tree: not too many multisets of them, and the groups' box items in sequence
+	 */
+	static boolean isSupported(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts) {
+		int[] permutations = iterator.getPermutations();
 		int[] counts = new int[iterator.getBoxItemStackValues().length];
-		for (int value : iterator.getPermutations()) {
+		for (int value : permutations) {
 			counts[value]++;
 		}
 		long keys = 1L;
@@ -65,6 +76,23 @@ final class BruteForceTreeSearch {
 				return false;
 			}
 		}
+		if(insertAfterCounts.length != 0) {
+			// the box item indexes must ascend through the sequence of the groups, so that the orders are lexicographic over the box item indexes
+			// (the first permutation lists each group's box items in ascending order)
+			int[] expected = permutations.clone();
+			int start = 0;
+			for (int i = 1; i <= permutations.length; i++) {
+				if(i == permutations.length || insertAfterCounts[i] == i) {
+					Arrays.sort(expected, start, i);
+					start = i;
+				}
+			}
+			for (int i = 1; i < expected.length; i++) {
+				if(expected[i] < expected[i - 1]) {
+					return false;
+				}
+			}
+		}
 		return true;
 	}
 
@@ -72,8 +100,8 @@ final class BruteForceTreeSearch {
 	 * @return the result (empty if no arrangement places a box), which refers to reused state until materialized
 	 */
 	static BruteForceIntermediatePackagerResult search(PointCalculator3DStack pointCalculator, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
-			DefaultBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction,
-			LoadPlacementUtility utility, Container holder, Stack stack, int limit, long minLoadVolume) throws PackagerInterruptedException {
+			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction,
+			LoadPlacementUtility utility, Container holder, Stack stack, int limit, long minLoadVolume, int[] insertAfterCounts) throws PackagerInterruptedException {
 		final int n = iterator.length();
 		final int depthLimit = Math.min(limit, n);
 		final BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(n), containerIndex, iterator, utility != null);
@@ -104,6 +132,27 @@ final class BruteForceTreeSearch {
 				minAreas[t] = minArea;
 			}
 		}
+		// box item groups: the boxes of a group are a block of the order, so the types of a group are a range; the end of each type's range
+		final int[] groupEnd = new int[types];
+		{
+			int[] permutations = iterator.getPermutations();
+			int start = 0;
+			for (int i = 1; i <= n; i++) {
+				if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
+					// the block start..i: its types are permutations[start..i) (ascending, see isSupported)
+					int end = permutations[i - 1] + 1;
+					for (int k = start; k < i; k++) {
+						groupEnd[permutations[k]] = end;
+					}
+					start = i;
+				}
+			}
+			for (int t = 0; t < types; t++) {
+				if(counts[t] == 0) {
+					groupEnd[t] = t + 1;
+				}
+			}
+		}
 		final long maxLoadVolume = holder.getMaxLoadVolume();
 		final long maxLoadWeight = holder.getMaxLoadWeight();
 		// the remaining boxes as a multiset, keyed by the counts (mixed radix): the bound and the settled orders are kept per multiset
@@ -114,7 +163,7 @@ final class BruteForceTreeSearch {
 			keys *= counts[t] + 1;
 		}
 		final Bound bounds = new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, radix, keys);
-		final SettledOrders settled = new SettledOrders(counts, n, radix, keys);
+		final SettledOrders settled = new SettledOrders(counts, n, radix, keys, groupEnd);
 		int remainingKey = key(counts, radix);
 
 		// the order of the types at a node: the largest first; the lexicographic order after a full arrangement
@@ -237,7 +286,7 @@ final class BruteForceTreeSearch {
 					pushed[level] = false;
 				} else {
 					firstChildRank[level] = settled.firstChildRank(level);
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, -1);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, -1);
 					typeStarted[level] = false;
 					fit[level] = false;
 					nodeSolved[level] = true;
@@ -288,7 +337,7 @@ final class BruteForceTreeSearch {
 						skip = false;
 					}
 					if(skip) {
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, t);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -308,9 +357,10 @@ final class BruteForceTreeSearch {
 
 				Placement placement = placements[level];
 				BoxItem item = iterator.getBoxItemByIndex(t);
-				// no insert-after count: without box item groups the loop checks none
-				int pointIndex = AbstractBruteForcePackager.nextPlacement(pointCalculator, pointFilter, fullSupport, frames, level, stack, item, stackValues[t], placement, 0, access,
-						checkObstacles, obstacles, checkExtraction, utility);
+				// with box item groups, the box must be insertable after the boxes of the groups before its own
+				int insertAfterCount = insertAfterCounts.length == 0 ? 0 : insertAfterCounts[level];
+				int pointIndex = AbstractBruteForcePackager.nextPlacement(pointCalculator, pointFilter, fullSupport, frames, level, stack, item, stackValues[t], placement, insertAfterCount,
+						access, checkObstacles, obstacles, checkExtraction, utility);
 				if(pointIndex == -1) {
 					if(!fit[level] || !typeSolved[level]) {
 						// no position for the box, or none of its candidates settled every order with it next: those orders are not complete on this path, so
@@ -331,7 +381,7 @@ final class BruteForceTreeSearch {
 							}
 						}
 					}
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, t);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
 					typeStarted[level] = false;
 					fit[level] = false;
 					typeSolved[level] = false;
@@ -388,7 +438,7 @@ final class BruteForceTreeSearch {
 						// every order with the box next is settled: the loop stops an order at its first complete path, so the other candidates of the box
 						// can only repeat arrangements of settled orders
 						typeSolved[level] = true;
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, t);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -400,7 +450,11 @@ final class BruteForceTreeSearch {
 		if(!haveBest) {
 			return result;
 		}
-		iterator.setPermutation(bestPermutation);
+		if(iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
+			defaultIterator.setPermutation(bestPermutation);
+		} else {
+			((DefaultBoxItemGroupPermutationRotationIterator)iterator).setPermutation(bestPermutation);
+		}
 		List<Point> points = new ArrayList<>(bestCount);
 		for (int i = 0; i < bestCount; i++) {
 			points.add(bestPoints[i]);
@@ -457,11 +511,21 @@ final class BruteForceTreeSearch {
 		return false;
 	}
 
-	/** the next type with boxes remaining, in the order of the types, after the given type (or the first, for -1) */
-	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int after) {
+	/**
+	 * the next type with boxes remaining of the first group with boxes remaining (the smallest remaining type's), in the order of the types, after
+	 * the given type (or the first, for -1)
+	 */
+	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int[] groupEnd, int after) {
+		int end = -1;
+		for (int t = 0; t < remaining.length; t++) {
+			if(remaining[t] > 0) {
+				end = groupEnd[t];
+				break;
+			}
+		}
 		for (int i = after == -1 ? 0 : typeRank[after] + 1; i < typeOrder.length; i++) {
 			int t = typeOrder[i];
-			if(remaining[t] > 0) {
+			if(remaining[t] > 0 && t < end) {
 				return t;
 			}
 		}
@@ -557,15 +621,19 @@ final class BruteForceTreeSearch {
 		 * level's prefix among longer prefixes is the sum over the levels before it
 		 */
 		private final long[][] before;
+		/** the end of each type's group's range of types: a sequence takes from the first group with boxes remaining */
+		private final int[] groupEnd;
 
 		/**
 		 * @param radix the radix of the multiset keys, by type
 		 * @param keys the number of multiset keys
+		 * @param groupEnd per type, the end of its group's range of types
 		 */
-		SettledOrders(int[] counts, int n, int[] radix, long keys) {
+		SettledOrders(int[] counts, int n, int[] radix, long keys, int[] groupEnd) {
 			this.n = n;
 			this.types = counts.length;
 			this.radix = radix;
+			this.groupEnd = groupEnd;
 			// the number of orders (the sequences of all boxes) first, without the table: the multinomial coefficient
 			long orders = 1L;
 			int sum = 0;
@@ -609,8 +677,11 @@ final class BruteForceTreeSearch {
 			long count = sequences[index];
 			if(count == -1L) {
 				count = 0L;
-				for (int t = 0; t < types; t++) {
+				int end = types;
+				for (int t = 0; t < end; t++) {
 					if(remaining[t] > 0) {
+						// the first group with boxes remaining
+						end = groupEnd[t];
 						remaining[t]--;
 						count += sequences(sequences, remaining, key - radix[t], length - 1);
 						remaining[t]++;

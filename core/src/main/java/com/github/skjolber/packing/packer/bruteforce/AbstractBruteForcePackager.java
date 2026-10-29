@@ -29,7 +29,9 @@ import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
+import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
@@ -111,7 +113,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	/**
 	 * @return true if the search of the loop for the iterator's boxes is the one which the tree runs, see {@link BruteForceTreeSearch}
 	 */
-	protected boolean isTreeSearchable(ContainerItem containerItem, BoxItemPermutationRotationIterator iterator) {
+	protected boolean isTreeSearchable(ContainerItem containerItem, BoxItemPermutationRotationIterator iterator, int[] insertAfterCounts) {
 		if(!treeSearch || !prefersHigherLoadVolume || iterator.length() < treeSearchMinBoxes) {
 			return false;
 		}
@@ -119,9 +121,10 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		if(comparatorClass != BruteForceIntermediatePackagerResultComparator.class && comparatorClass != DefaultIntermediatePackagerResultComparator.class) {
 			return false;
 		}
-		// without box item groups there are no insert-after counts (an empty array)
-		return iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator && !defaultIterator.hasBlocks() && getInsertAfterCounts(iterator).length == 0
-				&& BruteForceTreeSearch.isSupported(defaultIterator);
+		if(iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
+			return !defaultIterator.hasBlocks() && BruteForceTreeSearch.isSupported(defaultIterator, insertAfterCounts);
+		}
+		return iterator instanceof DefaultBoxItemGroupPermutationRotationIterator groupIterator && BruteForceTreeSearch.isSupported(groupIterator, insertAfterCounts);
 	}
 
 	protected void setRequireFullSupport(boolean requireFullSupport) {
@@ -452,9 +455,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		int[] insertAfterCounts = getInsertAfterCounts(iterator);
 		int[] prefixRotations = new int[iterator.length()];
 		boolean checkExtraction = hasExtractionOrders(iterator);
-		if(isTreeSearchable(containerItem, iterator)) {
-			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (DefaultBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
-					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations);
+		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
+			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (AbstractBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
+					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts);
 		}
 		// permutations
 		do {
@@ -1333,8 +1336,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * the first order first, which wins outright if it places them all, then the tree.
 	 */
 	private BruteForceIntermediatePackagerResult packTree(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
-			int index, DefaultBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int limit, Container holder,
-			Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] prefixRotations) throws PackagerInterruptedException {
+			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int limit, Container holder,
+			Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] prefixRotations, int[] insertAfterCounts)
+			throws PackagerInterruptedException {
 		int length = iterator.length();
 		if(allItemsFit) {
 			// the first order wins outright if it places all boxes, as it does for the loop: one search
@@ -1347,7 +1351,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			if(utility != null) {
 				utility.initialize(length);
 			}
-			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointFilter, requireFullSupport, checkExtraction, NO_COUNTS, length, null,
+			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointFilter, requireFullSupport, checkExtraction, insertAfterCounts, length, null,
 					Integer.MAX_VALUE, null, prefixRotations);
 			stack.clear();
 			List<Point> points = pointCalculator.getBestPoints();
@@ -1358,7 +1362,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			}
 		}
 		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter,
-				requireFullSupport, checkExtraction, utility, holder, stack, limit, minLoadVolume);
+				requireFullSupport, checkExtraction, utility, holder, stack, limit, minLoadVolume, insertAfterCounts);
 		stack.clear();
 		result.markDirty();
 		return result;

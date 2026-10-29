@@ -34,6 +34,36 @@ class IteratorSetPermutationTest {
 	}
 
 	@Test
+	void setPermutationOfGroupsIsAsIfIterated() {
+		List<com.github.skjolber.packing.api.BoxItemGroup> groups = List.of(
+				new com.github.skjolber.packing.api.BoxItemGroup("first", List.of(box("a", 1, 2, 0), box("b", 2, 1, 0))),
+				new com.github.skjolber.packing.api.BoxItemGroup("second", List.of(box("c", 3, 1, 0), box("d", 4, 1, 0))));
+		DefaultBoxItemGroupPermutationRotationIterator iterated = groupIterator(groups);
+		do {
+			DefaultBoxItemGroupPermutationRotationIterator set = groupIterator(groups);
+			set.setPermutation(iterated.getPermutations());
+			assertThat(set.getPermutations()).containsExactly(iterated.getPermutations());
+			for (int i = 0; i < iterated.length(); i++) {
+				assertThat(set.getStackValue(i)).isSameAs(iterated.getStackValue(i));
+				assertThat(set.getMinBoxVolume(i)).isEqualTo(iterated.getMinBoxVolume(i));
+			}
+			assertThat(set.nextPermutation()).isEqualTo(iterated.nextPermutation());
+			assertThat(set.getPermutations()).containsExactly(iterated.getPermutations());
+		} while (iterated.nextPermutation() != -1);
+		// a box moved to another group's block
+		DefaultBoxItemGroupPermutationRotationIterator iterator = groupIterator(groups);
+		int[] swapped = iterator.getPermutations();
+		int tmp = swapped[0];
+		swapped[0] = swapped[3];
+		swapped[3] = tmp;
+		assertThatThrownBy(() -> iterator.setPermutation(swapped)).isInstanceOf(IllegalArgumentException.class);
+	}
+
+	private static DefaultBoxItemGroupPermutationRotationIterator groupIterator(List<com.github.skjolber.packing.api.BoxItemGroup> groups) {
+		return DefaultBoxItemGroupPermutationRotationIterator.newBuilder().withLoadSize(10, 10, 10).withBoxItemGroups(groups).withMaxLoadWeight(100).build();
+	}
+
+	@Test
 	void setPermutationIsAsIfIterated() {
 		DefaultBoxItemPermutationRotationIterator iterated = iterator(boxItems());
 		int permutations = 0;

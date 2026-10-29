@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
@@ -135,6 +136,40 @@ class BruteForceTreeSearchTest {
 				}
 			};
 		}));
+	}
+
+	/** the instance's box items split into consecutive groups */
+	static List<BoxItemGroup> groups(Instance instance, int groupCount) {
+		List<BoxItem> boxItems = instance.copyBoxItems();
+		List<BoxItemGroup> groups = new ArrayList<>();
+		int perGroup = Math.max(1, (boxItems.size() + groupCount - 1) / groupCount);
+		for (int i = 0; i < boxItems.size(); i += perGroup) {
+			groups.add(new BoxItemGroup("g" + groups.size(), new ArrayList<>(boxItems.subList(i, Math.min(boxItems.size(), i + perGroup)))));
+		}
+		return groups;
+	}
+
+	private static PackagerResult packGroups(BruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItemGroup> groups) {
+		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(groups).withMaxContainerCount(8).withInterruptDuration(INTERRUPT_MILLIS).build();
+	}
+
+	@Test
+	void samePlacementsWithBoxItemGroups() {
+		// the orders keep the groups in sequence, and the groups are tried in each order
+		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).build();
+		try {
+			for (int seed = 400; seed < 460; seed++) {
+				Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(seed, 6, 8);
+				int groupCount = 2 + seed % 2;
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String expected = describe(packGroups(loop, containerItems, groups(instance, groupCount)));
+				assertThat(describe(packGroups(tree, containerItems, groups(instance, groupCount)))).as("seed " + seed).isEqualTo(expected);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
 	}
 
 	@Test
