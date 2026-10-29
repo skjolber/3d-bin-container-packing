@@ -386,6 +386,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			futures.add(executorCompletionService.submit(withThreadPriority(() -> {
 				AbstractBoxItemPermutationRotationIterator unitIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
 						: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
+				// the thread's units share their tables
+				BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
 				for (int unit = next.getAndIncrement(); unit < units && complete.get() == Integer.MAX_VALUE; unit = next.getAndIncrement()) {
 					int u = unit;
 					PackagerInterruptSupplier unitInterrupt = () -> localInterrupt.interrupted || complete.get() != Integer.MAX_VALUE || sourceInterrupt.getAsBoolean();
@@ -398,7 +400,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					}
 					try {
 						BruteForceIntermediatePackagerResult result = packTreeUnit(worker.pointCalculator(), worker.placements(), worker.placementCount, containerItem, containerIndex,
-								unitIterator, unitInterrupt, pointFilter, currentBest, prefix, shared);
+								unitIterator, unitInterrupt, pointFilter, currentBest, prefix, shared, tables);
 						if(truncate != null) {
 							result = truncate.apply(result);
 						}

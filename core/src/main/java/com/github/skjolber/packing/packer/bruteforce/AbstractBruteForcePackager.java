@@ -457,7 +457,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (AbstractBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
-					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, NO_COUNTS, null);
+					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, NO_COUNTS, null, null);
 		}
 		// permutations
 		do {
@@ -1340,7 +1340,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	private BruteForceIntermediatePackagerResult packTree(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int limit, Container holder,
 			Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] prefixRotations, int[] insertAfterCounts, int[] prefix,
-			BruteForceTreeSearch.SharedBest shared) throws PackagerInterruptedException {
+			BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
 		int length = iterator.length();
 		if(allItemsFit) {
 			// the first order wins outright if it places all boxes, as it does for the loop: one search
@@ -1365,7 +1365,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 		BruteForceTreeSearch.PointCandidates candidates = new BruteForceTreeSearch.PointCandidates(pointCalculator, pointFilter, requireFullSupport, checkExtraction, utility, holder);
 		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, holder, limit,
-				minLoadVolume, insertAfterCounts, prefix, shared);
+				minLoadVolume, insertAfterCounts, prefix, shared, tables);
 		stack.clear();
 		result.markDirty();
 		return result;
@@ -1377,11 +1377,12 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * (see {@link #isTreeSearchable}).
 	 *
 	 * @param shared the best arrangement of the units so far, for pruning, or null
+	 * @param tables a holder of the tables of the thread's units for the container (see {@link BruteForceTreeSearch.Tables}), or null
 	 * @return the best result of the unit, or an empty result; the result refers to reused state until materialized
 	 */
 	protected BruteForceIntermediatePackagerResult packTreeUnit(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
-			int[] prefix, BruteForceTreeSearch.SharedBest shared) throws PackagerInterruptedException {
+			int[] prefix, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
@@ -1391,7 +1392,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			return new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
 		}
 		return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter, Integer.MAX_VALUE, holder, stack, utility, allItemsFit,
-				minLoadVolume, hasExtractionOrders(iterator), new int[iterator.length()], getInsertAfterCounts(iterator), prefix, shared);
+				minLoadVolume, hasExtractionOrders(iterator), new int[iterator.length()], getInsertAfterCounts(iterator), prefix, shared, tables);
 	}
 
 	/** Start the candidate positions of a level's box in a rotation (see {@link #nextCandidate}) */

@@ -126,7 +126,24 @@ final class BruteForceTreeSearch {
 	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts)
 			throws PackagerInterruptedException {
-		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, NO_PREFIX, null);
+		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, NO_PREFIX, null, null);
+	}
+
+	/**
+	 * The tables of a search, per multiset of remaining boxes and per type prefix: the units of a search split between threads, which search the
+	 * same boxes for the same container, can share them on a thread (the orders of the units are disjoint, so the settled orders add up).
+	 */
+	static final class Tables {
+
+		final Multisets multisets;
+		final Bound bounds;
+		final SettledOrders settled;
+
+		Tables(Multisets multisets, Bound bounds, SettledOrders settled) {
+			this.multisets = multisets;
+			this.bounds = bounds;
+			this.settled = settled;
+		}
 	}
 
 	private static final int[] NO_PREFIX = new int[0];
@@ -134,11 +151,12 @@ final class BruteForceTreeSearch {
 	/**
 	 * @param prefix the types of the first boxes of the orders to search (empty for all orders): a unit of a search split between threads
 	 * @param shared the best arrangement of the units of a split search, for pruning, or null
+	 * @param tables a holder of the tables of a thread's units, or null: the tables are taken from it when it holds them, and left in it otherwise
 	 * @see #search(Candidates, Placement[], int, ContainerItem, int, AbstractBoxItemPermutationRotationIterator, PackagerInterruptSupplier, Container, int, long, int[])
 	 */
 	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts, int[] prefix,
-			SharedBest shared) throws PackagerInterruptedException {
+			SharedBest shared, Tables[] tables) throws PackagerInterruptedException {
 		final int n = iterator.length();
 		final int depthLimit = Math.min(limit, n);
 		final BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(n), containerIndex, iterator, candidates.utility != null);
@@ -174,9 +192,17 @@ final class BruteForceTreeSearch {
 		final long maxLoadVolume = holder.getMaxLoadVolume();
 		final long maxLoadWeight = holder.getMaxLoadWeight();
 		// the remaining boxes as a multiset, keyed compactly: the bound and the settled orders are kept per multiset
-		final Multisets multisets = new Multisets(counts, groupEnd);
-		final Bound bounds = new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys);
-		final SettledOrders settled = new SettledOrders(counts, n, multisets, groupEnd);
+		Tables sharedTables = tables != null ? tables[0] : null;
+		if(sharedTables == null) {
+			Multisets multisets = new Multisets(counts, groupEnd);
+			sharedTables = new Tables(multisets, new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd), new SettledOrders(counts, n, multisets, groupEnd));
+			if(tables != null) {
+				tables[0] = sharedTables;
+			}
+		}
+		final Multisets multisets = sharedTables.multisets;
+		final Bound bounds = sharedTables.bounds;
+		final SettledOrders settled = sharedTables.settled;
 		int remainingKey = multisets.fullKey;
 
 		// the order of the types at a node: the largest first; the lexicographic order after a full arrangement
@@ -1304,10 +1330,14 @@ final class BruteForceTreeSearch {
 
 	/**
 	 * The most the remaining boxes can add: the sub-multiset of them within the load volume and weight left with the most volume, then weight, then
-	 * boxes, which is what the first boxes of the best order of them can load. It depends only on the remaining multiset (the placed boxes are the
-	 * rest), so it is computed once per multiset, by enumerating its sub-multisets. When all boxes fit the load limits there is nothing to compute.
+	 * boxes, which is what the first boxes of the best order of them can load. With box item groups an order takes the groups in sequence, so the
+	 * sub-multiset is the first groups whole and a sub-multiset of the next. It depends only on the remaining multiset (the placed boxes are the
+	 * rest), so it is computed once per multiset, by enumerating the sub-multisets of a group; for a group with too many (over 4096) the whole
+	 * group within the load left is taken, which is a looser bound. When all boxes fit the load limits there is nothing to compute.
 	 */
 	static final class Bound {
+
+		static final long MAX_SUBSETS = 1L << 12;
 
 		private final long[] volumes;
 		private final long[] weights;
@@ -1327,15 +1357,37 @@ final class BruteForceTreeSearch {
 		private long bestWeight;
 		private int bestCount;
 
+		/** per type, the end of its group's range of types */
+		private final int[] groupEnd;
+		/** per type, whether its group has too many sub-multisets to enumerate */
+		private final boolean[] manySubsets;
+
 		/**
 		 * @param keys the number of multiset keys
+		 * @param groupEnd per type, the end of its group's range of types
 		 */
-		Bound(int[] counts, long[] volumes, long[] weights, long maxLoadVolume, long maxLoadWeight, int keys) {
+		Bound(int[] counts, long[] volumes, long[] weights, long maxLoadVolume, long maxLoadWeight, int keys, int[] groupEnd) {
 			this.volumes = volumes;
 			this.weights = weights;
 			this.types = counts.length;
 			this.maxLoadVolume = maxLoadVolume;
 			this.maxLoadWeight = maxLoadWeight;
+			this.groupEnd = groupEnd;
+			this.manySubsets = new boolean[types];
+			for (int t = 0; t < types; t++) {
+				if(counts[t] == 0) {
+					continue;
+				}
+				int end = groupEnd[t];
+				long subsets = 1L;
+				for (int k = t; k < end && subsets <= MAX_SUBSETS; k++) {
+					subsets *= counts[k] + 1;
+				}
+				for (int k = t; k < end; k++) {
+					manySubsets[k] = subsets > MAX_SUBSETS;
+				}
+				t = end - 1;
+			}
 			long volume = 0L;
 			long weight = 0L;
 			for (int t = 0; t < types; t++) {
@@ -1428,8 +1480,37 @@ final class BruteForceTreeSearch {
 				bestVolume = 0L;
 				bestWeight = 0L;
 				bestCount = 0;
-				if(volumeLeft >= 0L && weightLeft >= 0L) {
-					best(remaining, 0, volumeLeft, weightLeft, 0L, 0L, 0);
+				// the groups in sequence: the first ones whole, as far as they fit, and the sub-multisets of the next
+				long prefixVolume = 0L;
+				long prefixWeight = 0L;
+				int prefixCount = 0;
+				int start = 0;
+				while (start < types && volumeLeft - prefixVolume >= 0L && weightLeft - prefixWeight >= 0L) {
+					if(remaining[start] == 0) {
+						start++;
+						continue;
+					}
+					int end = groupEnd[start];
+					if(manySubsets[start]) {
+						// the whole group within the load left: at least what its sub-multisets can load
+						long groupVolume = 0L;
+						long groupWeight = 0L;
+						int groupCount = 0;
+						for (int t = start; t < end; t++) {
+							groupVolume += remaining[t] * volumes[t];
+							groupWeight += remaining[t] * weights[t];
+							groupCount += remaining[t];
+						}
+						offer(prefixVolume + Math.min(groupVolume, volumeLeft - prefixVolume), prefixWeight + Math.min(groupWeight, weightLeft - prefixWeight), prefixCount + groupCount);
+					} else {
+						best(remaining, start, end, volumeLeft - prefixVolume, weightLeft - prefixWeight, prefixVolume, prefixWeight, prefixCount);
+					}
+					for (int t = start; t < end; t++) {
+						prefixVolume += remaining[t] * volumes[t];
+						prefixWeight += remaining[t] * weights[t];
+						prefixCount += remaining[t];
+					}
+					start = end;
 				}
 				fitVolume[key] = bestVolume;
 				fitWeight[key] = bestWeight;
@@ -1447,13 +1528,18 @@ final class BruteForceTreeSearch {
 			return Integer.compare(count, otherCount);
 		}
 
-		private void best(int[] remaining, int t, long volumeLeft, long weightLeft, long volume, long weight, int count) {
-			if(t == types) {
-				if(volume > bestVolume || (volume == bestVolume && (weight > bestWeight || (weight == bestWeight && count > bestCount)))) {
-					bestVolume = volume;
-					bestWeight = weight;
-					bestCount = count;
-				}
+		private void offer(long volume, long weight, int count) {
+			if(volume > bestVolume || (volume == bestVolume && (weight > bestWeight || (weight == bestWeight && count > bestCount)))) {
+				bestVolume = volume;
+				bestWeight = weight;
+				bestCount = count;
+			}
+		}
+
+		/** the sub-multisets of the types t..end within the load left, on top of the volume, weight and count */
+		private void best(int[] remaining, int t, int end, long volumeLeft, long weightLeft, long volume, long weight, int count) {
+			if(t == end) {
+				offer(volume, weight, count);
 				return;
 			}
 			long v = volumes[t];
@@ -1464,7 +1550,7 @@ final class BruteForceTreeSearch {
 				if(kv > volumeLeft || kw > weightLeft) {
 					break;
 				}
-				best(remaining, t + 1, volumeLeft - kv, weightLeft - kw, volume + kv, weight + kw, count + k);
+				best(remaining, t + 1, end, volumeLeft - kv, weightLeft - kw, volume + kv, weight + kw, count + k);
 			}
 		}
 	}
