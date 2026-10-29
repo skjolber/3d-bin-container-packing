@@ -1172,6 +1172,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 						placementLoad.getPlacement().removeLastSupportee();
 					}
 					placement.clearLoad();
+					utility.restoreLoads(placedCounts[level]);
 				}
 				stack.remove(stack.size() - 1);
 				if(skipping != null ? skipping.count == length : pointCalculator.getBestStackIndex() >= length) {
@@ -1227,6 +1228,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 					}
 					stack.add(placement);
 					if(utility != null) {
+						utility.saveLoads(placedCount);
 						utility.addSupportersLoad(placement);
 					}
 					if(nextLevel < length) {
@@ -1361,8 +1363,9 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				return result;
 			}
 		}
-		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter,
-				requireFullSupport, checkExtraction, utility, holder, stack, limit, minLoadVolume, insertAfterCounts);
+		BruteForceTreeSearch.PointCandidates candidates = new BruteForceTreeSearch.PointCandidates(pointCalculator, pointFilter, requireFullSupport, checkExtraction, utility, holder);
+		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, holder, limit,
+				minLoadVolume, insertAfterCounts);
 		stack.clear();
 		result.markDirty();
 		return result;

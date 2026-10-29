@@ -168,6 +168,11 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 		return results;
 	}
 
+	/** @return the point of the placed box with the index (0 for the first placed) */
+	SimplePoint3D getPoint(int index) {
+		return stackItems[index].point;
+	}
+
 	/** Copy the points of the placed boxes into the array, which must have room for them (see {@link #getPoints()}). */
 	void copyPoints(Point[] target) {
 		for (int i = 0; i < stackSize; i++) {

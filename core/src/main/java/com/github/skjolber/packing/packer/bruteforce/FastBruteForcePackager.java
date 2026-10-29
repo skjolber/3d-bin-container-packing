@@ -23,6 +23,7 @@ import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrateg
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
@@ -122,6 +123,30 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+		/**
+		 * Search the box orders of a container as one tree where that gives the result of the loop over the permutations: every prefix of boxes is placed
+		 * once and the tree prunes with bounds, see {@link BruteForceTreeSearch}. On by default.
+		 *
+		 * @param treeSearch false to search with the loop only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
+
 		public Builder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
 			this.pointComparator = pointComparator;
 			return this;
@@ -140,6 +165,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			packager.setRequireFullSupport(requireFullSupport);
+			packager.setTreeSearch(treeSearch);
+			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
 			return packager;
 		}
 		
@@ -368,6 +395,10 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		PrefixBest prefix = new PrefixBest(iterator.length());
 		boolean checkExtraction = hasExtractionOrders(iterator);
+		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
+			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, (AbstractBoxItemPermutationRotationIterator)iterator, interrupt, pointComparator,
+					limit, holder, stack, loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix);
+		}
 		permutations:
 		do {
 			if(interrupt.getAsBoolean()) {
@@ -409,6 +440,37 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		} while (true);
 
 		return bestResult;
+	}
+
+	/**
+	 * Pack the boxes of the iterator into one container as the loop of {@link #pack} would, with the box orders searched as one tree
+	 * ({@link BruteForceTreeSearch}): when all boxes fit, the first order first, which wins outright if it places them all, then the tree.
+	 */
+	private BruteForceIntermediatePackagerResult packTree(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int containerIndex, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, int limit,
+			Container holder, Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] insertAfterCounts, PrefixBest prefix)
+			throws PackagerInterruptedException {
+		int length = iterator.length();
+		if(allItemsFit) {
+			// the first order wins outright if it places all boxes, as it does for the loop: one search
+			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+			if(containerItem.hasInitialPoints()) {
+				pointCalculator.setPoints(containerItem.getInitialPoints());
+				pointCalculator.clear();
+			}
+			prefix.reset();
+			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointComparator, checkExtraction, insertAfterCounts, length, null, Integer.MAX_VALUE, null,
+					prefix);
+			if(prefix.count == length) {
+				BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, utility != null);
+				result.setState(prefix.toList(), getState(iterator, prefix.rotations, length), stackPlacements, stackPlacementCount);
+				return result;
+			}
+		}
+		BruteForceTreeSearch.FastCandidates candidates = new BruteForceTreeSearch.FastCandidates(this, pointCalculator, pointComparator, requireFullSupport, checkExtraction, utility, holder,
+				length);
+		return BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume,
+				insertAfterCounts);
 	}
 
 	/**
@@ -637,6 +699,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 						placementLoad.getPlacement().removeLastSupportee();
 					}
 					placement.clearLoad();
+					utility.restoreLoads(placedCount);
 				}
 				stack.remove(stack.size() - 1);
 				pointCalculator.setStackSize(placedCount);
@@ -702,6 +765,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					pointCalculator.add(pointIndex, placement, point);
 					stack.add(placement);
 					if(utility != null) {
+						utility.saveLoads(placedCount);
 						utility.addSupportersLoad(placement);
 					}
 					int nextLevel = level + 1;

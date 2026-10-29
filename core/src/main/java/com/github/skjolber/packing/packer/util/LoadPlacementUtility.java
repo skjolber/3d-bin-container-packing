@@ -56,6 +56,23 @@ public interface LoadPlacementUtility {
 	void addSupportersLoad(Placement placement);
 
 	/**
+	 * Remember the loads which a placement at the position last validated ({@link #getSupportedAreaAtPoint}) changes: the ones of its supporters
+	 * and of the placements below them, and with placements above the position, the ones which carry those. Call before
+	 * {@link #addSupportersLoad}, so that {@link #restoreLoads} can undo the placement exactly: removing a placement subtracts its shares from the
+	 * loads, which leaves floating-point residue, and a search which places and removes boxes many times must see the same loads for the same
+	 * boxes.
+	 *
+	 * @param level the depth of the placement in the search, which {@link #restoreLoads} refers to; a deeper level's loads are saved and restored
+	 *        between the saving and the restoring of a level
+	 */
+	default void saveLoads(int level) {
+	}
+
+	/** Restore the loads saved for the level, after the placement was removed (see {@link #saveLoads}). */
+	default void restoreLoads(int level) {
+	}
+
+	/**
 	 * Connects an accepted placement to its direct supporters. Unlike
 	 * {@link #addSupportersLoad(Placement)}, this method must not assume that the
 	 * most recently validated candidate is still cached.
