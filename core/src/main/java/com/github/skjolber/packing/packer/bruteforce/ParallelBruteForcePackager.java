@@ -367,8 +367,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private BruteForceIntermediatePackagerResult packTreeMultithreaded(Workers workers, int containerIndex, ContainerItem containerItem,
 			AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, IntermediatePackagerResult currentBest, PackagerInterruptSupplier sourceInterrupt,
 			int completeBoxCount, boolean shareBest, UnaryOperator<BruteForceIntermediatePackagerResult> truncate) throws PackagerInterruptedException {
-		// a quarter of the parallelization count of units, with at least 32 orders each: a unit's setup must not outweigh its search
-		long wanted = Math.max(1L, Math.min(parallelizationCount / 4, iterator.countPermutations() / 32));
+		// a quarter of the parallelization count of units, with at least 256 orders each: a unit's setup must not outweigh its search
+		long wanted = Math.max(1L, Math.min(parallelizationCount / 4, iterator.countPermutations() / 256));
 		List<int[]> prefixes = BruteForceTreeSearch.prefixes(iterator, insertAfterCounts, (int)wanted);
 		int units = prefixes.size();
 		BruteForceIntermediatePackagerResult[] results = new BruteForceIntermediatePackagerResult[units];
