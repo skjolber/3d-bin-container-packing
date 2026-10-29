@@ -354,8 +354,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	/**
 	 * Search the orders of a container as a tree on the threads: the orders are split into units by their first types (see
 	 * {@link BruteForceTreeSearch#prefixes}), which the threads take in turn, each searching its unit as a tree on its own state (see
-	 * {@link #packTreeUnit}). The units' results are compared in the order of the units, the first of equal results winning, so the result is the
-	 * same as on one thread. The units after a unit with a complete result stop.
+	 * {@link #packTreeUnit}). The units' results are compared in the order of the units, the first of equal results winning. A complete result
+	 * (which no other result can beat) stops the other units, as for the permutation work units, so among several complete arrangements the
+	 * threads' timing decides, as before; otherwise the result is the same as on one thread.
 	 *
 	 * @param iterator the container's iterator, which the units fork
 	 * @param completeBoxCount the number of boxes of a result which no other result can beat
@@ -371,7 +372,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		BruteForceIntermediatePackagerResult[] results = new BruteForceIntermediatePackagerResult[units];
 		// the next unit to search
 		AtomicInteger next = new AtomicInteger();
-		// the first unit with a complete result: the units after it cannot give a better result
+		// the first unit with a complete result: no other result can beat it
 		AtomicInteger complete = new AtomicInteger(Integer.MAX_VALUE);
 		BruteForceTreeSearch.SharedBest shared = shareBest ? new BruteForceTreeSearch.SharedBest() : null;
 		LocalInterrupt localInterrupt = new LocalInterrupt();
@@ -385,9 +386,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			futures.add(executorCompletionService.submit(withThreadPriority(() -> {
 				AbstractBoxItemPermutationRotationIterator unitIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
 						: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
-				for (int unit = next.getAndIncrement(); unit < units && unit < complete.get(); unit = next.getAndIncrement()) {
+				for (int unit = next.getAndIncrement(); unit < units && complete.get() == Integer.MAX_VALUE; unit = next.getAndIncrement()) {
 					int u = unit;
-					PackagerInterruptSupplier unitInterrupt = () -> localInterrupt.interrupted || complete.get() < u || sourceInterrupt.getAsBoolean();
+					PackagerInterruptSupplier unitInterrupt = () -> localInterrupt.interrupted || complete.get() != Integer.MAX_VALUE || sourceInterrupt.getAsBoolean();
 					int[] prefix = prefixes.get(u);
 					int[] order = BruteForceTreeSearch.firstOrder(unitIterator, prefix);
 					if(unitIterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
@@ -406,10 +407,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							complete.accumulateAndGet(u, Math::min);
 						}
 					} catch (PackagerInterruptedException e) {
-						if(localInterrupt.interrupted || complete.get() >= u) {
+						if(localInterrupt.interrupted || complete.get() == Integer.MAX_VALUE) {
 							throw e;
 						}
-						// stopped: a unit before this one is complete
+						// stopped: another unit is complete
 					}
 				}
 				return null;
@@ -440,7 +441,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			throw new PackagerInterruptedException();
 		}
 		BruteForceIntermediatePackagerResult best = null;
-		for (int u = 0; u < units && u <= complete.get(); u++) {
+		for (int u = 0; u < units; u++) {
 			BruteForceIntermediatePackagerResult result = results[u];
 			if(result != null && !result.isEmpty() && (best == null || intermediatePackagerResultComparator.compare(best, result) < 0)) {
 				best = result;

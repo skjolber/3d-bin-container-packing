@@ -72,13 +72,6 @@ final class BruteForceTreeSearch {
 		for (int value : permutations) {
 			counts[value]++;
 		}
-		long keys = 1L;
-		for (int count : counts) {
-			keys *= count + 1;
-			if(keys > MAX_MULTISETS) {
-				return false;
-			}
-		}
 		if(insertAfterCounts.length != 0) {
 			// the box item indexes must ascend through the sequence of the groups, so that the orders are lexicographic over the box item indexes
 			// (the first permutation lists each group's box items in ascending order)
@@ -96,7 +89,33 @@ final class BruteForceTreeSearch {
 				}
 			}
 		}
-		return true;
+		return Multisets.count(counts, groupEnds(permutations, insertAfterCounts, counts.length)) <= MAX_MULTISETS;
+	}
+
+	/**
+	 * @return per type, the end of its group's range of types (its own index plus one without boxes): the boxes of a group are a block of the
+	 *         order, and the types ascend through the groups (see {@link #isSupported}), so the types of a group are a range
+	 */
+	private static int[] groupEnds(int[] permutations, int[] insertAfterCounts, int types) {
+		int n = permutations.length;
+		int[] groupEnd = new int[types];
+		for (int t = 0; t < types; t++) {
+			groupEnd[t] = t + 1;
+		}
+		// the block start..i of the permutation holds a group's types (in any order: the permutation may be a unit's first order)
+		int[] sorted = permutations.clone();
+		int start = 0;
+		for (int i = 1; i <= n; i++) {
+			if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
+				Arrays.sort(sorted, start, i);
+				int end = sorted[i - 1] + 1;
+				for (int k = start; k < i; k++) {
+					groupEnd[sorted[k]] = end;
+				}
+				start = i;
+			}
+		}
+		return groupEnd;
 	}
 
 	/**
@@ -151,39 +170,14 @@ final class BruteForceTreeSearch {
 			}
 		}
 		// box item groups: the boxes of a group are a block of the order, so the types of a group are a range; the end of each type's range
-		final int[] groupEnd = new int[types];
-		{
-			// the block start..i of the permutation holds a group's types (in any order: the permutation may be a unit's first order)
-			int[] permutations = iterator.getPermutations();
-			int start = 0;
-			for (int i = 1; i <= n; i++) {
-				if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
-					Arrays.sort(permutations, start, i);
-					int end = permutations[i - 1] + 1;
-					for (int k = start; k < i; k++) {
-						groupEnd[permutations[k]] = end;
-					}
-					start = i;
-				}
-			}
-			for (int t = 0; t < types; t++) {
-				if(counts[t] == 0) {
-					groupEnd[t] = t + 1;
-				}
-			}
-		}
+		final int[] groupEnd = groupEnds(iterator.getPermutations(), insertAfterCounts, types);
 		final long maxLoadVolume = holder.getMaxLoadVolume();
 		final long maxLoadWeight = holder.getMaxLoadWeight();
-		// the remaining boxes as a multiset, keyed by the counts (mixed radix): the bound and the settled orders are kept per multiset
-		final int[] radix = new int[types];
-		long keys = 1L;
-		for (int t = 0; t < types; t++) {
-			radix[t] = (int)Math.min(keys, Integer.MAX_VALUE);
-			keys *= counts[t] + 1;
-		}
-		final Bound bounds = new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, radix, keys);
-		final SettledOrders settled = new SettledOrders(counts, n, radix, keys, groupEnd);
-		int remainingKey = key(counts, radix);
+		// the remaining boxes as a multiset, keyed compactly: the bound and the settled orders are kept per multiset
+		final Multisets multisets = new Multisets(counts, groupEnd);
+		final Bound bounds = new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys);
+		final SettledOrders settled = new SettledOrders(counts, n, multisets, groupEnd);
+		int remainingKey = multisets.fullKey;
 
 		// the order of the types at a node: the largest first; the lexicographic order after a full arrangement
 		final int[] volumeOrder = new int[types];
@@ -291,7 +285,7 @@ final class BruteForceTreeSearch {
 								}
 							}
 							System.arraycopy(counts, 0, remaining, 0, types);
-							remainingKey = key(counts, radix);
+							remainingKey = multisets.fullKey;
 							candidates.start(holder, containerItem, n);
 							candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
 							level = 0;
@@ -322,7 +316,7 @@ final class BruteForceTreeSearch {
 			boolean placed = false;
 			while (typeAt[level] != -1 && !placed) {
 				final int t = typeAt[level];
-				final int childKey = remainingKey - radix[t];
+				final int childKey = multisets.remove(remainingKey, remaining, t);
 				if(!typeStarted[level]) {
 					// the orders with the box next: settled already; after a full arrangement only earlier permutations can win; a box over the load
 					// limits ends the arrangement; a hopeless box is not placed
@@ -440,7 +434,7 @@ final class BruteForceTreeSearch {
 					int t = placedType[level];
 					remaining[t]++;
 					int placedKey = remainingKey;
-					remainingKey += radix[t];
+					remainingKey = multisets.add(remainingKey, t);
 					// remove the placement, and restore the free points to before it
 					candidates.unplace(level, placements[level]);
 					if(settled.exact ? settled.isChildSettled(level, childRank[level], remaining, t, placedKey) : solved) {
@@ -771,13 +765,125 @@ final class BruteForceTreeSearch {
 		}
 	}
 
-	/** the key of a multiset of boxes: the counts in the mixed radix */
-	private static int key(int[] remaining, int[] radix) {
-		int key = 0;
-		for (int t = 0; t < remaining.length; t++) {
-			key += remaining[t] * radix[t];
+	/**
+	 * The keys of the multisets of remaining boxes which a search meets: the boxes of the first group with boxes remaining (any counts of its
+	 * types, in a mixed radix), while the groups before it are placed and the groups after it are whole. Without groups, all multisets. The empty
+	 * multiset has the last key.
+	 */
+	static final class Multisets {
+
+		private final int[] group;
+		private final int[] radix;
+		private final int[] offsets;
+		private final int[] fullKeys;
+		private final int[] groupRemaining;
+		private final int groups;
+		/** the number of keys, including the empty multiset's */
+		final int keys;
+		/** the key of all boxes */
+		final int fullKey;
+
+		Multisets(int[] counts, int[] groupEnd) {
+			int types = counts.length;
+			group = new int[types];
+			radix = new int[types];
+			int[] groupStart = new int[types];
+			int g = 0;
+			for (int t = 0; t < types; t++) {
+				if(counts[t] == 0) {
+					group[t] = -1;
+					continue;
+				}
+				groupStart[g] = t;
+				int end = groupEnd[t];
+				for (int k = t; k < end; k++) {
+					group[k] = g;
+				}
+				g++;
+				t = end - 1;
+			}
+			groups = g;
+			offsets = new int[groups + 1];
+			fullKeys = new int[groups + 1];
+			groupRemaining = new int[groups];
+			long offset = 0L;
+			for (int i = 0; i < groups; i++) {
+				offsets[i] = (int)offset;
+				long size = 1L;
+				long full = offset;
+				int end = groupEnd[groupStart[i]];
+				for (int t = groupStart[i]; t < end; t++) {
+					radix[t] = (int)Math.min(size, Integer.MAX_VALUE);
+					full += (long)counts[t] * radix[t];
+					size *= counts[t] + 1;
+					groupRemaining[i] += counts[t];
+				}
+				fullKeys[i] = (int)full;
+				offset += size;
+			}
+			// the empty multiset
+			offsets[groups] = (int)offset;
+			fullKeys[groups] = (int)offset;
+			keys = (int)offset + 1;
+			fullKey = fullKeys[0];
 		}
-		return key;
+
+		/** @return the number of keys, i.e. of multisets a search meets (and the empty one) */
+		static long count(int[] counts, int[] groupEnd) {
+			long total = 1L;
+			for (int t = 0; t < counts.length; t++) {
+				if(counts[t] == 0) {
+					continue;
+				}
+				long size = 1L;
+				int end = groupEnd[t];
+				for (int k = t; k < end; k++) {
+					size *= counts[k] + 1;
+					if(size > Integer.MAX_VALUE) {
+						return Long.MAX_VALUE;
+					}
+				}
+				total += size;
+				t = end - 1;
+			}
+			return total;
+		}
+
+		/**
+		 * @param key the key of the remaining boxes, of which the type is one
+		 * @param remaining the remaining boxes
+		 * @return the key of the remaining boxes without one box of the type
+		 */
+		int remove(int key, int[] remaining, int type) {
+			int g = group[type];
+			int left = 0;
+			// the group's remaining boxes: the ones of the first group with boxes remaining are counted in the key
+			for (int t = type; t >= 0 && group[t] == g; t--) {
+				left += remaining[t];
+			}
+			for (int t = type + 1; t < group.length && group[t] == g; t++) {
+				left += remaining[t];
+			}
+			if(left > 1) {
+				return key - radix[type];
+			}
+			// the group's last box: the next group, whole
+			return fullKeys[g + 1];
+		}
+
+		/**
+		 * @param key the key of the remaining boxes
+		 * @return the key of the remaining boxes with one more box of the type (the last placed)
+		 */
+		int add(int key, int type) {
+			int g = group[type];
+			if(key < offsets[g + 1]) {
+				// the group has boxes remaining
+				return key + radix[type];
+			}
+			// the group was placed whole: this box is its only one remaining
+			return offsets[g] + radix[type];
+		}
 	}
 
 	/** whether any remaining box fits the load left */
@@ -1014,7 +1120,7 @@ final class BruteForceTreeSearch {
 		final boolean exact;
 		private final int n;
 		private final int types;
-		private final int[] radix;
+		private final Multisets multisets;
 		/** the number of sequences of a length from a multiset, by multiset key and length; -1 until computed */
 		private final long[] sequences;
 		/** the settled orders per depth and prefix rank */
@@ -1028,15 +1134,15 @@ final class BruteForceTreeSearch {
 		private final int[] groupEnd;
 
 		/**
-		 * @param radix the radix of the multiset keys, by type
-		 * @param keys the number of multiset keys
+		 * @param multisets the keys of the multisets
 		 * @param groupEnd per type, the end of its group's range of types
 		 */
-		SettledOrders(int[] counts, int n, int[] radix, long keys, int[] groupEnd) {
+		SettledOrders(int[] counts, int n, Multisets multisets, int[] groupEnd) {
 			this.n = n;
 			this.types = counts.length;
-			this.radix = radix;
+			this.multisets = multisets;
 			this.groupEnd = groupEnd;
+			long keys = multisets.keys;
 			// the number of orders (the sequences of all boxes) first, without the table: the multinomial coefficient
 			long orders = 1L;
 			int sum = 0;
@@ -1054,7 +1160,7 @@ final class BruteForceTreeSearch {
 				Arrays.fill(sequences, -1L);
 				long total = 0;
 				settled = new int[n + 1][];
-				int rootKey = key(counts, radix);
+				int rootKey = multisets.fullKey;
 				for (int d = 0; d <= n && fits; d++) {
 					long prefixes = sequences(sequences, counts, rootKey, d);
 					total += prefixes;
@@ -1085,8 +1191,9 @@ final class BruteForceTreeSearch {
 					if(remaining[t] > 0) {
 						// the first group with boxes remaining
 						end = groupEnd[t];
+						int childKey = multisets.remove(key, remaining, t);
 						remaining[t]--;
-						count += sequences(sequences, remaining, key - radix[t], length - 1);
+						count += sequences(sequences, remaining, childKey, length - 1);
 						remaining[t]++;
 					}
 				}
@@ -1140,8 +1247,8 @@ final class BruteForceTreeSearch {
 			Arrays.fill(counts, 0L);
 			for (int t = 0; t < type; t++) {
 				if(remaining[t] > 0) {
+					int childKey = multisets.remove(key, remaining, t);
 					remaining[t]--;
-					int childKey = key - radix[t];
 					for (int length = 0; length <= n - level - 1; length++) {
 						counts[length] += sequences(sequences, remaining, childKey, length);
 					}
@@ -1221,10 +1328,9 @@ final class BruteForceTreeSearch {
 		private int bestCount;
 
 		/**
-		 * @param radix the radix of the multiset keys, by type
 		 * @param keys the number of multiset keys
 		 */
-		Bound(int[] counts, long[] volumes, long[] weights, long maxLoadVolume, long maxLoadWeight, int[] radix, long keys) {
+		Bound(int[] counts, long[] volumes, long[] weights, long maxLoadVolume, long maxLoadWeight, int keys) {
 			this.volumes = volumes;
 			this.weights = weights;
 			this.types = counts.length;
@@ -1239,7 +1345,7 @@ final class BruteForceTreeSearch {
 			totalVolume = volume;
 			totalWeight = weight;
 			allFit = volume <= maxLoadVolume && weight <= maxLoadWeight;
-			int size = (int)keys;
+			int size = keys;
 			if(allFit) {
 				fitVolume = null;
 				fitWeight = null;

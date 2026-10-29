@@ -18,7 +18,9 @@ import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
 
 /**
  * The parallel brute force packager with the tree search (the orders split into units by their first types, searched on the threads) must return
- * exactly the placements of the single-threaded loop over the permutations: the units' results compare in the order of the orders.
+ * results as good as the single-threaded loop over the permutations, container by container (the same boxes), and the same placements where no
+ * container holds all its boxes: a complete result of any unit stops the others, so among several complete arrangements the threads' timing
+ * decides, as for the permutation work units.
  */
 class ParallelBruteForceTreeSearchTest {
 
@@ -33,6 +35,41 @@ class ParallelBruteForceTreeSearchTest {
 		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(INTERRUPT_MILLIS).build();
 	}
 
+	/** @return the containers with their box ids, in order: the boxes of each container, which is what the result comparator decides */
+	static String describeBoxes(PackagerResult result) {
+		StringBuilder builder = new StringBuilder();
+		for (com.github.skjolber.packing.api.Container container : result.getContainers()) {
+			List<String> ids = new ArrayList<>();
+			for (com.github.skjolber.packing.api.Placement placement : container.getStack().getPlacements()) {
+				ids.add(placement.getBoxItem().getBox().getId());
+			}
+			java.util.Collections.sort(ids);
+			builder.append(container.getId()).append(ids).append(' ');
+		}
+		return builder.toString();
+	}
+
+	/** whether a container of the result holds all the boxes it was offered (the result comparator's best possible result for it) */
+	private static boolean anyComplete(PackagerResult result, int boxes) {
+		if(boxes < 0) {
+			// box item groups: a container holding its first groups whole is complete, too
+			return true;
+		}
+		int placed = 0;
+		for (com.github.skjolber.packing.api.Container container : result.getContainers()) {
+			placed += container.getStack().getPlacements().size();
+		}
+		// the last container holds the rest; a container holding every box offered to it is complete
+		return result.getContainers().size() == 1 || placed == boxes;
+	}
+
+	static void assertSame(PackagerResult expected, PackagerResult actual, String message, int boxes) {
+		assertThat(describeBoxes(actual)).as(message).isEqualTo(describeBoxes(expected));
+		if(!anyComplete(expected, boxes)) {
+			assertThat(BruteForceTreeSearchTest.describe(actual)).as(message).isEqualTo(BruteForceTreeSearchTest.describe(expected));
+		}
+	}
+
 	private static void compare(int fromSeed, int toSeed, int minBoxes, int maxBoxes, boolean tight) {
 		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
 		ParallelBruteForcePackager tree = parallel();
@@ -40,9 +77,9 @@ class ParallelBruteForceTreeSearchTest {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = tight ? TreeTestInstances.tight(seed, minBoxes, maxBoxes) : TreeTestInstances.random(seed, minBoxes, maxBoxes);
 				List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
-				String expected = BruteForceTreeSearchTest.describe(pack(loop, containerItems, instance.copyBoxItems()));
-				assertThat(expected).as("seed " + seed + " packs all boxes").isNotEmpty();
-				assertThat(BruteForceTreeSearchTest.describe(pack(tree, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
+				PackagerResult expected = pack(loop, containerItems, instance.copyBoxItems());
+				assertThat(expected.getContainers()).as("seed " + seed + " packs all boxes").isNotEmpty();
+				assertSame(expected, pack(tree, containerItems, instance.copyBoxItems()), "seed " + seed, instance.boxes);
 			}
 		} finally {
 			loop.close();
@@ -70,11 +107,11 @@ class ParallelBruteForceTreeSearchTest {
 				int groupCount = 2 + seed % 2;
 				List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
 				List<BoxItemGroup> groups = BruteForceTreeSearchTest.groups(instance, groupCount);
-				String expected = BruteForceTreeSearchTest.describe(loop.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(groups).withMaxContainerCount(8)
-						.withInterruptDuration(INTERRUPT_MILLIS).build());
+				PackagerResult expected = loop.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(groups).withMaxContainerCount(8)
+						.withInterruptDuration(INTERRUPT_MILLIS).build();
 				List<BoxItemGroup> again = BruteForceTreeSearchTest.groups(instance, groupCount);
-				assertThat(BruteForceTreeSearchTest.describe(tree.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(again).withMaxContainerCount(8)
-						.withInterruptDuration(INTERRUPT_MILLIS).build())).as("seed " + seed).isEqualTo(expected);
+				assertSame(expected, tree.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(again).withMaxContainerCount(8)
+						.withInterruptDuration(INTERRUPT_MILLIS).build(), "seed " + seed, -1);
 			}
 		} finally {
 			loop.close();
@@ -98,8 +135,8 @@ class ParallelBruteForceTreeSearchTest {
 					boxItems.add(new BoxItem(limited, boxItem.getCount()));
 				}
 				List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
-				String expected = BruteForceTreeSearchTest.describe(pack(loop, containerItems, copy(boxItems)));
-				assertThat(BruteForceTreeSearchTest.describe(pack(tree, containerItems, copy(boxItems)))).as("seed " + seed).isEqualTo(expected);
+				PackagerResult expected = pack(loop, containerItems, copy(boxItems));
+				assertSame(expected, pack(tree, containerItems, copy(boxItems)), "seed " + seed, instance.boxes);
 			}
 		} finally {
 			loop.close();
