@@ -23,7 +23,7 @@ public class BruteForceTreeStats {
 		boolean parallel = args.length > 6 && args[6].equals("parallel");
 		AbstractBruteForcePackager loop = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearch(false).build()
 				: BruteForcePackager.newBuilder().withTreeSearch(false).build();
-		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchUnits(true).build() : BruteForcePackager.newBuilder().build();
+		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchStealing(true).build() : BruteForcePackager.newBuilder().build();
 		long loopTotal = 0;
 		long treeTotal = 0;
 		for (int seed = firstSeed; seed < firstSeed + seeds; seed++) {

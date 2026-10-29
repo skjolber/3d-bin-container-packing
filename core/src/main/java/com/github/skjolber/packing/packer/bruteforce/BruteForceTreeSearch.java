@@ -84,7 +84,7 @@ final class BruteForceTreeSearch {
 	 * @return per type, the end of its group's range of types (its own index plus one without boxes): the boxes of a group are a block of the
 	 *         order, and the types ascend through the groups (see {@link #isSupported}), so the types of a group are a range
 	 */
-	private static int[] groupEnds(int[] permutations, int[] insertAfterCounts, int types) {
+	static int[] groupEnds(int[] permutations, int[] insertAfterCounts, int types) {
 		int[] groupEnd = new int[types];
 		for (int t = 0; t < types; t++) {
 			groupEnd[t] = t + 1;
@@ -137,7 +137,113 @@ final class BruteForceTreeSearch {
 	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts)
 			throws PackagerInterruptedException {
-		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, NO_PREFIX, null, null);
+		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, Work.ROOT, null, null, null);
+	}
+
+	/**
+	 * A part of a search for a thread: the orders which start with a prefix of types, placed at given candidates (or at every candidate, for a
+	 * unit of a split search), and at the level after the prefix the types of a range of the type order.
+	 */
+	static final class Work {
+
+		/** the whole search */
+		static final Work ROOT = new Work(new int[0], null, 0, Integer.MAX_VALUE);
+
+		final int[] prefixTypes;
+		/** per prefix level, the ordinal of the candidate placed (among the candidates of the type at the level), or null for every candidate */
+		final int[] prefixOrdinals;
+		/** the range of the type order at the level after the prefix */
+		final int startRank;
+		final int endRank;
+
+		Work(int[] prefixTypes, int[] prefixOrdinals, int startRank, int endRank) {
+			this.prefixTypes = prefixTypes;
+			this.prefixOrdinals = prefixOrdinals;
+			this.startRank = startRank;
+			this.endRank = endRank;
+		}
+
+		/** a unit of a split search: the orders which start with the prefix of types */
+		static Work unit(int[] prefix) {
+			return new Work(prefix, null, 0, Integer.MAX_VALUE);
+		}
+
+		/** @return whether this is a stolen part of another thread's search (the prefix placed at given candidates) */
+		boolean isStolen() {
+			return prefixOrdinals != null;
+		}
+	}
+
+	/**
+	 * The state of a thread's search which other threads can steal work from: at the shallow levels, the types which the node still has to try.
+	 * A thief takes the types after the current one of the shallowest such node (the largest subtree left, in the order the tree searches), as a
+	 * {@link Work} with the node's prefix of placements, which it replays on its own point calculator. The thread updates the state under the
+	 * lock at those levels only, so the deeper levels, where most of the nodes are, cost nothing.
+	 */
+	static final class StealableState {
+
+		/** the levels at which work is stolen: the subtrees below are small */
+		static final int STEAL_DEPTH = 6;
+
+		final Object lock = new Object();
+		/** the type order of the search, for the ranks */
+		int[] typeOrder;
+		/** the levels published: the ones below the depth are on the stack with their types started */
+		int depth;
+		/** the levels of the work's prefix, which have one type each */
+		int prefixLength;
+		final int[] placedType = new int[STEAL_DEPTH];
+		final int[] placedOrdinal = new int[STEAL_DEPTH];
+		/** per level, the rank of the type being tried, or -1 */
+		final int[] typeRank = new int[STEAL_DEPTH];
+		/** per level, the end of the ranks of the types to try */
+		final int[] typeLimit = new int[STEAL_DEPTH];
+		/** whether the thread is searching */
+		boolean active;
+
+		/**
+		 * @return the types after the current one at the shallowest level with any, as work for the thief, or null
+		 */
+		Work steal(int[] counts, int[] groupEnd) {
+			synchronized (lock) {
+				if(!active) {
+					return null;
+				}
+				for (int level = prefixLength; level < depth; level++) {
+					int rank = typeRank[level];
+					if(rank == -1 || rank + 1 >= typeLimit[level]) {
+						continue;
+					}
+					// a type of the range with boxes remaining, of the first group with boxes remaining
+					int[] remaining = counts.clone();
+					for (int i = 0; i < level; i++) {
+						remaining[placedType[i]]--;
+					}
+					int end = -1;
+					for (int t = 0; t < remaining.length; t++) {
+						if(remaining[t] > 0) {
+							end = groupEnd[t];
+							break;
+						}
+					}
+					boolean any = false;
+					for (int i = rank + 1; i < typeLimit[level]; i++) {
+						int t = typeOrder[i];
+						if(remaining[t] > 0 && t < end) {
+							any = true;
+							break;
+						}
+					}
+					if(!any) {
+						continue;
+					}
+					Work work = new Work(Arrays.copyOf(placedType, level), Arrays.copyOf(placedOrdinal, level), rank + 1, typeLimit[level]);
+					typeLimit[level] = rank + 1;
+					return work;
+				}
+				return null;
+			}
+		}
 	}
 
 	/**
@@ -157,17 +263,16 @@ final class BruteForceTreeSearch {
 		}
 	}
 
-	private static final int[] NO_PREFIX = new int[0];
-
 	/**
-	 * @param prefix the types of the first boxes of the orders to search (empty for all orders): a unit of a search split between threads
-	 * @param shared the best arrangement of the units of a split search, for pruning, or null
-	 * @param tables a holder of the tables of a thread's units, or null: the tables are taken from it when it holds them, and left in it otherwise
+	 * @param work the part of the search: the whole search, a unit of a split search, or a part stolen from another thread
+	 * @param shared the best arrangement of the parts of a split search, for pruning, or null
+	 * @param tables a holder of the tables of a thread's parts, or null: the tables are taken from it when it holds them, and left in it otherwise
+	 * @param stealable the state other threads steal work from, or null
 	 * @see #search(Candidates, Placement[], int, ContainerItem, int, AbstractBoxItemPermutationRotationIterator, PackagerInterruptSupplier, Container, int, long, int[])
 	 */
 	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
-			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts, int[] prefix,
-			SharedBest shared, Tables[] tables) throws PackagerInterruptedException {
+			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts, Work work,
+			SharedBest shared, Tables[] tables, StealableState stealable) throws PackagerInterruptedException {
 		final int n = iterator.length();
 		final int depthLimit = Math.min(limit, n);
 		final BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(n), containerIndex, iterator, candidates.utility != null);
@@ -256,6 +361,12 @@ final class BruteForceTreeSearch {
 		final int[] rankAt = new int[n + 1];
 		final int[] firstChildRank = new int[n + 1];
 		final int[] childRank = new int[n + 1];
+		// per level, the number of candidates of the type tried so far, and the end of the ranks of the types to try
+		final int[] ordinal = new int[n + 1];
+		final int[] typeLimit = new int[n + 1];
+		final int[] prefix = work.prefixTypes;
+		final int forced = prefix.length;
+		final int[] prefixOrdinals = work.prefixOrdinals;
 
 		// the best arrangement
 		boolean haveBest = false;
@@ -271,6 +382,14 @@ final class BruteForceTreeSearch {
 		int phase = bounds.allFit && minLoadVolume == 0L ? 1 : 0;
 		int[] typeOrder = phase == 0 ? volumeOrder : lexOrder;
 		int[] typeRank = phase == 0 ? volumeRank : lexOrder;
+		if(stealable != null) {
+			synchronized (stealable.lock) {
+				stealable.typeOrder = typeOrder;
+				stealable.depth = 0;
+				stealable.prefixLength = forced;
+				stealable.active = true;
+			}
+		}
 
 		candidates.start(holder, containerItem, n);
 		candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
@@ -339,7 +458,19 @@ final class BruteForceTreeSearch {
 					pushed[level] = false;
 				} else {
 					firstChildRank[level] = settled.firstChildRank(level);
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, -1, prefix, level);
+					typeLimit[level] = level == forced ? Math.min(work.endRank, types) : types;
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, -1, prefix, level, level == forced ? work.startRank : 0, typeLimit[level]);
+					if(stealable != null && level < StealableState.STEAL_DEPTH) {
+						synchronized (stealable.lock) {
+							if(level > 0) {
+								stealable.placedType[level - 1] = placedType[level - 1];
+								stealable.placedOrdinal[level - 1] = ordinal[level - 1] - 1;
+							}
+							stealable.typeRank[level] = typeAt[level] == -1 ? -1 : typeRank[typeAt[level]];
+							stealable.typeLimit[level] = level < forced ? -1 : typeLimit[level];
+							stealable.depth = level + 1;
+						}
+					}
 					typeStarted[level] = false;
 					fit[level] = false;
 					nodeSolved[level] = true;
@@ -393,7 +524,8 @@ final class BruteForceTreeSearch {
 						skip = false;
 					}
 					if(skip) {
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level, 0, typeLimit[level]);
+						typeAt[level] = publishType(stealable, level, typeAt[level], typeRank, remaining, typeOrder, groupEnd, typeLimit);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -401,6 +533,7 @@ final class BruteForceTreeSearch {
 					}
 					// the candidates of the box, in its first rotation, from the free points of the level; the limits of the boxes still to place
 					typeStarted[level] = true;
+					ordinal[level] = 0;
 					childRank[level] = rank;
 					settled.startType(level, remaining, t, remainingKey);
 					candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
@@ -434,10 +567,14 @@ final class BruteForceTreeSearch {
 							}
 						}
 					}
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level, 0, typeLimit[level]);
+					typeAt[level] = publishType(stealable, level, typeAt[level], typeRank, remaining, typeOrder, groupEnd, typeLimit);
 					typeStarted[level] = false;
 					fit[level] = false;
 					typeSolved[level] = false;
+				} else if(level < forced && prefixOrdinals != null && ordinal[level] < prefixOrdinals[level]) {
+					// a stolen part: the candidates before the one placed at this level
+					ordinal[level]++;
 				} else {
 					// place the box and continue with the next level
 					int nextLevel = level + 1;
@@ -454,6 +591,7 @@ final class BruteForceTreeSearch {
 					fit[level] = true;
 					placedType[level] = t;
 					placedRotation[level] = candidates.rotation;
+					ordinal[level]++;
 					rankAt[nextLevel] = childRank[level];
 					level = nextLevel;
 					descend = true;
@@ -466,6 +604,11 @@ final class BruteForceTreeSearch {
 				if(pushed[level]) {
 					candidates.leave(level);
 				}
+				if(stealable != null && level < StealableState.STEAL_DEPTH) {
+					synchronized (stealable.lock) {
+						stealable.depth = level;
+					}
+				}
 				level--;
 				if(level >= 0) {
 					int t = placedType[level];
@@ -474,11 +617,15 @@ final class BruteForceTreeSearch {
 					remainingKey = multisets.add(remainingKey, t);
 					// remove the placement, and restore the free points to before it
 					candidates.unplace(level, placements[level]);
-					if(settled.exact ? settled.isChildSettled(level, childRank[level], remaining, t, placedKey) : solved) {
+					if(level < forced && prefixOrdinals != null) {
+						// a stolen part: the one candidate of the level
+						typeAt[level] = -1;
+					} else if(settled.exact ? settled.isChildSettled(level, childRank[level], remaining, t, placedKey) : solved) {
 						// every order with the box next is settled: the loop stops an order at its first complete path, so the other candidates of the box
 						// can only repeat arrangements of settled orders
 						typeSolved[level] = true;
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level, 0, typeLimit[level]);
+						typeAt[level] = publishType(stealable, level, typeAt[level], typeRank, remaining, typeOrder, groupEnd, typeLimit);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -487,6 +634,12 @@ final class BruteForceTreeSearch {
 			}
 		}
 
+		if(stealable != null) {
+			synchronized (stealable.lock) {
+				stealable.active = false;
+				stealable.depth = 0;
+			}
+		}
 		if(!haveBest) {
 			return result;
 		}
@@ -937,9 +1090,9 @@ final class BruteForceTreeSearch {
 	 * the next type with boxes remaining of the first group with boxes remaining (the smallest remaining type's), in the order of the types, after
 	 * the given type (or the first, for -1)
 	 */
-	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int[] groupEnd, int after, int[] prefix, int level) {
+	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int[] groupEnd, int after, int[] prefix, int level, int from, int limit) {
 		if(level < prefix.length) {
-			// a unit of a split search: the orders which start with the prefix
+			// a part of a split search: the orders which start with the prefix
 			return after == -1 ? prefix[level] : -1;
 		}
 		int end = -1;
@@ -949,13 +1102,35 @@ final class BruteForceTreeSearch {
 				break;
 			}
 		}
-		for (int i = after == -1 ? 0 : typeRank[after] + 1; i < typeOrder.length; i++) {
+		for (int i = after == -1 ? from : typeRank[after] + 1; i < limit; i++) {
 			int t = typeOrder[i];
 			if(remaining[t] > 0 && t < end) {
 				return t;
 			}
 		}
 		return -1;
+	}
+
+	/**
+	 * Publish the next type of a level to the thieves, and take their limit: the types after the limit were stolen.
+	 *
+	 * @return the next type, or -1 if it was stolen
+	 */
+	private static int publishType(StealableState stealable, int level, int next, int[] typeRank, int[] remaining, int[] typeOrder, int[] groupEnd, int[] typeLimit) {
+		if(stealable == null || level >= StealableState.STEAL_DEPTH) {
+			return next;
+		}
+		synchronized (stealable.lock) {
+			int limit = stealable.typeLimit[level];
+			if(limit != -1 && limit < typeLimit[level]) {
+				typeLimit[level] = limit;
+				if(next != -1 && typeRank[next] >= limit) {
+					next = -1;
+				}
+			}
+			stealable.typeRank[level] = next == -1 ? -1 : typeRank[next];
+		}
+		return next;
 	}
 
 	/** {@link Bound#isHopeless} against the better of the search's own best arrangement and the shared one */

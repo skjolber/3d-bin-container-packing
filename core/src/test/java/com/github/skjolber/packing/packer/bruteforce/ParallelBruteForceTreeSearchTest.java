@@ -26,9 +26,25 @@ class ParallelBruteForceTreeSearchTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
-	/** few permutations per unit, so that every container is split between the threads */
+	/** few permutations per unit, so that every container is split between the threads: with the prefix units, or with work stealing */
 	private static ParallelBruteForcePackager parallel() {
-		return ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).withTreeSearchUnits(true).build();
+		return stealing ? ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true).build()
+				: ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).withTreeSearchUnits(true).build();
+	}
+
+	private static boolean stealing;
+
+	@Test
+	void samePlacementsAsTheLoopWithStealing() {
+		stealing = true;
+		try {
+			compare(0, 60, 4, 7, false);
+			compare(1000, 1040, 7, 8, true);
+			samePlacementsWithBoxItemGroups();
+			samePlacementsWithBoxLoadLimits();
+		} finally {
+			stealing = false;
+		}
 	}
 
 	private static PackagerResult pack(AbstractPackager<?> packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {

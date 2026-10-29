@@ -11,8 +11,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.IntFunction;
 import java.util.function.UnaryOperator;
 
@@ -245,6 +247,23 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		protected boolean treeSearchStealing = true;
+
+		/**
+		 * Search a container's orders as one tree on all the threads: a thread which runs out of work steals the shallowest subtree another thread
+		 * has still to search (the types it has still to try at a node near the root), so the tree's order of search, which prunes the first boxes
+		 * tried last with what was found under the first ones, is kept, and the threads stay busy. On by default. The result is the same as on one
+		 * thread, except that among several complete arrangements the threads' timing decides, and among equal arrangements of the same order the
+		 * first found.
+		 *
+		 * @param treeSearchStealing true to search as one tree with work stealing
+		 * @return this builder
+		 */
+		public Builder withTreeSearchStealing(boolean treeSearchStealing) {
+			this.treeSearchStealing = treeSearchStealing;
+			return this;
+		}
+
 		/**
 		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
 		 * @return this builder
@@ -318,6 +337,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			packager.setTreeSearch(treeSearch);
 			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
 			packager.treeSearchUnits = treeSearchUnits;
+			packager.treeSearchStealing = treeSearchStealing;
 			return packager;
 		}
 	}
@@ -329,6 +349,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	/** Whether to split a container's orders between the threads by their first boxes, each unit a tree search (see {@link Builder#withTreeSearchUnits}) */
 	private boolean treeSearchUnits;
+	/** Whether to search a container's orders as one tree on all the threads, with work stealing (see {@link Builder#withTreeSearchStealing}) */
+	private boolean treeSearchStealing;
 
 	/** Priority for the threads which search, or {@linkplain #NO_THREAD_PRIORITY}. Set by the builder, before the packager is returned. */
 	private int threadPriority = NO_THREAD_PRIORITY;
@@ -368,6 +390,160 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 		}
 		return new FilteredReversedBoxItemPermutationRotationIterator(iterator);
+	}
+
+	/**
+	 * Search the orders of a container as one tree on the threads, with work stealing: the first thread searches the whole tree, the others steal
+	 * the shallowest subtree a thread has still to search (see {@link BruteForceTreeSearch.StealableState}), and so on until no thread has work.
+	 * The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator, then
+	 * by their orders.
+	 *
+	 * @param iterator the container's iterator, which the threads fork
+	 * @param completeBoxCount the number of boxes of a result which no other result can beat
+	 * @param truncate the truncation of a result, or null
+	 */
+	private BruteForceIntermediatePackagerResult packTreeStealing(Workers workers, int containerIndex, ContainerItem containerItem,
+			AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, IntermediatePackagerResult currentBest, PackagerInterruptSupplier sourceInterrupt,
+			int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate) throws PackagerInterruptedException {
+		// the parallelization count is 16 per thread by default
+		int tasks = Math.max(1, Math.min(workers.size(), parallelizationCount / 16));
+		int[] counts = new int[iterator.getBoxItemStackValues().length];
+		for (int value : iterator.getPermutations()) {
+			counts[value]++;
+		}
+		int[] groupEnd = BruteForceTreeSearch.groupEnds(iterator.getPermutations(), insertAfterCounts, counts.length);
+		BruteForceTreeSearch.StealableState[] states = new BruteForceTreeSearch.StealableState[tasks];
+		for (int j = 0; j < tasks; j++) {
+			states[j] = new BruteForceTreeSearch.StealableState();
+		}
+		// the parts being searched, or stolen and about to be: the search is done when there are none
+		AtomicInteger active = new AtomicInteger(1);
+		AtomicBoolean complete = new AtomicBoolean();
+		BruteForceTreeSearch.SharedBest shared = new BruteForceTreeSearch.SharedBest();
+		LocalInterrupt localInterrupt = new LocalInterrupt();
+		PackagerInterruptSupplier interrupt = () -> localInterrupt.interrupted || complete.get() || sourceInterrupt.getAsBoolean();
+
+		ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
+		List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(tasks);
+		for (int j = 0; j < tasks; j++) {
+			BruteForceWorker worker = workers.get(j);
+			BruteForceTreeSearch.StealableState state = states[j];
+			boolean first = j == 0;
+			futures.add(executorCompletionService.submit(withThreadPriority(() -> {
+				AbstractBoxItemPermutationRotationIterator threadIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
+						: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
+				BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+				BruteForceIntermediatePackagerResult best = null;
+				BruteForceTreeSearch.Work work = first ? BruteForceTreeSearch.Work.ROOT : null;
+				while (true) {
+					if(work == null) {
+						if(interrupt.getAsBoolean()) {
+							break;
+						}
+						// steal from the thread with the shallowest work, or wait for one to have some
+						work = steal(states, state, counts, groupEnd, active);
+						if(work == null) {
+							if(active.get() == 0) {
+								break;
+							}
+							LockSupport.parkNanos(20_000L);
+							continue;
+						}
+					}
+					int[] order = BruteForceTreeSearch.firstOrder(threadIterator, work.prefixTypes);
+					if(threadIterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
+						defaultIterator.setPermutation(order);
+					} else {
+						((DefaultBoxItemGroupPermutationRotationIterator)threadIterator).setPermutation(order);
+					}
+					try {
+						BruteForceIntermediatePackagerResult result = packTreeUnit(worker.pointCalculator(), worker.placements(), worker.placementCount, containerItem, containerIndex,
+								threadIterator, interrupt, pointFilter, currentBest, work, shared, tables, state);
+						if(truncate != null) {
+							result = truncate.apply(result);
+						}
+						if(result != null && !result.isEmpty() && (best == null || compareResults(best, result) < 0)) {
+							best = result;
+						}
+						if(result != null && result.getBoxCount() >= completeBoxCount) {
+							complete.set(true);
+						}
+					} catch (PackagerInterruptedException e) {
+						if(!complete.get()) {
+							throw e;
+						}
+						// stopped: another thread is complete
+					} finally {
+						synchronized (state.lock) {
+							state.active = false;
+							state.depth = 0;
+						}
+						active.decrementAndGet();
+					}
+					work = null;
+				}
+				return best;
+			})));
+		}
+		BruteForceIntermediatePackagerResult best = null;
+		try {
+			for (int j = 0; j < futures.size(); j++) {
+				try {
+					BruteForceIntermediatePackagerResult result = executorCompletionService.take().get();
+					if(result != null && (best == null || compareResults(best, result) < 0)) {
+						best = result;
+					}
+				} catch (ExecutionException e) {
+					localInterrupt.interrupted = true;
+					Throwable cause = e.getCause();
+					if(cause instanceof PackagerInterruptedException) {
+						throw (PackagerInterruptedException)cause;
+					}
+					throw new PackagerException(cause);
+				} catch (InterruptedException e) {
+					localInterrupt.interrupted = true;
+					throw new PackagerInterruptedException();
+				}
+			}
+		} finally {
+			for (Future<BruteForceIntermediatePackagerResult> future : futures) {
+				future.cancel(true);
+			}
+		}
+		if(sourceInterrupt.getAsBoolean()) {
+			throw new PackagerInterruptedException();
+		}
+		return best;
+	}
+
+	/** steal work from another thread: the shallowest work of any (the thief's own state is not active) */
+	private static BruteForceTreeSearch.Work steal(BruteForceTreeSearch.StealableState[] states, BruteForceTreeSearch.StealableState own, int[] counts, int[] groupEnd,
+			AtomicInteger active) {
+		for (BruteForceTreeSearch.StealableState state : states) {
+			if(state == own) {
+				continue;
+			}
+			// counted before the victim can finish, so that the search is not taken as done meanwhile
+			active.incrementAndGet();
+			BruteForceTreeSearch.Work work = state.steal(counts, groupEnd);
+			if(work != null) {
+				return work;
+			}
+			active.decrementAndGet();
+		}
+		return null;
+	}
+
+	/**
+	 * @return the comparison of two results of parts of a search, as on one thread: by the result comparator, then the first order
+	 */
+	private int compareResults(BruteForceIntermediatePackagerResult a, BruteForceIntermediatePackagerResult b) {
+		int compare = intermediatePackagerResultComparator.compare(a, b);
+		if(compare != 0) {
+			return compare;
+		}
+		// equal: the earlier order wins, i.e. compares as the better (greater)
+		return -Arrays.compare(a.getPermutationRotationIteratorForState().getPermutations(), b.getPermutationRotationIteratorForState().getPermutations());
 	}
 
 	/**
@@ -421,7 +597,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 					}
 					try {
 						BruteForceIntermediatePackagerResult result = packTreeUnit(worker.pointCalculator(), worker.placements(), worker.placementCount, containerItem, containerIndex,
-								unitIterator, unitInterrupt, pointFilter, currentBest, prefix, shared, tables);
+								unitIterator, unitInterrupt, pointFilter, currentBest, BruteForceTreeSearch.Work.unit(prefix), shared, tables, null);
 						if(truncate != null) {
 							result = truncate.apply(result);
 						}
@@ -740,6 +916,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(multithreaded) {
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+					iterators[i].reset();
+					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, iterators[i].length(), null);
+				}
 				if(treeSearchUnits && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
 					iterators[i].reset();
 					BruteForceIntermediatePackagerResult result = packTreeMultithreaded(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt,
@@ -1255,6 +1435,12 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
 				int[] insertAfterCounts = getInsertAfterCounts(iterator);
+				if(treeSearchStealing && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
+					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
+					iterator.reset();
+					return packTreeStealing(workers, containerIndex, getContainerItem(containerIndex), iterator, insertAfterCounts, best, sourceInterrupt,
+							getCompleteBoxCount(iteratorGroups, true), result -> truncateToWholeGroups(result, iteratorGroups));
+				}
 				if(treeSearchUnits && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
 					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
 					iterator.reset();
@@ -1326,6 +1512,11 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(multithreaded) {
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+					iterators[i].reset();
+					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, getCompleteBoxCount(iteratorGroups, false),
+							result -> truncateToGroup(result, iteratorGroups));
+				}
 				if(treeSearchUnits && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
 					iterators[i].reset();
 					return packTreeMultithreaded(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, getCompleteBoxCount(iteratorGroups, false),
