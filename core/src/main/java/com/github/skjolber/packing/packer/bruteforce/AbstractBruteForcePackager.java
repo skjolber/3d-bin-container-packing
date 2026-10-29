@@ -120,7 +120,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			return false;
 		}
 		// without box item groups there are no insert-after counts (an empty array)
-		return iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator && !defaultIterator.hasBlocks() && getInsertAfterCounts(iterator).length == 0;
+		return iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator && !defaultIterator.hasBlocks() && getInsertAfterCounts(iterator).length == 0
+				&& BruteForceTreeSearch.isSupported(defaultIterator);
 	}
 
 	protected void setRequireFullSupport(boolean requireFullSupport) {

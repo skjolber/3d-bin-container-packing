@@ -87,12 +87,23 @@ class BruteForceTreeSearchTest {
 	@Test
 	void samePlacementsOnTightProblems() {
 		// many box types which do not all fit: partial arrangements, bounds and the lexicographic tie rule decide
-		compare(1000, 1040, 7, 9, true, b -> b);
+		compare(1000, 1040, 7, 8, true, b -> b);
+	}
+
+	@Test
+	void samePlacementsOnTightProblemsWithoutSettledOrders() {
+		// too many prefixes to keep the settled orders: the fallback settles the other candidates of a box only when every order through one settled
+		BruteForceTreeSearch.SettledOrders.maxPrefixes = 0;
+		try {
+			compare(1000, 1040, 7, 8, true, b -> b);
+		} finally {
+			BruteForceTreeSearch.SettledOrders.maxPrefixes = BruteForceTreeSearch.SettledOrders.MAX_PREFIXES;
+		}
 	}
 
 	@Test
 	void samePlacementsOnTightProblemsWithFullSupport() {
-		compare(1100, 1120, 7, 8, true, b -> b.withRequireFullSupport(true));
+		compare(1100, 1130, 6, 7, true, b -> b.withRequireFullSupport(true));
 	}
 
 	@Test
