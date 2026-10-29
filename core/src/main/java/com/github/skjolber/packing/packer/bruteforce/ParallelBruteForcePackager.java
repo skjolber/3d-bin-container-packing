@@ -446,7 +446,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 							if(active.get() == 0) {
 								break;
 							}
-							LockSupport.parkNanos(20_000L);
+							LockSupport.parkNanos(50_000L);
 							continue;
 						}
 					}
@@ -523,13 +523,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(state == own) {
 				continue;
 			}
-			// counted before the victim can finish, so that the search is not taken as done meanwhile
-			active.incrementAndGet();
-			BruteForceTreeSearch.Work work = state.steal(counts, groupEnd);
+			BruteForceTreeSearch.Work work = state.steal(counts, groupEnd, active);
 			if(work != null) {
 				return work;
 			}
-			active.decrementAndGet();
 		}
 		return null;
 	}
@@ -916,7 +913,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(multithreaded) {
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
-				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)
+						&& !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight())) {
+					// when all boxes fit, the bound prunes nothing and the first complete arrangement found wins: the permutation work units find one sooner
 					iterators[i].reset();
 					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, iterators[i].length(), null);
 				}
@@ -1435,7 +1434,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
 				int[] insertAfterCounts = getInsertAfterCounts(iterator);
-				if(treeSearchStealing && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
+				if(treeSearchStealing && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)
+						&& !canPackAll(iterator, getContainerItem(containerIndex).getContainer().getMaxLoadVolume(), getContainerItem(containerIndex).getContainer().getMaxLoadWeight())) {
 					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
 					iterator.reset();
 					return packTreeStealing(workers, containerIndex, getContainerItem(containerIndex), iterator, insertAfterCounts, best, sourceInterrupt,
@@ -1512,7 +1512,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(multithreaded) {
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
-				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)
+						&& !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight())) {
 					iterators[i].reset();
 					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, getCompleteBoxCount(iteratorGroups, false),
 							result -> truncateToGroup(result, iteratorGroups));

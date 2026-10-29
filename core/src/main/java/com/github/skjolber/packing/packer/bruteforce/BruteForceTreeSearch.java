@@ -188,8 +188,8 @@ final class BruteForceTreeSearch {
 		final Object lock = new Object();
 		/** the type order of the search, for the ranks */
 		int[] typeOrder;
-		/** the levels published: the ones below the depth are on the stack with their types started */
-		int depth;
+		/** the levels published: the ones below the depth are on the stack with their types started (read without the lock to see if there is anything) */
+		volatile int depth;
 		/** the levels of the work's prefix, which have one type each */
 		int prefixLength;
 		final int[] placedType = new int[STEAL_DEPTH];
@@ -202,11 +202,17 @@ final class BruteForceTreeSearch {
 		boolean active;
 
 		/**
+		 * @param active the count of the parts being searched, or stolen: counted up under the lock, so that the victim cannot finish (and the
+		 *        count reach zero) before the thief starts
 		 * @return the types after the current one at the shallowest level with any, as work for the thief, or null
 		 */
-		Work steal(int[] counts, int[] groupEnd) {
+		Work steal(int[] counts, int[] groupEnd, java.util.concurrent.atomic.AtomicInteger active) {
+			if(depth <= prefixLength) {
+				// nothing to steal, without the lock
+				return null;
+			}
 			synchronized (lock) {
-				if(!active) {
+				if(!this.active) {
 					return null;
 				}
 				for (int level = prefixLength; level < depth; level++) {
@@ -239,6 +245,7 @@ final class BruteForceTreeSearch {
 					}
 					Work work = new Work(Arrays.copyOf(placedType, level), Arrays.copyOf(placedOrdinal, level), rank + 1, typeLimit[level]);
 					typeLimit[level] = rank + 1;
+					active.incrementAndGet();
 					return work;
 				}
 				return null;
