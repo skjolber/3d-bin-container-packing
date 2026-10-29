@@ -85,10 +85,13 @@ class BruteForceTreeSearchTest {
 		compare(0, 60, 4, 7, b -> b);
 	}
 
-	/** @return per container, its load volume, weight and box count: what the result comparator decides */
+	/**
+	 * @return the first container's load volume, weight and box count: what the result comparator decides. With any arrangement of the best value
+	 *         the first container may hold other boxes of the same value than the loop's, and the containers after it then get other boxes.
+	 */
 	static String describeValues(PackagerResult result) {
 		StringBuilder builder = new StringBuilder();
-		for (Container container : result.getContainers()) {
+		for (Container container : result.getContainers().subList(0, Math.min(1, result.getContainers().size()))) {
 			long volume = 0;
 			long weight = 0;
 			for (Placement placement : container.getStack().getPlacements()) {
