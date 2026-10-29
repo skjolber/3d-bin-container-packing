@@ -29,7 +29,7 @@ class FastBruteForceTreeSearchTest {
 
 	static void compare(int fromSeed, int toSeed, int minBoxes, int maxBoxes, boolean tight, UnaryOperator<FastBruteForcePackager.Builder> configure) {
 		FastBruteForcePackager loop = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearch(false).build();
-		FastBruteForcePackager tree = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchMinBoxes(1).build();
+		FastBruteForcePackager tree = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = tight ? TreeTestInstances.tight(seed, minBoxes, maxBoxes) : TreeTestInstances.random(seed, minBoxes, maxBoxes);
@@ -82,7 +82,7 @@ class FastBruteForceTreeSearchTest {
 	@Test
 	void samePlacementsWithBoxItemGroups() {
 		FastBruteForcePackager loop = FastBruteForcePackager.newBuilder().withTreeSearch(false).build();
-		FastBruteForcePackager tree = FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).build();
+		FastBruteForcePackager tree = FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = 400; seed < 460; seed++) {
 				Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 8) : TreeTestInstances.tight(seed, 6, 9);
@@ -103,7 +103,7 @@ class FastBruteForceTreeSearchTest {
 	@Test
 	void samePlacementsWithBoxLoadLimits() {
 		FastBruteForcePackager loop = FastBruteForcePackager.newBuilder().withTreeSearch(false).build();
-		FastBruteForcePackager tree = FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).build();
+		FastBruteForcePackager tree = FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = 300; seed < 340; seed++) {
 				Instance instance = TreeTestInstances.random(seed, 4, 8);

@@ -65,7 +65,7 @@ class BruteForceTreeSearchTest {
 
 	static void compare(int fromSeed, int toSeed, int minBoxes, int maxBoxes, boolean tight, UnaryOperator<BruteForcePackager.Builder> configure) {
 		BruteForcePackager loop = configure.apply(BruteForcePackager.newBuilder()).withTreeSearch(false).build();
-		BruteForcePackager tree = configure.apply(BruteForcePackager.newBuilder()).withTreeSearchMinBoxes(1).build();
+		BruteForcePackager tree = configure.apply(BruteForcePackager.newBuilder()).withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = tight ? TreeTestInstances.tight(seed, minBoxes, maxBoxes) : TreeTestInstances.random(seed, minBoxes, maxBoxes);
@@ -195,7 +195,7 @@ class BruteForceTreeSearchTest {
 	void samePlacementsWithBoxItemGroups() {
 		// the orders keep the groups in sequence, and the groups are tried in each order
 		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
-		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).build();
+		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = 400; seed < 460; seed++) {
 				Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(seed, 6, 8);
@@ -213,7 +213,7 @@ class BruteForceTreeSearchTest {
 	@Test
 	void samePlacementsWithBoxLoadLimits() {
 		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
-		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).build();
+		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
 		try {
 			for (int seed = 300; seed < 330; seed++) {
 				Instance instance = TreeTestInstances.random(seed, 4, 6);

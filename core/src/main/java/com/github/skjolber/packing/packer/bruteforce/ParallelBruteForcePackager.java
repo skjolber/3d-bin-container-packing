@@ -273,12 +273,13 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
-		protected boolean treeSearchAnyBest = false;
+		protected boolean treeSearchAnyBest = true;
 
 		/**
 		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
 		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
-		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. Off by default.
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. On by default; false for the loop's arrangement among
+		 * equally good ones (the first order's, its first rotations and positions).
 		 *
 		 * @param anyBest true for any arrangement of the best value
 		 * @return this builder

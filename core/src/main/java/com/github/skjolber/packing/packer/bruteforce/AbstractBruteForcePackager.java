@@ -101,13 +101,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/** whether the tree may return any arrangement of the best value, see {@link #setTreeSearchAnyBest(boolean)} */
-	protected boolean treeSearchAnyBest = false;
+	protected boolean treeSearchAnyBest = true;
 
 	/**
-	 * @param anyBest true to let the tree search return any arrangement of the best value (by the result comparator: load volume, weight, boxes),
-	 *        not the one the loop over the permutations returns among equally good ones (the first order's, its first rotations and positions): the
-	 *        search then ends at the first arrangement which places all boxes, tries the largest boxes first even when all boxes fit, and does not
-	 *        expand prefixes which can at most tie the best; false (the default) for the loop's arrangement
+	 * @param anyBest true (the default) to let the tree search return any arrangement of the best value (by the result comparator: load volume,
+	 *        weight, boxes), not the one the loop over the permutations returns among equally good ones (the first order's, its first rotations and
+	 *        positions): the search then ends at the first arrangement which places all boxes, tries the largest boxes first even when all boxes
+	 *        fit, and does not expand prefixes which can at most tie the best; false for the loop's arrangement
 	 */
 	public void setTreeSearchAnyBest(boolean anyBest) {
 		this.treeSearchAnyBest = anyBest;

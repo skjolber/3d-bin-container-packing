@@ -28,8 +28,8 @@ class ParallelBruteForceTreeSearchTest {
 
 	/** few permutations per unit, so that every container is split between the threads: with the prefix units, or with work stealing */
 	private static ParallelBruteForcePackager parallel() {
-		return stealing ? ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true).build()
-				: ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).withTreeSearchUnits(true).build();
+		return stealing ? ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true).withTreeSearchAnyBest(false).build()
+				: ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).withTreeSearchUnits(true).withTreeSearchAnyBest(false).build();
 	}
 
 	private static boolean stealing;
