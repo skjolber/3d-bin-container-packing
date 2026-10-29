@@ -11,6 +11,22 @@ public final class TreeOptions {
 	private TreeOptions() {
 	}
 
+	/** {@code -Dtree.threads=n} searches on n threads where the builder supports it (the fast brute force packager) */
+	public static <T> T threads(T builder) {
+		int threads = Integer.getInteger("tree.threads", 1);
+		if(threads > 1) {
+			try {
+				Method method = builder.getClass().getMethod("withThreads", int.class);
+				method.invoke(builder, threads);
+			} catch (NoSuchMethodException e) {
+				// a version without the option: ignore
+			} catch (ReflectiveOperationException e) {
+				throw new IllegalStateException(e);
+			}
+		}
+		return apply(builder);
+	}
+
 	public static <T> T apply(T builder) {
 		if(Boolean.getBoolean("tree.anyBest")) {
 			try {

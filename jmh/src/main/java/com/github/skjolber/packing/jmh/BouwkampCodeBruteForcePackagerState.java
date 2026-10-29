@@ -82,7 +82,7 @@ public class BouwkampCodeBruteForcePackagerState {
 
 				PlainPackager plainPackager = PlainPackager.newBuilder().build();
 
-				FastBruteForcePackager fastPackager = TreeOptions.apply(FastBruteForcePackager.newBuilder()).build();
+				FastBruteForcePackager fastPackager = TreeOptions.threads(FastBruteForcePackager.newBuilder()).build();
 
 				// single-threaded
 				this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));

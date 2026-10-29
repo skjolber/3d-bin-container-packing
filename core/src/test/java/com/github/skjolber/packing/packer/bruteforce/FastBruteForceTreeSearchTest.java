@@ -45,6 +45,26 @@ class FastBruteForceTreeSearchTest {
 	}
 
 	@Test
+	void sameValuesWithThreads() {
+		// on several threads a complete result stops the others, so the containers' values are compared, as the result comparator decides
+		for (boolean anyBest : new boolean[] { false, true }) {
+			FastBruteForcePackager loop = FastBruteForcePackager.newBuilder().withTreeSearch(false).build();
+			FastBruteForcePackager tree = FastBruteForcePackager.newBuilder().withThreads(3).withTreeSearchMinBoxes(1).withTreeSearchAnyBest(anyBest).build();
+			try {
+				for (int seed = 0; seed < 80; seed++) {
+					Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 6, 8) : TreeTestInstances.tight(1000 + seed, 7, 9);
+					List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
+					String expected = BruteForceTreeSearchTest.describeValues(pack(loop, containerItems, instance.copyBoxItems()));
+					assertThat(BruteForceTreeSearchTest.describeValues(pack(tree, containerItems, instance.copyBoxItems()))).as("seed " + seed + " any best " + anyBest).isEqualTo(expected);
+				}
+			} finally {
+				loop.close();
+				tree.close();
+			}
+		}
+	}
+
+	@Test
 	void samePlacementsAsTheLoop() {
 		compare(0, 80, 4, 8, false, b -> b);
 	}
