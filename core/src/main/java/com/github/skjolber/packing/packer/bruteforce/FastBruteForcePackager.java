@@ -277,6 +277,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	private class FastBruteForceGroupSession extends AbstractSingleThreadedBruteForceBoxItemGroupSession {
 
 		private final FastPointCalculator3DStack pointCalculator;
+		/** the tree search's tables, reused over the group orders */
+		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
 
 		public FastBruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
@@ -306,7 +308,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		@Override
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best,
+					Integer.MAX_VALUE, tables);
 		}
 
 		@Override
@@ -470,6 +473,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
 			int limit) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointComparator, best, limit, null);
+	}
+
+	/**
+	 * @param tables a holder of the tree search's tables of a session's searches, reused by a search of the same boxes or of box item groups in
+	 *        another order, or null
+	 */
+	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
+			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
+			BoxItemPermutationRotationIterator iterator,
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
+			int limit, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
@@ -506,17 +521,17 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				FastPointCalculator3DStack[] calculators = new FastPointCalculator3DStack[threads];
 				Placement[][] placements = new Placement[threads][];
 				return BruteForceTreeStealing.search(executorService, threads, treeIterator, insertAfterCounts, interrupt, length, null, intermediatePackagerResultComparator,
-						(task, threadIterator, threadInterrupt, work, shared, tables, state) -> {
+						(task, threadIterator, threadInterrupt, work, shared, threadTables, state) -> {
 							if(calculators[task] == null) {
 								calculators[task] = new FastPointCalculator3DStack(length + 1);
 								placements[task] = getPlacements(length, load);
 							}
-							return packTreeUnit(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, tables,
+							return packTreeUnit(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, threadTables,
 									state);
 						}, task -> task);
 			}
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, treeIterator, interrupt, pointComparator, limit, holder, stack,
-					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeSearch.Work.ROOT, null, null, null);
+					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeSearch.Work.ROOT, null, tables, null);
 		}
 		permutations:
 		do {

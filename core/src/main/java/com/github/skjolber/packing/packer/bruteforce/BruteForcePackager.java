@@ -539,6 +539,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	private class BruteForceGroupSession extends AbstractSingleThreadedBruteForceBoxItemGroupSession {
 
 		protected final PointCalculator3DStack pointCalculator;
+		/** the tree search's tables, reused over the group orders */
+		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
 
 		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,
@@ -569,7 +571,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		@Override
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, pointFilter, best);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, pointFilter, best,
+					Integer.MAX_VALUE, tables);
 		}
 
 		@Override

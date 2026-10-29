@@ -262,18 +262,66 @@ final class BruteForceTreeSearch {
 		final Multisets multisets;
 		final Bound bounds;
 		final SettledOrders settled;
+		// the problem the tables are for
+		private final int[] counts;
+		private final int[] groupEnd;
+		private final int n;
+		private final long maxLoadVolume;
+		private final long maxLoadWeight;
+		private long[] volumes;
+		private long[] weights;
+		private long[] minAreas;
 
-		Tables(Multisets multisets, Bound bounds, SettledOrders settled) {
+		private Tables(Multisets multisets, Bound bounds, SettledOrders settled, int[] counts, int[] groupEnd, int n, long maxLoadVolume, long maxLoadWeight, long[] volumes,
+				long[] weights, long[] minAreas) {
 			this.multisets = multisets;
 			this.bounds = bounds;
 			this.settled = settled;
+			this.counts = counts;
+			this.groupEnd = groupEnd;
+			this.n = n;
+			this.maxLoadVolume = maxLoadVolume;
+			this.maxLoadWeight = maxLoadWeight;
+			this.volumes = volumes;
+			this.weights = weights;
+			this.minAreas = minAreas;
+		}
+
+		/**
+		 * The tables for a problem: the previous ones when they are for the same boxes (another part of the search, or a new search of it), the
+		 * previous ones reset when they are for other boxes of the same structure (the keys and the sequence counts hold: box item groups in
+		 * another order), or new ones.
+		 *
+		 * @param previous the tables of the previous search of the holder, or null
+		 * @param fresh true for a new search, false for a part of the one the previous tables were used by: a new search starts with no orders settled
+		 */
+		static Tables of(Tables previous, int[] counts, long[] volumes, long[] weights, long[] minAreas, long maxLoadVolume, long maxLoadWeight, int[] groupEnd, int n, boolean fresh) {
+			if(previous != null && previous.n == n && previous.maxLoadVolume == maxLoadVolume && previous.maxLoadWeight == maxLoadWeight && Arrays.equals(previous.counts, counts)
+					&& Arrays.equals(previous.groupEnd, groupEnd)) {
+				boolean same = Arrays.equals(previous.volumes, volumes) && Arrays.equals(previous.weights, weights) && Arrays.equals(previous.minAreas, minAreas);
+				if(same || previous.bounds.reset(volumes, weights)) {
+					if(!same) {
+						previous.volumes = volumes;
+						previous.weights = weights;
+						previous.minAreas = minAreas;
+					}
+					if(fresh) {
+						previous.settled.reset();
+					}
+					return previous;
+				}
+			}
+			Multisets multisets = new Multisets(counts, groupEnd);
+			return new Tables(multisets, new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd), new SettledOrders(counts, n, multisets, groupEnd),
+					counts, groupEnd, n, maxLoadVolume, maxLoadWeight, volumes, weights, minAreas);
 		}
 	}
 
 	/**
 	 * @param work the part of the search: the whole search, a unit of a split search, or a part stolen from another thread
 	 * @param shared the best arrangement of the parts of a split search, for pruning, or null
-	 * @param tables a holder of the tables of a thread's parts, or null: the tables are taken from it when it holds them, and left in it otherwise
+	 * @param tables a holder of the tables of a thread's parts, or of a session's searches, or null: the tables are taken from it when it holds them
+	 *        (see {@link Tables#of}), and left in it otherwise
 	 * @param stealable the state other threads steal work from, or null
 	 * @see #search(Candidates, Placement[], int, ContainerItem, int, AbstractBoxItemPermutationRotationIterator, PackagerInterruptSupplier, Container, int, long, int[])
 	 */
@@ -315,13 +363,9 @@ final class BruteForceTreeSearch {
 		final long maxLoadVolume = holder.getMaxLoadVolume();
 		final long maxLoadWeight = holder.getMaxLoadWeight();
 		// the remaining boxes as a multiset, keyed compactly: the bound and the settled orders are kept per multiset
-		Tables sharedTables = tables != null ? tables[0] : null;
-		if(sharedTables == null) {
-			Multisets multisets = new Multisets(counts, groupEnd);
-			sharedTables = new Tables(multisets, new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd), new SettledOrders(counts, n, multisets, groupEnd));
-			if(tables != null) {
-				tables[0] = sharedTables;
-			}
+		Tables sharedTables = Tables.of(tables != null ? tables[0] : null, counts, volumes, weights, minAreas, maxLoadVolume, maxLoadWeight, groupEnd, n, work == Work.ROOT && stealable == null);
+		if(tables != null) {
+			tables[0] = sharedTables;
 		}
 		final Multisets multisets = sharedTables.multisets;
 		final Bound bounds = sharedTables.bounds;
@@ -1415,6 +1459,18 @@ final class BruteForceTreeSearch {
 			this.before = fits ? new long[n + 1][] : null;
 		}
 
+		/** a new search: no orders settled */
+		void reset() {
+			if(!exact) {
+				return;
+			}
+			for (int[] counts : settled) {
+				if(counts != null) {
+					Arrays.fill(counts, 0);
+				}
+			}
+		}
+
 		/** the number of distinct sequences of the length from the remaining boxes (with the key) */
 		private long sequences(long[] sequences, int[] remaining, int key, int length) {
 			if(length == 0) {
@@ -1564,14 +1620,15 @@ final class BruteForceTreeSearch {
 
 		static final long MAX_SUBSETS = 1L << 12;
 
-		private final long[] volumes;
-		private final long[] weights;
+		private long[] volumes;
+		private long[] weights;
 		private final int types;
 		final boolean allFit;
 		private final long maxLoadVolume;
 		private final long maxLoadWeight;
-		private final long totalVolume;
-		private final long totalWeight;
+		private long totalVolume;
+		private long totalWeight;
+		private final int[] counts;
 		private final long[] fitVolume;
 		private final long[] fitWeight;
 		private final int[] fitCount;
@@ -1592,6 +1649,7 @@ final class BruteForceTreeSearch {
 		 * @param groupEnd per type, the end of its group's range of types
 		 */
 		Bound(int[] counts, long[] volumes, long[] weights, long maxLoadVolume, long maxLoadWeight, int keys, int[] groupEnd) {
+			this.counts = counts;
 			this.volumes = volumes;
 			this.weights = weights;
 			this.types = counts.length;
@@ -1635,6 +1693,33 @@ final class BruteForceTreeSearch {
 			}
 			minArea = new long[size];
 			minVolume = new long[size];
+		}
+
+		/**
+		 * Reset for other boxes of the same counts and groups.
+		 *
+		 * @return false if the boxes do not fit the load limits as the previous ones did (or do): then the tables are built anew
+		 */
+		boolean reset(long[] volumes, long[] weights) {
+			long volume = 0L;
+			long weight = 0L;
+			for (int t = 0; t < types; t++) {
+				volume += counts[t] * volumes[t];
+				weight += counts[t] * weights[t];
+			}
+			if(allFit != (volume <= maxLoadVolume && weight <= maxLoadWeight)) {
+				return false;
+			}
+			this.volumes = volumes;
+			this.weights = weights;
+			totalVolume = volume;
+			totalWeight = weight;
+			if(fitVolume != null) {
+				Arrays.fill(fitVolume, -1L);
+			}
+			Arrays.fill(minArea, 0L);
+			Arrays.fill(minVolume, 0L);
+			return true;
 		}
 
 		/** the smallest area of the remaining boxes (with the key), over their rotations */

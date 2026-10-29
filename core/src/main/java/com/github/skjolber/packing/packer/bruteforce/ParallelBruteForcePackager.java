@@ -1011,6 +1011,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	private class ParallelGroupSession extends AbstractBruteForceBoxItemGroupSession {
 
+		/** the tree search's tables of the searches on the calling thread, reused over the group orders */
+		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+
 		private Workers workers; // per work unit
 		private ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
 		private DefaultBoxItemGroupPermutationRotationIterator[] iterators; // per container
@@ -1342,7 +1345,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				if(treeSearchAnyBest && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
 					BruteForceWorker worker = workers.get(0);
 					return ParallelBruteForcePackager.this.pack(worker.pointCalculator(), worker.placements(), worker.placementCount, getContainerItem(containerIndex), containerIndex, iterator,
-							sourceInterrupt, pointFilter, best);
+							sourceInterrupt, pointFilter, best, Integer.MAX_VALUE, tables);
 				}
 				if(treeSearchUnits && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
 					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();

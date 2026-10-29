@@ -449,6 +449,16 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
 			int limit) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, pointFilter, best, limit, null);
+	}
+
+	/**
+	 * @param tables a holder of the tree search's tables of a session's searches, reused by a search of the same boxes or of box item groups in
+	 *        another order, or null
+	 */
+	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
+			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
+			int limit, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		
@@ -480,7 +490,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (AbstractBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
-					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, BruteForceTreeSearch.Work.ROOT, null, null, null);
+					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, BruteForceTreeSearch.Work.ROOT, null, tables, null);
 		}
 		// permutations
 		do {
