@@ -386,7 +386,8 @@ final class BruteForceTreeSearch {
 
 		// when all boxes fit the load limits the bound prunes nothing until an arrangement places them all, and the first such arrangement in
 		// the lexicographic order wins (as for the loop): search in that order from the start
-		int phase = bounds.allFit && minLoadVolume == 0L ? 1 : 0;
+		final boolean anyBest = candidates.anyBest;
+		int phase = bounds.allFit && minLoadVolume == 0L && !anyBest ? 1 : 0;
 		int[] typeOrder = phase == 0 ? volumeOrder : lexOrder;
 		int[] typeRank = phase == 0 ? volumeRank : lexOrder;
 		if(stealable != null) {
@@ -414,7 +415,7 @@ final class BruteForceTreeSearch {
 						// every order through this prefix is settled
 						expand = false;
 					} else if((haveBest || minLoadVolume > 0L || shared != null)
-							&& isHopeless(bounds, shared, remaining, remainingKey, volume[level], weight[level], level, minLoadVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+							&& isHopeless(bounds, shared, remaining, remainingKey, volume[level], weight[level], level, minLoadVolume, haveBest, bestVolume, bestWeight, bestCount, anyBest)) {
 						// no completion of this prefix can beat the best
 						settled.settle(level, rankAt, remaining, remainingKey);
 						expand = false;
@@ -433,6 +434,16 @@ final class BruteForceTreeSearch {
 						System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 						for (int i = 0; i < level; i++) {
 							bestPoints[i] = candidates.placedPoint(i);
+						}
+						if(bestCount == n && anyBest) {
+							// all boxes placed: nothing beats it, and any such arrangement will do
+							for (int l = level - 1; l >= 0; l--) {
+								candidates.unplace(l, placements[l]);
+								if(pushed[l]) {
+									candidates.leave(l);
+								}
+							}
+							break;
 						}
 						if(bestCount == n && phase == 0) {
 							// all boxes placed: only an earlier order can still win, so search again in the lexicographic order, where the first full leaf
@@ -520,7 +531,7 @@ final class BruteForceTreeSearch {
 					} else if(haveBest || minLoadVolume > 0L || shared != null) {
 						remaining[t]--;
 						boolean hopeless = isHopeless(bounds, shared, remaining, childKey, volume[level] + volumes[t], weight[level] + weights[t], level + 1, minLoadVolume, haveBest, bestVolume,
-								bestWeight, bestCount);
+								bestWeight, bestCount, anyBest);
 						remaining[t]++;
 						if(hopeless) {
 							settled.settleChild(level, rank, rankAt, remaining, t, childKey);
@@ -673,6 +684,8 @@ final class BruteForceTreeSearch {
 		protected final Stack stack;
 		/** with box load limits, the loads of the placed boxes; otherwise null */
 		protected final LoadPlacementUtility utility;
+		/** whether any arrangement of the best value will do, see {@link AbstractBruteForcePackager#setTreeSearchAnyBest(boolean)} */
+		boolean anyBest;
 		/** the candidate found by {@link #next}: its point, its rotation (index of the box's stack values) and with load limits its supported area */
 		protected SimplePoint3D point;
 		protected int rotation;
@@ -1142,14 +1155,14 @@ final class BruteForceTreeSearch {
 
 	/** {@link Bound#isHopeless} against the better of the search's own best arrangement and the shared one */
 	private static boolean isHopeless(Bound bounds, SharedBest shared, int[] remaining, int key, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume,
-			long bestWeight, int bestCount) {
+			long bestWeight, int bestCount, boolean anyBest) {
 		if(shared != null) {
 			long[] best = shared.get();
 			if(best != null && (!haveBest || Bound.compare(best[0], best[1], (int)best[2], bestVolume, bestWeight, bestCount) > 0)) {
-				return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, true, best[0], best[1], (int)best[2]);
+				return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, true, best[0], best[1], (int)best[2], anyBest);
 			}
 		}
-		return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, haveBest, bestVolume, bestWeight, bestCount);
+		return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, haveBest, bestVolume, bestWeight, bestCount, anyBest);
 	}
 
 	/**
@@ -1655,7 +1668,8 @@ final class BruteForceTreeSearch {
 		}
 
 		/** whether a prefix with the volume, weight and count, plus the best fit of the remaining boxes, can beat neither the bound nor the best arrangement */
-		boolean isHopeless(int[] remaining, int key, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume, long bestWeight, int bestCount) {
+		/** @param anyBest whether a prefix which can at most tie the best is hopeless too */
+		boolean isHopeless(int[] remaining, int key, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume, long bestWeight, int bestCount, boolean anyBest) {
 			long v;
 			long w;
 			int c;
@@ -1675,7 +1689,7 @@ final class BruteForceTreeSearch {
 			if(v < boundVolume) {
 				return true;
 			}
-			return haveBest && compare(v, w, c, bestVolume, bestWeight, bestCount) < 0;
+			return haveBest && compare(v, w, c, bestVolume, bestWeight, bestCount) < (anyBest ? 1 : 0);
 		}
 
 		private void maxFit(int[] remaining, int key) {

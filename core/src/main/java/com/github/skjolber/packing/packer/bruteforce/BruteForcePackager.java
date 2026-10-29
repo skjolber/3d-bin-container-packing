@@ -383,6 +383,21 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			this.treeSearchMinBoxes = minBoxes;
 			return this;
 		}
+
+		protected boolean treeSearchAnyBest = false;
+
+		/**
+		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
+		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. Off by default.
+		 *
+		 * @param anyBest true for any arrangement of the best value
+		 * @return this builder
+		 */
+		public Builder withTreeSearchAnyBest(boolean anyBest) {
+			this.treeSearchAnyBest = anyBest;
+			return this;
+		}
 		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
@@ -443,6 +458,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			BruteForcePackager packager = new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
 			packager.setTreeSearch(treeSearch);
 			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
+			packager.setTreeSearchAnyBest(treeSearchAnyBest);
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}

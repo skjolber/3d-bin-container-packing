@@ -272,6 +272,21 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			this.treeSearchMinBoxes = minBoxes;
 			return this;
 		}
+
+		protected boolean treeSearchAnyBest = false;
+
+		/**
+		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
+		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. Off by default.
+		 *
+		 * @param anyBest true for any arrangement of the best value
+		 * @return this builder
+		 */
+		public Builder withTreeSearchAnyBest(boolean anyBest) {
+			this.treeSearchAnyBest = anyBest;
+			return this;
+		}
 		
 		/**
 		 * Build the packager. Without an executor service, one with the configured number of threads (by default the
@@ -336,6 +351,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			packager.setRequireFullSupport(requireFullSupport);
 			packager.setTreeSearch(treeSearch);
 			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
+			packager.setTreeSearchAnyBest(treeSearchAnyBest);
 			packager.treeSearchUnits = treeSearchUnits;
 			packager.treeSearchStealing = treeSearchStealing;
 			return packager;

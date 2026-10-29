@@ -85,6 +85,44 @@ class BruteForceTreeSearchTest {
 		compare(0, 60, 4, 7, b -> b);
 	}
 
+	/** @return per container, its load volume, weight and box count: what the result comparator decides */
+	static String describeValues(PackagerResult result) {
+		StringBuilder builder = new StringBuilder();
+		for (Container container : result.getContainers()) {
+			long volume = 0;
+			long weight = 0;
+			for (Placement placement : container.getStack().getPlacements()) {
+				volume += placement.getStackValue().getBox().getVolume();
+				weight += placement.getStackValue().getBox().getWeight();
+			}
+			builder.append(container.getId()).append('[').append(volume).append('/').append(weight).append('/').append(container.getStack().getPlacements().size()).append("] ");
+		}
+		return builder.toString();
+	}
+
+	@Test
+	void sameValuesWithAnyBest() {
+		// any arrangement of the best value: the containers' load volumes, weights and box counts are the loop's
+		for (boolean fast : new boolean[] { false, true }) {
+			AbstractBruteForcePackager loop = fast ? FastBruteForcePackager.newBuilder().withTreeSearch(false).build() : BruteForcePackager.newBuilder().withTreeSearch(false).build();
+			AbstractBruteForcePackager tree = fast ? FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(true).build()
+					: BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(true).build();
+			try {
+				for (int seed = 0; seed < 100; seed++) {
+					Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(1000 + seed, 7, 8);
+					List<ContainerItem> containerItems = containerItems(instance, seed);
+					String expected = describeValues(loop.newResultBuilder().withContainerItems(containerItems).withBoxItems(instance.copyBoxItems()).withMaxContainerCount(8)
+							.withInterruptDuration(INTERRUPT_MILLIS).build());
+					assertThat(describeValues(tree.newResultBuilder().withContainerItems(containerItems).withBoxItems(instance.copyBoxItems()).withMaxContainerCount(8)
+							.withInterruptDuration(INTERRUPT_MILLIS).build())).as("seed " + seed + (fast ? " fast" : "")).isEqualTo(expected);
+				}
+			} finally {
+				loop.close();
+				tree.close();
+			}
+		}
+	}
+
 	@Test
 	void samePlacementsOnTightProblems() {
 		// many box types which do not all fit: partial arrangements, bounds and the lexicographic tie rule decide
