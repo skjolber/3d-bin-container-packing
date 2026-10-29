@@ -3,6 +3,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -106,6 +107,19 @@ final class BruteForceTreeSearch {
 	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts)
 			throws PackagerInterruptedException {
+		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, NO_PREFIX, null);
+	}
+
+	private static final int[] NO_PREFIX = new int[0];
+
+	/**
+	 * @param prefix the types of the first boxes of the orders to search (empty for all orders): a unit of a search split between threads
+	 * @param shared the best arrangement of the units of a split search, for pruning, or null
+	 * @see #search(Candidates, Placement[], int, ContainerItem, int, AbstractBoxItemPermutationRotationIterator, PackagerInterruptSupplier, Container, int, long, int[])
+	 */
+	static BruteForceIntermediatePackagerResult search(Candidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
+			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts, int[] prefix,
+			SharedBest shared) throws PackagerInterruptedException {
 		final int n = iterator.length();
 		final int depthLimit = Math.min(limit, n);
 		final BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(n), containerIndex, iterator, candidates.utility != null);
@@ -139,11 +153,12 @@ final class BruteForceTreeSearch {
 		// box item groups: the boxes of a group are a block of the order, so the types of a group are a range; the end of each type's range
 		final int[] groupEnd = new int[types];
 		{
+			// the block start..i of the permutation holds a group's types (in any order: the permutation may be a unit's first order)
 			int[] permutations = iterator.getPermutations();
 			int start = 0;
 			for (int i = 1; i <= n; i++) {
 				if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
-					// the block start..i: its types are permutations[start..i) (ascending, see isSupported)
+					Arrays.sort(permutations, start, i);
 					int end = permutations[i - 1] + 1;
 					for (int k = start; k < i; k++) {
 						groupEnd[permutations[k]] = end;
@@ -241,8 +256,8 @@ final class BruteForceTreeSearch {
 					if(settled.isSettled(level, rankAt[level], remaining, remainingKey)) {
 						// every order through this prefix is settled
 						expand = false;
-					} else if((haveBest || minLoadVolume > 0L)
-							&& bounds.isHopeless(remaining, remainingKey, volume[level], weight[level], level, minLoadVolume, haveBest, bestVolume, bestWeight, bestCount)) {
+					} else if((haveBest || minLoadVolume > 0L || shared != null)
+							&& isHopeless(bounds, shared, remaining, remainingKey, volume[level], weight[level], level, minLoadVolume, haveBest, bestVolume, bestWeight, bestCount)) {
 						// no completion of this prefix can beat the best
 						settled.settle(level, rankAt, remaining, remainingKey);
 						expand = false;
@@ -255,6 +270,9 @@ final class BruteForceTreeSearch {
 						bestVolume = volume[level];
 						bestWeight = weight[level];
 						System.arraycopy(candidate, 0, bestPermutation, 0, n);
+						if(shared != null) {
+							shared.offer(bestVolume, bestWeight, bestCount);
+						}
 						System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 						for (int i = 0; i < level; i++) {
 							bestPoints[i] = candidates.placedPoint(i);
@@ -290,7 +308,7 @@ final class BruteForceTreeSearch {
 					pushed[level] = false;
 				} else {
 					firstChildRank[level] = settled.firstChildRank(level);
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, -1);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, -1, prefix, level);
 					typeStarted[level] = false;
 					fit[level] = false;
 					nodeSolved[level] = true;
@@ -321,15 +339,18 @@ final class BruteForceTreeSearch {
 							bestVolume = volume[level];
 							bestWeight = weight[level];
 							System.arraycopy(candidate, 0, bestPermutation, 0, n);
+							if(shared != null) {
+								shared.offer(bestVolume, bestWeight, bestCount);
+							}
 							System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 							for (int i = 0; i < level; i++) {
 								bestPoints[i] = candidates.placedPoint(i);
 							}
 						}
 						settled.settleChild(level, rank, rankAt, remaining, t, childKey);
-					} else if(haveBest || minLoadVolume > 0L) {
+					} else if(haveBest || minLoadVolume > 0L || shared != null) {
 						remaining[t]--;
-						boolean hopeless = bounds.isHopeless(remaining, childKey, volume[level] + volumes[t], weight[level] + weights[t], level + 1, minLoadVolume, haveBest, bestVolume,
+						boolean hopeless = isHopeless(bounds, shared, remaining, childKey, volume[level] + volumes[t], weight[level] + weights[t], level + 1, minLoadVolume, haveBest, bestVolume,
 								bestWeight, bestCount);
 						remaining[t]++;
 						if(hopeless) {
@@ -341,7 +362,7 @@ final class BruteForceTreeSearch {
 						skip = false;
 					}
 					if(skip) {
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -373,13 +394,16 @@ final class BruteForceTreeSearch {
 							bestVolume = volume[level];
 							bestWeight = weight[level];
 							System.arraycopy(candidate, 0, bestPermutation, 0, n);
+							if(shared != null) {
+								shared.offer(bestVolume, bestWeight, bestCount);
+							}
 							System.arraycopy(placedRotation, 0, bestRotations, 0, level);
 							for (int i = 0; i < level; i++) {
 								bestPoints[i] = candidates.placedPoint(i);
 							}
 						}
 					}
-					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
+					typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
 					typeStarted[level] = false;
 					fit[level] = false;
 					typeSolved[level] = false;
@@ -423,7 +447,7 @@ final class BruteForceTreeSearch {
 						// every order with the box next is settled: the loop stops an order at its first complete path, so the other candidates of the box
 						// can only repeat arrangements of settled orders
 						typeSolved[level] = true;
-						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t);
+						typeAt[level] = nextType(remaining, typeOrder, typeRank, groupEnd, t, prefix, level);
 						typeStarted[level] = false;
 						fit[level] = false;
 						typeSolved[level] = false;
@@ -770,7 +794,11 @@ final class BruteForceTreeSearch {
 	 * the next type with boxes remaining of the first group with boxes remaining (the smallest remaining type's), in the order of the types, after
 	 * the given type (or the first, for -1)
 	 */
-	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int[] groupEnd, int after) {
+	private static int nextType(int[] remaining, int[] typeOrder, int[] typeRank, int[] groupEnd, int after, int[] prefix, int level) {
+		if(level < prefix.length) {
+			// a unit of a split search: the orders which start with the prefix
+			return after == -1 ? prefix[level] : -1;
+		}
 		int end = -1;
 		for (int t = 0; t < remaining.length; t++) {
 			if(remaining[t] > 0) {
@@ -785,6 +813,126 @@ final class BruteForceTreeSearch {
 			}
 		}
 		return -1;
+	}
+
+	/** {@link Bound#isHopeless} against the better of the search's own best arrangement and the shared one */
+	private static boolean isHopeless(Bound bounds, SharedBest shared, int[] remaining, int key, long volume, long weight, int count, long boundVolume, boolean haveBest, long bestVolume,
+			long bestWeight, int bestCount) {
+		if(shared != null) {
+			long[] best = shared.get();
+			if(best != null && (!haveBest || Bound.compare(best[0], best[1], (int)best[2], bestVolume, bestWeight, bestCount) > 0)) {
+				return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, true, best[0], best[1], (int)best[2]);
+			}
+		}
+		return bounds.isHopeless(remaining, key, volume, weight, count, boundVolume, haveBest, bestVolume, bestWeight, bestCount);
+	}
+
+	/**
+	 * The best arrangement of the units of a search split between threads (by its load volume, weight and boxes): a unit does not expand prefixes
+	 * which cannot beat it. Equal arrangements are not pruned, so the units' results compare as on one thread.
+	 */
+	static final class SharedBest {
+
+		private final AtomicReference<long[]> best = new AtomicReference<>();
+
+		/** @return the volume, weight and count of the best arrangement so far, or null */
+		long[] get() {
+			return best.get();
+		}
+
+		void offer(long volume, long weight, int count) {
+			long[] candidate = null;
+			while (true) {
+				long[] current = best.get();
+				if(current != null && Bound.compare(volume, weight, count, current[0], current[1], (int)current[2]) <= 0) {
+					return;
+				}
+				if(candidate == null) {
+					candidate = new long[] { volume, weight, count };
+				}
+				if(best.compareAndSet(current, candidate)) {
+					return;
+				}
+			}
+		}
+	}
+
+	/**
+	 * The prefixes of the orders which split a search between threads: the shortest prefixes (of types, keeping box item groups in sequence)
+	 * which number at least the units wanted, at most one box shorter than the orders; in lexicographic order, so that the units' results compare
+	 * in the order of the orders.
+	 */
+	static List<int[]> prefixes(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, int minUnits) {
+		int[] permutations = iterator.getPermutations();
+		int n = permutations.length;
+		int types = iterator.getBoxItemStackValues().length;
+		int[] counts = new int[types];
+		for (int value : permutations) {
+			counts[value]++;
+		}
+		// the groups' ranges of types, as in search
+		int[] groupEnd = new int[types];
+		int[] sorted = permutations.clone();
+		int start = 0;
+		for (int i = 1; i <= n; i++) {
+			if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
+				Arrays.sort(sorted, start, i);
+				int end = sorted[i - 1] + 1;
+				for (int k = start; k < i; k++) {
+					groupEnd[sorted[k]] = end;
+				}
+				start = i;
+			}
+		}
+		List<int[]> prefixes = new ArrayList<>();
+		for (int depth = 1; depth < n; depth++) {
+			prefixes.clear();
+			prefixes(counts, groupEnd, new int[depth], 0, prefixes);
+			if(prefixes.size() >= minUnits) {
+				break;
+			}
+		}
+		return prefixes;
+	}
+
+	private static void prefixes(int[] remaining, int[] groupEnd, int[] prefix, int depth, List<int[]> prefixes) {
+		if(depth == prefix.length) {
+			prefixes.add(prefix.clone());
+			return;
+		}
+		int end = remaining.length;
+		for (int t = 0; t < end; t++) {
+			if(remaining[t] > 0) {
+				// the first group with boxes remaining
+				end = groupEnd[t];
+				remaining[t]--;
+				prefix[depth] = t;
+				prefixes(remaining, groupEnd, prefix, depth + 1, prefixes);
+				remaining[t]++;
+			}
+		}
+	}
+
+	/** @return the first order with the prefix: the prefix, then the remaining boxes by type (which keeps the groups in sequence) */
+	static int[] firstOrder(AbstractBoxItemPermutationRotationIterator iterator, int[] prefix) {
+		int[] permutations = iterator.getPermutations();
+		int types = iterator.getBoxItemStackValues().length;
+		int[] counts = new int[types];
+		for (int value : permutations) {
+			counts[value]++;
+		}
+		int[] order = new int[permutations.length];
+		int index = 0;
+		for (int t : prefix) {
+			counts[t]--;
+			order[index++] = t;
+		}
+		for (int t = 0; t < types; t++) {
+			for (int i = 0; i < counts[t]; i++) {
+				order[index++] = t;
+			}
+		}
+		return order;
 	}
 
 	/** compare the prefix of the placed types followed by the type with the first level + 1 boxes of the permutation, lexicographically */
@@ -1183,7 +1331,7 @@ final class BruteForceTreeSearch {
 			}
 		}
 
-		private static int compare(long volume, long weight, int count, long otherVolume, long otherWeight, int otherCount) {
+		static int compare(long volume, long weight, int count, long otherVolume, long otherWeight, int otherCount) {
 			if(volume != otherVolume) {
 				return volume < otherVolume ? -1 : 1;
 			}
