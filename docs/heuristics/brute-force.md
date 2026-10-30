@@ -36,17 +36,41 @@ loop over the orders places it again for every order which starts with it. The c
 ones the packager's own search tries (`BruteForcePackager` all free points where the box fits, or the point filter's;
 `FastBruteForcePackager` the best point per rotation), on the same point calculator, so the positions are the loop's.
 
+```mermaid
+flowchart TB
+    subgraph loop["Loop over the orders"]
+        direction TB
+        l1a[a] --> l1b[b] --> l1c[c]
+        l2a[a] --> l2c[c] --> l2b[b]
+        l3b[b] --> l3a[a] --> l3c[c]
+        l4b[b] --> l4c[c] --> l4a[a]
+        l5c[c] --> l5a[a] --> l5b[b]
+        l6c[c] --> l6b[b] --> l6a[a]
+    end
+    subgraph tree["Tree"]
+        direction TB
+        root((root)) --> a[a]
+        root --> b[b]
+        root --> c[c]
+        a --> ab[b]
+        a --> ac[c]
+        b --> ba[a]
+        b --> bc[c]
+        c --> ca[a]
+        c --> cb[b]
+        ab --> abc[c]
+        ac --> acb[b]
+        ba --> bac[c]
+        bc --> bca[a]
+        ca --> cab[b]
+        cb --> cba[a]
+    end
+    loop ~~~ tree
 ```
-loop:   a b c   a c b   b a c   b c a   c a b   c b a     each order is placed from its first box: a is placed twice, b twice, c twice
 
-tree:            root
-             /    |    \
-            a     b     c           a node is a prefix of placed boxes, each in a rotation at a position;
-           / \   / \   / \         its children are the remaining boxes, in each rotation at each candidate position
-          b   c a   c a   b
-          |   | |   | |   |
-          c   b c   a b   a         a leaf is an arrangement: the boxes of an order, until one has no position
-```
+Above, the loop over the orders of the boxes a, b, c: a is placed at the root twice, for a b c and for a c b, b twice
+and c twice. Below, the tree, which places each of them once. A leaf is an arrangement: the boxes of an order, until one
+has no position.
 
 The result has the loop's value, and with `withTreeSearchAnyBest(false)` is exactly the loop's: the loop stops an order at
 its first complete path (every box which fits the load limits placed) and keeps, among the orders, the best arrangement

@@ -6,16 +6,39 @@
 
 It runs the same search as [`BruteForcePackager`](brute-force.md#algorithm) on several threads. By default (`withTreeSearchStealing(true)`) a container's orders are searched as one [tree](brute-force.md#tree-search) on all the threads, with work stealing: the calling thread searches the whole tree, and once it has searched a while (4096 nodes) the other threads join, a thread without work stealing the shallowest subtree another thread has still to search (the types it has still to try at a node within the first six levels), as a part with that node's prefix of placements, which it replays on its own point calculator. A short search, as of a container whose first arrangements place every box, so runs on the calling thread alone, without the hand-off to the threads. The tree's order of search is kept, so the first boxes tried last are pruned with what was found under the first ones, and the threads stay busy. The threads share their best arrangement for pruning, a complete result stops the others, and the results compare by the result comparator, then by their orders: the result is the single-threaded one, except that among several complete arrangements the threads' timing decides, and among equal arrangements of the same order the first found. Containers with few permutations are searched on one thread, with the tree. With `withTreeSearchAnyBest(false)`, containers whose boxes all fit the load limits are split into permutation work units instead: the bound then prunes nothing, and the first complete arrangement wins.
 
+```mermaid
+flowchart TB
+    root((root)) --> a[a]
+    root --> b[b]
+    root --> c[c]
+    a --> ab[b]
+    a --> ac[c]
+    ab --> abc[c]
+    subgraph victim["Calling thread"]
+        a
+        ab
+        abc
+    end
+    subgraph thief1["Thief 1"]
+        b
+        c
+    end
+    subgraph thief2["Thief 2"]
+        ac
+    end
+    classDef victim fill:#dbeafe,stroke:#1d4ed8,color:#111
+    classDef thief1 fill:#fef3c7,stroke:#b45309,color:#111
+    classDef thief2 fill:#dcfce7,stroke:#15803d,color:#111
+    class a,ab,abc victim
+    class b,c thief1
+    class ac thief2
 ```
-                root            the calling thread searches the tree in its order: it is deep under a, with b and c still to try at the root
-            /    |    \
-           a     b     c        a thief takes the types the victim has still to try at the shallowest such node within the first six levels:
-         / | \   ^^^^^^^        here b and c at the root, as one part; the victim keeps a. The thief replays the node's prefix of
-        ..       thief 1        placements (none here) on its own point calculator, then searches the part as a tree of its own
-       ^^^
-       thief 2                  the next thief steals from whoever has the shallowest node with types left, here under a; and so on
-                                until no thread has work
-```
+
+The calling thread searches the tree in its order and is deep under a b, with c still to try at a and b and c still
+to try at the root. The first thief takes the types the victim has still to try at the shallowest such node within
+the first six levels, b and c at the root, as one part; the victim keeps a. The thief replays the node's prefix of
+placements (none at the root) on its own point calculator, then searches the part as a tree of its own. The next
+thief steals from whoever has the shallowest node with types left, c at a, and so on until no thread has work.
 
 With `withTreeSearchStealing(false)`, the permutations of the boxes are split into different tasks (the loop), and for box item groups without a box item order, the orders of the groups (by their first groups). The rotations and point placements of a permutation are not split.
 
