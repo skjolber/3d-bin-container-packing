@@ -6,11 +6,33 @@
 
 It runs the same search as [`BruteForcePackager`](brute-force.md#algorithm) on several threads. By default (`withTreeSearchStealing(true)`) a container's orders are searched as one [tree](brute-force.md#tree-search) on all the threads, with work stealing: the calling thread searches the whole tree, and once it has searched a while (4096 nodes) the other threads join, a thread without work stealing the shallowest subtree another thread has still to search (the types it has still to try at a node within the first six levels), as a part with that node's prefix of placements, which it replays on its own point calculator. A short search, as of a container whose first arrangements place every box, so runs on the calling thread alone, without the hand-off to the threads. The tree's order of search is kept, so the first boxes tried last are pruned with what was found under the first ones, and the threads stay busy. The threads share their best arrangement for pruning, a complete result stops the others, and the results compare by the result comparator, then by their orders: the result is the single-threaded one, except that among several complete arrangements the threads' timing decides, and among equal arrangements of the same order the first found. Containers with few permutations are searched on one thread, with the tree. With `withTreeSearchAnyBest(false)`, containers whose boxes all fit the load limits are split into permutation work units instead: the bound then prunes nothing, and the first complete arrangement wins.
 
+```
+                root            the calling thread searches the tree in its order: it is deep under a, with b and c still to try at the root
+            /    |    \
+           a     b     c        a thief takes the types the victim has still to try at the shallowest such node within the first six levels:
+         / | \   ^^^^^^^        here b and c at the root, as one part; the victim keeps a. The thief replays the node's prefix of
+        ..       thief 1        placements (none here) on its own point calculator, then searches the part as a tree of its own
+       ^^^
+       thief 2                  the next thief steals from whoever has the shallowest node with types left, here under a; and so on
+                                until no thread has work
+```
+
 With `withTreeSearchStealing(false)`, the permutations of the boxes are split into different tasks (the loop), and for box item groups without a box item order, the orders of the groups (by their first groups). The rotations and point placements of a permutation are not split.
+
+```
+permutations:   a b c   a c b   b a c   b c a   c a b   c b a       the loop's order
+work units:     [  unit 0  ]   [  unit 1  ]   [  unit 2  ]         ranges of consecutive permutations (withParallelizationCount), taken by the threads in turn;
+                                                                    a complete arrangement in one unit stops the units after it
+```
 
 The parallel packager searches a box item order, or box items with container priorities, on one thread, as the permutations
 cannot be split between threads. For box item groups without a box item order, it splits the orders of the groups between
 its threads (or, for a few groups with many boxes, the permutations of each order), with the same result as on one thread.
+
+```
+group orders:   [A B C] [A C B] | [B A C] [B C A] | [C A B] [C B A]     groups A, B, C
+units:              first A     |     first B     |     first C         taken by the threads in turn; within a unit, the orders one at a time
+```
 
 ## Options
 

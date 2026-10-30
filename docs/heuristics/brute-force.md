@@ -16,6 +16,14 @@ searched this way; with a box item order (`Order.CHRONOLOGICAL`), only that orde
 before it. With skipping (`Order.CHRONOLOGICAL_ALLOW_SKIPPING`), each box (or box item group) can also be skipped, and
 waits for a later container. With container priorities, they only permute the boxes within each priority.
 
+```
+orders:        a b c   a c b   b a c   b c a   c a b   c b a       every permutation of the boxes a, b, c
+
+one order:     a  in each rotation, at each free point              (the fast packager: at the best free point of the rotation)
+               └─ b  in each rotation, at each free point left
+                  └─ c  in each rotation, at each free point left   a leaf is an arrangement; the best by the result comparator wins
+```
+
 For box item groups without a box item order, the packagers also search the orders of the groups, see
 [deliveries](../deliveries.md#packager-support) and [FEATURES.md](../../FEATURES.md#packing-algorithms).
 
@@ -28,6 +36,18 @@ loop over the orders places it again for every order which starts with it. The c
 ones the packager's own search tries (`BruteForcePackager` all free points where the box fits, or the point filter's;
 `FastBruteForcePackager` the best point per rotation), on the same point calculator, so the positions are the loop's.
 
+```
+loop:   a b c   a c b   b a c   b c a   c a b   c b a     each order is placed from its first box: a is placed twice, b twice, c twice
+
+tree:            root
+             /    |    \
+            a     b     c           a node is a prefix of placed boxes, each in a rotation at a position;
+           / \   / \   / \         its children are the remaining boxes, in each rotation at each candidate position
+          b   c a   c a   b
+          |   | |   | |   |
+          c   b c   a b   a         a leaf is an arrangement: the boxes of an order, until one has no position
+```
+
 The result has the loop's value, and with `withTreeSearchAnyBest(false)` is exactly the loop's: the loop stops an order at
 its first complete path (every box which fits the load limits placed) and keeps, among the orders, the best arrangement
 by the result comparator (load volume, then weight, then boxes), the first order on ties. The tree keeps the orders
@@ -37,6 +57,20 @@ the best sub-multiset of the remaining boxes within the load limits cannot beat 
 per remaining multiset). When not all boxes fit the load limits, the largest boxes are tried first, so that a strong
 arrangement is found early; once an arrangement places all boxes the search restarts in the lexicographic order, where
 the first full arrangement ends it, as the loop ends at the first order which places all boxes.
+
+```
+orders:      a b c   a c b   b a c   b c a   c a b   c b a
+prefix a:    ^^^^^^^^^^^^^                                   the orders through a prefix are a block of the lexicographic order
+
+a b c places every box, so the loop stops that order and skips a c b, which starts with the same boxes:
+settled:     x x x   x x x   . . .   . . .   . . .   . . .   a is settled, b and c are still open
+
+b a cannot be continued (no position for a after b), so the loop skips every order which starts with b a:
+settled:     x x x   x x x   x x x   . . .   . . .   . . .   b a is settled, b c a is searched next
+
+the bound:   prefix a b, volume 12  +  best sub-multiset of the remaining {c, d} within the load limits, volume 5  =  17
+             below the best arrangement so far (18): a b is not expanded
+```
 
 The tree applies to the search which the loop makes: no box item order, no container priorities and the default result
 comparator; box item groups keep their sequence (the children of a node are the remaining boxes of the first group with
@@ -53,6 +87,12 @@ all boxes fit, and does not expand prefixes which can at most tie the best. Wher
 not place them all, this is the difference between finding the lexicographically first complete arrangement and any: on
 the Bouwkamp benchmark (squared squares) the plain packager runs 260 times faster and the fast packager 12 times.
 `withTreeSearchAnyBest(false)` gives the loop's arrangement, exactly.
+
+```
+exact:      a b c → a c b → b a c → ...     lexicographic order; ends at the first order which places all boxes
+any best:   c ... → b ... → a ...           largest box first; ends at the first arrangement which places all boxes,
+                                            and skips prefixes which can at most tie the best
+```
 
 With box load limits, removing a placement subtracts its shares from the loads below, which leaves floating-point
 residue; the searches save the loads a placement changes and restore them exactly when it is removed, so a box exactly
