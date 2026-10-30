@@ -95,7 +95,7 @@ final class BruteForceTreeSearch {
 
 	/**
 	 * @param groupEnd per type, set to the end of its group's range of types (the types of a block of the permutation, in any order: the
-	 *        permutation may be a unit's first order)
+	 *        permutation may be any order of its boxes)
 	 * @return whether the ranges of the groups ascend through the sequence of the groups, so that the orders are lexicographic over the box item
 	 *         indexes
 	 */
@@ -141,8 +141,8 @@ final class BruteForceTreeSearch {
 	}
 
 	/**
-	 * A part of a search for a thread: the orders which start with a prefix of types, placed at given candidates (or at every candidate, for a
-	 * unit of a split search), and at the level after the prefix the types of a range of the type order.
+	 * A part of a search for a thread: the whole search, or a part stolen from another thread, which is the orders which start with a prefix of
+	 * types, placed at given candidates, and at the level after the prefix the types of a range of the type order.
 	 */
 	static final class Work {
 
@@ -161,11 +161,6 @@ final class BruteForceTreeSearch {
 			this.prefixOrdinals = prefixOrdinals;
 			this.startRank = startRank;
 			this.endRank = endRank;
-		}
-
-		/** a unit of a split search: the orders which start with the prefix of types */
-		static Work unit(int[] prefix) {
-			return new Work(prefix, null, 0, Integer.MAX_VALUE);
 		}
 
 		/** @return whether this is a stolen part of another thread's search (the prefix placed at given candidates) */
@@ -260,8 +255,8 @@ final class BruteForceTreeSearch {
 	}
 
 	/**
-	 * The tables of a search, per multiset of remaining boxes and per type prefix: the units of a search split between threads, which search the
-	 * same boxes for the same container, can share them on a thread (the orders of the units are disjoint, so the settled orders add up).
+	 * The tables of a search, per multiset of remaining boxes and per type prefix: the parts of a search split between threads, which search the
+	 * same boxes for the same container, can share them on a thread (the orders of the parts are disjoint, so the settled orders add up).
 	 */
 	static final class Tables {
 
@@ -331,7 +326,7 @@ final class BruteForceTreeSearch {
 	}
 
 	/**
-	 * @param work the part of the search: the whole search, a unit of a split search, or a part stolen from another thread
+	 * @param work the part of the search: the whole search, or a part stolen from another thread
 	 * @param shared the best arrangement of the parts of a split search, for pruning, or null
 	 * @param tables a holder of the tables of a thread's parts, or of a session's searches, or null: the tables are taken from it when it holds them
 	 *        (see {@link Tables#of}), and left in it otherwise
@@ -656,7 +651,7 @@ final class BruteForceTreeSearch {
 					typeStarted[level] = false;
 					fit[level] = false;
 					typeSolved[level] = false;
-				} else if(level < forced && prefixOrdinals != null && ordinal[level] < prefixOrdinals[level]) {
+				} else if(level < forced && ordinal[level] < prefixOrdinals[level]) {
 					// a stolen part: the candidates before the one placed at this level
 					ordinal[level]++;
 				} else {
@@ -701,7 +696,7 @@ final class BruteForceTreeSearch {
 					remainingKey = multisets.add(remainingKey, t);
 					// remove the placement, and restore the free points to before it
 					candidates.unplace(level, placements[level]);
-					if(level < forced && prefixOrdinals != null) {
+					if(level < forced) {
 						// a stolen part: the one candidate of the level
 						typeAt[level] = -1;
 					} else if(settled.exact ? settled.isChildSettled(level, childRank[level], remaining, t, placedKey) : solved) {
@@ -1232,8 +1227,8 @@ final class BruteForceTreeSearch {
 	}
 
 	/**
-	 * The best arrangement of the units of a search split between threads (by its load volume, weight and boxes): a unit does not expand prefixes
-	 * which cannot beat it. Equal arrangements are not pruned, so the units' results compare as on one thread.
+	 * The best arrangement of the parts of a search split between threads (by its load volume, weight and boxes): a part does not expand prefixes
+	 * which cannot beat it. Equal arrangements are not pruned, so the parts' results compare as on one thread.
 	 */
 	static final class SharedBest {
 
@@ -1257,62 +1252,6 @@ final class BruteForceTreeSearch {
 				if(best.compareAndSet(current, candidate)) {
 					return;
 				}
-			}
-		}
-	}
-
-	/**
-	 * The prefixes of the orders which split a search between threads: the shortest prefixes (of types, keeping box item groups in sequence)
-	 * which number at least the units wanted, at most one box shorter than the orders; in lexicographic order, so that the units' results compare
-	 * in the order of the orders.
-	 */
-	static List<int[]> prefixes(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, int minUnits) {
-		int[] permutations = iterator.getPermutations();
-		int n = permutations.length;
-		int types = iterator.getBoxItemStackValues().length;
-		int[] counts = new int[types];
-		for (int value : permutations) {
-			counts[value]++;
-		}
-		// the groups' ranges of types, as in search
-		int[] groupEnd = new int[types];
-		int[] sorted = permutations.clone();
-		int start = 0;
-		for (int i = 1; i <= n; i++) {
-			if(i == n || (insertAfterCounts.length != 0 && insertAfterCounts[i] == i)) {
-				Arrays.sort(sorted, start, i);
-				int end = sorted[i - 1] + 1;
-				for (int k = start; k < i; k++) {
-					groupEnd[sorted[k]] = end;
-				}
-				start = i;
-			}
-		}
-		List<int[]> prefixes = new ArrayList<>();
-		for (int depth = 1; depth < n; depth++) {
-			prefixes.clear();
-			prefixes(counts, groupEnd, new int[depth], 0, prefixes);
-			if(prefixes.size() >= minUnits) {
-				break;
-			}
-		}
-		return prefixes;
-	}
-
-	private static void prefixes(int[] remaining, int[] groupEnd, int[] prefix, int depth, List<int[]> prefixes) {
-		if(depth == prefix.length) {
-			prefixes.add(prefix.clone());
-			return;
-		}
-		int end = remaining.length;
-		for (int t = 0; t < end; t++) {
-			if(remaining[t] > 0) {
-				// the first group with boxes remaining
-				end = groupEnd[t];
-				remaining[t]--;
-				prefix[depth] = t;
-				prefixes(remaining, groupEnd, prefix, depth + 1, prefixes);
-				remaining[t]++;
 			}
 		}
 	}

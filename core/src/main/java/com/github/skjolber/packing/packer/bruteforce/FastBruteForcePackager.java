@@ -424,7 +424,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * Pack a part of a container search on several threads (see {@link BruteForceTreeStealing}), as {@link #pack} packs all orders: on the
 	 * thread's own point calculator and placements.
 	 */
-	private BruteForceIntermediatePackagerResult packTreeUnit(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, ContainerItem containerItem, int index,
+	private BruteForceIntermediatePackagerResult packTreePart(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, ContainerItem containerItem, int index,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator,
 			IntermediatePackagerResult best, BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables,
 			BruteForceTreeSearch.StealableState state) throws PackagerInterruptedException {
@@ -526,7 +526,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 								calculators[task] = new FastPointCalculator3DStack(length + 1);
 								placements[task] = getPlacements(length, load);
 							}
-							return packTreeUnit(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, threadTables,
+							return packTreePart(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, threadTables,
 									state);
 						}, null, task -> task);
 			}

@@ -17,22 +17,19 @@ import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
 
 /**
- * The parallel brute force packager with the tree search (the orders split into units by their first types, searched on the threads) must return
- * results as good as the single-threaded loop over the permutations, container by container (the same boxes), and the same placements where no
- * container holds all its boxes: a complete result of any unit stops the others, so among several complete arrangements the threads' timing
- * decides, as for the permutation work units.
+ * The parallel brute force packager with the tree search (one tree on all the threads, with work stealing) must return results as good as the
+ * single-threaded loop over the permutations, container by container (the same boxes), and the same placements where no container holds all its
+ * boxes: a complete result of any thread stops the others, so among several complete arrangements the threads' timing decides, as for the
+ * permutation work units.
  */
 class ParallelBruteForceTreeSearchTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
-	/** few permutations per unit, so that every container is split between the threads: with the prefix units, or with work stealing */
+	/** few permutations per thread, so that every container is split between the threads */
 	private static ParallelBruteForcePackager parallel() {
-		return stealing ? ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true).withTreeSearchAnyBest(false).build()
-				: ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(2).withTreeSearchMinBoxes(1).withTreeSearchUnits(true).withTreeSearchAnyBest(false).build();
+		return ParallelBruteForcePackager.newBuilder().withThreads(3).withParallelizationCount(48).withTreeSearchMinBoxes(1).withTreeSearchStealing(true).withTreeSearchAnyBest(false).build();
 	}
-
-	private static boolean stealing;
 
 	@Test
 	void sameValuesWithStealingAndAnyBest() {
@@ -49,19 +46,6 @@ class ParallelBruteForceTreeSearchTest {
 		} finally {
 			loop.close();
 			tree.close();
-		}
-	}
-
-	@Test
-	void samePlacementsAsTheLoopWithStealing() {
-		stealing = true;
-		try {
-			compare(0, 60, 4, 7, false);
-			compare(1000, 1040, 7, 8, true);
-			samePlacementsWithBoxItemGroups();
-			samePlacementsWithBoxLoadLimits();
-		} finally {
-			stealing = false;
 		}
 	}
 

@@ -1407,8 +1407,8 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/**
-	 * Pack a part of a search split between threads (a unit: the orders which start with a prefix of types; or a part stolen from another
-	 * thread), as {@link #pack} packs all orders. The iterator (the thread's own) must be at the first order with the prefix (see
+	 * Pack a part of a search split between threads (the whole search, or a part stolen from another thread: the orders which start with a prefix
+	 * of types), as {@link #pack} packs all orders. The iterator (the thread's own) must be at the first order with the prefix (see
 	 * {@link BruteForceTreeSearch#firstOrder}), and tree-searchable (see {@link #isTreeSearchable}).
 	 *
 	 * @param shared the best arrangement of the parts so far, for pruning, or null
@@ -1416,7 +1416,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * @param stealable the state other threads steal work from, or null
 	 * @return the best result of the part, or an empty result; the result refers to reused state until materialized
 	 */
-	protected BruteForceIntermediatePackagerResult packTreeUnit(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+	protected BruteForceIntermediatePackagerResult packTreePart(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
 			BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables, BruteForceTreeSearch.StealableState stealable)
 			throws PackagerInterruptedException {
