@@ -514,7 +514,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
 			AbstractBoxItemPermutationRotationIterator treeIterator = (AbstractBoxItemPermutationRotationIterator)iterator;
-			if(executorService != null && threads > 1 && limit >= iterator.length() && !allItemsFit && iterator.countPermutations() > 32L * threads) {
+			if(executorService != null && threads > 1 && limit >= iterator.length() && (treeSearchAnyBest || !allItemsFit) && iterator.countPermutations() > 32L * threads) {
 				// on the threads, each on its own point calculator and placements
 				int length = iterator.length();
 				boolean load = loadPlacementUtility != null;

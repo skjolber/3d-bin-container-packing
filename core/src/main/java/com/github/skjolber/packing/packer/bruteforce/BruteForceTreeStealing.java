@@ -22,9 +22,9 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotati
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 
 /**
- * The search of a container's orders as one tree on several threads, with work stealing: the first thread searches the whole tree, the others
- * steal the shallowest subtree a thread has still to search (see {@link BruteForceTreeSearch.StealableState}), and so on until no thread has
- * work. The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator,
+ * The search of a container's orders as one tree on several threads, with work stealing: the calling thread searches the whole tree, and once it
+ * has searched a while the others steal the shallowest subtree a thread has still to search (see {@link BruteForceTreeSearch.StealableState}), and
+ * so on until no thread has work. The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator,
  * then by their orders. The packagers supply the search of a part on a thread's own state ({@link Part}).
  */
 final class BruteForceTreeStealing {
@@ -48,6 +48,7 @@ final class BruteForceTreeStealing {
 	 * @param holders per task, a holder of the tables of the thread's parts, kept over searches (see {@link BruteForceTreeSearch.Tables#of}), or null
 	 * @param wrap wraps a thread's task, for example to set a thread priority, or the identity
 	 */
+	@SuppressWarnings("unchecked")
 	static BruteForceIntermediatePackagerResult search(ExecutorService executorService, int tasks, AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts,
 			PackagerInterruptSupplier sourceInterrupt, int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate,
 			IntermediatePackagerResultComparator comparator, Part part, BruteForceTreeSearch.Tables[][] holders, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap)
@@ -68,93 +69,119 @@ final class BruteForceTreeStealing {
 		BruteForceTreeSearch.SharedBest shared = new BruteForceTreeSearch.SharedBest();
 		PackagerInterruptSupplier interrupt = () -> failed.get() || complete.get() || sourceInterrupt.getAsBoolean();
 
-		ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
-		List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(tasks);
-		for (int j = 0; j < tasks; j++) {
-			int task = j;
-			BruteForceTreeSearch.StealableState state = states[j];
-			futures.add(executorCompletionService.submit(wrap.apply(() -> {
-				AbstractBoxItemPermutationRotationIterator threadIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
-						: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
-				BruteForceTreeSearch.Tables[] tables = holders != null ? holders[task] : new BruteForceTreeSearch.Tables[1];
-				BruteForceIntermediatePackagerResult best = null;
-				BruteForceTreeSearch.Work work = task == 0 ? BruteForceTreeSearch.Work.ROOT : null;
-				while (true) {
-					if(work == null) {
-						if(interrupt.getAsBoolean()) {
-							break;
-						}
-						// steal from the thread with the shallowest work, or wait for one to have some
-						work = steal(states, state, counts, groupEnd, active);
-						if(work == null) {
-							if(active.get() == 0) {
-								break;
-							}
-							LockSupport.parkNanos(50_000L);
-							continue;
-						}
-					}
-					int[] order = BruteForceTreeSearch.firstOrder(threadIterator, work.prefixTypes);
-					if(threadIterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
-						defaultIterator.setPermutation(order);
-					} else {
-						((DefaultBoxItemGroupPermutationRotationIterator)threadIterator).setPermutation(order);
-					}
-					try {
-						BruteForceIntermediatePackagerResult result = part.search(task, threadIterator, interrupt, work, shared, tables, state);
-						if(truncate != null) {
-							result = truncate.apply(result);
-						}
-						if(result != null && !result.isEmpty() && (best == null || compare(comparator, best, result) < 0)) {
-							best = result;
-						}
-						if(result != null && result.getBoxCount() >= completeBoxCount) {
-							complete.set(true);
-						}
-					} catch (PackagerInterruptedException e) {
-						if(!complete.get()) {
-							throw e;
-						}
-						// stopped: another thread is complete
-					} finally {
-						synchronized (state.lock) {
-							state.active = false;
-							state.depth = 0;
-						}
-						active.decrementAndGet();
-					}
-					work = null;
+		// the whole tree on the calling thread; the thieves on the executor service, once the search has gone on for a while (see
+		// StealableState.STEAL_AFTER): a short search, as of a container whose first arrangements place every box, runs alone, without the
+		// executor service's hand-off
+		List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(0);
+		ExecutorCompletionService<BruteForceIntermediatePackagerResult>[] completion = new ExecutorCompletionService[1];
+		if(tasks > 1) {
+			states[0].thieves = () -> {
+				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
+				completion[0] = executorCompletionService;
+				for (int j = 1; j < tasks; j++) {
+					int task = j;
+					futures.add(executorCompletionService.submit(wrap.apply(() -> run(task, null, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate,
+							comparator, completeBoxCount, part))));
 				}
-				return best;
-			})));
+			};
 		}
 		BruteForceIntermediatePackagerResult best = null;
 		try {
-			for (int j = 0; j < futures.size(); j++) {
-				try {
-					BruteForceIntermediatePackagerResult result = executorCompletionService.take().get();
-					if(result != null && (best == null || compare(comparator, best, result) < 0)) {
-						best = result;
-					}
-				} catch (ExecutionException e) {
-					failed.set(true);
-					Throwable cause = e.getCause();
-					if(cause instanceof PackagerInterruptedException) {
-						throw (PackagerInterruptedException)cause;
-					}
-					throw new PackagerException(cause);
-				} catch (InterruptedException e) {
-					failed.set(true);
-					throw new PackagerInterruptedException();
-				}
-			}
+			best = run(0, BruteForceTreeSearch.Work.ROOT, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate, comparator, completeBoxCount, part);
+		} catch (RuntimeException | Error e) {
+			failed.set(true);
+			throw e;
 		} finally {
-			for (Future<BruteForceIntermediatePackagerResult> future : futures) {
-				future.cancel(true);
+			// the thieves are started by the calling thread only, so the futures are all there
+			try {
+				for (int j = 0; j < futures.size(); j++) {
+					try {
+						BruteForceIntermediatePackagerResult result = completion[0].take().get();
+						if(result != null && (best == null || compare(comparator, best, result) < 0)) {
+							best = result;
+						}
+					} catch (ExecutionException e) {
+						failed.set(true);
+						Throwable cause = e.getCause();
+						if(cause instanceof PackagerInterruptedException) {
+							throw (PackagerInterruptedException)cause;
+						}
+						throw new PackagerException(cause);
+					} catch (InterruptedException e) {
+						failed.set(true);
+						throw new PackagerInterruptedException();
+					}
+				}
+			} finally {
+				for (Future<BruteForceIntermediatePackagerResult> future : futures) {
+					future.cancel(true);
+				}
 			}
 		}
 		if(sourceInterrupt.getAsBoolean()) {
 			throw new PackagerInterruptedException();
+		}
+		return best;
+	}
+
+	/**
+	 * A thread's search: its first part (the whole tree for the calling thread, none for a thief), then the parts it steals.
+	 */
+	private static BruteForceIntermediatePackagerResult run(int task, BruteForceTreeSearch.Work first, AbstractBoxItemPermutationRotationIterator iterator,
+			BruteForceTreeSearch.Tables[][] holders, BruteForceTreeSearch.StealableState[] states, int[] counts, int[] groupEnd, AtomicInteger active, PackagerInterruptSupplier interrupt,
+			AtomicBoolean complete, BruteForceTreeSearch.SharedBest shared, UnaryOperator<BruteForceIntermediatePackagerResult> truncate, IntermediatePackagerResultComparator comparator,
+			int completeBoxCount, Part part) throws PackagerInterruptedException {
+		BruteForceTreeSearch.StealableState state = states[task];
+		AbstractBoxItemPermutationRotationIterator threadIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
+				: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
+		BruteForceTreeSearch.Tables[] tables = holders != null ? holders[task] : new BruteForceTreeSearch.Tables[1];
+		BruteForceIntermediatePackagerResult best = null;
+		BruteForceTreeSearch.Work work = first;
+		while (true) {
+			if(work == null) {
+				if(interrupt.getAsBoolean()) {
+					break;
+				}
+				// steal from the thread with the shallowest work, or wait for one to have some
+				work = steal(states, state, counts, groupEnd, active);
+				if(work == null) {
+					if(active.get() == 0) {
+						break;
+					}
+					LockSupport.parkNanos(50_000L);
+					continue;
+				}
+			}
+			int[] order = BruteForceTreeSearch.firstOrder(threadIterator, work.prefixTypes);
+			if(threadIterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator) {
+				defaultIterator.setPermutation(order);
+			} else {
+				((DefaultBoxItemGroupPermutationRotationIterator)threadIterator).setPermutation(order);
+			}
+			try {
+				BruteForceIntermediatePackagerResult result = part.search(task, threadIterator, interrupt, work, shared, tables, state);
+				if(truncate != null) {
+					result = truncate.apply(result);
+				}
+				if(result != null && !result.isEmpty() && (best == null || compare(comparator, best, result) < 0)) {
+					best = result;
+				}
+				if(result != null && result.getBoxCount() >= completeBoxCount) {
+					complete.set(true);
+				}
+			} catch (PackagerInterruptedException e) {
+				if(!complete.get()) {
+					throw e;
+				}
+				// stopped: another thread is complete
+			} finally {
+				synchronized (state.lock) {
+					state.active = false;
+					state.depth = 0;
+				}
+				active.decrementAndGet();
+			}
+			work = null;
 		}
 		return best;
 	}

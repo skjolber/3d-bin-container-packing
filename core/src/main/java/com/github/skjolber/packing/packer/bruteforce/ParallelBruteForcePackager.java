@@ -809,9 +809,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
 				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)
-						&& !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight())) {
-					// when all boxes fit, the bound prunes nothing and the first complete arrangement found wins: the permutation work units find one
-					// sooner, or the tree on one thread with any arrangement of the best value (below)
+						&& (treeSearchAnyBest || !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight()))) {
+					// when all boxes fit the load limits and the loop's arrangement is wanted, the bound prunes nothing and the first complete arrangement
+					// wins: the permutation work units find one sooner. Otherwise the tree, with the other threads stealing from it once it has searched
+					// a while (a short search, where the first arrangements place every box, runs alone)
 					iterators[i].reset();
 					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, iterators[i].length(), null);
 				}
@@ -1342,7 +1343,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
 				int[] insertAfterCounts = getInsertAfterCounts(iterator);
 				if(treeSearchStealing && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)
-						&& !canPackAll(iterator, getContainerItem(containerIndex).getContainer().getMaxLoadVolume(), getContainerItem(containerIndex).getContainer().getMaxLoadWeight())) {
+						&& (treeSearchAnyBest || !canPackAll(iterator, getContainerItem(containerIndex).getContainer().getMaxLoadVolume(), getContainerItem(containerIndex).getContainer().getMaxLoadWeight()))) {
 					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
 					iterator.reset();
 					return packTreeStealing(workers, containerIndex, getContainerItem(containerIndex), iterator, insertAfterCounts, best, sourceInterrupt,

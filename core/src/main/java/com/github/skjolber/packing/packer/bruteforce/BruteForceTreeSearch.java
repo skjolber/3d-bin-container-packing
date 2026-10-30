@@ -184,6 +184,12 @@ final class BruteForceTreeSearch {
 
 		/** the levels at which work is stolen: the subtrees below are small */
 		static final int STEAL_DEPTH = 6;
+		/** the nodes a part searches before the thieves take from it: a short search (all boxes fit, and the first arrangements place them) runs alone */
+		static final int STEAL_AFTER = 4096;
+		/** the nodes of the part searched so far, published every so often */
+		volatile int nodes;
+		/** starts the thieves when the part has searched {@link #STEAL_AFTER} nodes, or null */
+		Runnable thieves;
 
 		final Object lock = new Object();
 		/** the type order of the search, for the ranks */
@@ -207,8 +213,8 @@ final class BruteForceTreeSearch {
 		 * @return the types after the current one at the shallowest level with any, as work for the thief, or null
 		 */
 		Work steal(int[] counts, int[] groupEnd, java.util.concurrent.atomic.AtomicInteger active) {
-			if(depth <= prefixLength) {
-				// nothing to steal, without the lock
+			if(nodes < STEAL_AFTER || depth <= prefixLength) {
+				// too early, or nothing to steal: without the lock
 				return null;
 			}
 			synchronized (lock) {
@@ -445,6 +451,7 @@ final class BruteForceTreeSearch {
 			synchronized (stealable.lock) {
 				stealable.typeOrder = typeOrder;
 				stealable.depth = 0;
+				stealable.nodes = 0;
 				stealable.prefixLength = forced;
 				stealable.active = true;
 			}
@@ -453,12 +460,20 @@ final class BruteForceTreeSearch {
 		candidates.start(holder, containerItem, n);
 		candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
 		int level = 0;
+		int nodes = 0;
 		boolean descend = true;
 		while (level >= 0) {
 			if(descend) {
 				descend = false;
 				if(interrupt.getAsBoolean()) {
 					throw new PackagerInterruptedException();
+				}
+				if(stealable != null && (++nodes & 255) == 0) {
+					stealable.nodes = nodes;
+					if(nodes == StealableState.STEAL_AFTER && stealable.thieves != null) {
+						stealable.thieves.run();
+						stealable.thieves = null;
+					}
 				}
 				boolean expand = level < depthLimit;
 				if(expand) {
