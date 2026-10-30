@@ -79,10 +79,13 @@ public final class BruteForceTreeStealing {
 			states[0].thieves = () -> {
 				ExecutorCompletionService<BruteForceIntermediatePackagerResult> executorCompletionService = new ExecutorCompletionService<>(executorService);
 				completion[0] = executorCompletionService;
+				// an executor service which runs a task on the submitting thread (as a saturated pool with a caller-runs policy) would run the thief
+				// inside the root search's submit: it could never finish, as the root part stays active; such a thief leaves its work to the others
+				Thread caller = Thread.currentThread();
 				for (int j = 1; j < tasks; j++) {
 					int task = j;
-					futures.add(executorCompletionService.submit(wrap.apply(() -> run(task, null, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate,
-							comparator, completeBoxCount, part))));
+					futures.add(executorCompletionService.submit(wrap.apply(() -> Thread.currentThread() == caller ? null
+							: run(task, null, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate, comparator, completeBoxCount, part))));
 				}
 			};
 		}

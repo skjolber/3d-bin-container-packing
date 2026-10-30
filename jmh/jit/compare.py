@@ -22,10 +22,12 @@ def read_results(paths):
 			key = (result["benchmark"], json.dumps(result.get("params", {}), sort_keys=True), metric.get("scoreUnit", ""))
 			if not metric.get("rawData"):
 				raise ValueError(f"{path}: {result['benchmark']} has no rawData; rerun with JMH JSON output")
-			values = list(flatten(metric["rawData"]))
-			if not values:
-				raise ValueError(f"{path}: no iteration samples for {result['benchmark']}")
-			groups.setdefault(key, []).append((result, values))
+			# the outer dimension of rawData is the fork: one entry per fork, from a file of one fork or of several
+			for fork in metric["rawData"]:
+				values = list(flatten(fork))
+				if not values:
+					raise ValueError(f"{path}: no iteration samples for {result['benchmark']}")
+				groups.setdefault(key, []).append((result, values))
 	return groups
 
 

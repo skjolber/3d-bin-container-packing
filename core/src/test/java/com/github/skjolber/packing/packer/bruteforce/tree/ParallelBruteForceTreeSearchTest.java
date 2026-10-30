@@ -4,6 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.Test;
 
@@ -115,6 +118,34 @@ class ParallelBruteForceTreeSearchTest {
 	@Test
 	void samePlacementsOnTightProblems() {
 		compare(1000, 1040, 7, 8, true);
+	}
+
+	/**
+	 * An executor service which runs the tasks it cannot queue on the submitting thread (a saturated pool with a caller-runs policy) runs a thief
+	 * inside the root search: it must leave its work to the others rather than wait for the root part, which cannot finish before it does.
+	 */
+	@Test
+	void samePlacementsWithAnExecutorServiceRunningTasksInline() {
+		ThreadPoolExecutor executorService = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.SECONDS, new SynchronousQueue<>(), new ThreadPoolExecutor.CallerRunsPolicy());
+		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		// three tasks: two thieves on a pool of one thread, so that the second runs on the calling thread
+		ParallelBruteForcePackager tree = ParallelBruteForcePackager.newBuilder().withExecutorService(executorService).withParallelizationCount(48).withTreeSearchMinBoxes(1)
+				.withTreeSearchStealing(true).withTreeSearchAnyBest(false).build();
+		try {
+			for (int seed = 1000; seed < 1010; seed++) {
+				Instance instance = TreeTestInstances.tight(seed, 7, 8);
+				List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
+				PackagerResult expected = pack(loop, containerItems, instance.copyBoxItems());
+				PackagerResult actual = tree.newResultBuilder().withContainerItems(containerItems).withBoxItems(instance.copyBoxItems()).withMaxContainerCount(8)
+						.withInterruptDuration(10_000L).build();
+				assertThat(actual.isSuccess()).as("seed " + seed + " within the deadline").isTrue();
+				assertSame(expected, actual, "seed " + seed, instance.boxes);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+			executorService.shutdownNow();
+		}
 	}
 
 	@Test
