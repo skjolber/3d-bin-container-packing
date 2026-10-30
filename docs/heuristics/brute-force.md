@@ -75,7 +75,7 @@ The algorithm tries to skip combinations which will obviously not yield a (bette
 ## Variants
 
  * `BruteForcePackager`: all box orders, rotations and placement positions. A `BruteForcePointIteratorFilter` can rank fitting points and use a different point limit at each placement step. Set it with `withPointFilter(..)`.
- * `FastBruteForcePackager`: each rotation at its best point only. The point is chosen by a `FastBruteForceBoxStackValuePointComparator` (`withPointComparator(..)`). With `withThreads(..)` (or `withExecutorService(..)`), a container with many orders whose boxes do not all fit is searched as one tree on the threads with work stealing, as the [parallel brute-force packager](parallel-brute-force.md) does; a complete result stops the other threads.
+ * `FastBruteForcePackager`: each rotation at its best point only. The point is chosen by a `FastBruteForceBoxStackValuePointComparator` (`withPointComparator(..)`). With `withThreads(..)` (or `withExecutorService(..)`), a container with many orders is searched as one tree with work stealing, as the [parallel brute-force packager](parallel-brute-force.md) does: on the calling thread, which the threads join once the search has gone on for a while; a complete result stops the other threads.
  * `ParallelBruteForcePackager`: the same search on several threads, see [parallel brute-force](parallel-brute-force.md).
 
 All of them search the box orders as a [tree](#tree-search) by default (`withTreeSearch(..)`, `withTreeSearchMinBoxes(..)`), can require full support (`withRequireFullSupport(true)`, see [support](../support.md)), enforce box load limits, and reject manifest and point controls (see [FEATURES.md](../../FEATURES.md#constraints-and-controls)).
