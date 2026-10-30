@@ -135,11 +135,11 @@ class BruteForceTreeSearchTest {
 	@Test
 	void samePlacementsOnTightProblemsWithoutSettledOrders() {
 		// too many prefixes to keep the settled orders: the fallback settles the other candidates of a box only when every order through one settled
-		BruteForceTreeSearch.SettledOrders.maxPrefixes = 0;
+		BruteForceTreeSettledOrders.maxPrefixes = 0;
 		try {
 			compare(1000, 1040, 7, 8, true, b -> b);
 		} finally {
-			BruteForceTreeSearch.SettledOrders.maxPrefixes = BruteForceTreeSearch.SettledOrders.MAX_PREFIXES;
+			BruteForceTreeSettledOrders.maxPrefixes = BruteForceTreeSettledOrders.MAX_PREFIXES;
 		}
 	}
 

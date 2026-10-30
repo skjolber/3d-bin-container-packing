@@ -23,7 +23,7 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIte
 
 /**
  * The search of a container's orders as one tree on several threads, with work stealing: the calling thread searches the whole tree, and once it
- * has searched a while the others steal the shallowest subtree a thread has still to search (see {@link BruteForceTreeSearch.StealableState}), and
+ * has searched a while the others steal the shallowest subtree a thread has still to search (see {@link BruteForceTreeStealableState}), and
  * so on until no thread has work. The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator,
  * then by their orders. The packagers supply the search of a part on a thread's own state ({@link Part}).
  */
@@ -33,7 +33,7 @@ final class BruteForceTreeStealing {
 	interface Part {
 
 		BruteForceIntermediatePackagerResult search(int task, AbstractBoxItemPermutationRotationIterator threadIterator, PackagerInterruptSupplier interrupt,
-				BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables, BruteForceTreeSearch.StealableState state)
+				BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState state)
 				throws PackagerInterruptedException;
 	}
 
@@ -45,28 +45,28 @@ final class BruteForceTreeStealing {
 	 * @param iterator the container's iterator, which the threads fork
 	 * @param completeBoxCount the number of boxes of a result which no other result can beat
 	 * @param truncate the truncation of a result, or null
-	 * @param holders per task, a holder of the tables of the thread's parts, kept over searches (see {@link BruteForceTreeSearch.Tables#of}), or null
+	 * @param holders per task, a holder of the tables of the thread's parts, kept over searches (see {@link BruteForceTreeTables#of}), or null
 	 * @param wrap wraps a thread's task, for example to set a thread priority, or the identity
 	 */
 	@SuppressWarnings("unchecked")
 	static BruteForceIntermediatePackagerResult search(ExecutorService executorService, int tasks, AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts,
 			PackagerInterruptSupplier sourceInterrupt, int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate,
-			IntermediatePackagerResultComparator comparator, Part part, BruteForceTreeSearch.Tables[][] holders, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap)
+			IntermediatePackagerResultComparator comparator, Part part, BruteForceTreeTables[][] holders, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap)
 			throws PackagerInterruptedException {
 		int[] counts = new int[iterator.getBoxItemStackValues().length];
 		for (int value : iterator.getPermutations()) {
 			counts[value]++;
 		}
 		int[] groupEnd = BruteForceTreeSearch.groupEnds(iterator.getPermutations(), insertAfterCounts, counts.length);
-		BruteForceTreeSearch.StealableState[] states = new BruteForceTreeSearch.StealableState[tasks];
+		BruteForceTreeStealableState[] states = new BruteForceTreeStealableState[tasks];
 		for (int j = 0; j < tasks; j++) {
-			states[j] = new BruteForceTreeSearch.StealableState();
+			states[j] = new BruteForceTreeStealableState();
 		}
 		// the parts being searched, or stolen and about to be: the search is done when there are none
 		AtomicInteger active = new AtomicInteger(1);
 		AtomicBoolean complete = new AtomicBoolean();
 		AtomicBoolean failed = new AtomicBoolean();
-		BruteForceTreeSearch.SharedBest shared = new BruteForceTreeSearch.SharedBest();
+		BruteForceTreeSharedBest shared = new BruteForceTreeSharedBest();
 		PackagerInterruptSupplier interrupt = () -> failed.get() || complete.get() || sourceInterrupt.getAsBoolean();
 
 		// the whole tree on the calling thread; the thieves on the executor service, once the search has gone on for a while (see
@@ -87,7 +87,7 @@ final class BruteForceTreeStealing {
 		}
 		BruteForceIntermediatePackagerResult best = null;
 		try {
-			best = run(0, BruteForceTreeSearch.Work.ROOT, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate, comparator, completeBoxCount, part);
+			best = run(0, BruteForceTreeWork.ROOT, iterator, holders, states, counts, groupEnd, active, interrupt, complete, shared, truncate, comparator, completeBoxCount, part);
 		} catch (RuntimeException | Error e) {
 			failed.set(true);
 			throw e;
@@ -127,16 +127,16 @@ final class BruteForceTreeStealing {
 	/**
 	 * A thread's search: its first part (the whole tree for the calling thread, none for a thief), then the parts it steals.
 	 */
-	private static BruteForceIntermediatePackagerResult run(int task, BruteForceTreeSearch.Work first, AbstractBoxItemPermutationRotationIterator iterator,
-			BruteForceTreeSearch.Tables[][] holders, BruteForceTreeSearch.StealableState[] states, int[] counts, int[] groupEnd, AtomicInteger active, PackagerInterruptSupplier interrupt,
-			AtomicBoolean complete, BruteForceTreeSearch.SharedBest shared, UnaryOperator<BruteForceIntermediatePackagerResult> truncate, IntermediatePackagerResultComparator comparator,
+	private static BruteForceIntermediatePackagerResult run(int task, BruteForceTreeWork first, AbstractBoxItemPermutationRotationIterator iterator,
+			BruteForceTreeTables[][] holders, BruteForceTreeStealableState[] states, int[] counts, int[] groupEnd, AtomicInteger active, PackagerInterruptSupplier interrupt,
+			AtomicBoolean complete, BruteForceTreeSharedBest shared, UnaryOperator<BruteForceIntermediatePackagerResult> truncate, IntermediatePackagerResultComparator comparator,
 			int completeBoxCount, Part part) throws PackagerInterruptedException {
-		BruteForceTreeSearch.StealableState state = states[task];
+		BruteForceTreeStealableState state = states[task];
 		AbstractBoxItemPermutationRotationIterator threadIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
 				: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
-		BruteForceTreeSearch.Tables[] tables = holders != null ? holders[task] : new BruteForceTreeSearch.Tables[1];
+		BruteForceTreeTables[] tables = holders != null ? holders[task] : new BruteForceTreeTables[1];
 		BruteForceIntermediatePackagerResult best = null;
-		BruteForceTreeSearch.Work work = first;
+		BruteForceTreeWork work = first;
 		while (true) {
 			if(work == null) {
 				if(interrupt.getAsBoolean()) {
@@ -187,13 +187,13 @@ final class BruteForceTreeStealing {
 	}
 
 	/** steal work from another thread: the shallowest work of any (the thief's own state is not active) */
-	private static BruteForceTreeSearch.Work steal(BruteForceTreeSearch.StealableState[] states, BruteForceTreeSearch.StealableState own, int[] counts, int[] groupEnd,
+	private static BruteForceTreeWork steal(BruteForceTreeStealableState[] states, BruteForceTreeStealableState own, int[] counts, int[] groupEnd,
 			AtomicInteger active) {
-		for (BruteForceTreeSearch.StealableState state : states) {
+		for (BruteForceTreeStealableState state : states) {
 			if(state == own) {
 				continue;
 			}
-			BruteForceTreeSearch.Work work = state.steal(counts, groupEnd, active);
+			BruteForceTreeWork work = state.steal(counts, groupEnd, active);
 			if(work != null) {
 				return work;
 			}

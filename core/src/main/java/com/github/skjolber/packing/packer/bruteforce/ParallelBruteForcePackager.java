@@ -393,7 +393,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 
 	/**
 	 * Search the orders of a container as one tree on the threads, with work stealing: the first thread searches the whole tree, the others steal
-	 * the shallowest subtree a thread has still to search (see {@link BruteForceTreeSearch.StealableState}), and so on until no thread has work.
+	 * the shallowest subtree a thread has still to search (see {@link BruteForceTreeStealableState}), and so on until no thread has work.
 	 * The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator, then
 	 * by their orders.
 	 *
@@ -406,7 +406,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate) throws PackagerInterruptedException {
 		// the parallelization count is 16 per thread by default
 		int tasks = Math.max(1, Math.min(workers.size(), parallelizationCount / 16));
-		BruteForceTreeSearch.Tables[][] holders = new BruteForceTreeSearch.Tables[tasks][];
+		BruteForceTreeTables[][] holders = new BruteForceTreeTables[tasks][];
 		for (int j = 0; j < tasks; j++) {
 			holders[j] = workers.get(j).tables;
 		}
@@ -443,7 +443,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		/** Whether the boxes have load limits: then the placements track loads */
 		private final boolean load;
 		/** the tree search's tables of the worker's parts, kept over the searches */
-		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public BruteForceWorker(int placementCapacity, int placementCount, int maxIteratorLength, boolean load) {
 			this.load = load;
@@ -892,7 +892,7 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private class ParallelGroupSession extends AbstractBruteForceBoxItemGroupSession {
 
 		/** the tree search's tables of the searches on the calling thread, reused over the group orders */
-		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		private Workers workers; // per work unit
 		private ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container

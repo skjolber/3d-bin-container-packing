@@ -278,7 +278,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		private final FastPointCalculator3DStack pointCalculator;
 		/** the tree search's tables, reused over the group orders */
-		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public FastBruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
@@ -426,8 +426,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 */
 	private BruteForceIntermediatePackagerResult packTreePart(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, ContainerItem containerItem, int index,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator,
-			IntermediatePackagerResult best, BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables,
-			BruteForceTreeSearch.StealableState state) throws PackagerInterruptedException {
+			IntermediatePackagerResult best, BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables,
+			BruteForceTreeStealableState state) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
@@ -484,7 +484,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
-			int limit, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
+			int limit, BruteForceTreeTables[] tables) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
@@ -531,7 +531,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 						}, null, task -> task);
 			}
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, treeIterator, interrupt, pointComparator, limit, holder, stack,
-					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeSearch.Work.ROOT, null, tables, null);
+					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeWork.ROOT, null, tables, null);
 		}
 		permutations:
 		do {
@@ -583,7 +583,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	private BruteForceIntermediatePackagerResult packTree(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int containerIndex, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, int limit,
 			Container holder, Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] insertAfterCounts, PrefixBest prefix,
-			BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables, BruteForceTreeSearch.StealableState state)
+			BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState state)
 			throws PackagerInterruptedException {
 		int length = iterator.length();
 		if(allItemsFit && !work.isStolen()) {
@@ -602,7 +602,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				return result;
 			}
 		}
-		BruteForceTreeSearch.FastCandidates candidates = new BruteForceTreeSearch.FastCandidates(this, pointCalculator, pointComparator, requireFullSupport, checkExtraction, utility, holder,
+		BruteForceTreeFastCandidates candidates = new BruteForceTreeFastCandidates(this, pointCalculator, pointComparator, requireFullSupport, checkExtraction, utility, holder,
 				length);
 		candidates.anyBest = treeSearchAnyBest;
 		return BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume,

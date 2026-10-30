@@ -540,7 +540,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 
 		protected final PointCalculator3DStack pointCalculator;
 		/** the tree search's tables, reused over the group orders */
-		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,

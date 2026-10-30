@@ -458,7 +458,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 */
 	public BruteForceIntermediatePackagerResult pack(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int index,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
-			int limit, BruteForceTreeSearch.Tables[] tables) throws PackagerInterruptedException {
+			int limit, BruteForceTreeTables[] tables) throws PackagerInterruptedException {
 
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		
@@ -490,7 +490,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		boolean checkExtraction = hasExtractionOrders(iterator);
 		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, index, (AbstractBoxItemPermutationRotationIterator)iterator, interrupt, pointFilter, limit,
-					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, BruteForceTreeSearch.Work.ROOT, null, tables, null);
+					holder, stack, utility, allItemsFit, minLoadVolume, checkExtraction, prefixRotations, insertAfterCounts, BruteForceTreeWork.ROOT, null, tables, null);
 		}
 		// permutations
 		do {
@@ -1373,7 +1373,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	private BruteForceIntermediatePackagerResult packTree(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, int limit, Container holder,
 			Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] prefixRotations, int[] insertAfterCounts,
-			BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables, BruteForceTreeSearch.StealableState stealable)
+			BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState stealable)
 			throws PackagerInterruptedException {
 		int length = iterator.length();
 		if(allItemsFit && !work.isStolen()) {
@@ -1397,7 +1397,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 				return result;
 			}
 		}
-		BruteForceTreeSearch.PointCandidates candidates = new BruteForceTreeSearch.PointCandidates(pointCalculator, pointFilter, requireFullSupport, checkExtraction, utility, holder);
+		BruteForceTreePointCandidates candidates = new BruteForceTreePointCandidates(pointCalculator, pointFilter, requireFullSupport, checkExtraction, utility, holder);
 		candidates.anyBest = treeSearchAnyBest;
 		BruteForceIntermediatePackagerResult result = BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, index, iterator, interrupt, holder, limit,
 				minLoadVolume, insertAfterCounts, work, shared, tables, stealable);
@@ -1412,13 +1412,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * {@link BruteForceTreeSearch#firstOrder}), and tree-searchable (see {@link #isTreeSearchable}).
 	 *
 	 * @param shared the best arrangement of the parts so far, for pruning, or null
-	 * @param tables a holder of the tables of the thread's parts for the container (see {@link BruteForceTreeSearch.Tables}), or null
+	 * @param tables a holder of the tables of the thread's parts for the container (see {@link BruteForceTreeTables}), or null
 	 * @param stealable the state other threads steal work from, or null
 	 * @return the best result of the part, or an empty result; the result refers to reused state until materialized
 	 */
 	protected BruteForceIntermediatePackagerResult packTreePart(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int index, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, BruteForcePointIteratorFilter pointFilter, IntermediatePackagerResult best,
-			BruteForceTreeSearch.Work work, BruteForceTreeSearch.SharedBest shared, BruteForceTreeSearch.Tables[] tables, BruteForceTreeSearch.StealableState stealable)
+			BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState stealable)
 			throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
