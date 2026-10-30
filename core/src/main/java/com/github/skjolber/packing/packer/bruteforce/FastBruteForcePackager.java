@@ -528,7 +528,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 							}
 							return packTreeUnit(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, threadTables,
 									state);
-						}, task -> task);
+						}, null, task -> task);
 			}
 			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, treeIterator, interrupt, pointComparator, limit, holder, stack,
 					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeSearch.Work.ROOT, null, tables, null);

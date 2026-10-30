@@ -45,11 +45,13 @@ final class BruteForceTreeStealing {
 	 * @param iterator the container's iterator, which the threads fork
 	 * @param completeBoxCount the number of boxes of a result which no other result can beat
 	 * @param truncate the truncation of a result, or null
+	 * @param holders per task, a holder of the tables of the thread's parts, kept over searches (see {@link BruteForceTreeSearch.Tables#of}), or null
 	 * @param wrap wraps a thread's task, for example to set a thread priority, or the identity
 	 */
 	static BruteForceIntermediatePackagerResult search(ExecutorService executorService, int tasks, AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts,
 			PackagerInterruptSupplier sourceInterrupt, int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate,
-			IntermediatePackagerResultComparator comparator, Part part, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap) throws PackagerInterruptedException {
+			IntermediatePackagerResultComparator comparator, Part part, BruteForceTreeSearch.Tables[][] holders, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap)
+			throws PackagerInterruptedException {
 		int[] counts = new int[iterator.getBoxItemStackValues().length];
 		for (int value : iterator.getPermutations()) {
 			counts[value]++;
@@ -74,7 +76,7 @@ final class BruteForceTreeStealing {
 			futures.add(executorCompletionService.submit(wrap.apply(() -> {
 				AbstractBoxItemPermutationRotationIterator threadIterator = iterator instanceof DefaultBoxItemPermutationRotationIterator defaultIterator ? defaultIterator.fork()
 						: ((DefaultBoxItemGroupPermutationRotationIterator)iterator).fork();
-				BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
+				BruteForceTreeSearch.Tables[] tables = holders != null ? holders[task] : new BruteForceTreeSearch.Tables[1];
 				BruteForceIntermediatePackagerResult best = null;
 				BruteForceTreeSearch.Work work = task == 0 ? BruteForceTreeSearch.Work.ROOT : null;
 				while (true) {

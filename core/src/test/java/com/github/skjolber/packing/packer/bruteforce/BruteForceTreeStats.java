@@ -38,13 +38,18 @@ public class BruteForceTreeStats {
 			start = System.nanoTime();
 			PackagerResult t = mode.equals("loop") ? null : pack(tree, containerItems, instance.copyBoxItems());
 			long treeNanos = System.nanoTime() - start;
+			if(l != null) {
+				loopTotal += loopNanos;
+			}
+			if(t != null) {
+				treeTotal += treeNanos;
+			}
 			if(l == null || t == null) {
 				System.out.println("seed " + seed + " boxes " + instance.boxes + ": loop " + loopNanos / 1_000_000 + " ms, tree " + treeNanos / 1_000_000 + " ms");
 				continue;
 			}
-			loopTotal += loopNanos;
-			treeTotal += treeNanos;
-			String same = BruteForceTreeSearchTest.describe(l).equals(BruteForceTreeSearchTest.describe(t)) ? "same" : "MISMATCH";
+			String same = anyBest ? BruteForceTreeSearchTest.describeValues(l).equals(BruteForceTreeSearchTest.describeValues(t)) ? "same values" : "VALUE MISMATCH"
+					: BruteForceTreeSearchTest.describe(l).equals(BruteForceTreeSearchTest.describe(t)) ? "same" : "MISMATCH";
 			System.out.println("seed " + seed + " boxes " + instance.boxes + ": loop " + loopNanos / 1_000_000 + " ms, tree " + treeNanos / 1_000_000 + " ms, " + same);
 		}
 		System.out.println("total: loop " + loopTotal / 1_000_000 + " ms, tree " + treeTotal / 1_000_000 + " ms");

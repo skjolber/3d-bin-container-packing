@@ -271,6 +271,8 @@ final class BruteForceTreeSearch {
 		private long[] volumes;
 		private long[] weights;
 		private long[] minAreas;
+		/** the split search the tables were last used by, or null */
+		private SharedBest sharedBest;
 
 		private Tables(Multisets multisets, Bound bounds, SettledOrders settled, int[] counts, int[] groupEnd, int n, long maxLoadVolume, long maxLoadWeight, long[] volumes,
 				long[] weights, long[] minAreas) {
@@ -293,9 +295,11 @@ final class BruteForceTreeSearch {
 		 * another order), or new ones.
 		 *
 		 * @param previous the tables of the previous search of the holder, or null
-		 * @param fresh true for a new search, false for a part of the one the previous tables were used by: a new search starts with no orders settled
+		 * @param sharedBest the split search this search is a part of, or null: a part of the search the previous tables were used by keeps their
+		 *        settled orders (the parts' orders are disjoint), any other search starts with none settled
 		 */
-		static Tables of(Tables previous, int[] counts, long[] volumes, long[] weights, long[] minAreas, long maxLoadVolume, long maxLoadWeight, int[] groupEnd, int n, boolean fresh) {
+		static Tables of(Tables previous, int[] counts, long[] volumes, long[] weights, long[] minAreas, long maxLoadVolume, long maxLoadWeight, int[] groupEnd, int n,
+				SharedBest sharedBest) {
 			if(previous != null && previous.n == n && previous.maxLoadVolume == maxLoadVolume && previous.maxLoadWeight == maxLoadWeight && Arrays.equals(previous.counts, counts)
 					&& Arrays.equals(previous.groupEnd, groupEnd)) {
 				boolean same = Arrays.equals(previous.volumes, volumes) && Arrays.equals(previous.weights, weights) && Arrays.equals(previous.minAreas, minAreas);
@@ -305,15 +309,18 @@ final class BruteForceTreeSearch {
 						previous.weights = weights;
 						previous.minAreas = minAreas;
 					}
-					if(fresh) {
+					if(sharedBest == null || previous.sharedBest != sharedBest) {
 						previous.settled.reset();
 					}
+					previous.sharedBest = sharedBest;
 					return previous;
 				}
 			}
 			Multisets multisets = new Multisets(counts, groupEnd);
-			return new Tables(multisets, new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd), new SettledOrders(counts, n, multisets, groupEnd),
+			Tables tables = new Tables(multisets, new Bound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd), new SettledOrders(counts, n, multisets, groupEnd),
 					counts, groupEnd, n, maxLoadVolume, maxLoadWeight, volumes, weights, minAreas);
+			tables.sharedBest = sharedBest;
+			return tables;
 		}
 	}
 
@@ -363,7 +370,7 @@ final class BruteForceTreeSearch {
 		final long maxLoadVolume = holder.getMaxLoadVolume();
 		final long maxLoadWeight = holder.getMaxLoadWeight();
 		// the remaining boxes as a multiset, keyed compactly: the bound and the settled orders are kept per multiset
-		Tables sharedTables = Tables.of(tables != null ? tables[0] : null, counts, volumes, weights, minAreas, maxLoadVolume, maxLoadWeight, groupEnd, n, work == Work.ROOT && stealable == null);
+		Tables sharedTables = Tables.of(tables != null ? tables[0] : null, counts, volumes, weights, minAreas, maxLoadVolume, maxLoadWeight, groupEnd, n, shared);
 		if(tables != null) {
 			tables[0] = sharedTables;
 		}

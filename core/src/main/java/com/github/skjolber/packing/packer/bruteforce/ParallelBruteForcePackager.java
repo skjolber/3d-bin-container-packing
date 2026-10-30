@@ -424,12 +424,16 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate) throws PackagerInterruptedException {
 		// the parallelization count is 16 per thread by default
 		int tasks = Math.max(1, Math.min(workers.size(), parallelizationCount / 16));
+		BruteForceTreeSearch.Tables[][] holders = new BruteForceTreeSearch.Tables[tasks][];
+		for (int j = 0; j < tasks; j++) {
+			holders[j] = workers.get(j).tables;
+		}
 		return BruteForceTreeStealing.search(executorService, tasks, iterator, insertAfterCounts, sourceInterrupt, completeBoxCount, truncate, intermediatePackagerResultComparator,
 				(task, threadIterator, interrupt, work, shared, tables, state) -> {
 					BruteForceWorker worker = workers.get(task);
 					return packTreeUnit(worker.pointCalculator(), worker.placements(), worker.placementCount, containerItem, containerIndex, threadIterator, interrupt, pointFilter,
 							currentBest, work, shared, tables, state);
-				}, this::withThreadPriority);
+				}, holders, this::withThreadPriority);
 	}
 
 	/**
@@ -559,6 +563,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private final int maxIteratorLength;
 		/** Whether the boxes have load limits: then the placements track loads */
 		private final boolean load;
+		/** the tree search's tables of the worker's parts, kept over the searches */
+		private final BruteForceTreeSearch.Tables[] tables = new BruteForceTreeSearch.Tables[1];
 
 		public BruteForceWorker(int placementCapacity, int placementCount, int maxIteratorLength, boolean load) {
 			this.load = load;
