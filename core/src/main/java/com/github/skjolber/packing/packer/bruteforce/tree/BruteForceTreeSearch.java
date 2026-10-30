@@ -26,12 +26,26 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePacka
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.FastBruteForceBoxStackValuePointComparator;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+
 /**
  * The search of all box orders of a container as one tree, with the result of the loop over the permutations of
- * {@link AbstractBruteForcePackager#pack}: a node is a prefix of placed boxes (each in a rotation, at a position), its children are the remaining
- * box types in each rotation at each candidate position. Every prefix is placed once, where the loop places it again for every order which starts
- * with it. The candidates of a box at a node are the ones the loop tries ({@link AbstractBruteForcePackager#nextPlacement}), on the same point
- * calculator, driven as the loop drives it, so the positions are the loop's.
+ * {@link AbstractBruteForcePackager#pack}. The loop places every order from its first box; the tree places each prefix once, for all the orders
+ * which start with it:
+ *
+ * <pre>
+ *   loop:   a b c   a c b   b a c   b c a   c a b   c b a     box types a, b, c: each order is placed from its first box
+ *
+ *   tree:            root
+ *                 /   |   \
+ *                a    b    c          a node is a prefix of placed boxes, each in a rotation at a position; its children
+ *               / \  / \  / \         are the remaining box types, in each rotation at each candidate position
+ *              b   c a  c a  b
+ *              |   | |  | |  |
+ *              c   b c  a b  a        a leaf is an arrangement: the boxes of an order, until one has no position
+ * </pre>
+ *
+ * The candidates of a box at a node are the ones the loop tries ({@link AbstractBruteForcePackager#nextPlacement}), on the same point calculator,
+ * driven as the loop drives it, so the positions are the loop's.
  * <p>
  * The leaves are the same arrangements as the loop finds: the boxes of an order, each in a rotation at a position, until a box has no position, the
  * load limits or the limit of boxes. The best is compared as the loop compares ({@link com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator}):
@@ -40,20 +54,48 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * among equal permutations the first rotations and positions found. So the winner is the loop's.
  * <p>
  * The loop stops an order at its first complete path (every box which fits the load limits placed), and skips the orders which start with the boxes
- * of an arrangement which could not be continued. The tree keeps the orders settled that way per type prefix ({@link BruteForceTreeSettledOrders}: the orders
- * through a prefix are a block of the lexicographic order), and expands a prefix only while some order through it is still open. So each prefix of
- * placements is visited once, for the orders the loop would still search there.
+ * of an arrangement which could not be continued. The orders through a prefix are a block of the lexicographic order, so the tree keeps the orders
+ * settled that way per type prefix ({@link BruteForceTreeSettledOrders}), and expands a prefix only while some order through it is still open:
+ *
+ * <pre>
+ *   orders:     a b c   a c b   b a c   b c a   c a b   c b a
+ *   prefix a:   ^^^^^^^^^^^^^                                   the orders through a prefix are a block
+ *
+ *   a b c places every box, so the loop stops that order and skips a c b, which starts with the same boxes:
+ *   settled:    x x x   x x x   . . .   . . .   . . .   . . .   a is settled, b and c are still open
+ *
+ *   b a cannot be continued (no position for a after b), so the loop skips every order which starts with b a:
+ *   settled:    x x x   x x x   x x x   . . .   . . .   . . .   b a is settled, b c a is searched next
+ * </pre>
+ *
+ * So each prefix of placements is visited once, for the orders the loop would still search there.
  * <p>
- * Pruning, none of which changes the winner: a box is not placed when no completion with it next can beat the best (the volume, weight and boxes of
- * the prefix and the box, plus the best sub-multiset of the remaining boxes within the load limits, computed once per multiset); after an
- * arrangement places all boxes, prefixes after it in the order are not expanded; the types are tried largest first when not all boxes fit, so that a
- * strong arrangement is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner), and once an
- * arrangement places all boxes the search starts again in the lexicographic order, where the first full leaf settles everything after it, so the
- * search ends at the first order which places all boxes, as the loop does.
+ * Pruning, none of which changes the winner: a box is not placed when no completion with it next can beat the best, by the volume, weight and
+ * boxes of the prefix and the box plus the best sub-multiset of the remaining boxes within the load limits (computed once per multiset, see
+ * {@link BruteForceTreeBound}):
+ *
+ * <pre>
+ *   prefix a b:  volume 12   +   bound of the remaining boxes {c, d} within the load limits: 5   =   17,  below the best so far (18): not expanded
+ * </pre>
+ *
+ * After an arrangement places all boxes, prefixes after it in the order are not expanded; the types are tried largest first when not all boxes fit,
+ * so that a strong arrangement is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner),
+ * and once an arrangement places all boxes the search starts again in the lexicographic order, where the first full leaf settles everything after
+ * it, so the search ends at the first order which places all boxes, as the loop does.
  * <p>
  * With box item groups the orders keep the groups in their sequence (each group's boxes are a block of the order, see
  * {@link DefaultBoxItemGroupPermutationRotationIterator}), so the children of a node are the remaining boxes of the first group with boxes
- * remaining, and a box must be insertable after the boxes of the groups before its own, as in the loop.
+ * remaining, and a box must be insertable after the boxes of the groups before its own, as in the loop:
+ *
+ * <pre>
+ *   groups {a, b} then {c}:      root
+ *                               /    \
+ *                              a      b         the first group first, in every order
+ *                              |      |
+ *                              b      a
+ *                              |      |
+ *                              c      c         then the next group
+ * </pre>
  */
 public final class BruteForceTreeSearch {
 
