@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce;
 
+import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -11,7 +13,7 @@ import org.eclipse.collections.api.iterator.IntIterator;
  * in arrays instead of on the thread's stack. Level {@code i} is box {@code i} of the order.
  * Reused between searches by the same {@link PointCalculator3DStack}.
  */
-final class BruteForceSearchFrames {
+public final class BruteForceSearchFrames {
 
 	/** The next point index to try, when trying all fitting points. */
 	final int[] nextPointIndexes;
@@ -24,7 +26,7 @@ final class BruteForceSearchFrames {
 	/** The container's max load weight minus the weight of the boxes placed at earlier levels. */
 	final int[] freeLoadWeights;
 	/** The rotation of the box at the level, in the search in a box item order (which tries the rotations). */
-	final int[] rotationIndexes;
+	public final int[] rotationIndexes;
 	/** The positions where the box at the level is fully supported, when full support is required (created on first use). */
 	private final FullSupportCandidates[] fullSupportCandidates;
 
@@ -42,6 +44,9 @@ final class BruteForceSearchFrames {
 	final int[] placedPermutations;
 	/** The rotation of each placement */
 	final int[] placedRotations;
+	/** the candidate found by {@link AbstractBruteForcePackager#nextPlacement}: its point, and with load limits its supported area */
+	public SimplePoint3D candidatePoint;
+	public long candidateSupportedArea;
 	/** The volume of the boxes from the level on */
 	final long[] remainingVolumes;
 	/** The smallest area of the boxes from the level on, in any rotation */

@@ -1,0 +1,67 @@
+package com.github.skjolber.packing.packer.bruteforce.tree;
+
+import java.util.List;
+
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.tree.TreeTestInstances.Instance;
+
+/**
+ * Run by hand: the time of the regular (or, with "parallel" as the seventh argument, the parallel) packager with the loop and with the tree on random
+ * problems. Arguments: first seed, seeds, min boxes, max boxes, "tight" for tight problems, "both"/"loop"/"tree", "parallel" or "fast" (the fast packager, one thread against four), "exact" for the loop's arrangement among equally good ones.
+ */
+public class BruteForceTreeStats {
+
+	public static void main(String[] args) {
+		int firstSeed = args.length > 0 ? Integer.parseInt(args[0]) : 0;
+		int seeds = args.length > 1 ? Integer.parseInt(args[1]) : 10;
+		int minBoxes = args.length > 2 ? Integer.parseInt(args[2]) : 7;
+		int maxBoxes = args.length > 3 ? Integer.parseInt(args[3]) : 8;
+		boolean tight = args.length > 4 && args[4].equals("tight");
+		String mode = args.length > 5 ? args[5] : "both";
+		boolean parallel = args.length > 6 && args[6].equals("parallel");
+		boolean fast = args.length > 6 && args[6].equals("fast");
+		boolean anyBest = !(args.length > 7 && args[7].equals("exact"));
+		AbstractBruteForcePackager loop = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearch(false).build()
+				: fast ? FastBruteForcePackager.newBuilder().withTreeSearch(false).build() : BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		AbstractBruteForcePackager tree = parallel ? ParallelBruteForcePackager.newBuilder().withThreads(4).withTreeSearchStealing(true).withTreeSearchAnyBest(anyBest).build()
+				: fast ? FastBruteForcePackager.newBuilder().withThreads(4).withTreeSearchAnyBest(anyBest).build() : BruteForcePackager.newBuilder().withTreeSearchAnyBest(anyBest).build();
+		long loopTotal = 0;
+		long treeTotal = 0;
+		for (int seed = firstSeed; seed < firstSeed + seeds; seed++) {
+			Instance instance = tight ? TreeTestInstances.tight(seed, minBoxes, maxBoxes) : TreeTestInstances.random(seed, minBoxes, maxBoxes);
+			List<ContainerItem> containerItems = BruteForceTreeSearchTest.containerItems(instance, seed);
+			long start = System.nanoTime();
+			PackagerResult l = mode.equals("tree") ? null : pack(loop, containerItems, instance.copyBoxItems());
+			long loopNanos = System.nanoTime() - start;
+			start = System.nanoTime();
+			PackagerResult t = mode.equals("loop") ? null : pack(tree, containerItems, instance.copyBoxItems());
+			long treeNanos = System.nanoTime() - start;
+			if(l != null) {
+				loopTotal += loopNanos;
+			}
+			if(t != null) {
+				treeTotal += treeNanos;
+			}
+			if(l == null || t == null) {
+				System.out.println("seed " + seed + " boxes " + instance.boxes + ": loop " + loopNanos / 1_000_000 + " ms, tree " + treeNanos / 1_000_000 + " ms");
+				continue;
+			}
+			String same = anyBest ? BruteForceTreeSearchTest.describeValues(l).equals(BruteForceTreeSearchTest.describeValues(t)) ? "same values" : "VALUE MISMATCH"
+					: BruteForceTreeSearchTest.describe(l).equals(BruteForceTreeSearchTest.describe(t)) ? "same" : "MISMATCH";
+			System.out.println("seed " + seed + " boxes " + instance.boxes + ": loop " + loopNanos / 1_000_000 + " ms, tree " + treeNanos / 1_000_000 + " ms, " + same);
+		}
+		System.out.println("total: loop " + loopTotal / 1_000_000 + " ms, tree " + treeTotal / 1_000_000 + " ms");
+		loop.close();
+		tree.close();
+	}
+
+	private static PackagerResult pack(AbstractBruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
+		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(600_000).build();
+	}
+}

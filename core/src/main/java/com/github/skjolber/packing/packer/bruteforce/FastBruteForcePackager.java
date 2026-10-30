@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.Objects;
 
 import com.github.skjolber.packing.api.Box;
@@ -22,11 +23,19 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResultCompar
 import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeFastCandidates;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSearch;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSharedBest;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealableState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealing;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeTables;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeWork;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -122,6 +131,78 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+		/**
+		 * Search the box orders of a container as one tree where that gives the result of the loop over the permutations: every prefix of boxes is placed
+		 * once and the tree prunes with bounds, see {@link BruteForceTreeSearch}. On by default.
+		 *
+		 * @param treeSearch false to search with the loop only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
+
+		protected boolean treeSearchAnyBest = true;
+
+		/**
+		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
+		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. On by default; false for the loop's arrangement among
+		 * equally good ones (the first order's, its first rotations and positions).
+		 *
+		 * @param anyBest true for any arrangement of the best value
+		 * @return this builder
+		 */
+		public Builder withTreeSearchAnyBest(boolean anyBest) {
+			this.treeSearchAnyBest = anyBest;
+			return this;
+		}
+
+		protected ExecutorService executorService;
+		protected int threads = 1;
+
+		/**
+		 * Search a container's orders as one tree on several threads, with work stealing (see {@link BruteForceTreeStealing}), for containers with
+		 * many orders whose boxes do not all fit (when all fit, the bound prunes nothing and one thread finds a complete arrangement sooner); a
+		 * complete result stops the other threads, so among several complete arrangements the threads' timing decides. The packager creates the
+		 * threads, and shuts them down when closed.
+		 *
+		 * @param threads the number of threads, at least 1 (the default: one thread, the calling one)
+		 * @return this builder
+		 */
+		public Builder withThreads(int threads) {
+			if(threads < 1) {
+				throw new IllegalArgumentException("Expected one or more threads, got " + threads);
+			}
+			this.threads = threads;
+			return this;
+		}
+
+		/**
+		 * As {@link #withThreads(int)}, on an executor service of your own, which is not shut down when the packager is closed.
+		 *
+		 * @param executorService the threads
+		 * @param threads the number of threads to search on
+		 * @return this builder
+		 */
+		public Builder withExecutorService(ExecutorService executorService, int threads) {
+			this.executorService = executorService;
+			return withThreads(threads);
+		}
+
 		public Builder withPointComparator(FastBruteForceBoxStackValuePointComparator pointComparator) {
 			this.pointComparator = pointComparator;
 			return this;
@@ -140,6 +221,14 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			packager.setRequireFullSupport(requireFullSupport);
+			packager.setTreeSearch(treeSearch);
+			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
+			packager.setTreeSearchAnyBest(treeSearchAnyBest);
+			if(executorService != null) {
+				packager.setExecutorService(executorService, threads, false);
+			} else if(threads > 1) {
+				packager.setExecutorService(java.util.concurrent.Executors.newFixedThreadPool(threads), threads, true);
+			}
 			return packager;
 		}
 		
@@ -195,6 +284,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	private class FastBruteForceGroupSession extends AbstractSingleThreadedBruteForceBoxItemGroupSession {
 
 		private final FastPointCalculator3DStack pointCalculator;
+		/** the tree search's tables, reused over the group orders */
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public FastBruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, List<ContainerItem> containers, int containerCount,
 				BoxItemGroupPermutationRotationIterator[] containerIterators, PackagerInterruptSupplier interrupt) {
@@ -224,7 +315,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		@Override
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best);
+			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, fastPointComparator, best,
+					Integer.MAX_VALUE, tables);
 		}
 
 		@Override
@@ -311,6 +403,53 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		this.fastPointComparator = pointComparator;
 	}
 
+	/** the threads of a container search as one tree with work stealing (see {@link Builder#withThreads}), or null */
+	private ExecutorService executorService;
+	private int threads = 1;
+	private boolean shutdownExecutorServiceOnClose;
+
+	/**
+	 * @param executorService the threads, or null for one thread
+	 * @param threads the number of threads to search on
+	 * @param shutdownOnClose whether to shut the executor service down when the packager is closed
+	 */
+	public void setExecutorService(ExecutorService executorService, int threads, boolean shutdownOnClose) {
+		this.executorService = executorService;
+		this.threads = threads;
+		this.shutdownExecutorServiceOnClose = shutdownOnClose;
+	}
+
+	@Override
+	public void close() {
+		super.close();
+		if(shutdownExecutorServiceOnClose && executorService != null) {
+			executorService.shutdownNow();
+		}
+	}
+
+	/**
+	 * Pack a part of a container search on several threads (see {@link BruteForceTreeStealing}), as {@link #pack} packs all orders: on the
+	 * thread's own point calculator and placements.
+	 */
+	private BruteForceIntermediatePackagerResult packTreePart(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, ContainerItem containerItem, int index,
+			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator,
+			IntermediatePackagerResult best, BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables,
+			BruteForceTreeStealableState state) throws PackagerInterruptedException {
+		Container holder = containerItem.getContainer().copy(iterator.length());
+		Stack stack = holder.getStack();
+		LoadPlacementUtility utility = createLoadPlacementUtility(iterator, stack);
+		if(utility != null) {
+			utility.initialize(iterator.length());
+		}
+		boolean allItemsFit = canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
+		long minLoadVolume = getMinLoadVolume(best);
+		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
+			return new BruteForceIntermediatePackagerResult(containerItem, new Stack(iterator.length()), index, iterator, utility != null);
+		}
+		return packTree(pointCalculator, stackPlacements, 0, containerItem, index, iterator, interrupt, pointComparator, Integer.MAX_VALUE, holder, stack, utility, allItemsFit,
+				minLoadVolume, hasExtractionOrders(iterator), getInsertAfterCounts(iterator), new PrefixBest(iterator.length()), work, shared, tables, state);
+	}
+
 	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator,
@@ -341,6 +480,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			BoxItemPermutationRotationIterator iterator,
 			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
 			int limit) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointComparator, best, limit, null);
+	}
+
+	/**
+	 * @param tables a holder of the tree search's tables of a session's searches, reused by a search of the same boxes or of box item groups in
+	 *        another order, or null
+	 */
+	public BruteForceIntermediatePackagerResult pack(FastPointCalculator3DStack pointCalculator,
+			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
+			BoxItemPermutationRotationIterator iterator,
+			PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, IntermediatePackagerResult best,
+			int limit, BruteForceTreeTables[] tables) throws PackagerInterruptedException {
 		Container holder = containerItem.getContainer().copy(iterator.length());
 		Stack stack = holder.getStack();
 
@@ -368,6 +519,27 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		PrefixBest prefix = new PrefixBest(iterator.length());
 		boolean checkExtraction = hasExtractionOrders(iterator);
+		if(isTreeSearchable(containerItem, iterator, insertAfterCounts)) {
+			AbstractBoxItemPermutationRotationIterator treeIterator = (AbstractBoxItemPermutationRotationIterator)iterator;
+			if(executorService != null && threads > 1 && limit >= iterator.length() && (treeSearchAnyBest || !allItemsFit) && iterator.countPermutations() > 32L * threads) {
+				// on the threads, each on its own point calculator and placements
+				int length = iterator.length();
+				boolean load = loadPlacementUtility != null;
+				FastPointCalculator3DStack[] calculators = new FastPointCalculator3DStack[threads];
+				Placement[][] placements = new Placement[threads][];
+				return BruteForceTreeStealing.search(executorService, threads, treeIterator, insertAfterCounts, interrupt, length, null, intermediatePackagerResultComparator,
+						(task, threadIterator, threadInterrupt, work, shared, threadTables, state) -> {
+							if(calculators[task] == null) {
+								calculators[task] = new FastPointCalculator3DStack(length + 1);
+								placements[task] = getPlacements(length, load);
+							}
+							return packTreePart(calculators[task], placements[task], containerItem, containerIndex, threadIterator, threadInterrupt, pointComparator, best, work, shared, threadTables,
+									state);
+						}, null, task -> task);
+			}
+			return packTree(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, treeIterator, interrupt, pointComparator, limit, holder, stack,
+					loadPlacementUtility, allItemsFit, minLoadVolume, checkExtraction, insertAfterCounts, prefix, BruteForceTreeWork.ROOT, null, tables, null);
+		}
 		permutations:
 		do {
 			if(interrupt.getAsBoolean()) {
@@ -409,6 +581,39 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		} while (true);
 
 		return bestResult;
+	}
+
+	/**
+	 * Pack the boxes of the iterator into one container as the loop of {@link #pack} would, with the box orders searched as one tree
+	 * ({@link BruteForceTreeSearch}): when all boxes fit, the first order first, which wins outright if it places them all, then the tree.
+	 */
+	private BruteForceIntermediatePackagerResult packTree(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int containerIndex, AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, FastBruteForceBoxStackValuePointComparator pointComparator, int limit,
+			Container holder, Stack stack, LoadPlacementUtility utility, boolean allItemsFit, long minLoadVolume, boolean checkExtraction, int[] insertAfterCounts, PrefixBest prefix,
+			BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState state)
+			throws PackagerInterruptedException {
+		int length = iterator.length();
+		if(allItemsFit && !work.isStolen()) {
+			// the first order wins outright if it places all boxes, as it does for the loop: one search
+			pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
+			if(containerItem.hasInitialPoints()) {
+				pointCalculator.setPoints(containerItem.getInitialPoints());
+				pointCalculator.clear();
+			}
+			prefix.reset();
+			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, utility, pointComparator, checkExtraction, insertAfterCounts, length, null, Integer.MAX_VALUE, null,
+					prefix);
+			if(prefix.count == length) {
+				BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, utility != null);
+				result.setState(prefix.toList(), getState(iterator, prefix.rotations, length), stackPlacements, stackPlacementCount);
+				return result;
+			}
+		}
+		BruteForceTreeFastCandidates candidates = new BruteForceTreeFastCandidates(this, pointCalculator, pointComparator, requireFullSupport, checkExtraction, utility, holder,
+				length);
+		candidates.anyBest = treeSearchAnyBest;
+		return BruteForceTreeSearch.search(candidates, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume,
+				insertAfterCounts, work, shared, tables, state);
 	}
 
 	/**
@@ -637,6 +842,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 						placementLoad.getPlacement().removeLastSupportee();
 					}
 					placement.clearLoad();
+					utility.restoreLoads(placedCount);
 				}
 				stack.remove(stack.size() - 1);
 				pointCalculator.setStackSize(placedCount);
@@ -702,6 +908,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 					pointCalculator.add(pointIndex, placement, point);
 					stack.add(placement);
 					if(utility != null) {
+						utility.saveLoads(placedCount);
 						utility.addSupportersLoad(placement);
 					}
 					int nextLevel = level + 1;
@@ -760,7 +967,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @return the best position (by the point comparator) where the box is fully supported, insertable and, with load
 	 *         limits, carried by the boxes below; or -1 if none
 	 */
-	protected int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int best = -1;
 		for(int i = 0; i < candidates.size(); i++) {
@@ -794,7 +1001,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @param insertAfterCount the number of boxes placed before the box, which it must be insertable after
 	 * @return the best point (by the point comparator) where the box fits and is insertable, or -1 if none
 	 */
-	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {
@@ -821,7 +1028,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/**
 	 * As {@link #getBestPoint}, for boxes with load limits: the boxes below must carry the box at the point.
 	 */
-	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {

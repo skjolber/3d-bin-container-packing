@@ -6,6 +6,7 @@ The main algorithmic engine. Implements all packager strategies (LAFF, brute-for
 ## Key Packages
 - `com.github.skjolber.packing.packer.laff` — Largest Area Fit First: `LargestAreaFitFirstPackager`, `FastLargestAreaFitFirstPackager`
 - `com.github.skjolber.packing.packer.bruteforce` — `BruteForcePackager`, `FastBruteForcePackager`, `ParallelBruteForcePackager`
+- `com.github.skjolber.packing.packer.bruteforce.tree` — `BruteForceTreeSearch` and its tables, bounds and work stealing: the tree search the brute force packagers run (see `docs/heuristics/brute-force.md`)
 - `com.github.skjolber.packing.packer.plain` — `PlainPackager` (simple greedy)
 - `com.github.skjolber.packing.iterator` — `BoxItemPermutationRotationIterator`, `BoxItemGroupPermutationRotationIterator`, `FilteredBoxItemsPermutationRotationIterator`
 - `com.github.skjolber.packing.comparator` — Result comparator implementations; `comparator.placement` — placement comparator implementations (`DefaultPlacementComparatorFactory`). The comparator interfaces are in **api**, so users can supply their own decision-making.
