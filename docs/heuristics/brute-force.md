@@ -40,7 +40,9 @@ the first full arrangement ends it, as the loop ends at the first order which pl
 
 The tree applies to the search which the loop makes: no box item order, no container priorities and the default result
 comparator; box item groups keep their sequence (the children of a node are the remaining boxes of the first group with
-boxes remaining). Other searches, reverse-filtered permutations (`withSkipReversePermutations(..)`), too many
+boxes remaining). A search of the orders of the groups keeps the tree's tables (the multiset keys, the bound and the
+settled orders) over the group orders: an order of other boxes of the same counts and groups resets the bound and the
+settled orders and keeps the keys and sequence counts. Other searches, reverse-filtered permutations (`withSkipReversePermutations(..)`), too many
 distinct box multisets (over 2^18) and containers with fewer boxes than `withTreeSearchMinBoxes(..)` (default 6, where
 the loop is quicker) use the loop. `withTreeSearch(false)` always uses the loop.
 
