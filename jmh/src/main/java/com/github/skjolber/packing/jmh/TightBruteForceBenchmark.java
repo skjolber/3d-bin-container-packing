@@ -34,6 +34,11 @@ public class TightBruteForceBenchmark {
 		return process(state.getFastSets());
 	}
 
+	@Benchmark
+	public int parallelPackager(TightBruteForceBenchmarkState state) {
+		return process(state.getParallelSets());
+	}
+
 	private static int process(List<BenchmarkSet> sets) {
 		int boxes = 0;
 		for (BenchmarkSet set : sets) {

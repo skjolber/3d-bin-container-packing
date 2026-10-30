@@ -3,6 +3,8 @@ package com.github.skjolber.packing.jmh;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
@@ -15,7 +17,9 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.DefaultThreadFactory;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
 
 /**
  * Random tight problems: many box types of few boxes each, which usually do not all fit the container, in two containers (the second a little
@@ -26,19 +30,25 @@ import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 public class TightBruteForceBenchmarkState {
 
 	public static final int INSTANCES = 20;
+	public static final int THREADS = 4;
 
 	@Param(value = { "7", "8" })
 	private int boxes = 7;
 
 	private BruteForcePackager bruteForcePackager;
 	private FastBruteForcePackager fastBruteForcePackager;
+	private ParallelBruteForcePackager parallelBruteForcePackager;
+	private ExecutorService pool;
 	private List<BenchmarkSet> bruteForceSets = new ArrayList<>();
 	private List<BenchmarkSet> fastSets = new ArrayList<>();
+	private List<BenchmarkSet> parallelSets = new ArrayList<>();
 
 	@Setup
 	public void init() {
 		bruteForcePackager = TreeOptions.apply(BruteForcePackager.newBuilder()).build();
 		fastBruteForcePackager = TreeOptions.threads(FastBruteForcePackager.newBuilder()).build();
+		pool = Executors.newFixedThreadPool(THREADS, new DefaultThreadFactory());
+		parallelBruteForcePackager = TreeOptions.apply(ParallelBruteForcePackager.newBuilder().withExecutorService(pool).withParallelizationCount(THREADS * 16)).build();
 		for (int seed = 1000; seed < 1000 + INSTANCES; seed++) {
 			List<BoxItem> boxItems = new ArrayList<>();
 			Container container = tight(seed, boxes, boxes, boxItems);
@@ -49,6 +59,7 @@ public class TightBruteForceBenchmarkState {
 			List<ContainerItem> containers = builder.build();
 			bruteForceSets.add(new BenchmarkSet(bruteForcePackager, copy(boxItems), containers));
 			fastSets.add(new BenchmarkSet(fastBruteForcePackager, copy(boxItems), containers));
+			parallelSets.add(new BenchmarkSet(parallelBruteForcePackager, copy(boxItems), containers));
 		}
 	}
 
@@ -56,6 +67,8 @@ public class TightBruteForceBenchmarkState {
 	public void shutdown() {
 		bruteForcePackager.close();
 		fastBruteForcePackager.close();
+		parallelBruteForcePackager.close();
+		pool.shutdownNow();
 	}
 
 	private static List<BoxItem> copy(List<BoxItem> boxItems) {
@@ -105,5 +118,9 @@ public class TightBruteForceBenchmarkState {
 
 	public List<BenchmarkSet> getFastSets() {
 		return fastSets;
+	}
+
+	public List<BenchmarkSet> getParallelSets() {
+		return parallelSets;
 	}
 }
