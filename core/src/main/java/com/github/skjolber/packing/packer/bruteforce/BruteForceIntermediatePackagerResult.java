@@ -55,7 +55,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		this(containerItem, stack, index, iterator, true);
 	}
 
-	BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator, boolean calculateLoads) {
+	public BruteForceIntermediatePackagerResult(ContainerItem containerItem, Stack stack, int index, BoxItemPermutationRotationIterator iterator, boolean calculateLoads) {
 		this.containerItem = containerItem;
 		this.stack = stack;
 		this.iterator = iterator;

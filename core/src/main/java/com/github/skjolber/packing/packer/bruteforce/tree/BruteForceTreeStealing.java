@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResultCompar
 import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 
 /**
  * The search of a container's orders as one tree on several threads, with work stealing: the calling thread searches the whole tree, and once it
@@ -27,10 +28,10 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIte
  * so on until no thread has work. The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator,
  * then by their orders. The packagers supply the search of a part on a thread's own state ({@link Part}).
  */
-final class BruteForceTreeStealing {
+public final class BruteForceTreeStealing {
 
 	/** the search of a part of the tree on a thread's own point calculator and placements */
-	interface Part {
+	public interface Part {
 
 		BruteForceIntermediatePackagerResult search(int task, AbstractBoxItemPermutationRotationIterator threadIterator, PackagerInterruptSupplier interrupt,
 				BruteForceTreeWork work, BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState state)
@@ -49,7 +50,7 @@ final class BruteForceTreeStealing {
 	 * @param wrap wraps a thread's task, for example to set a thread priority, or the identity
 	 */
 	@SuppressWarnings("unchecked")
-	static BruteForceIntermediatePackagerResult search(ExecutorService executorService, int tasks, AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts,
+	public static BruteForceIntermediatePackagerResult search(ExecutorService executorService, int tasks, AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts,
 			PackagerInterruptSupplier sourceInterrupt, int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate,
 			IntermediatePackagerResultComparator comparator, Part part, BruteForceTreeTables[][] holders, UnaryOperator<Callable<BruteForceIntermediatePackagerResult>> wrap)
 			throws PackagerInterruptedException {

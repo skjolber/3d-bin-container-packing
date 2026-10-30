@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -7,13 +7,16 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.FastBruteForceBoxStackValuePointComparator;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.FastPointCalculator3DStack;
+import com.github.skjolber.packing.packer.bruteforce.FullSupportCandidates;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * The candidates of {@link FastBruteForcePackager}: per rotation the best free point by its point comparator (where the box is insertable, and
  * with full support the best fully supported position), on its point calculator.
  */
-final class BruteForceTreeFastCandidates extends BruteForceTreeCandidates {
+public final class BruteForceTreeFastCandidates extends BruteForceTreeCandidates {
 
 	private final FastBruteForcePackager packager;
 	private final FastPointCalculator3DStack pointCalculator;
@@ -24,7 +27,7 @@ final class BruteForceTreeFastCandidates extends BruteForceTreeCandidates {
 	private final Container container;
 	private final int[] rotationIndexes;
 
-	BruteForceTreeFastCandidates(FastBruteForcePackager packager, FastPointCalculator3DStack pointCalculator, FastBruteForceBoxStackValuePointComparator pointComparator, boolean fullSupport,
+	public BruteForceTreeFastCandidates(FastBruteForcePackager packager, FastPointCalculator3DStack pointCalculator, FastBruteForceBoxStackValuePointComparator pointComparator, boolean fullSupport,
 			boolean checkExtraction, LoadPlacementUtility utility, Container holder, int n) {
 		super(holder.getStack(), utility);
 		this.packager = packager;

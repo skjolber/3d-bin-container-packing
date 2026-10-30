@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -14,7 +14,9 @@ import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.packer.AbstractPackager;
-import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.tree.TreeTestInstances.Instance;
 
 /**
  * The parallel brute force packager with the tree search (one tree on all the threads, with work stealing) must return results as good as the

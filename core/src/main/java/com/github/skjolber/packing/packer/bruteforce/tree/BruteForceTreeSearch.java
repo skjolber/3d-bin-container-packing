@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +21,8 @@ import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceIntermediatePackagerResult;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.FastBruteForceBoxStackValuePointComparator;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
@@ -53,7 +55,7 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * {@link DefaultBoxItemGroupPermutationRotationIterator}), so the children of a node are the remaining boxes of the first group with boxes
  * remaining, and a box must be insertable after the boxes of the groups before its own, as in the loop.
  */
-final class BruteForceTreeSearch {
+public final class BruteForceTreeSearch {
 
 	/** the most multisets of the boxes (the product of the counts plus one over the types) for the tree search: the bounds are kept per multiset */
 	static final long MAX_MULTISETS = 1L << 18;
@@ -66,7 +68,7 @@ final class BruteForceTreeSearch {
 	 *        of its group's block
 	 * @return whether the boxes of the iterator can be searched as a tree: not too many multisets of them, and the groups' box items in sequence
 	 */
-	static boolean isSupported(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts) {
+	public static boolean isSupported(AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts) {
 		int[] permutations = iterator.getPermutations();
 		int[] counts = new int[iterator.getBoxItemStackValues().length];
 		for (int value : permutations) {
@@ -134,7 +136,7 @@ final class BruteForceTreeSearch {
 	 * @param insertAfterCounts with box item groups, per position the number of boxes of the groups before its own (empty otherwise)
 	 * @return the result (empty if no arrangement places a box), which refers to the reused placements until materialized
 	 */
-	static BruteForceIntermediatePackagerResult search(BruteForceTreeCandidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
+	public static BruteForceIntermediatePackagerResult search(BruteForceTreeCandidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts)
 			throws PackagerInterruptedException {
 		return search(candidates, placements, placementCount, containerItem, containerIndex, iterator, interrupt, holder, limit, minLoadVolume, insertAfterCounts, BruteForceTreeWork.ROOT, null,
@@ -149,7 +151,7 @@ final class BruteForceTreeSearch {
 	 * @param stealable the state other threads steal work from, or null
 	 * @see #search(BruteForceTreeCandidates, Placement[], int, ContainerItem, int, AbstractBoxItemPermutationRotationIterator, PackagerInterruptSupplier, Container, int, long, int[])
 	 */
-	static BruteForceIntermediatePackagerResult search(BruteForceTreeCandidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
+	public static BruteForceIntermediatePackagerResult search(BruteForceTreeCandidates candidates, Placement[] placements, int placementCount, ContainerItem containerItem, int containerIndex,
 			AbstractBoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, Container holder, int limit, long minLoadVolume, int[] insertAfterCounts, BruteForceTreeWork work,
 			BruteForceTreeSharedBest shared, BruteForceTreeTables[] tables, BruteForceTreeStealableState stealable) throws PackagerInterruptedException {
 		final int n = iterator.length();

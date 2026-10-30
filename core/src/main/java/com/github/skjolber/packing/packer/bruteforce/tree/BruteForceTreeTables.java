@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.Arrays;
 
@@ -6,7 +6,7 @@ import java.util.Arrays;
  * The tables of a search, per multiset of remaining boxes and per type prefix: the parts of a search split between threads, which search the
  * same boxes for the same container, can share them on a thread (the orders of the parts are disjoint, so the settled orders add up).
  */
-final class BruteForceTreeTables {
+public final class BruteForceTreeTables {
 
 	final BruteForceTreeMultisets multisets;
 	final BruteForceTreeBound bounds;

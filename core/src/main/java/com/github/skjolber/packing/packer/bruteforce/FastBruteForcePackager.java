@@ -23,12 +23,19 @@ import com.github.skjolber.packing.api.packager.IntermediatePackagerResultCompar
 import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
 import com.github.skjolber.packing.api.point.Point;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
-import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
+import com.github.skjolber.packing.iterator.BoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.PermutationRotationState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeFastCandidates;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSearch;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSharedBest;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealableState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealing;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeTables;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeWork;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -960,7 +967,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @return the best position (by the point comparator) where the box is fully supported, insertable and, with load
 	 *         limits, carried by the boxes below; or -1 if none
 	 */
-	protected int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestFullySupported(FullSupportCandidates candidates, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int best = -1;
 		for(int i = 0; i < candidates.size(); i++) {
@@ -994,7 +1001,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	 * @param insertAfterCount the number of boxes placed before the box, which it must be insertable after
 	 * @return the best point (by the point comparator) where the box fits and is insertable, or -1 if none
 	 */
-	protected int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestPoint(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {
@@ -1021,7 +1028,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/**
 	 * As {@link #getBestPoint}, for boxes with load limits: the boxes below must carry the box at the point.
 	 */
-	protected int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
+	public int getBestPointWithLoad(FastPointCalculator3DStack pointCalculator, BoxItem boxItem, BoxStackValue stackValue, Stack stack, int insertAfterCount, Container container,
 			boolean checkObstacles, boolean checkExtraction, LoadPlacementUtility utility, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		int bestPointIndex = -1;
 		for(int k = 0; k < pointCalculator.size(); k++) {

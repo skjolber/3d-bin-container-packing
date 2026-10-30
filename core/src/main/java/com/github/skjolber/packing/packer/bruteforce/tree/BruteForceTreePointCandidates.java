@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.List;
 
@@ -9,14 +9,18 @@ import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForceSearchFrames;
+import com.github.skjolber.packing.packer.bruteforce.PointCalculator3DStack;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
  * The candidates of {@link BruteForcePackager}: all free points where the box fits (or the point filter's), in index order, the rotations in
  * order, with the checks of the loop ({@link AbstractBruteForcePackager#nextPlacement}), on the loop's point calculator.
  */
-final class BruteForceTreePointCandidates extends BruteForceTreeCandidates {
+public final class BruteForceTreePointCandidates extends BruteForceTreeCandidates {
 
 	private final PointCalculator3DStack pointCalculator;
 	private final BruteForceSearchFrames frames;
@@ -27,7 +31,7 @@ final class BruteForceTreePointCandidates extends BruteForceTreeCandidates {
 	private final boolean checkObstacles;
 	private final ContainerAccess access;
 
-	BruteForceTreePointCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction, LoadPlacementUtility utility,
+	public BruteForceTreePointCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, boolean checkExtraction, LoadPlacementUtility utility,
 			Container holder) {
 		super(holder.getStack(), utility);
 		this.pointCalculator = pointCalculator;
@@ -98,6 +102,6 @@ final class BruteForceTreePointCandidates extends BruteForceTreeCandidates {
 
 	@Override
 	SimplePoint3D placedPoint(int level) {
-		return pointCalculator.stackItems[level + 1].point;
+		return pointCalculator.getStackPoint(level + 1);
 	}
 }

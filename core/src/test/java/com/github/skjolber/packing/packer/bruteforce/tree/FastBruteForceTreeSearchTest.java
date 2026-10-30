@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -13,7 +13,8 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.tree.TreeTestInstances.Instance;
 
 /**
  * With the tree search the fast brute force packager must return exactly the placements of its loop over the permutations (one position per

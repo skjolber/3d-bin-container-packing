@@ -213,7 +213,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	/** Per-level state for the placement search, created on first use. */
-	BruteForceSearchFrames getSearchFrames() {
+	public BruteForceSearchFrames getSearchFrames() {
 		if(searchFrames == null) {
 			searchFrames = new BruteForceSearchFrames(stackItems.length);
 		}
@@ -321,4 +321,8 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		super.clear();
 	}
 
+	/** @return the point of the placement at the stack index, see {@link #push} */
+	public SimplePoint3D getStackPoint(int stackIndex) {
+		return stackItems[stackIndex].point;
+	}
 }

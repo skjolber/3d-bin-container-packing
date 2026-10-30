@@ -18,17 +18,16 @@ import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
-import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
-import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
-import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
+import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
+import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.PackagerSession;
 import com.github.skjolber.packing.api.point.Point;
+import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.comparator.VolumeThenWeightBoxItemGroupComparator;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
-import com.github.skjolber.packing.comparator.DefaultIntermediatePackagerResultComparator;
 import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
@@ -37,12 +36,19 @@ import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.AbstractPackager;
 import com.github.skjolber.packing.packer.AbstractPackagerResultBuilder;
 import com.github.skjolber.packing.packer.AbstractPackagerSession;
+import com.github.skjolber.packing.packer.InsertionSequencer;
 import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreePointCandidates;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSearch;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSharedBest;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealableState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeTables;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeWork;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
+import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightPressureCountIdenticalLoadAwarePlacementUtility;
 import com.github.skjolber.packing.packer.util.WeightPressureCountLoadAwarePlacementUtility;
-import com.github.skjolber.packing.packer.util.WeightLoadAwarePlacementUtility;
 
 /**
  * Packs each container by trying every box permutation, rotation and point exhaustively.
@@ -1320,7 +1326,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 *
 	 * @return the point index, or -1 if the box has no more positions in any rotation
 	 */
-	static int nextPlacement(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames, int level, Stack stack,
+	public static int nextPlacement(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames, int level, Stack stack,
 			BoxItem item, BoxStackValue[] levelStackValues, Placement placement, int insertAfterCount, ContainerAccess access, boolean checkObstacles, List<Placement> obstacles,
 			boolean checkExtraction, LoadPlacementUtility utility) {
 		int[] rotationIndexes = frames.rotationIndexes;
@@ -1433,7 +1439,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	}
 
 	/** Start the candidate positions of a level's box in a rotation (see {@link #nextCandidate}) */
-	static void startCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames,
+	public static void startCandidates(PointCalculator3DStack pointCalculator, BruteForcePointIteratorFilter pointFilter, boolean fullSupport, BruteForceSearchFrames frames,
 			int level, Stack stack, BoxStackValue stackValue) {
 		if(fullSupport) {
 			frames.getFullSupportCandidates(level).populate(pointCalculator, getPoints(pointFilter, pointCalculator, stackValue), stack.getPlacements(), stackValue);
@@ -1480,7 +1486,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * @param rotations the rotations of the placed boxes, in the iterator's order
 	 * @return the iterator's permutation, with the rotations of the placed boxes
 	 */
-	protected static PermutationRotationState getState(BoxItemPermutationRotationIterator iterator, int[] rotations, int count) {
+	public static PermutationRotationState getState(BoxItemPermutationRotationIterator iterator, int[] rotations, int count) {
 		PermutationRotationState state = iterator.getState();
 		System.arraycopy(rotations, 0, state.getRotations(), 0, count);
 		return state;

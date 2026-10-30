@@ -1,11 +1,15 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.List;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
-import com.github.skjolber.packing.packer.bruteforce.TreeTestInstances.Instance;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.ParallelBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.tree.TreeTestInstances.Instance;
 
 /**
  * Run by hand: the time of the regular (or, with "parallel" as the seventh argument, the parallel) packager with the loop and with the tree on random

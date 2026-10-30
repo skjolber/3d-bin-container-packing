@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ import java.util.Arrays;
  * {@link BruteForceTreeWork} with the node's prefix of placements, which it replays on its own point calculator. The thread updates the state under the
  * lock at those levels only, so the deeper levels, where most of the nodes are, cost nothing.
  */
-final class BruteForceTreeStealableState {
+public final class BruteForceTreeStealableState {
 
 	/** the levels at which work is stolen: the subtrees below are small */
 	static final int STEAL_DEPTH = 6;

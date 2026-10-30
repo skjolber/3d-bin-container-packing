@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * The best arrangement of the parts of a search split between threads (by its load volume, weight and boxes): a part does not expand prefixes
  * which cannot beat it. Equal arrangements are not pruned, so the parts' results compare as on one thread.
  */
-final class BruteForceTreeSharedBest {
+public final class BruteForceTreeSharedBest {
 
 	private final AtomicReference<long[]> best = new AtomicReference<>();
 

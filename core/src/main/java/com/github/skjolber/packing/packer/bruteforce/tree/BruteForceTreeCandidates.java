@@ -1,4 +1,4 @@
-package com.github.skjolber.packing.packer.bruteforce;
+package com.github.skjolber.packing.packer.bruteforce.tree;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxStackValue;
@@ -9,6 +9,7 @@ import com.github.skjolber.packing.api.PlacementLoad;
 import com.github.skjolber.packing.api.Stack;
 import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -22,7 +23,7 @@ abstract class BruteForceTreeCandidates {
 	/** with box load limits, the loads of the placed boxes; otherwise null */
 	protected final LoadPlacementUtility utility;
 	/** whether any arrangement of the best value will do, see {@link AbstractBruteForcePackager#setTreeSearchAnyBest(boolean)} */
-	boolean anyBest;
+	public boolean anyBest;
 	/** the candidate found by {@link #next}: its point, its rotation (index of the box's stack values) and with load limits its supported area */
 	protected SimplePoint3D point;
 	protected int rotation;
