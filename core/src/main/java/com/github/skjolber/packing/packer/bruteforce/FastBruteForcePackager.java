@@ -49,6 +49,7 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
+
 	@FunctionalInterface
 	public interface FastBruteForceBoxStackValuePointComparator {
 
@@ -208,12 +209,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+
+		/** @return the packager to configure: a subclass's builder makes its own */
+		protected FastBruteForcePackager newPackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
+			return new FastBruteForcePackager(comparator, pointComparator);
+		}
+
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			
-			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
+			FastBruteForcePackager packager = newPackager(comparator, pointComparator);
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
@@ -276,7 +283,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 			}
-			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
+			return packContainer(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, best,
+					getLimit(containerIterators[i]));
 		}
 		
 	}
@@ -398,6 +406,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	protected final FastBruteForceBoxStackValuePointComparator fastPointComparator;
 
+
 	public FastBruteForcePackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		super(comparator);
 		this.fastPointComparator = pointComparator;
@@ -419,6 +428,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		this.shutdownExecutorServiceOnClose = shutdownOnClose;
 	}
 
+	/**
+	 * Pack the boxes of the iterator into one container, box order {@link Order#NONE}: {@link #pack} with this packager's point comparator. A subclass
+	 * can search the container another way (as an accelerated packager does).
+	 *
+	 * @param best the best result so far, or null
+	 * @param limit see {@link #pack}
+	 */
+	protected BruteForceIntermediatePackagerResult packContainer(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, fastPointComparator, best, limit);
+	}
+
 	@Override
 	public void close() {
 		super.close();
@@ -426,6 +447,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			executorService.shutdownNow();
 		}
 	}
+
 
 	/**
 	 * Pack a part of a container search on several threads (see {@link BruteForceTreeStealing}), as {@link #pack} packs all orders: on the
@@ -582,6 +604,7 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 		return bestResult;
 	}
+
 
 	/**
 	 * Pack the boxes of the iterator into one container as the loop of {@link #pack} would, with the box orders searched as one tree

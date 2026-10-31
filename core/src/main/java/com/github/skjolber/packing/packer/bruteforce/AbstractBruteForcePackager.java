@@ -342,7 +342,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		return placements;
 	}
 
-	static Placement[] getPlacements(int size) {
+	protected static Placement[] getPlacements(int size) {
 		return getPlacements(size, false);
 	}
 
@@ -716,28 +716,28 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	 * The best arrangement found by the searches which do not skip boxes: the arrangements are the prefixes of the box
 	 * order, and the longest is the best.
 	 */
-	protected static class PrefixBest {
+	public static class PrefixBest {
 
 		/** the number of boxes of the best arrangement */
-		protected int count;
+		public int count;
 		/** the load volume of the best arrangement */
-		protected long loadVolume;
+		public long loadVolume;
 		/** the points of the placed boxes (the first {@link #count}), reused between arrangements */
-		protected final Point[] points;
+		public final Point[] points;
 		/** the rotation of each placement */
-		protected final int[] rotations;
+		public final int[] rotations;
 
-		protected PrefixBest(int length) {
+		public PrefixBest(int length) {
 			this.points = new Point[length];
 			this.rotations = new int[length];
 		}
 
-		protected void reset() {
+		public void reset() {
 			count = 0;
 			loadVolume = 0L;
 		}
 
-		protected void offer(FastPointCalculator3DStack pointCalculator, int[] rotations, int count, long loadVolume) {
+		public void offer(FastPointCalculator3DStack pointCalculator, int[] rotations, int count, long loadVolume) {
 			pointCalculator.copyPoints(this.points);
 			this.count = count;
 			this.loadVolume = loadVolume;
@@ -745,7 +745,7 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 		}
 
 		/** @return the points of the best arrangement, as a list which is not reused */
-		protected List<Point> toList() {
+		public List<Point> toList() {
 			List<Point> list = new ArrayList<>(count);
 			for (int i = 0; i < count; i++) {
 				list.add(points[i]);

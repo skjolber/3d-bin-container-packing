@@ -6,9 +6,11 @@
 | `points` | Extreme-point / free-space tracking (`ep.points2d`, `ep.points3d`) |
 | `validators` | Result and load validators |
 | `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`, `packer.composite`), permutation iterators (`iterator`), container packing strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
+| `accelerator/core` | `accelerator-core`: the flat search classes (`Flat*`), the CPU engine `FlatEngine`, the SPI `BruteForceAccelerator` and `AcceleratedFastBruteForcePackager`, in package `com.github.skjolber.packing.accelerator`; depends on `core` |
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `legacy/v4` | `shadowed-v4`: version 4 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published (see its README) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
+| `accelerator/tornado` | `tornado-accelerator`: experimental TornadoVM accelerator for the fast brute force packager (Java 22+); depends on `accelerator-core`; only in the `-Ptornado` profile, not in the default build (see its README) |
 | `visualizer/*` | Visualizer applications |
 
 Documentation: `README.md` (usage: each section an example and a few sentences, linking to

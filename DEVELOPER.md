@@ -731,3 +731,54 @@ When you pack box item groups, groups are accepted in order: a result must hold 
 To let a costly packager skip work, compare results by load volume first and say so, as shown under
 [Comparing results](#comparing-results). See also [Composite packager](docs/heuristics/composite.md) for budgets and how
 the composite chooses between results.
+
+## Flat search and accelerators
+
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager`, in the `accelerator-core` module, `accelerator/core`, JPMS module `com.github.skjolber.packing.accelerator`) and
+`AcceleratedBruteForcePackager` (a `BruteForcePackager`, same module) can delegate the search of all box orders to a `BruteForceAccelerator` (see
+[accelerated brute force](docs/heuristics/accelerated-brute-force.md)). An accelerator, such as a GPU kernel, gets a
+`FlatProblem` (the boxes of one container on primitive arrays) and returns the best box order as an `AcceleratorWinner`:
+
+```java
+public interface BruteForceAccelerator extends AutoCloseable {
+    boolean supports(FlatProblem problem);
+    Optional<AcceleratorWinner> search(FlatProblem problem, long boundVolume, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException;
+}
+```
+
+The winner must be the one which the packager's own loop picks (under `FlatProblem.ANY_BEST`, set from `withTreeSearchAnyBest(true)`, the value of the winner, not the arrangement): the most load
+volume, then load weight, then boxes; the
+earlier permutation wins a tie, and the first permutation which places all boxes wins at once. The packager places the
+winner itself, and searches the box orders itself when the accelerator returns nothing, so an accelerator may give up on
+any problem, but must not return a worse or a different winner. Test it as `FlatEngineTest` and
+`FlatAcceleratedPackagerTest` do: against a reference loop, and by comparing the placements with and without it.
+
+The module and its package are `accelerator/core` and `com.github.skjolber.packing.accelerator` (sources in `accelerator/core/src/main/java/com/github/skjolber/packing/accelerator/`, tests in
+`accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/`). `core` has no accelerator code: `AcceleratedFastBruteForcePackager.newBuilder()` takes all the builder options of
+`FastBruteForcePackager` plus `withAccelerator(..)`, `withAcceleratorMode(..)` and `withAcceleratorGate(..)`, and counts with `getAcceleratedCount()`, `getAcceleratorFallbackCount()`,
+`getAcceleratorMismatchCount()` and `getAcceleratorRaceCpuCount()`. It extends `FastBruteForcePackager` through two hooks in `core`: `FastBruteForcePackager.Builder.newPackager(..)` and
+`FastBruteForcePackager.packContainer(..)`; `AcceleratedBruteForcePackager` extends `BruteForcePackager` through the same two hooks of that class, and both share `AcceleratorDriver` (the modes,
+the gate, the race and the counters). The search of the plain packager tries a box at every free point where it fits, in point order, where the fast packager takes the best point of each
+rotation; the accelerator searches that way under `FlatProblem.ALL_POINTS`, which only the tree search (`FlatTree`, the kernel's `runTree`) takes, so a `FlatEngine` for the plain packager needs
+`withTree(true)` (an engine without does not support its problems, and the packager searches itself). The module order is api, core, accelerator-core, tornado-accelerator.
+
+Code which should run on a device is written in the style of the flat classes of `accelerator-core`, so that it can be compiled to a kernel:
+
+ * `static` methods on `int[]` and `long[]` and offsets into them, with no objects, allocation, `System.arraycopy`, recursion,
+   exceptions, assertions, strings, boxing, interfaces or virtual calls; copy with loops
+ * small methods (a kernel compiler inlines them), and statistics in a counter array, not by logging
+ * the same tie-breaking as the object version; the comparator which picks the best point is not a total order, so
+   copy it as it is
+ * the flat classes have two searches of an item: `FlatSubtree` (the orders one at a time) and `FlatTree` (the default: the orders as one tree, with the bound table `FlatBound` computed once per
+   problem on the host, and the free space bound `FlatSpace`, a port of `BruteForceTreeFreeSpace`); `FlatEngine.Builder.withTree(false)` selects the first
+ * the kernel of the tornado module (`accelerator/tornado/src/main/resources/.../subtree.cl`) is a hand-written OpenCL C port of the flat classes, function
+   by function, with the same names and the same order of statements (`runTree` is the port of `FlatTree`, `run` of `FlatSubtree`): a change to `FlatPoints`, `FlatSearch`, `FlatPermutation`,
+   `FlatSubtree`, `FlatTree`, `FlatBound` or `FlatSpace` is made
+   in both (`isHopelessInSpace` of `FlatTree` and the `// FlatSpace` section of the kernel port `FlatSpace`), and `KernelParityTest` (with a device) shows that they still agree. It is written
+   by hand because the TornadoVM JIT (7.3.1, OpenCL) compiles the
+   search but miscompiles its control flow without an error (a kernel which never ends; see the README of the module). The flat Java therefore keeps a
+   C-like shape: one exit per method, no `return` or `continue` in a loop, boolean predicates (`isAfterX(..)`) instead of three-way comparators, which is
+   also what the port needs
+ * scratch in one array per work item, with the sizes set up front (`FlatLayout`), and a flag, not an exception, when
+   the scratch is too small, so that the packager can fall back to its own search
+ * write the test with the code: compare each function with the object version on random input, as `FlatPointsAddTest` does
