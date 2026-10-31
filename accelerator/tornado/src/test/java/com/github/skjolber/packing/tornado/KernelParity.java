@@ -79,6 +79,11 @@ public class KernelParity {
 
 	/** @param anyBest true if any arrangement of the best value will do */
 	static FlatProblem problem(Instance instance, boolean anyBest) {
+		return problem(instance, anyBest, false);
+	}
+
+	/** @param allPoints true for the search of the plain packager, every box at every free point where it fits */
+	static FlatProblem problem(Instance instance, boolean anyBest, boolean allPoints) {
 		Container container = instance.container;
 		List<BoxItem> copy = new ArrayList<>();
 		for (BoxItem boxItem : instance.boxItems) {
@@ -89,7 +94,8 @@ public class KernelParity {
 				.withBoxItems(copy)
 				.withMaxLoadWeight(container.getMaxLoadWeight())
 				.build();
-		return FlatProblem.of(iterator, container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), container.getMaxLoadVolume(), container.getMaxLoadWeight(), iterator.length(), anyBest);
+		return FlatProblem.of(iterator, container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), container.getMaxLoadVolume(), container.getMaxLoadWeight(), iterator.length(), anyBest,
+				allPoints);
 	}
 
 	/** @return true if the arrangements have the same value: count, load volume, load weight and whether all boxes are placed */
@@ -122,8 +128,10 @@ public class KernelParity {
 		int localWorkSize = args.length > 10 ? Integer.parseInt(args[10]) : TornadoBruteForceAccelerator.DEFAULT_LOCAL_WORK_SIZE;
 		// "exact": the tree kernel against the loop of the CPU engine, the same winner; "any": the tree kernel and the tree of the CPU engine, any best
 		// arrangement, the same value; "loop": the loop kernel against the loop of the CPU engine
+		// "plainexact" and "plainany": the search of the plain packager (every box at every free point), the tree kernel against the CPU tree engine
 		String mode = args.length > 11 ? args[11] : "exact";
-		boolean anyBest = mode.equals("any");
+		boolean allPoints = mode.startsWith("plain");
+		boolean anyBest = mode.equals("any") || mode.equals("plainany");
 		boolean tree = !mode.equals("loop");
 		boolean freeSpace = !(args.length > 12 && args[12].equals("nospace"));
 
@@ -131,7 +139,7 @@ public class KernelParity {
 				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).withTree(tree).withFreeSpace(freeSpace).build();
 		System.out.println("Device: " + device.getDevice().orElseThrow(() -> new IllegalStateException("No device found")) + ", window " + window + ", budget " + budget + ", max points "
 				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
-		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest).withFreeSpace(freeSpace).build();
+		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest || allPoints).withFreeSpace(freeSpace).build();
 
 		int mismatches = 0;
 		int gaveUp = 0;
@@ -140,7 +148,7 @@ public class KernelParity {
 		for (int i = 0; i < seeds; i++) {
 			long seed = firstSeed + i;
 			Instance instance = random(seed, minBoxes, maxBoxes, 4, 9);
-			FlatProblem problem = problem(instance, anyBest);
+			FlatProblem problem = problem(instance, anyBest, allPoints);
 
 			long start = System.nanoTime();
 			Optional<AcceleratorWinner> expected = cpu.search(problem, 0L, () -> false);

@@ -169,8 +169,8 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
-`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the optional `accelerator-core` artifact) can hand the search of the box orders to an accelerator (threads, or a device such as a
-GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the optional `accelerator-core` artifact) and `AcceleratedBruteForcePackager` (a `BruteForcePackager`) can hand the search of the
+box orders to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
 
 ```xml
 <dependency>

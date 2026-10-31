@@ -62,7 +62,7 @@ public final class SubtreeKernel {
 				layout.poolY, layout.poolZ, layout.nextX, layout.nextY, layout.nextZ, layout.headX, layout.headY, layout.headZ, layout.tailX, layout.tailY, layout.tailZ, layout.copyX,
 				layout.copyY, layout.copyZ, layout.perm, layout.rotation, layout.placedRotation, layout.bestRotation, layout.typeAt, layout.fit, layout.placedType, layout.remaining, layout.spaces, layout.spaceSizes,
 				layout.spaceRemaining, layout.known, layout.witness, layout.spaceChecked, layout.size,
-				layout.minArea, layout.minVolume, layout.placedVolume, layout.bestVolume, layout.placedWeight, layout.longSize, layout.types };
+				layout.minArea, layout.minVolume, layout.placedVolume, layout.bestVolume, layout.placedWeight, layout.longSize, layout.types, layout.pointAt };
 	}
 
 	/**

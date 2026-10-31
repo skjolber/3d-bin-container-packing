@@ -318,7 +318,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			return false;
 		}
 		int n = problem.n();
-		return n >= minBoxes && n <= maxBoxes && getDevice().isPresent();
+		// only the tree kernel takes all points (the search of the plain packager)
+		return n >= minBoxes && n <= maxBoxes && (tree || !problem.isAllPoints()) && getDevice().isPresent();
 	}
 
 	/**
