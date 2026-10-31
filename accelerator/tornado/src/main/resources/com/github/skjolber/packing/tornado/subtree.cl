@@ -1425,8 +1425,9 @@ static int run(const Layout *l, __global const int *problem, __global const long
 
 		int size;
 		if (!allFit && firstVolume < max(boundVolume, outLongs[outLongBase + OUT_VOLUME])) {
-			// no rotation of this permutation can load more than the best arrangement
+			// no rotation of this permutation can load more than the best arrangement: skipped, counted as a node so that an item of skips pauses too
 			size = maxPackableCount;
+			nodes++;
 		} else {
 			for (int i = 0; i < n; i++) {
 				s[permBase + i] = out[cursor + i];
@@ -2428,16 +2429,18 @@ __kernel void search(__global long *_kernel_context, __constant uchar *_constant
 	if (slot >= parameters[P_SLOTS] || active[slot] == 0) {
 		return;
 	}
+	// the depth of the slot's item: the prefixes of the items are P_DEPTH long, the children of a split item longer
+	int depth = active[slot] - 1;
 	Layout l = readLayout(layoutInts);
 	int n = problem[P_N];
 	int base = slot * l.size;
 	int longBase = slot * l.longSize;
 	if (parameters[P_TREE] != 0) {
 		// a tree item keeps its scratch between the rounds: FlatTree.run resets it when the item has not started
-		runTree(&l, problem, problemLongs, parameters[P_DEPTH], prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
+		runTree(&l, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
 				longParameters[P_SHARED_VOLUME], longParameters[P_SHARED_WEIGHT], (int)longParameters[P_SHARED_COUNT], parameters[P_SPACE] != 0, parameters[P_BUDGET]);
 	} else {
 		reset(&l, s, base);
-		run(&l, problem, problemLongs, parameters[P_DEPTH], prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
+		run(&l, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
 	}
 }

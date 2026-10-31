@@ -232,8 +232,10 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
 			return null;
 		}
-		// any arrangement of the best value will do when the tree search of this packager would take any: the accelerator may then prune ties
-		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, treeSearchAnyBest);
+		// any arrangement of the best value will do when the search of this packager would be the any-best tree (below its minimum of boxes, or without
+		// the tree, the loop keeps its first winning order): the accelerator may then prune ties
+		boolean anyBest = treeSearchAnyBest && isTreeSearchable(containerItem, iterator, getInsertAfterCounts(iterator));
+		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, anyBest);
 		return accelerator.supports(problem) ? problem : null;
 	}
 

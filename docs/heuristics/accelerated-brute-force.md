@@ -66,10 +66,10 @@ Measured with the TornadoVM accelerator on the same device, whole packings of ra
 | Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|---|
 | 7 to 9 | 30 | 0.90 s | 1.51 s | 0.87 s | 7 / 0 |
-| 10 to 11 | 12 | 200 s | 51 s | 51 s | 11 / 4 |
+| 10 to 11 | 12 | 200 s | 25 s | 24 s | 10 / 4 |
 
-The plain packager's search is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 49 s, on the next (seed 205) 1.7 s
-against 0.9 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
+The plain packager's search is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 23 s, on the next (seed 205) 1.7 s
+against 0.8 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
 search, which is what the gate is for. On the CPU, `ParallelBruteForcePackager` (not accelerated) runs the same search on threads.
 
 ## When it is used
@@ -176,9 +176,10 @@ On a Radeon RX 7600 against `FlatEngine` with 8 threads (4 cores of a Ryzen 9 99
  * exact (the loop's winner): the CPU loop engine takes 19.1 s and the device tree 33.2 s (269 rounds). The CPU tree engine in exact mode takes 7.8 s.
 
 With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there). Splitting a long item into its children, under
-any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s. Against the CPU tree engine on larger
-problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.4 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed 307: 0.12 s against 0.78
-s) and loses the many easy ones, where its floor of 20 to 60 ms per problem and the 0.45 s of compilation decide.
+any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s, and on the plain packager's hardest
+problem of 10 to 11 boxes the device goes from 49 s to 23 s once each child's depth reaches the kernel (before that fix the children searched the parent's whole subtree again). Against the CPU
+tree engine on larger problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.9 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed
+307: 0.12 s against 0.75 s) and loses the many easy ones, where its floor of 20 to 60 ms per problem and the 0.45 s of compilation decide.
 
 The device is about 4 times slower than the packager's own tree search on the CPU (0.61 s for the same problems). It lost by 1.6 times to the loop engine before the tree
 search too, but that engine is 14 times slower than the tree engine, so the device is no closer. The accelerator is not worth using as it is; the numbers, the tuning and what

@@ -128,7 +128,8 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 			return result;
 		} catch (PackagerInterruptedException e) {
 			cpuDone.set(true);
-			if(interrupt.getAsBoolean()) {
+			if(!acceleratorDone.get() || interrupt.getAsBoolean()) {
+				// the caller's interrupt, or the own search was interrupted another way (its thread): not the accelerator's win
 				throw e;
 			}
 			// the accelerator has a result

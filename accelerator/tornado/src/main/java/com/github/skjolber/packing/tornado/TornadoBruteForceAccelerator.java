@@ -394,6 +394,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final int[] layoutInts;
 		final int[] problem;
 		final long[] longs;
+		/** per slot: 0 when idle, else the depth of its item plus one (the children of a split item have longer prefixes) */
 		final int[] active;
 		final int[] prefixes;
 		final int[] parameters;
@@ -629,7 +630,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 				if(item == -1) {
 					active[slot] = 0;
 				} else {
-					active[slot] = 1;
+					// the depth of the slot's item plus one: the children of a split item have longer prefixes than P_DEPTH
+					active[slot] = itemDepth[item] + 1;
 					System.arraycopy(prefixes, item * n, session.prefixes, slot * n, n);
 					System.arraycopy(flat.out(), item * outInts, out, slot * outInts, outInts);
 					System.arraycopy(flat.outLongs(), item * FlatSubtree.OUT_LONGS, outLongs, slot * FlatSubtree.OUT_LONGS, FlatSubtree.OUT_LONGS);
