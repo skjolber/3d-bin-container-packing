@@ -107,6 +107,13 @@ Verified: the 7.3.1 `jdk22plus` OpenCL SDK on JDK 25, with the ROCm 7.1 OpenCL r
 
 ## Speed
 
+With the packager, the accelerator is by default used in `AcceleratorMode.AUTO`: the packager's own tree search starts at once and the device joins
+after a gate of 25 ms, the first result winning (`FastBruteForcePackager.withAcceleratorMode(..)`, `withAcceleratorGate(..)`; `CPU_ONLY` and `GPU_ONLY`
+are the other modes). On whole packings of 40 random problems per set with the packager on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
+`GPU_ONLY` 1.75 s, `AUTO` 0.70 s; 13 to 14 boxes 2.31 s, 4.73 s, 2.50 s; 15 to 16 boxes 3.97 s, 5.15 s, 3.84 s. The device joined 15 to 20 containers
+per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
+is the packager's own time plus the gate's overhead. The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
+
 Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB, ROCm OpenCL) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X, on 42 random problems of 11 to 12
 boxes in tight containers (seeds 100 to 141, the first container only), every problem different. The device times include the host loop, the transfers and the one compilation (0.45 s). The CPU
 engine runs in a fresh JVM, so its first problems are cold.

@@ -10,11 +10,36 @@ FastBruteForcePackager packager = FastBruteForcePackager
     .build();
 ```
 
-The accelerator only picks the best box order. The packager then places that order itself, with its own search, so the returned placements are the ones which
+The accelerator only picks the best box order (and by default searches alongside the packager, see [modes](#modes)). The packager then places that order itself, with its own search, so the returned
+placements are the ones which
 the packager returns without an accelerator (in exact mode; under any best the value is the same, the arrangement can differ). If the accelerator gives up, or the placement does not confirm the
 winner (count, load volume and rotations),
 the packager searches the permutations itself (`getAcceleratedCount()`, `getAcceleratorFallbackCount()` and `getAcceleratorMismatchCount()` of the packager count these). Close the accelerator when
 done: `FlatEngine` owns threads.
+
+## Modes
+
+`withAcceleratorMode(..)` says how the packager uses the accelerator for the containers it applies to:
+
+ * `CPU_ONLY`: the packager searches every container itself; the accelerator is not used.
+ * `GPU_ONLY`: the accelerator searches every container it applies to; the packager searches itself only where the accelerator gives up.
+ * `AUTO` (the default): the packager starts its own search at once and, after a gate (`withAcceleratorGate(..)`, 25 ms by default, about the least
+   any search takes on a device), the accelerator searches the same container alongside on its own thread; the first result wins and stops the
+   other. The easy containers never reach the accelerator; the hard ones take the faster of the two. The accelerator's winner is placed and confirmed
+   as in `GPU_ONLY`. `getAcceleratedCount()`, `getAcceleratorRaceCpuCount()` and `getAcceleratorFallbackCount()` count who finished which container.
+
+Measured with `FastBruteForcePackager.withThreads(8)` and the TornadoVM accelerator (a Radeon RX 7600) on whole packings of 40 random problems per
+set, 8 containers each, any best:
+
+| Boxes | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
+|---|---|---|---|---|
+| 11 to 12 | 0.59 s | 1.75 s | 0.70 s | 15 / 0 |
+| 13 to 14 | 2.31 s | 4.73 s | 2.50 s | 16 / 0 |
+| 15 to 16 | 3.97 s | 5.15 s | 3.84 s | 20 / 0 |
+
+The packager's own tree on 8 threads, with its settled orders and free space bound, finishes first on every container the device joined, so `AUTO`
+costs the gate's thread and the interrupt checks (a few percent, within the noise on the largest set) and gains nothing with this kernel; it pays
+when the device wins some containers, as it does against the CPU engine `FlatEngine` (see [the module README](../../accelerator/tornado/README.md)).
 
 ## When it is used
 

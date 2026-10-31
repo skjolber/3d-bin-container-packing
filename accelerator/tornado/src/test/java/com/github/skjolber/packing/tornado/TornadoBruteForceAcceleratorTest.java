@@ -15,6 +15,7 @@ import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorMode;
 
 /**
  * With and without a device, the packager with the accelerator returns the placements of the packager without it: without a TornadoVM runtime the
@@ -59,7 +60,7 @@ class TornadoBruteForceAcceleratorTest {
 	void samePlacementsAsThePackagerWithoutAccelerator() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
 		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
-		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(accelerator).build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			List<ContainerItem> containerItems = ContainerItem.newListBuilder()
 					.withContainer(Container.newBuilder().withId("container").withEmptyWeight(1).withSize(9, 6, 5).withMaxLoadWeight(1000).build(), 2)
@@ -94,7 +95,7 @@ class TornadoBruteForceAcceleratorTest {
 	void sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
 		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
-		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (long seed = 1; seed <= 12; seed++) {
 				KernelParity.Instance instance = KernelParity.random(seed, 6, 9, 4, 9);
@@ -111,6 +112,35 @@ class TornadoBruteForceAcceleratorTest {
 		} finally {
 			plain.close();
 			accelerated.close();
+			accelerator.close();
+		}
+	}
+
+	/** Auto mode on the device: the packager starts, the device joins at once (no gate) or after the default gate; the values are the packager's. */
+	@Test
+	void autoRacesTheDeviceAndAgrees() {
+		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager raced = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(0).build();
+		FastBruteForcePackager gated = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.AUTO).build();
+		try {
+			for (long seed = 1; seed <= 12; seed++) {
+				KernelParity.Instance instance = KernelParity.random(seed, 8, 11, 4, 9);
+				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
+				String expected = values(pack(plain, items, copy(instance.boxItems)));
+				assertThat(values(pack(raced, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
+				assertThat(values(pack(gated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
+			}
+			assertThat(accelerator.getLastFailure()).isNull();
+			assertThat(raced.getAcceleratorMismatchCount()).isZero();
+			assertThat(gated.getAcceleratorMismatchCount()).isZero();
+			if(accelerator.getDevice().isPresent()) {
+				assertThat(raced.getAcceleratedCount() + raced.getAcceleratorRaceCpuCount()).isGreaterThan(12);
+			}
+		} finally {
+			plain.close();
+			raced.close();
+			gated.close();
 			accelerator.close();
 		}
 	}
