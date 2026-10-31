@@ -719,13 +719,13 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 	public static class PrefixBest {
 
 		/** the number of boxes of the best arrangement */
-		public int count;
+		protected int count;
 		/** the load volume of the best arrangement */
-		public long loadVolume;
+		protected long loadVolume;
 		/** the points of the placed boxes (the first {@link #count}), reused between arrangements */
-		public final Point[] points;
+		protected final Point[] points;
 		/** the rotation of each placement */
-		public final int[] rotations;
+		protected final int[] rotations;
 
 		public PrefixBest(int length) {
 			this.points = new Point[length];
@@ -737,11 +737,26 @@ public abstract class AbstractBruteForcePackager extends AbstractPackager<Abstra
 			loadVolume = 0L;
 		}
 
-		public void offer(FastPointCalculator3DStack pointCalculator, int[] rotations, int count, long loadVolume) {
+		protected void offer(FastPointCalculator3DStack pointCalculator, int[] rotations, int count, long loadVolume) {
 			pointCalculator.copyPoints(this.points);
 			this.count = count;
 			this.loadVolume = loadVolume;
 			System.arraycopy(rotations, 0, this.rotations, 0, count);
+		}
+
+		/** @return the number of boxes of the best arrangement */
+		public int getCount() {
+			return count;
+		}
+
+		/** @return the load volume of the best arrangement */
+		public long getLoadVolume() {
+			return loadVolume;
+		}
+
+		/** @return the rotation of each placement (the first {@link #getCount()} entries), reused between arrangements */
+		public int[] getRotations() {
+			return rotations;
 		}
 
 		/** @return the points of the best arrangement, as a list which is not reused */

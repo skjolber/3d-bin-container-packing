@@ -169,23 +169,8 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
-`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the optional `accelerator-core` artifact) and `AcceleratedBruteForcePackager` (a `BruteForcePackager`) can hand the search of the
-box orders to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
-
-```xml
-<dependency>
-    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-    <artifactId>accelerator-core</artifactId>
-    <version>${3d-bin-container-packing.version}</version>
-</dependency>
-```
-
-```java
-AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager
-    .newBuilder()
-    .withAccelerator(FlatEngine.newBuilder().withThreads(8).build())
-    .build();
-```
+The optional `accelerator-core` artifact has versions of these packagers which can hand the search of the box orders to an accelerator (threads, or a device such as a GPU),
+see [accelerated brute force](docs/heuristics/accelerated-brute-force.md).
 
 Using a deadline is recommended whenever brute-forcing in a real-time application:
 
