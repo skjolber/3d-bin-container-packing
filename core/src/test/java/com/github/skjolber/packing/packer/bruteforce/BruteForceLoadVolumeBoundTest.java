@@ -24,7 +24,9 @@ import com.github.skjolber.packing.packer.PackagerInput;
 
 /**
  * Brute force skips searches which cannot load more volume than the best result so far, when results with less
- * load volume always compare worse. Packing results must be the same as without skipping.
+ * load volume always compare worse. Packing results must be the same as without skipping. A result comparator of
+ * its own makes a packager search the orders in a loop rather than as a tree, so the tree search runs in exact mode
+ * (the loop's arrangement among equally good ones) where full results are compared.
  */
 public class BruteForceLoadVolumeBoundTest {
 
@@ -84,7 +86,7 @@ public class BruteForceLoadVolumeBoundTest {
 	@Test
 	public void bruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
-		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().build();
+		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
@@ -97,7 +99,7 @@ public class BruteForceLoadVolumeBoundTest {
 	@Test
 	public void fastBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
-		try (FastBruteForcePackager bounded = FastBruteForcePackager.newBuilder().build();
+		try (FastBruteForcePackager bounded = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 				FastBruteForcePackager unbounded = FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				for(boolean groups : new boolean[] {false, true}) {
@@ -125,7 +127,7 @@ public class BruteForceLoadVolumeBoundTest {
 	@Test
 	public void loadBruteForceResultsAreTheSameWithoutTheBound() {
 		BruteForceIntermediatePackagerResultComparator comparator = new BruteForceIntermediatePackagerResultComparator();
-		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().build();
+		try (BruteForcePackager bounded = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 				BruteForcePackager unbounded = BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(withoutLoadVolumeBound(comparator)).build()) {
 			for(int seed = 0; seed < SEEDS; seed++) {
 				assertThat(pack(bounded, seed, MAX_BOXES, 1, false, LOAD_WEIGHT_PRESSURE_COUNT)).as("seed %d", seed)

@@ -14,7 +14,8 @@ import com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout;
  * com.github.skjolber.packing.packer.bruteforce.flat.FlatSubtree} of one slot of a window. The state of a slot is in the window arrays, which the host
  * fills with the items to run (and copies back afterwards), so that the memory on the device does not depend on the number of items of the search.
  * <p>
- * The kernel is a port of the flat package, function by function; it is written by hand because the TornadoVM JIT (7.3.1, OpenCL) does not compile the
+ * The kernel is a port of the flat package, function by function (the search of the orders of an item one at a time, {@code FlatSubtree}, and as one
+ * tree, {@code FlatTree}, chosen by {@link #P_TREE}); it is written by hand because the TornadoVM JIT (7.3.1, OpenCL) does not compile the
  * search correctly (it compiles, but the kernel hangs). TornadoVM loads a prebuilt kernel from a file, so the resource is copied to a temporary file once.
  * <p>
  * The parameters of the kernel, after the four of the TornadoVM calling convention, are the layout as ints ({@link #layoutInts(FlatLayout)}), the ints and
@@ -32,11 +33,19 @@ public final class SubtreeKernel {
 	public static final int P_BUDGET = 1;
 	/** the index in the ints of the parameters: the number of slots, which is the number of work items */
 	public static final int P_SLOTS = 2;
-	public static final int PARAMETER_INTS = 3;
+	/** the index in the ints of the parameters: 1 to search the orders of an item as one tree ({@code FlatTree}), 0 one order at a time ({@code FlatSubtree}) */
+	public static final int P_TREE = 3;
+	/** the index in the ints of the parameters: 1 to bound the nodes of a tree item by their free space ({@code FlatSpace}) */
+	public static final int P_SPACE = 4;
+	public static final int PARAMETER_INTS = 5;
 
 	/** the index in the longs of the parameters: the load volume which a permutation must be able to exceed */
 	public static final int P_BOUND = 0;
-	public static final int PARAMETER_LONGS = 1;
+	/** the index in the longs of the parameters: the best arrangement of the items so far (volume, weight, count), which bounds the tree items */
+	public static final int P_SHARED_VOLUME = 1;
+	public static final int P_SHARED_WEIGHT = 2;
+	public static final int P_SHARED_COUNT = 3;
+	public static final int PARAMETER_LONGS = 4;
 
 	private static final String RESOURCE = "subtree.cl";
 
@@ -51,8 +60,9 @@ public final class SubtreeKernel {
 	public static int[] layoutInts(FlatLayout layout) {
 		return new int[] { layout.n, layout.pMax, layout.frameInts, layout.control, layout.placements, layout.frames, layout.flags, layout.moveX, layout.moveY, layout.moveZ, layout.poolX,
 				layout.poolY, layout.poolZ, layout.nextX, layout.nextY, layout.nextZ, layout.headX, layout.headY, layout.headZ, layout.tailX, layout.tailY, layout.tailZ, layout.copyX,
-				layout.copyY, layout.copyZ, layout.perm, layout.rotation, layout.placedRotation, layout.bestRotation, layout.size, layout.minArea, layout.minVolume, layout.placedVolume,
-				layout.bestVolume, layout.longSize };
+				layout.copyY, layout.copyZ, layout.perm, layout.rotation, layout.placedRotation, layout.bestRotation, layout.typeAt, layout.fit, layout.placedType, layout.remaining, layout.spaces, layout.spaceSizes,
+				layout.spaceRemaining, layout.known, layout.witness, layout.spaceChecked, layout.size,
+				layout.minArea, layout.minVolume, layout.placedVolume, layout.bestVolume, layout.placedWeight, layout.longSize, layout.types };
 	}
 
 	/**

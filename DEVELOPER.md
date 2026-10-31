@@ -745,7 +745,8 @@ public interface BruteForceAccelerator extends AutoCloseable {
 }
 ```
 
-The winner must be the one which the packager's own loop picks: the most load volume, then load weight, then boxes; the
+The winner must be the one which the packager's own loop picks (under `FlatProblem.ANY_BEST`, set from `withTreeSearchAnyBest(true)`, the value of the winner, not the arrangement): the most load
+volume, then load weight, then boxes; the
 earlier permutation wins a tie, and the first permutation which places all boxes wins at once. The packager places the
 winner itself, and searches the box orders itself when the accelerator returns nothing, so an accelerator may give up on
 any problem, but must not return a worse or a different winner. Test it as `FlatEngineTest` and
@@ -758,9 +759,13 @@ Code which should run on a device is written in the style of the `flat` package,
  * small methods (a kernel compiler inlines them), and statistics in a counter array, not by logging
  * the same tie-breaking as the object version; the comparator which picks the best point is not a total order, so
    copy it as it is
+ * the flat package has two searches of an item: `FlatSubtree` (the orders one at a time) and `FlatTree` (the default: the orders as one tree, with the bound table `FlatBound` computed once per
+   problem on the host, and the free space bound `FlatSpace`, a port of `BruteForceTreeFreeSpace`); `FlatEngine.Builder.withTree(false)` selects the first
  * the kernel of the tornado module (`accelerator/tornado/src/main/resources/.../subtree.cl`) is a hand-written OpenCL C port of the flat package, function
-   by function, with the same names and the same order of statements: a change to `FlatPoints`, `FlatSearch`, `FlatPermutation` or `FlatSubtree` is made
-   in both, and `KernelParityTest` (with a device) shows that they still agree. It is written by hand because the TornadoVM JIT (7.3.1, OpenCL) compiles the
+   by function, with the same names and the same order of statements (`runTree` is the port of `FlatTree`, `run` of `FlatSubtree`): a change to `FlatPoints`, `FlatSearch`, `FlatPermutation`,
+   `FlatSubtree`, `FlatTree`, `FlatBound` or `FlatSpace` is made
+   in both (`isHopelessInSpace` of `FlatTree` and the `// FlatSpace` section of the kernel port `FlatSpace`), and `KernelParityTest` (with a device) shows that they still agree. It is written
+   by hand because the TornadoVM JIT (7.3.1, OpenCL) compiles the
    search but miscompiles its control flow without an error (a kernel which never ends; see the README of the module). The flat Java therefore keeps a
    C-like shape: one exit per method, no `return` or `continue` in a loop, boolean predicates (`isAfterX(..)`) instead of three-way comparators, which is
    also what the port needs

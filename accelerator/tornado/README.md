@@ -27,15 +27,39 @@ device at a time; searches from other threads wait.
  * `DeviceSelector`, `DeviceInfo` and `TornadoDevices`: find the devices of the TornadoVM runtime and choose one, by default the OpenCL GPU with the most compute throughput
    (compute units times clock, then the most memory: an integrated GPU shares the memory of the system, so it can report more than the discrete card). Without a runtime the list is
    empty. Exclude a device with `withExcludedName(..)`, or choose by name with `withNameContains(..)`.
- * `SubtreeKernel` and `src/main/resources/.../subtree.cl`: the kernel. One work item runs `FlatSubtree.run(..)` for one slot of a window, with its own scratch, for at most
-   `withNodeBudget(..)` search nodes, then pauses. It is a hand-written OpenCL C port of the flat package of the core module (`FlatGeometry`, `FlatPointOrder`, `FlatPoints`,
-   `FlatPermutation`, `FlatSearch`, `FlatSubtree`), function by function with the same names and statements, run as a TornadoVM *prebuilt* task. See below for why it is not
-   compiled by the TornadoVM JIT. A change to the flat package is made in the kernel too; `KernelParityTest` checks that the two agree.
- * `TornadoBruteForceAccelerator`: the host loop of `FlatEngine` on the device. The permutations are split in items by their first boxes (`withTargetItems(..)` items at least);
-   a window of `withWindow(..)` items runs at a time, each item in a slot with its own scratch on the device (`withMaxPoints(..)` free points at each level). After each run
-   the host reads the state of the slots, polls the interrupt, and runs the next round with the items which are not done; the winners of the items are reduced as in `FlatEngine`.
-   The compiled kernel and the device memory are kept between searches of the same shape (number of boxes and sizes of the problem arrays), so that only the first search of a
-   packing pays for compilation and allocation.
+ * `SubtreeKernel` and `src/main/resources/.../subtree.cl`: the kernel. One work item runs `FlatTree.runTree(..)` for one slot of a window, with its own scratch, for at most
+   `withNodeBudget(..)` search nodes, then pauses; `run(..)`, the port of `FlatSubtree`, is the old search of the orders one at a time (`withTree(false)`). It is a hand-written OpenCL C port of the
+   flat package of the core module (`FlatGeometry`, `FlatPointOrder`, `FlatPoints`, `FlatPermutation`, `FlatSearch`, `FlatSubtree`, `FlatTree`, `FlatBound`), function by function with the same
+   names and statements, run as a TornadoVM *prebuilt* task. See below for why it is not compiled by the TornadoVM JIT. A change to the flat package is made in the kernel too;
+   `KernelParityTest` checks that the two agree.
+ * `TornadoBruteForceAccelerator`: the host loop of `FlatEngine` on the device. The permutations are split in items by their first boxes, a prefix of box types (`withTargetItems(..)`
+   items at least). Each item is searched as one tree by default (`withTree(true)`), as the packager's `BruteForceTreeSearch` does on the CPU: each prefix of placements is placed once,
+   and a node or a box is pruned when the prefix plus the best sub-multiset of the remaining boxes within the load left cannot beat the best. The bound is a table per multiset of remaining
+   boxes (`FlatBound`), computed once per problem on the host and left out above 4096 multisets. The items share their best arrangement (volume, weight, count) through the host between
+   rounds. Under any best (the packager's default, passed in `FlatProblem.ANY_BEST`) the types are tried largest first, the items with the largest prefixes run first, ties are pruned and the
+   first arrangement which places all boxes ends the search; for the exact winner of the loop (`withTreeSearchAnyBest(false)`) the types are tried in their order and only strictly worse
+   prefixes are pruned. The item keeps no table of settled orders, which the CPU tree has.
+   * The free space bound (`FlatSpace`, the `// FlatSpace` section of the kernel, called from `runTree` as `isHopelessInSpace`) is the packager's one: the free space of the path of the node is
+     kept as maximal empty spaces on the scratch (at most 48 per level, `FlatLayout.MAX_SPACES`; more makes the level unknown, in which every box is taken to fit). The box types which fit none of
+     them in any rotation can never be placed below the node, so the prefix plus the remaining boxes of the other types within the load left must beat the best. It is checked once per node, when
+     its first child is about to be placed, and only where three more of the smallest remaining boxes fit the load left (`SPACE_BOXES`); an item gives it up when fewer than one check in sixteen
+     cuts (`SPACE_CHECKS` 2048, `SPACE_CUT_RATE`). A type is looked for first at the free points of the level (a free point which holds it is an empty region), then by the answer kept from the
+     level above with its witness space, then in the spaces of the nearest level computed above which miss the boxes placed since, and only then are the spaces of the level computed from the
+     parent's. It is on by default for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost (`withFreeSpace(..)`). The
+     scratch per slot grows by the spaces, the answers and the witnesses: about 7 KB of ints at 16 boxes and 48 spaces.
+   * Splitting (`withSplit(..)`, on by default; `getSplits()` counts them): under any best, a tree item which has run for four rounds (`SPLIT_ROUNDS`) while fewer than a quarter of the slots are
+     active is split on the host. Its best so far stays (the item is marked done), and the search below its prefix goes on in new items, one per remaining type (the parent's prefix plus the
+     type), which run side by side in the free slots; a child can be split again, down to one box before the last. The work the parent had done below its prefix is redone, bounded by the best so
+     far. It is the device's form of work stealing. Exact mode never splits: an earlier item wins ties there, and the order of the children would not be the parent's.
+   * One session holds the arrays, sized for a number of boxes and of types (the first problem's, each rounded up to 8; a larger problem makes a larger session once), and the compiled kernel; the
+     kernel reads the layout and the sizes from the arrays each run. The per-type arrays are sized by the types, not the boxes: the later containers of a packing keep every type of the packing,
+     with no box left of some, so types can exceed boxes (`FlatLayout(n, pMax, types)`, read by the kernel as the last layout int; `FlatTreeTest.sameWinnerWithTypesWithoutBoxes`). The kernel is
+     compiled once per accelerator, which takes about 0.45 s.
+   * A window of `withWindow(..)` slots runs at a time, each with its own scratch on the device (`withMaxPoints(..)` free points at each level). A tree item keeps its slot (its state is the scratch of
+     the slot) until it is done, and the host assigns free slots to the next items each round. The number of slots is capped by the largest allocation of the device.
+   * The node budget of a round starts at 32 and doubles each round up to `withNodeBudget(..)`, so that a strong arrangement bounds the others before they search much. When few items are left the
+     budget grows up to 64 times, so that the rounds (transfers and launch) do not dominate the tail.
+   * After each run the host reads the state of the slots, polls the interrupt, and runs the next round; the winners of the items are reduced as in `FlatEngine`.
  * `ListDevices`: a `main` which prints the devices and the chosen one, as a smoke test of a TornadoVM installation.
 
 The dependency on `tornado-api` is `provided`: the API jar has no native drivers. The runtime is the TornadoVM SDK, which is not on Maven Central.
@@ -74,48 +98,86 @@ The environment variables keep the caches of the GPU stack within the build dire
  * `PrebuiltProbe`: checks the calling convention of a prebuilt kernel (the order of the parameters, the 16-byte header of a Java array on the device, the global work size).
    Run it after an upgrade of TornadoVM, before the kernel.
  * `KernelParity`: runs the accelerator on random problems and compares the winner with `FlatEngine`, printing the times. Arguments: `firstSeed seeds minBoxes maxBoxes window
-   nodeBudget maxPoints targetItems cpuThreads repeat`, for example `KernelParity 1 20 8 10`. Give every run a `timeout`: a hung kernel never returns.
+   nodeBudget maxPoints targetItems cpuThreads repeat localWorkSize mode`, for example `KernelParity 1 20 8 10`.
+   A thirteenth argument, `nospace`, runs without the free space bound; the splits are printed.
+   The mode is `exact` (default: the loop's winner), `any` (any best, compared by value) or `loop` (the old loop kernel). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
 Verified: the 7.3.1 `jdk22plus` OpenCL SDK on JDK 25, with the ROCm 7.1 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU (`gfx1036`) is listed as a second device.
 
 ## Speed
 
-Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X (the CPU engine does the
-same work per node as the packager's own loop, so this is the packager with 8 threads), with a warm JVM, on 42 random problems of 11 to 12 boxes in tight containers, every
-problem different. The device time includes the host loop, the transfers and, for each problem, about 0.4 s to compile the kernel and allocate the scratch; the compiled kernel
-and the memory are reused only for a problem of the same shape (number of boxes and sizes of the problem arrays).
+Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB, ROCm OpenCL) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X, on 42 random problems of 11 to 12
+boxes in tight containers (seeds 100 to 141, the first container only), every problem different. The device times include the host loop, the transfers and the one compilation (0.45 s). The CPU
+engine runs in a fresh JVM, so its first problems are cold.
 
-| Problems | 8 CPU threads | Device |
+| Search | CPU | Device |
 |---|---|---|
-| 35 easy ones (the CPU under 0.5 s each) | 1.3 s in all | 16.3 s in all, 0.46 s each |
-| seed 112, 7 million nodes | 0.54 s | 1.03 s |
-| seed 115, 6 million nodes | 0.52 s | 0.81 s |
-| seed 122, 9 million nodes | 1.53 s | 2.01 s |
-| seed 128, 6 million nodes | 0.63 s | 0.93 s |
-| seed 140, 5 million nodes | 0.63 s | 0.74 s |
-| seed 109, 55 million nodes | 12.0 s | 26.5 s |
-| seed 138, 126 million nodes | 19.1 s | 10.7 s |
-| all 42 | 36.3 s | 59.0 s |
+| any best | tree engine 1.44 s | tree 2.35 s (130 rounds) |
+| exact (the loop's winner) | loop engine 19.1 s; tree engine 7.8 s | tree 33.2 s (269 rounds) |
+| exact, old loop kernel | loop engine 19.8 s | loop kernel 42.0 s (359 rounds) |
+| the packager's own tree search, any best (8 threads / 1 thread) | 0.61 s / 5.5 s | |
 
-So the device is 1.6 times slower than 8 CPU threads over the whole set: the compilation makes the easy problems 12 times slower, the medium ones lose by 1.2 to 1.9 times, and
-only the largest problem wins, by 1.8 times (seed 109, whose items are very uneven, loses by 2.2 times). Against the 32 threads of the whole CPU the device loses everywhere.
-A second search of a problem of the same shape saves the 0.4 s, which does not change the picture for the medium problems. The target of the design (3 times the whole CPU)
-is not reached, and the expectation of 0.5 to 2 times only for the largest problems.
+The last row is `FastBruteForcePackager.withThreads(8)` on master, with its free space bound and settled orders, measured as a whole packing including the later containers.
 
-Note on measuring: the CPU times must be taken with a warm JVM. A first search in a fresh JVM includes the JIT compilation of the search and is 2 to 6 times slower, which made
-an earlier version of this table claim the opposite.
+Per problem under any best:
 
-The defaults come from tuning runs on seeds 112 to 115:
+ * the medium problems are 1.5 to 3 times slower on the device (seed 122: 0.26 s against 0.09 s; seed 128: 0.20 s against 0.09 s)
+ * the problems where all boxes fit are faster on the device (seed 138: 13 to 67 ms against 40 to 160 ms; seed 109: 35 ms to 0.4 s against 20 to 100 ms)
+ * the first search pays for the compilation (seed 100: 0.58 s against 14 ms)
+
+In exact mode seed 109 alone takes 278 million nodes in 24 s on the device against 10 s for the CPU loop.
+
+So under any best the device is 1.6 times slower than 8 CPU threads over the set. It lost by 1.6 times to the old loop engine before the tree search, but that engine is 14 times slower than the tree
+engine is now. Against the packager's own tree search the device is about 4 times slower. The target of the design (3 times the whole CPU) is not reached.
+
+Before the shared best (volume, weight, count) and the doubling budget, the same set took 35.5 s under any best, of which one problem (seed 109) took 29 s: 192 million nodes against the CPU tree's
+2.6 million, because 2048 items each burnt their budget before the arrangements of the others reached them.
+
+Note on measuring: the CPU times must be taken with a warm JVM. A first search in a fresh JVM includes the JIT compilation of the search and is 2 to 6 times slower, which made an earlier
+version of this table claim the opposite.
+
+The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; window / node budget):
+
+| Window / budget | 256 / 250 | 512 / 1000 | 512 / 250 | 1024 / 500 | 2048 / 1000 | 2048 / 250 | 4096 / 250 | 4096 / 1000 | 8192 / 250 |
+|---|---|---|---|---|---|---|---|---|---|
+| Time | 15.6 s | 10.1 s | 10.5 s | 6.6 s | 4.6 s | 4.3 s | 2.6 s | 2.9 s | 2.5 s |
 
  * `withLocalWorkSize(1)`: one work item per work group. The search diverges so much that the lanes of a wavefront mostly wait for each other; a work group of one
    was 2.5 times faster than the choice of the runtime (a work group of 32 was no better than that).
- * `withNodeBudget(1000)`: after each round the load volumes found so far bound the next, so a small budget means fewer nodes in all (seed 112: 6.9 million nodes against 21 million
-   with a budget of 5000, and 47 million with 20,000); 500 was slightly faster still, 2000 slower.
- * `withWindow(2048)`: 1024 and 4096 were the same; 512 was 2.5 times slower (too few work items in flight). `withMaxPoints(64)` and `withTargetItems(65536)` made no difference.
+ * `withWindow(8192)` (was 2048): smaller windows lose, because fewer items in flight find the best later and the tail runs longer. The memory per slot is the scratch of the layout (about 80 KB of
+   ints for 16 boxes and 64 points), so 8192 slots take about 650 MB; the number of slots is capped by the largest allocation of the device.
+ *  `withNodeBudget(250)` (was 1000): after each round the best found so far bounds the next, so a small budget means fewer nodes in all; with a window of 4096 or more the budget matters little (2.6
+   s at 250, 2.9 s at 1000).
+ * `withMaxPoints(64)` (was 128): halves the scratch per slot, so that more slots fit.
 
-What could still change the picture: compiling the kernel once per JVM instead of once per shape (the kernel does not depend on the sizes, only the plan does), and a layout of the
-scratch which coalesces the memory accesses of a wavefront; neither has been tried.
+ * `withFreeSpace(..)`: on for the loop's winner, off under any best (see "How it works"). A/B on the 42 problems above (8 CPU threads, node budget 250):
+
+   | Search | Without | With |
+   |---|---|---|
+   | CPU tree engine, any best | 0.48 s | 0.67 s |
+   | CPU tree engine, exact | 6.5 s | 4.7 s |
+   | device, any best | 2.6 s | 3.3 s |
+   | device, exact | 33.3 s | 16.6 s |
+
+   Exact halves on the device, and any best takes about a quarter more on the device, which is why it is off there.
+ * `withSplit(..)`: on. On the device under any best, the 42 problems above have 38 splits and no change in the total (2.8 s against 2.6 s, within the run-to-run noise). On 16 problems of 13 to
+   14 boxes there are 1360 splits and the time goes from 4.1 s to 3.2 s, the hardest (seed 208) from 2.13 s to 1.79 s. On 12 problems of 15 to 16 boxes there are 268 splits, and the hardest (seed
+   309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds.
+
+Larger problems, the device against the CPU tree engine with 8 threads on 4 cores, any best, each in a fresh JVM so that the first problems of the CPU are cold:
+
+| Problems | CPU | Device |
+|---|---|---|
+| 16 problems of 13 to 14 boxes | 2.7 s | 3.2 s |
+| 12 problems of 15 to 16 boxes | 1.4 s | 2.0 s |
+
+Per problem the device wins on the hard ones and loses on the many easy ones. Seed 208: 2.37 s on the CPU against 1.79 s on the device. Seed 307: 0.78 s against 0.12 s. Seed 309: 0.50 s against
+0.66 s. Seed 205: 0.16 s against 0.09 s. On the easy ones the CPU is far ahead (seed 209: 1 ms against 65 ms; seed 301: 49 ms against 230 ms), because the device has a floor of about 20 to 60 ms
+per problem (rounds and transfers) and the 0.45 s of compilation on the first search.
+
+What could still change the picture: the settled orders of the CPU tree (they matter for the loop's exact winner only; the item search keeps none), a layout of the scratch which coalesces the
+memory accesses of a wavefront (not tried), and problems where the CPU needs seconds, where the floor per problem is small against the search.
 
 ## Why the kernel is written by hand
 

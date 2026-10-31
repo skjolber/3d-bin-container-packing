@@ -1,5 +1,7 @@
 package com.github.skjolber.packing.packer.bruteforce.flat;
 
+import java.util.Arrays;
+
 /**
  * The output of all items of a search (see {@linkplain FlatSubtree}), and what the host does with it between runs: find the items which still have
  * to run, and reduce the best arrangements of the items to the winner. Shared by the engines which run the items, on threads or on a device.
@@ -7,10 +9,10 @@ package com.github.skjolber.packing.packer.bruteforce.flat;
 public final class FlatItems {
 
 	private final int n;
-	private final int items;
+	private int items;
 	private final int outInts;
-	private final int[] out;
-	private final long[] outLongs;
+	private int[] out;
+	private long[] outLongs;
 
 	/**
 	 * @param n the number of boxes of a permutation
@@ -26,6 +28,61 @@ public final class FlatItems {
 
 	public int items() {
 		return items;
+	}
+
+	/**
+	 * Add items (not started), for the children of an item which is split.
+	 *
+	 * @param count the number of items to add
+	 * @return the index of the first added item
+	 */
+	public int add(int count) {
+		int first = items;
+		items += count;
+		if(items * outInts > out.length) {
+			out = Arrays.copyOf(out, Math.max(items * outInts, 2 * out.length));
+			outLongs = Arrays.copyOf(outLongs, Math.max(items * FlatSubtree.OUT_LONGS, 2 * outLongs.length));
+		}
+		return first;
+	}
+
+	/** Mark an item done (its best so far stays), when the search below it continues in other items. */
+	public void setDone(int item) {
+		out[item * outInts + FlatSubtree.OUT_STATUS] = FlatSubtree.DONE;
+	}
+
+	/**
+	 * The order in which to run the items: when any best arrangement will do, the prefixes with the most volume first (a strong arrangement then
+	 * bounds the others early), else their order.
+	 *
+	 * @param problemLongs the longs of the {@linkplain FlatProblem}
+	 * @param prefixes the first permutation of each item, n values each
+	 * @param depth the length of the prefixes
+	 * @return the items in the order to run them
+	 */
+	public static int[] order(long[] problemLongs, int[] prefixes, int n, int depth, boolean anyBest) {
+		int items = prefixes.length / n;
+		int[] order = new int[items];
+		for (int item = 0; item < items; item++) {
+			order[item] = item;
+		}
+		if(anyBest && items < (1 << 21)) {
+			// sort the items by the volume of their prefix, the largest first, keeping the order of equal ones: the keys are the volume (which is
+			// below 2^43 for any box the search takes) with the item in the low bits
+			long[] keys = new long[items];
+			for (int item = 0; item < items; item++) {
+				long volume = 0L;
+				for (int i = 0; i < depth; i++) {
+					volume += problemLongs[prefixes[item * n + i]];
+				}
+				keys[item] = ((Long.MAX_VALUE >> 21) - volume << 21) | item;
+			}
+			Arrays.sort(keys);
+			for (int i = 0; i < items; i++) {
+				order[i] = (int)(keys[i] & ((1 << 21) - 1));
+			}
+		}
+		return order;
 	}
 
 	/** @return the output ints of all items, {@link #outInts()} for each */
@@ -112,6 +169,29 @@ public final class FlatItems {
 		return best;
 	}
 
+	/**
+	 * The best arrangement of the items so far, written to the array: its volume, weight and count (zero if none of them has placed any box).
+	 *
+	 * @param best an array of three longs
+	 */
+	public void best(long[] best) {
+		best[0] = 0L;
+		best[1] = 0L;
+		best[2] = 0L;
+		for (int item = 0; item < items; item++) {
+			int count = count(item);
+			if(count > 0) {
+				long volume = volume(item);
+				long weight = outLongs[item * FlatSubtree.OUT_LONGS + FlatSubtree.OUT_WEIGHT];
+				if(best[2] == 0L || volume > best[0] || (volume == best[0] && (weight > best[1] || (weight == best[1] && count > best[2])))) {
+					best[0] = volume;
+					best[1] = weight;
+					best[2] = count;
+				}
+			}
+		}
+	}
+
 	/** @return the number of nodes the items have searched */
 	public long nodes() {
 		long nodes = 0L;
@@ -141,6 +221,15 @@ public final class FlatItems {
 				break;
 			}
 		}
+		return winner(winner, nodes);
+	}
+
+	/** @return the arrangement of the item (or none for -1), with the number of nodes the items have searched */
+	public AcceleratorWinner winner(int winner) {
+		return winner(winner, nodes());
+	}
+
+	private AcceleratorWinner winner(int winner, long nodes) {
 		if(winner == -1) {
 			return new AcceleratorWinner(new int[n], new int[n], 0, 0L, 0L, nodes, false);
 		}

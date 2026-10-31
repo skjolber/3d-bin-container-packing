@@ -152,6 +152,8 @@ public class ParallelBruteForcePackagerThreadPriorityTest {
 				.withParallelizationCount(16)
 				.withPointFilter(filter)
 				.withThreadPriority(PRIORITY)
+				// the loop's arrangement: with any arrangement of the best value, a container whose boxes all fit is searched on the calling thread
+				.withTreeSearchAnyBest(false)
 				.build();
 		try {
 			// two groups have two orders, too few to split between the workers: each order is searched in turn, with its permutations split between the workers

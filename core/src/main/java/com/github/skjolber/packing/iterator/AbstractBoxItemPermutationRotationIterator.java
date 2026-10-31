@@ -213,6 +213,11 @@ public abstract class AbstractBoxItemPermutationRotationIterator implements BoxI
 		return stackValues[permutations[index]];
 	}
 
+	/** @return the box item with the index, which the permutation refers to */
+	public BoxItem getBoxItemByIndex(int boxItemIndex) {
+		return stackableItems[boxItemIndex];
+	}
+
 	@Override
 	public BoxStackValue[][] getBoxItemStackValues() {
 		return stackValues;

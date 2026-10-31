@@ -22,7 +22,9 @@ import com.github.skjolber.packing.packer.AbstractPackager;
  * is accepted): result comparators read their load volume, weight and box count. The default result comparator gives
  * the same results as a reference comparator of the same values which never reads the stacks (the parallel packager:
  * the same summaries, as it chooses among equal results in the order its threads finish). Box item groups, as the
- * search of the group orders compares the results of different orders, which share placements.
+ * search of the group orders compares the results of different orders, which share placements. A result comparator
+ * of its own makes a packager search the orders in a loop rather than as a tree, so the tree search runs in exact
+ * mode (the loop's arrangement among equally good ones) where full results are compared.
  */
 public class BruteForceResultComparatorTest {
 
@@ -62,8 +64,8 @@ public class BruteForceResultComparatorTest {
 	@Test
 	public void defaultComparatorGivesTheResultsOfTheBruteForceComparator() {
 		List<Function<IntermediatePackagerResultComparator, AbstractPackager<?>>> packagers = List.of(
-				comparator -> BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(comparator).build(),
-				comparator -> FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(comparator).build(),
+				comparator -> BruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(comparator).withTreeSearchAnyBest(false).build(),
+				comparator -> FastBruteForcePackager.newBuilder().withIntermediatePackagerResultComparator(comparator).withTreeSearchAnyBest(false).build(),
 				comparator -> ParallelBruteForcePackager.newBuilder().withThreads(2).withParallelizationCount(4).withIntermediatePackagerResultComparator(comparator).build());
 		for (Function<IntermediatePackagerResultComparator, AbstractPackager<?>> factory : packagers) {
 			try (AbstractPackager<?> bruteForceComparator = factory.apply(REFERENCE);

@@ -74,6 +74,11 @@ public class KernelParity {
 	}
 
 	static FlatProblem problem(Instance instance) {
+		return problem(instance, false);
+	}
+
+	/** @param anyBest true if any arrangement of the best value will do */
+	static FlatProblem problem(Instance instance, boolean anyBest) {
 		Container container = instance.container;
 		List<BoxItem> copy = new ArrayList<>();
 		for (BoxItem boxItem : instance.boxItems) {
@@ -84,7 +89,12 @@ public class KernelParity {
 				.withBoxItems(copy)
 				.withMaxLoadWeight(container.getMaxLoadWeight())
 				.build();
-		return FlatProblem.of(iterator, container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), container.getMaxLoadVolume(), container.getMaxLoadWeight(), iterator.length());
+		return FlatProblem.of(iterator, container.getLoadDx(), container.getLoadDy(), container.getLoadDz(), container.getMaxLoadVolume(), container.getMaxLoadWeight(), iterator.length(), anyBest);
+	}
+
+	/** @return true if the arrangements have the same value: count, load volume, load weight and whether all boxes are placed */
+	static boolean sameValue(AcceleratorWinner a, AcceleratorWinner b) {
+		return a.getCount() == b.getCount() && a.getLoadVolume() == b.getLoadVolume() && a.getLoadWeight() == b.getLoadWeight() && a.isFullyPacked() == b.isFullyPacked();
 	}
 
 	static boolean same(AcceleratorWinner a, AcceleratorWinner b) {
@@ -110,12 +120,18 @@ public class KernelParity {
 		int threads = args.length > 8 ? Integer.parseInt(args[8]) : Runtime.getRuntime().availableProcessors();
 		boolean repeat = args.length > 9 && Boolean.parseBoolean(args[9]);
 		int localWorkSize = args.length > 10 ? Integer.parseInt(args[10]) : TornadoBruteForceAccelerator.DEFAULT_LOCAL_WORK_SIZE;
+		// "exact": the tree kernel against the loop of the CPU engine, the same winner; "any": the tree kernel and the tree of the CPU engine, any best
+		// arrangement, the same value; "loop": the loop kernel against the loop of the CPU engine
+		String mode = args.length > 11 ? args[11] : "exact";
+		boolean anyBest = mode.equals("any");
+		boolean tree = !mode.equals("loop");
+		boolean freeSpace = !(args.length > 12 && args[12].equals("nospace"));
 
 		TornadoBruteForceAccelerator device = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).withWindow(window).withNodeBudget(budget).withMaxPoints(maxPoints)
-				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).build();
+				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).withTree(tree).withFreeSpace(freeSpace).build();
 		System.out.println("Device: " + device.getDevice().orElseThrow(() -> new IllegalStateException("No device found")) + ", window " + window + ", budget " + budget + ", max points "
-				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + "; cpu threads " + threads);
-		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).build();
+				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
+		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest).withFreeSpace(freeSpace).build();
 
 		int mismatches = 0;
 		int gaveUp = 0;
@@ -124,7 +140,7 @@ public class KernelParity {
 		for (int i = 0; i < seeds; i++) {
 			long seed = firstSeed + i;
 			Instance instance = random(seed, minBoxes, maxBoxes, 4, 9);
-			FlatProblem problem = problem(instance);
+			FlatProblem problem = problem(instance, anyBest);
 
 			long start = System.nanoTime();
 			Optional<AcceleratorWinner> expected = cpu.search(problem, 0L, () -> false);
@@ -152,15 +168,15 @@ public class KernelParity {
 			if(actual.isEmpty()) {
 				gaveUp++;
 				System.out.println(line + ", device gave up");
-			} else if(expected.isEmpty() || !same(actual.get(), expected.get())) {
+			} else if(expected.isEmpty() || !(anyBest ? sameValue(actual.get(), expected.get()) : same(actual.get(), expected.get()))) {
 				mismatches++;
 				System.out.println(line + ", MISMATCH: expected " + describe(expected) + ", got " + describe(actual));
 			} else if(seeds <= 40) {
 				System.out.println(line + ", same: " + describe(actual));
 			}
 		}
-		System.out.println("seeds " + seeds + ", mismatches " + mismatches + ", device gave up " + gaveUp + ", cpu " + cpuNanos / 1_000_000 + " ms, device " + deviceNanos / 1_000_000 + " ms, rounds "
-				+ device.getRounds() + ", on device " + device.getNanosOnDevice() / 1_000_000 + " ms");
+		System.out.println("seeds " + seeds + ", " + mode + ", mismatches " + mismatches + ", device gave up " + gaveUp + ", cpu " + cpuNanos / 1_000_000 + " ms, device " + deviceNanos / 1_000_000 + " ms, rounds "
+				+ device.getRounds() + ", splits " + device.getSplits() + ", on device " + device.getNanosOnDevice() / 1_000_000 + " ms");
 		System.exit(mismatches == 0 ? 0 : 1);
 	}
 

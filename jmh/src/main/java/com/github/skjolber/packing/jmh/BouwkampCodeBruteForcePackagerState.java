@@ -74,15 +74,15 @@ public class BouwkampCodeBruteForcePackagerState {
 
 				List<BoxItem> stackableItems3D = BouwkampConverter.getStackableItems3D(bkpLine);
 
-				ParallelBruteForcePackager parallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).build();
+				ParallelBruteForcePackager parallelPackager = TreeOptions.apply(ParallelBruteForcePackager.newBuilder()).withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).build();
 				ParallelBruteForcePackager filteredParallelPackager = ParallelBruteForcePackager.newBuilder().withExecutorService(pool2).withParallelizationCount(threadPoolSize * 16).withSkipReversePermutations(true).build();
 
-				BruteForcePackager packager = BruteForcePackager.newBuilder().build();
+				BruteForcePackager packager = TreeOptions.apply(BruteForcePackager.newBuilder()).build();
 				BruteForcePackager filteredPackager = BruteForcePackager.newBuilder().withSkipReversePermutations(true).build();
 
 				PlainPackager plainPackager = PlainPackager.newBuilder().build();
 
-				FastBruteForcePackager fastPackager = FastBruteForcePackager.newBuilder().build();
+				FastBruteForcePackager fastPackager = TreeOptions.threads(FastBruteForcePackager.newBuilder()).build();
 
 				// single-threaded
 				this.bruteForcePackager.add(new BenchmarkSet(packager, stackableItems3D, containers));
