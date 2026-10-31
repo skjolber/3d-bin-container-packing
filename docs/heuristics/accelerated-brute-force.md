@@ -42,7 +42,8 @@ done: `FlatEngine` owns threads.
    configured gate, doubles after a race which the accelerator joined and lost, and halves after one it won, between the configured gate and
    1024 times it (`getAcceleratorGateMillis(boxes)` tells the current one). Where the accelerator keeps losing it soon joins only the containers which
    run far longer than the rest, where it keeps winning it joins at the configured gate; a container which the packager finishes before the gate
-   teaches nothing.
+   teaches nothing. On the sets below the adaptive gate cuts the device's searches from 7 to 3 (11 to 12 boxes), 9 to 8 and 15 to 11, at the same
+   packing time within the noise; the gate of 16 boxes ends at 1.6 s. Where the device wins, as for the brute-force packager, nothing changes.
    A packager hands its searches to the accelerator on one thread, one after the other: when the packager is used from several threads at once, a
    search whose race is over before its turn is dropped from the queue, and never reaches the accelerator.
 
