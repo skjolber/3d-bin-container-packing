@@ -20,6 +20,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.bruteforce.FlatTestInstances.Instance;
+import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorMode;
 import com.github.skjolber.packing.packer.bruteforce.flat.FlatEngine;
 
 /**
@@ -76,7 +77,7 @@ class FlatAcceleratedPackagerTest {
 			Function<Instance, List<BoxItem>> boxItems) {
 		// the accelerator picks the loop's winner, so the packager without it must too: exact tree search, not any arrangement of the best value
 		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).build();
-		FastBruteForcePackager accelerated = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).withAccelerator(engine).build();
+		FastBruteForcePackager accelerated = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = FlatTestInstances.random(seed, minBoxes, maxBoxes);
@@ -218,7 +219,7 @@ class FlatAcceleratedPackagerTest {
 	void doesNotAccelerateWithObstacles() {
 		FlatEngine engine = engine(2);
 		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
-		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (int seed = 0; seed < 10; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);
@@ -273,7 +274,7 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void acceleratesIteratorsWithTheSameExtractionOrderAndPriority() throws PackagerInterruptedException {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).build();
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			assertThat(packWithAccelerator(packager, container(), iterator(container(), 0, 0), false)).isNotNull();
 			assertThat(packager.acceleratedCount.get()).isEqualTo(1);
@@ -287,7 +288,7 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void doesNotAccelerateIteratorsWithDifferentExtractionOrders() throws PackagerInterruptedException {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).build();
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			assertThat(packWithAccelerator(packager, container(), iterator(container(), 1, 0), false)).isNull();
 			assertThat(packager.acceleratedCount.get()).isZero();
@@ -301,7 +302,7 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void doesNotAccelerateIteratorsWithDifferentContainerPriorities() throws PackagerInterruptedException {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).build();
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			assertThat(packWithAccelerator(packager, container(), iterator(container(), 0, 1), false)).isNull();
 			assertThat(packager.acceleratedCount.get()).isZero();
@@ -315,11 +316,61 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void interruptIsHonouredWhenAccelerated() {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).build();
+		FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			assertThatThrownBy(() -> packWithAccelerator(packager, container(), iterator(container(), 0, 0), true)).isInstanceOf(PackagerInterruptedException.class);
 		} finally {
 			packager.close();
+			engine.close();
+		}
+	}
+
+	@Test
+	void cpuOnlyNeverUsesTheAccelerator() {
+		FlatEngine engine = engine(2);
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.CPU_ONLY).build();
+		try {
+			for (int seed = 0; seed < 20; seed++) {
+				Instance instance = FlatTestInstances.random(seed, 8, 10);
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				assertThat(describe(pack(accelerated, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(describe(pack(plain, containerItems, instance.copyBoxItems())));
+			}
+			assertThat(accelerated.getAcceleratedCount()).isZero();
+			assertThat(accelerated.getAcceleratorRaceCpuCount()).isZero();
+			assertThat(accelerated.getAcceleratorFallbackCount()).isZero();
+		} finally {
+			plain.close();
+			accelerated.close();
+			engine.close();
+		}
+	}
+
+	/** In auto mode the packager and the accelerator search alongside, each stopped by the other's result: the placements are the exact packager's either way. */
+	@Test
+	void autoRacesTheAcceleratorAndAgrees() {
+		FlatEngine engine = engine(2);
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		// no gate: the accelerator joins at once, so that it wins some containers; a gate of a second: the packager finishes every container first
+		FastBruteForcePackager raced = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(0).build();
+		FastBruteForcePackager gated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(1000).build();
+		try {
+			for (int seed = 0; seed < 40; seed++) {
+				Instance instance = FlatTestInstances.random(seed, 8, 11);
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String expected = describe(pack(plain, containerItems, instance.copyBoxItems()));
+				assertThat(describe(pack(raced, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
+				assertThat(describe(pack(gated, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
+			}
+			assertThat(raced.getAcceleratorMismatchCount()).isZero();
+			assertThat(raced.getAcceleratedCount() + raced.getAcceleratorRaceCpuCount()).isGreaterThan(40);
+			assertThat(gated.getAcceleratorMismatchCount()).isZero();
+			assertThat(gated.getAcceleratedCount()).isZero();
+			assertThat(gated.getAcceleratorRaceCpuCount()).isGreaterThan(40);
+		} finally {
+			plain.close();
+			raced.close();
+			gated.close();
 			engine.close();
 		}
 	}

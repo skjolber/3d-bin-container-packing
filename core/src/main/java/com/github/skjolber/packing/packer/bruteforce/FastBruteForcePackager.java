@@ -6,6 +6,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
+import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorMode;
+import java.util.concurrent.locks.LockSupport;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.Future;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutionException;
 
 import com.github.skjolber.packing.api.Box;
 import com.github.skjolber.packing.api.BoxItem;
@@ -55,6 +61,9 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
+	/** the gate of {@link AcceleratorMode#AUTO}: the packager searches a container alone for this long before the accelerator joins */
+	public static final long DEFAULT_ACCELERATOR_GATE_MILLIS = 25L;
+
 	@FunctionalInterface
 	public interface FastBruteForceBoxStackValuePointComparator {
 
@@ -91,6 +100,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		protected FastBruteForceBoxStackValuePointComparator pointComparator = DEFAULT_POINT_COMPARATOR;
 		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		protected BruteForceAccelerator accelerator;
+		protected AcceleratorMode acceleratorMode = AcceleratorMode.AUTO;
+		protected long acceleratorGateMillis = DEFAULT_ACCELERATOR_GATE_MILLIS;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
 			this.comparator = comparator;
@@ -229,6 +240,29 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		/**
+		 * @param mode how the accelerator is used: by default {@link AcceleratorMode#AUTO}, the packager's own search with the accelerator alongside after
+		 *        a gate ({@link #withAcceleratorGate(long)})
+		 * @return this builder
+		 */
+		public Builder withAcceleratorMode(AcceleratorMode mode) {
+			this.acceleratorMode = mode;
+			return this;
+		}
+
+		/**
+		 * @param millis in {@link AcceleratorMode#AUTO}, the time the packager searches a container alone before the accelerator joins: about what the
+		 *        accelerator needs for any search, so that the containers which the packager finishes within it never reach the accelerator
+		 * @return this builder
+		 */
+		public Builder withAcceleratorGate(long millis) {
+			if(millis < 0L) {
+				throw new IllegalArgumentException("Expected a gate of zero or more milliseconds, got " + millis);
+			}
+			this.acceleratorGateMillis = millis;
+			return this;
+		}
+
 		public FastBruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
@@ -236,6 +270,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			
 			FastBruteForcePackager packager = new FastBruteForcePackager(comparator, pointComparator);
 			packager.accelerator = accelerator;
+			packager.acceleratorMode = acceleratorMode;
+			packager.acceleratorGateNanos = acceleratorGateMillis * 1_000_000L;
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
@@ -298,10 +334,18 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 			}
-			BruteForceIntermediatePackagerResult accelerated = packWithAccelerator(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt,
-					best, getLimit(containerIterators[i]));
-			if(accelerated != null) {
-				return accelerated;
+			if(accelerator != null && acceleratorMode == AcceleratorMode.GPU_ONLY) {
+				BruteForceIntermediatePackagerResult accelerated = packWithAccelerator(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i,
+						containerIterators[i], interrupt, best, getLimit(containerIterators[i]));
+				if(accelerated != null) {
+					return accelerated;
+				}
+			} else if(accelerator != null && acceleratorMode == AcceleratorMode.AUTO) {
+				BruteForceIntermediatePackagerResult raced = packRacing(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i],
+						interrupt, best, getLimit(containerIterators[i]));
+				if(raced != null) {
+					return raced;
+				}
 			}
 			return FastBruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, containerIterators[i], interrupt, fastPointComparator, best, getLimit(containerIterators[i]));
 		}
@@ -427,6 +471,12 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 
 	/** The accelerator which searches the permutations, or null, see {@link Builder#withAccelerator(BruteForceAccelerator)} */
 	private BruteForceAccelerator accelerator;
+	private AcceleratorMode acceleratorMode = AcceleratorMode.AUTO;
+	private long acceleratorGateNanos = DEFAULT_ACCELERATOR_GATE_MILLIS * 1_000_000L;
+	/** the thread on which the accelerator searches alongside this packager in {@link AcceleratorMode#AUTO}, made when first needed */
+	private ExecutorService acceleratorExecutor;
+	/** containers which the packager finished itself while the accelerator searched alongside, or before it joined (statistics) */
+	final AtomicLong acceleratorRaceCpuCount = new AtomicLong();
 
 	/** containers searched by the accelerator, with a result which the replay confirmed (statistics) */
 	final AtomicLong acceleratedCount = new AtomicLong();
@@ -448,6 +498,11 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/** @return the number of containers where the winner of the accelerator was not confirmed by the replay, which is a bug in the accelerator */
 	public long getAcceleratorMismatchCount() {
 		return acceleratorMismatchCount.get();
+	}
+
+	/** @return the number of containers which the packager finished itself in {@link AcceleratorMode#AUTO}, before the accelerator joined or while it searched alongside */
+	public long getAcceleratorRaceCpuCount() {
+		return acceleratorRaceCpuCount.get();
 	}
 
 	public FastBruteForcePackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
@@ -477,6 +532,23 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 		if(shutdownExecutorServiceOnClose && executorService != null) {
 			executorService.shutdownNow();
 		}
+		synchronized (this) {
+			if(acceleratorExecutor != null) {
+				acceleratorExecutor.shutdownNow();
+				acceleratorExecutor = null;
+			}
+		}
+	}
+
+	private synchronized ExecutorService acceleratorExecutor() {
+		if(acceleratorExecutor == null) {
+			acceleratorExecutor = Executors.newCachedThreadPool(runnable -> {
+				Thread thread = new Thread(runnable, "packing-accelerator");
+				thread.setDaemon(true);
+				return thread;
+			});
+		}
+		return acceleratorExecutor;
 	}
 
 	/**
@@ -652,40 +724,139 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem, int containerIndex,
 			BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit) throws PackagerInterruptedException {
 		BruteForceAccelerator accelerator = this.accelerator;
-		if(accelerator == null || limit == 0 || !isAcceleratable(containerItem, iterator)) {
+		if(accelerator == null) {
+			return null;
+		}
+		FlatProblem problem = acceleratorProblem(accelerator, containerItem, iterator, best, limit);
+		if(problem == null) {
+			return null;
+		}
+		Optional<AcceleratorWinner> found = accelerator.search(problem, getMinLoadVolume(best), interrupt);
+		if(found.isEmpty()) {
+			acceleratorFallbackCount.incrementAndGet();
+			return null;
+		}
+		return confirmAccelerated(found.get(), pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, limit);
+	}
+
+	/**
+	 * Pack the boxes of the iterator into one container as {@link #pack}, with the accelerator searching alongside ({@link AcceleratorMode#AUTO}):
+	 * this packager starts at once, the accelerator after the gate, each stopping when the other has a result. The accelerator's winner is placed and
+	 * confirmed as in {@link #packWithAccelerator}; when it is not confirmed, or the accelerator gave up, this packager searches on alone.
+	 *
+	 * @return the result, or null if the accelerator does not apply: then pack the container with {@link #pack}
+	 */
+	protected BruteForceIntermediatePackagerResult packRacing(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit)
+			throws PackagerInterruptedException {
+		BruteForceAccelerator accelerator = this.accelerator;
+		if(accelerator == null) {
+			return null;
+		}
+		FlatProblem problem = acceleratorProblem(accelerator, containerItem, iterator, best, limit);
+		if(problem == null) {
+			return null;
+		}
+		final long minLoadVolume = getMinLoadVolume(best);
+		final long gateNanos = acceleratorGateNanos;
+		final AtomicBoolean cpuDone = new AtomicBoolean();
+		final AtomicBoolean acceleratorDone = new AtomicBoolean();
+		final PackagerInterruptSupplier acceleratorInterrupt = () -> cpuDone.get() || interrupt.getAsBoolean();
+		Future<Optional<AcceleratorWinner>> future = acceleratorExecutor().submit(() -> {
+			// the gate: the packager alone, unless it is already done
+			long deadline = System.nanoTime() + gateNanos;
+			while (System.nanoTime() < deadline) {
+				if(cpuDone.get()) {
+					return Optional.<AcceleratorWinner>empty();
+				}
+				LockSupport.parkNanos(200_000L);
+			}
+			if(cpuDone.get()) {
+				return Optional.<AcceleratorWinner>empty();
+			}
+			Optional<AcceleratorWinner> found = accelerator.search(problem, minLoadVolume, acceleratorInterrupt);
+			if(found.isPresent() && !cpuDone.get()) {
+				// a result: the packager's own search stops
+				acceleratorDone.set(true);
+			}
+			return found;
+		});
+		final PackagerInterruptSupplier cpuInterrupt = () -> acceleratorDone.get() || interrupt.getAsBoolean();
+		try {
+			BruteForceIntermediatePackagerResult result = pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, cpuInterrupt, fastPointComparator,
+					best, limit);
+			cpuDone.set(true);
+			acceleratorRaceCpuCount.incrementAndGet();
+			return result;
+		} catch (PackagerInterruptedException e) {
+			cpuDone.set(true);
+			if(interrupt.getAsBoolean()) {
+				throw e;
+			}
+			// the accelerator has a result
+			Optional<AcceleratorWinner> found;
+			try {
+				found = future.get();
+			} catch (InterruptedException | ExecutionException ex) {
+				found = Optional.empty();
+			}
+			if(found.isPresent()) {
+				BruteForceIntermediatePackagerResult result = confirmAccelerated(found.get(), pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt,
+						limit);
+				if(result != null) {
+					return result;
+				}
+			} else {
+				acceleratorFallbackCount.incrementAndGet();
+			}
+			// not confirmed, or gone: the packager searches alone, from the start
+			iterator.reset();
+			return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, fastPointComparator, best, limit);
+		} finally {
+			cpuDone.set(true);
+			future.cancel(false);
+		}
+	}
+
+	/**
+	 * @return the problem of the container for the accelerator, or null if the accelerator does not apply to it, or nothing can load more than the best
+	 *         result ({@link #pack} returns at once then)
+	 */
+	private FlatProblem acceleratorProblem(BruteForceAccelerator accelerator, ContainerItem containerItem, BoxItemPermutationRotationIterator iterator, IntermediatePackagerResult best, int limit) {
+		if(limit == 0 || !isAcceleratable(containerItem, iterator)) {
 			return null;
 		}
 		int length = iterator.length();
 		Container holder = containerItem.getContainer().copy(length);
-		Stack stack = holder.getStack();
-		if(createLoadPlacementUtility(iterator, stack) != null) {
+		if(createLoadPlacementUtility(iterator, holder.getStack()) != null) {
 			return null;
 		}
 		boolean allItemsFit = limit >= length && canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 		long minLoadVolume = getMinLoadVolume(best);
 		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
-			// nothing can load more than the best result: pack(..) returns at once
 			return null;
 		}
-
 		// any arrangement of the best value will do when the tree search of this packager would take any: the accelerator may then prune ties
 		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, treeSearchAnyBest);
-		if(!accelerator.supports(problem)) {
-			return null;
-		}
-		Optional<AcceleratorWinner> found = accelerator.search(problem, minLoadVolume, interrupt);
-		if(found.isEmpty()) {
-			acceleratorFallbackCount.incrementAndGet();
-			return null;
-		}
-		AcceleratorWinner winner = found.get();
+		return accelerator.supports(problem) ? problem : null;
+	}
+
+	/**
+	 * Place the accelerator's winning permutation (the positions are those of this packager) and compare with the claim.
+	 *
+	 * @return the result, or null if the claim was not confirmed (a bug in the accelerator): then pack the container with {@link #pack}
+	 */
+	private BruteForceIntermediatePackagerResult confirmAccelerated(AcceleratorWinner winner, FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount,
+			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, int limit) throws PackagerInterruptedException {
+		int length = iterator.length();
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
 		if(winner.getCount() == 0) {
 			acceleratedCount.incrementAndGet();
 			return result;
 		}
-
-		// the positions are those of this packager: place the winning permutation, and compare with the claim
+		Container holder = containerItem.getContainer().copy(length);
+		Stack stack = holder.getStack();
+		boolean allItemsFit = limit >= length && canPackAll(iterator, holder.getMaxLoadVolume(), holder.getMaxLoadWeight());
 		DefaultBoxItemPermutationRotationIterator defaultIterator = (DefaultBoxItemPermutationRotationIterator)iterator;
 		try {
 			defaultIterator.setPermutation(winner.getPermutation());
