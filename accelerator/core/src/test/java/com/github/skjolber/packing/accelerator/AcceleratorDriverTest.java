@@ -85,7 +85,7 @@ class AcceleratorDriverTest {
 	@Test
 	void concurrentRacesReachTheAcceleratorOneAtATime() throws Exception {
 		StubAccelerator accelerator = new StubAccelerator();
-		AcceleratorDriver<String> driver = new AcceleratorDriver<>(accelerator, AcceleratorMode.AUTO, 0L, false);
+		AcceleratorDriver<String> driver = new AcceleratorDriver<>(accelerator, AcceleratorMode.AUTO, new FixedAcceleratorGate(0L));
 		FlatProblem problem = problem(6);
 		int races = 8;
 		CountDownLatch start = new CountDownLatch(1);
@@ -130,61 +130,102 @@ class AcceleratorDriverTest {
 	void theGateOfABoxCountAdaptsToTheRaces() throws Exception {
 		StubAccelerator accelerator = new StubAccelerator();
 		long floor = TimeUnit.MILLISECONDS.toNanos(1);
-		AcceleratorDriver<String> driver = new AcceleratorDriver<>(accelerator, AcceleratorMode.AUTO, floor, true);
+		AdaptiveAcceleratorGate gate = new AdaptiveAcceleratorGate(floor);
+		AcceleratorDriver<String> driver = new AcceleratorDriver<>(accelerator, AcceleratorMode.AUTO, gate);
 		FlatProblem six = problem(6);
 		FlatProblem seven = problem(7);
 		try {
-			assertThat(driver.gateNanos(6)).isEqualTo(floor);
+			assertThat(gate.gateNanos(6)).isEqualTo(floor);
 			// the own search takes 40 ms: the accelerator joins and loses while the gate is below that, 1, 2, 4, 8, 16, 32 ms, then stays out at 64 ms
 			for (int race = 0; race < 8; race++) {
 				assertThat(driver.search(six, 0L, () -> false, ownSearch(40), winner -> "accelerated")).isEqualTo("own");
 			}
-			assertThat(driver.gateNanos(6)).isGreaterThanOrEqualTo(TimeUnit.MILLISECONDS.toNanos(32)).isLessThanOrEqualTo(TimeUnit.MILLISECONDS.toNanos(256));
+			assertThat(gate.gateNanos(6)).isGreaterThanOrEqualTo(TimeUnit.MILLISECONDS.toNanos(32)).isLessThanOrEqualTo(TimeUnit.MILLISECONDS.toNanos(256));
 			assertThat(accelerator.entered.get()).isGreaterThanOrEqualTo(5).isLessThan(8);
 			// another box count has its own gate
-			assertThat(driver.gateNanos(7)).isEqualTo(floor);
+			assertThat(gate.gateNanos(7)).isEqualTo(floor);
 			assertThat(driver.search(seven, 0L, () -> false, ownSearch(10), winner -> "accelerated")).isEqualTo("own");
-			assertThat(driver.gateNanos(7)).isEqualTo(2 * floor);
+			assertThat(gate.gateNanos(7)).isEqualTo(2 * floor);
 			// the accelerator wins at once after the gate: the gate of six boxes halves back to the floor
 			accelerator.wins = true;
 			for (int race = 0; race < 10; race++) {
 				assertThat(driver.search(six, 0L, () -> false, ownSearch(1000), winner -> "accelerated")).isEqualTo("accelerated");
 			}
-			assertThat(driver.gateNanos(6)).isEqualTo(floor);
+			assertThat(gate.gateNanos(6)).isEqualTo(floor);
 			assertThat(driver.acceleratedCount.get()).isEqualTo(10);
-			assertThat(driver.gateNanos(7)).isEqualTo(2 * floor);
+			assertThat(gate.gateNanos(7)).isEqualTo(2 * floor);
 		} finally {
 			driver.close();
 		}
 	}
 
 	@Test
-	void theGateStaysBetweenTheConfiguredGateAndTheCap() {
-		long configured = TimeUnit.MILLISECONDS.toNanos(25);
-		AcceleratorDriver<String> driver = new AcceleratorDriver<>(new StubAccelerator(), AcceleratorMode.AUTO, configured, true);
-		driver.wonRace(5);
-		assertThat(driver.gateNanos(5)).isEqualTo(configured);
-		driver.lostRace(5);
-		assertThat(driver.gateNanos(5)).isEqualTo(2 * configured);
+	void theAdaptiveGateStaysBetweenTheFloorAndTheCap() {
+		FlatProblem five = problem(5);
+		long floor = TimeUnit.MILLISECONDS.toNanos(25);
+		AdaptiveAcceleratorGate gate = new AdaptiveAcceleratorGate(floor);
+		gate.raced(five, AcceleratorGate.Outcome.ACCELERATOR, 0L);
+		assertThat(gate.gateNanos(five)).isEqualTo(floor);
+		gate.raced(five, AcceleratorGate.Outcome.PACKAGER_ALONE, 0L);
+		assertThat(gate.gateNanos(five)).isEqualTo(floor);
+		gate.raced(five, AcceleratorGate.Outcome.PACKAGER, 0L);
+		assertThat(gate.gateNanos(five)).isEqualTo(2 * floor);
 		for (int i = 0; i < 20; i++) {
-			driver.lostRace(5);
+			gate.raced(five, AcceleratorGate.Outcome.PACKAGER, 0L);
 		}
-		assertThat(driver.gateNanos(5)).isEqualTo(AcceleratorDriver.GATE_CAP_FACTOR * configured);
+		assertThat(gate.gateNanos(five)).isEqualTo(AdaptiveAcceleratorGate.CAP_FACTOR * floor);
 		for (int i = 0; i < 20; i++) {
-			driver.wonRace(5);
+			gate.raced(five, AcceleratorGate.Outcome.ACCELERATOR, 0L);
 		}
-		assertThat(driver.gateNanos(5)).isEqualTo(configured);
+		assertThat(gate.gateNanos(five)).isEqualTo(floor);
 
-		// a configured gate of zero grows from a millisecond
-		AcceleratorDriver<String> ungated = new AcceleratorDriver<>(new StubAccelerator(), AcceleratorMode.AUTO, 0L, true);
-		ungated.lostRace(5);
+		// a floor of zero grows from a millisecond, and returns to zero
+		AdaptiveAcceleratorGate ungated = new AdaptiveAcceleratorGate(0L);
+		ungated.raced(five, AcceleratorGate.Outcome.PACKAGER, 0L);
 		assertThat(ungated.gateNanos(5)).isEqualTo(TimeUnit.MILLISECONDS.toNanos(1));
-		ungated.wonRace(5);
+		ungated.raced(five, AcceleratorGate.Outcome.ACCELERATOR, 0L);
 		assertThat(ungated.gateNanos(5)).isZero();
+	}
 
-		// not adaptive: the gate is the configured one whatever the races
-		AcceleratorDriver<String> fixed = new AcceleratorDriver<>(new StubAccelerator(), AcceleratorMode.AUTO, configured, false);
-		fixed.lostRace(5);
-		assertThat(fixed.gateNanos(5)).isEqualTo(configured);
+	/** A gate of your own is asked before each race, and told how the race ended and how long it took. */
+	@Test
+	void aGateOfYourOwnSeesEveryRace() throws Exception {
+		StubAccelerator accelerator = new StubAccelerator();
+		List<AcceleratorGate.Outcome> outcomes = new ArrayList<>();
+		List<Long> times = new ArrayList<>();
+		AtomicInteger asked = new AtomicInteger();
+		AcceleratorGate gate = new AcceleratorGate() {
+			volatile long nanos;
+
+			@Override
+			public long gateNanos(FlatProblem problem) {
+				asked.incrementAndGet();
+				return nanos;
+			}
+
+			@Override
+			public void raced(FlatProblem problem, Outcome outcome, long nanos) {
+				outcomes.add(outcome);
+				times.add(nanos);
+				// after a lost race, the gate is longer than any own search here
+				this.nanos = outcome == Outcome.PACKAGER ? TimeUnit.SECONDS.toNanos(1) : 0L;
+			}
+		};
+		AcceleratorDriver<String> driver = new AcceleratorDriver<>(accelerator, AcceleratorMode.AUTO, gate);
+		FlatProblem problem = problem(6);
+		try {
+			assertThat(driver.search(problem, 0L, () -> false, ownSearch(20), winner -> "accelerated")).isEqualTo("own");
+			assertThat(driver.search(problem, 0L, () -> false, ownSearch(20), winner -> "accelerated")).isEqualTo("own");
+			assertThat(outcomes).containsExactly(AcceleratorGate.Outcome.PACKAGER, AcceleratorGate.Outcome.PACKAGER_ALONE);
+			assertThat(asked.get()).isEqualTo(2);
+			assertThat(times.get(0)).isGreaterThanOrEqualTo(TimeUnit.MILLISECONDS.toNanos(20));
+			accelerator.wins = true;
+			assertThat(driver.search(problem, 0L, () -> false, ownSearch(1000), winner -> "accelerated")).isEqualTo("accelerated");
+			assertThat(outcomes).hasSize(3);
+			assertThat(outcomes.get(2)).isEqualTo(AcceleratorGate.Outcome.ACCELERATOR);
+			assertThat(times.get(2)).isLessThan(TimeUnit.MILLISECONDS.toNanos(1000));
+		} finally {
+			driver.close();
+		}
 	}
 }

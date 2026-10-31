@@ -38,11 +38,12 @@ done: `FlatEngine` owns threads.
    any search takes on a device), the accelerator searches the same container alongside on its own thread; the first result wins and stops the
    other. The easy containers never reach the accelerator; the hard ones take the faster of the two. The accelerator's winner is placed and confirmed
    as in `GPU_ONLY`. `getAcceleratedCount()`, `getAcceleratorRaceCpuCount()` and `getAcceleratorFallbackCount()` count who finished which container.
-   The gate adapts to the two sides, per box count (`withAcceleratorAdaptiveGate(..)`, on by default): the gate of a box count starts at the
-   configured gate, doubles after a race which the accelerator joined and lost, and halves after one it won, between the configured gate and
-   1024 times it (`getAcceleratorGateMillis(boxes)` tells the current one). Where the accelerator keeps losing it soon joins only the containers which
-   run far longer than the rest, where it keeps winning it joins at the configured gate; a container which the packager finishes before the gate
-   teaches nothing. On the sets below the adaptive gate cuts the device's searches from 7 to 3 (11 to 12 boxes), 9 to 8 and 15 to 11, at the same
+   The gate adapts to the two sides, per box count (`AdaptiveAcceleratorGate`, the default; `withAcceleratorAdaptiveGate(false)` keeps the
+   configured gate for every container): the gate of a box count starts at the configured gate, doubles after a race which the accelerator joined
+   and lost, and halves after one it won, between the configured gate and 1024 times it (`getAcceleratorGate()` tells the current ones). Where the
+   accelerator keeps losing it soon joins only the containers which run far longer than the rest, where it keeps winning it joins at the configured
+   gate; a container which the packager finishes before the gate teaches nothing. A gate of your own (`withAcceleratorGate(AcceleratorGate)`) is
+   asked before each race and told how it ended, and how long it took. On the sets below the adaptive gate cuts the device's searches from 7 to 3 (11 to 12 boxes), 9 to 8 and 15 to 11, at the same
    packing time within the noise; the gate of 16 boxes ends at 1.6 s. Where the device wins, as for the brute-force packager, nothing changes.
    A packager hands its searches to the accelerator on one thread, one after the other: when the packager is used from several threads at once, a
    search whose race is over before its turn is dropped from the queue, and never reaches the accelerator.
