@@ -265,7 +265,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 			if(!isConfirmed(winner, prefix)) {
 				return null;
 			}
-			result.setState(prefix.toList(), getState(iterator, prefix.rotations, prefix.count), stackPlacements, stackPlacementCount);
+			result.setState(prefix.toList(), getState(iterator, prefix.getRotations(), prefix.getCount()), stackPlacements, stackPlacementCount);
 			return result;
 		} finally {
 			// the packager searches the permutations from the first (and the other attempts reset the iterator themselves)
@@ -274,12 +274,14 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 	}
 
 	private static boolean isConfirmed(AcceleratorWinner winner, PrefixBest prefix) {
-		if(prefix.count != winner.getCount() || prefix.loadVolume != winner.getLoadVolume()) {
+		int count = prefix.getCount();
+		if(count != winner.getCount() || prefix.getLoadVolume() != winner.getLoadVolume()) {
 			return false;
 		}
 		int[] rotations = winner.getRotations();
-		for (int i = 0; i < prefix.count; i++) {
-			if(prefix.rotations[i] != rotations[i]) {
+		int[] prefixRotations = prefix.getRotations();
+		for (int i = 0; i < count; i++) {
+			if(prefixRotations[i] != rotations[i]) {
 				return false;
 			}
 		}

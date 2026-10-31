@@ -6,6 +6,14 @@
 optional and off by default. Without one, the packagers work as described in [brute-force](brute-force.md), as do `FastBruteForcePackager` and `BruteForcePackager` in `core`, which has no
 accelerator code.
 
+```xml
+<dependency>
+    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+    <artifactId>accelerator-core</artifactId>
+    <version>${3d-bin-container-packing.version}</version>
+</dependency>
+```
+
 ```java
 AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager
     .newBuilder()

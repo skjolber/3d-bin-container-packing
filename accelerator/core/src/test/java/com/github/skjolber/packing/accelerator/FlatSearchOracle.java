@@ -65,9 +65,9 @@ public final class FlatSearchOracle extends AcceleratedFastBruteForcePackager {
 		}
 
 		Search search = new Search();
-		search.count = prefix.count;
-		search.loadVolume = prefix.loadVolume;
-		search.rotations = java.util.Arrays.copyOf(prefix.rotations, prefix.count);
+		search.count = prefix.getCount();
+		search.loadVolume = prefix.getLoadVolume();
+		search.rotations = java.util.Arrays.copyOf(prefix.getRotations(), prefix.getCount());
 		return search;
 	}
 
