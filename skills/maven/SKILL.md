@@ -18,7 +18,7 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 | `accelerator/core` | Flat search classes, `FlatEngine`, `BruteForceAccelerator` and `AcceleratedFastBruteForcePackager` (depends on `core`; in the default build) |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |
-| `accelerator/tornado` | TornadoVM accelerator (experimental, Java 22+); only with `-Ptornado`, e.g. `./mvnw -B -ntp -Ptornado,dev -pl accelerator/tornado -am test` |
+| `accelerator/tornado` | TornadoVM accelerator (experimental, Java 22+); the tests which need a device are skipped without `-Dtornado.argfile` (see its README) |
 | `visualizer/api` | Visualizer JSON contract types |
 | `visualizer/algorithm` | Algorithm state capture |
 | `visualizer/packaging` | Packing result → JSON conversion |

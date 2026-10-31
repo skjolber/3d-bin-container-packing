@@ -5,10 +5,10 @@ Experimental [TornadoVM](https://www.tornadovm.org/) accelerator for `FastBruteF
 the search of the box orders of a container runs on a GPU (or another OpenCL, CUDA or Metal device of TornadoVM), and the packager places the winning order itself, so
 the placements are the same as without the accelerator.
 
-It needs Java 22+, and is only built with the `tornado` profile; the default build does not contain it:
+It needs Java 22+ and is part of the default build. To build and test it alone:
 
 ```sh
-./mvnw -B -ntp -Ptornado,dev -pl accelerator/tornado -am test
+./mvnw -B -ntp -Pdev -pl accelerator/tornado -am test
 ```
 
 ```java
@@ -79,10 +79,10 @@ T=$PWD/accelerator/tornado/target
 sed "s|\${TORNADOVM_HOME}|$SDK|g" $SDK/tornado-argfile.template > $T/tornado.args
 ```
 
-The tests which need a device (`KernelParityTest`, and the device part of `TornadoBruteForceAcceleratorTest`) are skipped unless the JVM options are given:
+The tests which need a device (`KernelParityTest`, and the device part of `TornadoBruteForceAcceleratorTest`) are skipped unless the JVM options are given, as in CI, which has no device; the other tests run:
 
 ```sh
-./mvnw -B -ntp -Ptornado,dev -pl accelerator/tornado -am test -Dtornado.argfile=$T/tornado.args
+./mvnw -B -ntp -Pdev -pl accelerator/tornado -am test -Dtornado.argfile=$T/tornado.args
 ```
 
 To run a class by hand:

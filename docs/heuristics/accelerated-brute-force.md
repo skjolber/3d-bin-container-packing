@@ -161,7 +161,7 @@ the SPI is that this can be measured without changing the packager.
 
 ## Running on a GPU with TornadoVM
 
-The module [`accelerator/tornado`](../../accelerator/tornado/README.md) (profile `-Ptornado`, Java 22+) is an experimental [TornadoVM](https://www.tornadovm.org/)
+The module [`accelerator/tornado`](../../accelerator/tornado/README.md) (Java 22+) is an experimental [TornadoVM](https://www.tornadovm.org/)
 accelerator: `TornadoBruteForceAccelerator` chooses the device (by default the OpenCL GPU with the most compute throughput) and runs the search of the items on it, one work
 item per item, with the host loop of `FlatEngine` around it. The kernel is a hand-written OpenCL C port of the flat classes of `accelerator-core`, run as a TornadoVM prebuilt task: the
 TornadoVM 7.3.1 JIT compiles the search from the Java but miscompiles its control flow (the kernel hangs), and the compiler of 8.0.0 refuses it (too many

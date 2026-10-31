@@ -217,6 +217,7 @@
 		<module>validators</module>
 		<module>core</module>
 		<module>accelerator/core</module>
+		<module>accelerator/tornado</module>
 		<module>jmh</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>
@@ -420,7 +421,8 @@
 										<version>3.6.3</version>
 									</requireMavenVersion>
 									<requireJavaVersion>
-										<version>17</version>
+										<!-- the build contains accelerator/tornado, which compiles for Java 22; the library modules compile for java.version -->
+										<version>22</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
@@ -524,13 +526,6 @@
 	</build>
 
 	<profiles>
-		<profile>
-			<!-- TornadoVM accelerator for the fast brute force packager, needs Java 22+ and tornado-api: mvn -P tornado ... Off by default: the default reactor does not contain the module -->
-			<id>tornado</id>
-			<modules>
-				<module>accelerator/tornado</module>
-			</modules>
-		</profile>
 		<profile>
 			<id>dev</id>
 			<properties>

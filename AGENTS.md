@@ -10,7 +10,7 @@
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `legacy/v4` | `shadowed-v4`: version 4 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published (see its README) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |
-| `accelerator/tornado` | `tornado-accelerator`: experimental TornadoVM accelerator for the fast brute force packager (Java 22+); depends on `accelerator-core`; only in the `-Ptornado` profile, not in the default build (see its README) |
+| `accelerator/tornado` | `tornado-accelerator`: experimental TornadoVM accelerator for the fast brute force packager (Java 22+); depends on `accelerator-core`; in the default build, so building needs JDK 22+; the tests which need a device are skipped without one (see its README) |
 | `visualizer/*` | Visualizer applications |
 
 Documentation: `README.md` (usage: each section an example and a few sentences, linking to
@@ -53,7 +53,7 @@ Line length 200. Tabs for indentation (see `eclipse-formatter.xml`).
 # Building and testing
 
 Run commands from the repository root. Use JDK 25, matching CI and the
-Copilot setup; library sources target Java 17. Use the checked-in Maven
+Copilot setup; library sources target Java 17 (`accelerator/tornado` Java 22). Use the checked-in Maven
 wrapper (`./mvnw`, or `mvnw.cmd` on Windows), which pins Maven 3.9.16.
 The first run needs network access to download Maven and dependencies.
 
