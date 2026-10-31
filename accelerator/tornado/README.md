@@ -67,13 +67,13 @@ The dependency on `tornado-api` is `provided`: the API jar has no native drivers
 
 ## Running against a device
 
-Download the SDK for your backend and JDK from the [TornadoVM releases](https://github.com/beehive-lab/TornadoVM/releases), for example `tornadovm-7.3.1-jdk22plus-opencl-linux-amd64.tar.gz`, and unpack it
+Download the SDK for your backend and JDK from the [TornadoVM releases](https://github.com/beehive-lab/TornadoVM/releases), for example `tornadovm-8.0.0-jdk22plus-opencl-linux-amd64.tar.gz`, and unpack it
 (for example into `accelerator/tornado/target/tornadovm-sdk`, which `mvn clean` removes). The OpenCL backend has no native library of its own: it calls the system OpenCL loader
 (`libOpenCL.so`) and so the OpenCL driver of the GPU (on AMD, the ROCm OpenCL runtime). The SDK contains `tornado-argfile.template`, the JVM options (JVMCI, module path, ...) in which `${TORNADOVM_HOME}`
 is the unpacked directory:
 
 ```sh
-SDK=$PWD/accelerator/tornado/target/tornadovm-sdk/tornadovm-7.3.1-opencl
+SDK=$PWD/accelerator/tornado/target/tornadovm-sdk/tornadovm-8.0.0-opencl
 T=$PWD/accelerator/tornado/target
 sed "s|\${TORNADOVM_HOME}|$SDK|g" $SDK/tornado-argfile.template > $T/tornado.args
 ```
@@ -104,7 +104,7 @@ The environment variables keep the caches of the GPU stack within the build dire
    The mode is `exact` (default: the loop's winner), `any` (any best, compared by value) or `loop` (the old loop kernel). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
-Verified: the 7.3.1 `jdk22plus` OpenCL SDK on JDK 25, with the ROCm 7.1 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU (`gfx1036`) is listed as a second device.
+Verified: the 8.0.0 `jdk22plus` OpenCL SDK (and the 7.3.1 before it) on JDK 25, with the ROCm 7.1 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU (`gfx1036`) is listed as a second device.
 
 ## Speed
 
@@ -198,5 +198,6 @@ TornadoVM 7.3.1 (OpenCL) that did not work: the JIT compiles the search (36,000 
  * With those rewritten, every function matched the host when run in a straight line, and a search of one box matched, but the second iteration of the search loop of
    `FlatSearch.searchPermutation` hangs the kernel, whatever the loop does in it; the host thread then blocks in `clEnqueueReadBuffer` for ever.
 
-The JIT does not reject code it cannot lower: it compiles it, and the kernel then returns wrong results or never finishes. The prebuilt kernel is compiled by the OpenCL compiler of the
+The JIT does not reject code it cannot lower: it compiles it, and the kernel then returns wrong results or never finishes. TornadoVM 8.0.0 replaced that compiler with its own (TC): it refuses the search outright instead (`TC-E1009 more than 64 distinct callees:
+recursion or an unbounded call graph`, from `StageProbe` on 8.0.0), so the prebuilt kernel stays the way to run it. The prebuilt kernel is compiled by the OpenCL compiler of the
 driver, takes about 400 ms to compile, and runs the search as written.
