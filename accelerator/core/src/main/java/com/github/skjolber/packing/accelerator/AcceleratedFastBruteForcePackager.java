@@ -48,6 +48,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 		protected BruteForceAccelerator accelerator;
 		protected AcceleratorMode acceleratorMode = AcceleratorMode.AUTO;
 		protected long acceleratorGateMillis = DEFAULT_ACCELERATOR_GATE_MILLIS;
+		protected boolean acceleratorAdaptiveGate = true;
 
 		/**
 		 * Set an accelerator which searches the permutations of the boxes of a container (box order {@link Order#NONE}) instead of the packager. It is used
@@ -83,6 +84,17 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 				throw new IllegalArgumentException("Expected a gate of zero or more milliseconds, got " + millis);
 			}
 			this.acceleratorGateMillis = millis;
+			return this;
+		}
+
+		/**
+		 * @param adaptive in {@link AcceleratorMode#AUTO}, true (the default) if the gate of each box count adapts to the races: it doubles after a race
+		 *        which the accelerator joined and lost, and halves after one it won, between the gate of {@link #withAcceleratorGate(long)} and
+		 *        {@link AcceleratorDriver#GATE_CAP_FACTOR} times it. False keeps the gate as configured for every container.
+		 * @return this builder
+		 */
+		public Builder withAcceleratorAdaptiveGate(boolean adaptive) {
+			this.acceleratorAdaptiveGate = adaptive;
 			return this;
 		}
 
@@ -150,7 +162,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 		protected FastBruteForcePackager newPackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
 			AcceleratedFastBruteForcePackager packager = new AcceleratedFastBruteForcePackager(comparator, pointComparator);
 			if(accelerator != null) {
-				packager.driver = new AcceleratorDriver<>(accelerator, acceleratorMode, acceleratorGateMillis * 1_000_000L);
+				packager.driver = new AcceleratorDriver<>(accelerator, acceleratorMode, acceleratorGateMillis * 1_000_000L, acceleratorAdaptiveGate);
 			}
 			return packager;
 		}
@@ -182,6 +194,15 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 	/** @return the number of containers which the packager finished itself in {@link AcceleratorMode#AUTO}, before the accelerator joined or while it searched alongside */
 	public long getAcceleratorRaceCpuCount() {
 		return driver == null ? 0L : driver.raceCpuCount.get();
+	}
+
+	/**
+	 * @param boxes a number of boxes
+	 * @return the gate of {@link AcceleratorMode#AUTO} for the containers with that many boxes, in milliseconds: the configured gate, or what the races
+	 *         of that box count made of it; zero without an accelerator
+	 */
+	public long getAcceleratorGateMillis(int boxes) {
+		return driver == null ? 0L : driver.gateNanos(boxes) / 1_000_000L;
 	}
 
 	public AcceleratedFastBruteForcePackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {

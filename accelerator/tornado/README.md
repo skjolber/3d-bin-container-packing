@@ -112,7 +112,9 @@ Verified: the 8.0.0 `jdk22plus` OpenCL SDK (and the 7.3.1 before it) on JDK 25, 
 
 With the packager, the accelerator is by default used in `AcceleratorMode.AUTO`: the packager's own tree search starts at once and the device joins
 after a gate of 25 ms, the first result winning (`AcceleratedFastBruteForcePackager.withAcceleratorMode(..)`, `withAcceleratorGate(..)`; `CPU_ONLY` and `GPU_ONLY`
-are the other modes). On whole packings of 40 random problems per set with the packager on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
+are the other modes). The gate of each box count doubles when the device joins and loses and halves when it wins (`withAcceleratorAdaptiveGate(..)`), so where the device
+keeps losing it soon joins only the containers which run far longer than the rest. On whole packings of 40 random problems per set with the packager on 8 threads, any best:
+11 to 12 boxes `CPU_ONLY` 0.59 s,
 `GPU_ONLY` 1.75 s, `AUTO` 0.70 s; 13 to 14 boxes 2.31 s, 4.73 s, 2.50 s; 15 to 16 boxes 3.97 s, 5.15 s, 3.84 s. The device joined 15 to 20 containers
 per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
 is the packager's own time plus the gate's overhead.

@@ -38,6 +38,11 @@ done: `FlatEngine` owns threads.
    any search takes on a device), the accelerator searches the same container alongside on its own thread; the first result wins and stops the
    other. The easy containers never reach the accelerator; the hard ones take the faster of the two. The accelerator's winner is placed and confirmed
    as in `GPU_ONLY`. `getAcceleratedCount()`, `getAcceleratorRaceCpuCount()` and `getAcceleratorFallbackCount()` count who finished which container.
+   The gate adapts to the two sides, per box count (`withAcceleratorAdaptiveGate(..)`, on by default): the gate of a box count starts at the
+   configured gate, doubles after a race which the accelerator joined and lost, and halves after one it won, between the configured gate and
+   1024 times it (`getAcceleratorGateMillis(boxes)` tells the current one). Where the accelerator keeps losing it soon joins only the containers which
+   run far longer than the rest, where it keeps winning it joins at the configured gate; a container which the packager finishes before the gate
+   teaches nothing.
    A packager hands its searches to the accelerator on one thread, one after the other: when the packager is used from several threads at once, a
    search whose race is over before its turn is dropped from the queue, and never reaches the accelerator.
 
