@@ -10,9 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorWinner;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatEngine;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatProblem;
+import com.github.skjolber.packing.accelerator.AcceleratorWinner;
+import com.github.skjolber.packing.accelerator.FlatEngine;
+import com.github.skjolber.packing.accelerator.FlatProblem;
 import com.github.skjolber.packing.tornado.KernelParity.Instance;
 
 /**

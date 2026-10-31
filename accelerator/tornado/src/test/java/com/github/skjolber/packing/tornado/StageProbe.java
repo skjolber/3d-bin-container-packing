@@ -2,12 +2,12 @@ package com.github.skjolber.packing.tornado;
 
 import java.util.Arrays;
 
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatPermutation;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatPoints;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatProblem;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatSearch;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatSubtree;
+import com.github.skjolber.packing.accelerator.FlatLayout;
+import com.github.skjolber.packing.accelerator.FlatPermutation;
+import com.github.skjolber.packing.accelerator.FlatPoints;
+import com.github.skjolber.packing.accelerator.FlatProblem;
+import com.github.skjolber.packing.accelerator.FlatSearch;
+import com.github.skjolber.packing.accelerator.FlatSubtree;
 
 import uk.ac.manchester.tornado.api.ImmutableTaskGraph;
 import uk.ac.manchester.tornado.api.TaskGraph;

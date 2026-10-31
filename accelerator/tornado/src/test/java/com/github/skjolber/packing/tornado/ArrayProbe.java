@@ -2,7 +2,7 @@ package com.github.skjolber.packing.tornado;
 
 import java.util.List;
 
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout;
+import com.github.skjolber.packing.accelerator.FlatLayout;
 
 import uk.ac.manchester.tornado.api.ImmutableTaskGraph;
 import uk.ac.manchester.tornado.api.TaskGraph;

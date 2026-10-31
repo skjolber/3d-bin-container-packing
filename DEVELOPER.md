@@ -734,7 +734,8 @@ the composite chooses between results.
 
 ## Flat search and accelerators
 
-`FastBruteForcePackager` can delegate the search of all box orders to a `BruteForceAccelerator` (see
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager`, in the `accelerator-core` module, `accelerator/core`, JPMS module `com.github.skjolber.packing.accelerator`) can delegate the search
+of all box orders to a `BruteForceAccelerator` (see
 [accelerated brute force](docs/heuristics/accelerated-brute-force.md)). An accelerator, such as a GPU kernel, gets a
 `FlatProblem` (the boxes of one container on primitive arrays) and returns the best box order as an `AcceleratorWinner`:
 
@@ -752,16 +753,22 @@ winner itself, and searches the box orders itself when the accelerator returns n
 any problem, but must not return a worse or a different winner. Test it as `FlatEngineTest` and
 `FlatAcceleratedPackagerTest` do: against a reference loop, and by comparing the placements with and without it.
 
-Code which should run on a device is written in the style of the `flat` package, so that it can be compiled to a kernel:
+The module and its package are `accelerator/core` and `com.github.skjolber.packing.accelerator` (sources in `accelerator/core/src/main/java/com/github/skjolber/packing/accelerator/`, tests in
+`accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/`). `core` has no accelerator code: `AcceleratedFastBruteForcePackager.newBuilder()` takes all the builder options of
+`FastBruteForcePackager` plus `withAccelerator(..)`, `withAcceleratorMode(..)` and `withAcceleratorGate(..)`, and counts with `getAcceleratedCount()`, `getAcceleratorFallbackCount()`,
+`getAcceleratorMismatchCount()` and `getAcceleratorRaceCpuCount()`. It extends `FastBruteForcePackager` through two hooks in `core`: `FastBruteForcePackager.Builder.newPackager(..)` and
+`FastBruteForcePackager.packContainer(..)`. The module order is api, core, accelerator-core, tornado-accelerator.
+
+Code which should run on a device is written in the style of the flat classes of `accelerator-core`, so that it can be compiled to a kernel:
 
  * `static` methods on `int[]` and `long[]` and offsets into them, with no objects, allocation, `System.arraycopy`, recursion,
    exceptions, assertions, strings, boxing, interfaces or virtual calls; copy with loops
  * small methods (a kernel compiler inlines them), and statistics in a counter array, not by logging
  * the same tie-breaking as the object version; the comparator which picks the best point is not a total order, so
    copy it as it is
- * the flat package has two searches of an item: `FlatSubtree` (the orders one at a time) and `FlatTree` (the default: the orders as one tree, with the bound table `FlatBound` computed once per
+ * the flat classes have two searches of an item: `FlatSubtree` (the orders one at a time) and `FlatTree` (the default: the orders as one tree, with the bound table `FlatBound` computed once per
    problem on the host, and the free space bound `FlatSpace`, a port of `BruteForceTreeFreeSpace`); `FlatEngine.Builder.withTree(false)` selects the first
- * the kernel of the tornado module (`accelerator/tornado/src/main/resources/.../subtree.cl`) is a hand-written OpenCL C port of the flat package, function
+ * the kernel of the tornado module (`accelerator/tornado/src/main/resources/.../subtree.cl`) is a hand-written OpenCL C port of the flat classes, function
    by function, with the same names and the same order of statements (`runTree` is the port of `FlatTree`, `run` of `FlatSubtree`): a change to `FlatPoints`, `FlatSearch`, `FlatPermutation`,
    `FlatSubtree`, `FlatTree`, `FlatBound` or `FlatSpace` is made
    in both (`isHopelessInSpace` of `FlatTree` and the `// FlatSpace` section of the kernel port `FlatSpace`), and `KernelParityTest` (with a device) shows that they still agree. It is written

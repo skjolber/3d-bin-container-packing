@@ -1,5 +1,5 @@
 // The search of the permutations of one item (FlatSubtree.run, or FlatTree.run for a tree item, and what they call) in OpenCL C, as a TornadoVM prebuilt
-// kernel: one work item is one slot of the window. The kernel is a function-by-function port of the flat package of the core module (FlatGeometry,
+// kernel: one work item is one slot of the window. The kernel is a function-by-function port of the flat classes of the accelerator-core module, package com.github.skjolber.packing.accelerator (FlatGeometry,
 // FlatPointOrder, FlatPoints, FlatPermutation, FlatSearch, FlatSubtree and FlatTree): the same names, the same order of statements and the same tie-breaking, so that a change in one
 // can be made in the other. The parity of the two is tested by KernelParityTest.
 //

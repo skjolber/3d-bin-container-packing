@@ -169,10 +169,19 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
-`FastBruteForcePackager` can hand the search of the box orders to an accelerator (threads, or a device such as a GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the optional `accelerator-core` artifact) can hand the search of the box orders to an accelerator (threads, or a device such as a
+GPU); the placements are the same as without it, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md):
+
+```xml
+<dependency>
+    <groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+    <artifactId>accelerator-core</artifactId>
+    <version>${3d-bin-container-packing.version}</version>
+</dependency>
+```
 
 ```java
-FastBruteForcePackager packager = FastBruteForcePackager
+AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager
     .newBuilder()
     .withAccelerator(FlatEngine.newBuilder().withThreads(8).build())
     .build();

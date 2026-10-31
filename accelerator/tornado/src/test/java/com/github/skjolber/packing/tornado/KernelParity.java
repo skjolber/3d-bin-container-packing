@@ -11,9 +11,9 @@ import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
-import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorWinner;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatEngine;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatProblem;
+import com.github.skjolber.packing.accelerator.AcceleratorWinner;
+import com.github.skjolber.packing.accelerator.FlatEngine;
+import com.github.skjolber.packing.accelerator.FlatProblem;
 
 /**
  * Run by hand, like {@linkplain GpuSmoke} (see the README): the winner of the device must be the winner of the CPU engine, for random problems and for different

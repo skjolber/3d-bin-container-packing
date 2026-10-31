@@ -7,11 +7,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout;
+import com.github.skjolber.packing.accelerator.FlatLayout;
 
 /**
  * The kernel: a prebuilt OpenCL C kernel ({@code subtree.cl}, next to this class) in which one work item runs the {@linkplain
- * com.github.skjolber.packing.packer.bruteforce.flat.FlatSubtree} of one slot of a window. The state of a slot is in the window arrays, which the host
+ * com.github.skjolber.packing.accelerator.FlatSubtree} of one slot of a window. The state of a slot is in the window arrays, which the host
  * fills with the items to run (and copies back afterwards), so that the memory on the device does not depend on the number of items of the search.
  * <p>
  * The kernel is a port of the flat package, function by function (the search of the orders of an item one at a time, {@code FlatSubtree}, and as one
