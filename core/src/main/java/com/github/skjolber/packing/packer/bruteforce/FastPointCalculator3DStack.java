@@ -106,7 +106,7 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 	}
 
 	/** @return the positions where a box is fully supported, when full support is required (reused) */
-	FullSupportCandidates getFullSupportCandidates() {
+	public FullSupportCandidates getFullSupportCandidates() {
 		if(fullSupportCandidates == null) {
 			fullSupportCandidates = new FullSupportCandidates();
 		}
@@ -166,6 +166,11 @@ public class FastPointCalculator3DStack extends DefaultPointCalculator3D {
 			results.add(stackItems[i].point);
 		}
 		return results;
+	}
+
+	/** @return the point of the placed box with the index (0 for the first placed) */
+	public SimplePoint3D getPoint(int index) {
+		return stackItems[index].point;
 	}
 
 	/** Copy the points of the placed boxes into the array, which must have room for them (see {@link #getPoints()}). */

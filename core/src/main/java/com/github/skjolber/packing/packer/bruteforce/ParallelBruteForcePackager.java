@@ -11,9 +11,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.LockSupport;
 import java.util.function.IntFunction;
+import java.util.function.UnaryOperator;
 
 import com.github.skjolber.packing.api.BoxItem;
 import com.github.skjolber.packing.api.BoxItemGroup;
@@ -29,6 +32,7 @@ import com.github.skjolber.packing.api.packager.BoxItemGroupComparator;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResult;
 import com.github.skjolber.packing.api.packager.IntermediatePackagerResultComparator;
 import com.github.skjolber.packing.api.packager.strategy.ContainerPackingStrategyFactory;
+import com.github.skjolber.packing.iterator.AbstractBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.BoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
@@ -38,6 +42,10 @@ import com.github.skjolber.packing.iterator.ParallelBoxItemPermutationRotationIt
 import com.github.skjolber.packing.iterator.PermutationRotationState;
 import com.github.skjolber.packing.packer.PackagerInput;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSearch;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealableState;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeStealing;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeTables;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -211,6 +219,64 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			this.filterReversePermutations = filterReversePermutations;
 			return this;
 		}
+
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+		/**
+		 * Search the box orders of a container as one tree where that gives the result of the loop over the permutations: every prefix of boxes is placed
+		 * once and the tree prunes with bounds, see {@link BruteForceTreeSearch}. On by default; see {@link #withTreeSearchStealing(boolean)} for
+		 * the containers searched on several threads.
+		 *
+		 * @param treeSearch false to search with the loop only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		protected boolean treeSearchStealing = true;
+
+		/**
+		 * Search a container's orders as one tree on all the threads: a thread which runs out of work steals the shallowest subtree another thread
+		 * has still to search (the types it has still to try at a node near the root), so the tree's order of search, which prunes the first boxes
+		 * tried last with what was found under the first ones, is kept, and the threads stay busy. On by default. The result is the same as on one
+		 * thread, except that among several complete arrangements the threads' timing decides, and among equal arrangements of the same order the
+		 * first found.
+		 *
+		 * @param treeSearchStealing true to search as one tree with work stealing
+		 * @return this builder
+		 */
+		public Builder withTreeSearchStealing(boolean treeSearchStealing) {
+			this.treeSearchStealing = treeSearchStealing;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
+
+		protected boolean treeSearchAnyBest = true;
+
+		/**
+		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
+		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. On by default; false for the loop's arrangement among
+		 * equally good ones (the first order's, its first rotations and positions).
+		 *
+		 * @param anyBest true for any arrangement of the best value
+		 * @return this builder
+		 */
+		public Builder withTreeSearchAnyBest(boolean anyBest) {
+			this.treeSearchAnyBest = anyBest;
+			return this;
+		}
 		
 		/**
 		 * Build the packager. Without an executor service, one with the configured number of threads (by default the
@@ -273,6 +339,10 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				packager.setBoxItemGroupComparator(boxItemGroupComparator);
 			}
 			packager.setRequireFullSupport(requireFullSupport);
+			packager.setTreeSearch(treeSearch);
+			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
+			packager.setTreeSearchAnyBest(treeSearchAnyBest);
+			packager.treeSearchStealing = treeSearchStealing;
 			return packager;
 		}
 	}
@@ -281,6 +351,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	private final ExecutorService executorService;
 	protected final BruteForcePointIteratorFilter pointFilter;
 	protected final boolean filterReversePermutations;
+
+	/** Whether to search a container's orders as one tree on all the threads, with work stealing (see {@link Builder#withTreeSearchStealing}) */
+	private boolean treeSearchStealing;
 
 	/** Priority for the threads which search, or {@linkplain #NO_THREAD_PRIORITY}. Set by the builder, before the packager is returned. */
 	private int threadPriority = NO_THREAD_PRIORITY;
@@ -323,6 +396,33 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	/**
+	 * Search the orders of a container as one tree on the threads, with work stealing: the first thread searches the whole tree, the others steal
+	 * the shallowest subtree a thread has still to search (see {@link BruteForceTreeStealableState}), and so on until no thread has work.
+	 * The threads share their best arrangement for pruning; a complete result stops the others. The results compare by the result comparator, then
+	 * by their orders.
+	 *
+	 * @param iterator the container's iterator, which the threads fork
+	 * @param completeBoxCount the number of boxes of a result which no other result can beat
+	 * @param truncate the truncation of a result, or null
+	 */
+	private BruteForceIntermediatePackagerResult packTreeStealing(Workers workers, int containerIndex, ContainerItem containerItem,
+			AbstractBoxItemPermutationRotationIterator iterator, int[] insertAfterCounts, IntermediatePackagerResult currentBest, PackagerInterruptSupplier sourceInterrupt,
+			int completeBoxCount, UnaryOperator<BruteForceIntermediatePackagerResult> truncate) throws PackagerInterruptedException {
+		// the parallelization count is 16 per thread by default
+		int tasks = Math.max(1, Math.min(workers.size(), parallelizationCount / 16));
+		BruteForceTreeTables[][] holders = new BruteForceTreeTables[tasks][];
+		for (int j = 0; j < tasks; j++) {
+			holders[j] = workers.get(j).tables;
+		}
+		return BruteForceTreeStealing.search(executorService, tasks, iterator, insertAfterCounts, sourceInterrupt, completeBoxCount, truncate, intermediatePackagerResultComparator,
+				(task, threadIterator, interrupt, work, shared, tables, state) -> {
+					BruteForceWorker worker = workers.get(task);
+					return packTreePart(worker.pointCalculator(), worker.placements(), worker.placementCount, containerItem, containerIndex, threadIterator, interrupt, pointFilter,
+							currentBest, work, shared, tables, state);
+				}, holders, this::withThreadPriority);
+	}
+
+	/**
 	 * A work unit of the search: its state is created on the thread which searches (see {@link #call()}), and only if
 	 * the work unit is searched (the other work units are skipped when a search is found to be complete).
 	 */
@@ -346,6 +446,8 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		private final int maxIteratorLength;
 		/** Whether the boxes have load limits: then the placements track loads */
 		private final boolean load;
+		/** the tree search's tables of the worker's parts, kept over the searches */
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public BruteForceWorker(int placementCapacity, int placementCount, int maxIteratorLength, boolean load) {
 			this.load = load;
@@ -587,6 +689,24 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 
 			if(multithreaded) {
+				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
+				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)
+						&& (treeSearchAnyBest || !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight()))) {
+					// when all boxes fit the load limits and the loop's arrangement is wanted, the bound prunes nothing and the first complete arrangement
+					// wins: the permutation work units find one sooner. Otherwise the tree, with the other threads stealing from it once it has searched
+					// a while (a short search, where the first arrangements place every box, runs alone)
+					iterators[i].reset();
+					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, iterators[i].length(), null);
+				}
+				if(treeSearchAnyBest && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+					// any arrangement of the best value: the tree tries the largest boxes first and ends at the first complete arrangement, which it
+					// finds sooner on one thread than the threads do
+					iterators[i].reset();
+					BruteForceWorker worker = workers.get(0);
+					return ParallelBruteForcePackager.this.pack(worker.pointCalculator(), worker.placements(), worker.placementCount, getContainerItem(i), i, iterators[i], sourceInterrupt,
+							pointFilter, currentBest);
+				}
 				// a previous attempt left the work units at their last permutations
 				parallelIterators[i].reset();
 				LocalInterrupt localInterrupt = new LocalInterrupt();
@@ -598,7 +718,6 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 				List<Future<BruteForceIntermediatePackagerResult>> futures = new ArrayList<>(units);
 
 				ContainerItem containerItem = getContainerItem(i);
-				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
 				PackagerInterruptSupplier interrupt = () -> localInterrupt.interrupted || sourceInterrupt.getAsBoolean();
 				IntFunction<BoxItemPermutationRotationIterator> workUnits = parallelIterators[i]::getIterator;
 				for (int j = 0; j < units; j++) {
@@ -775,6 +894,9 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 	}
 
 	private class ParallelGroupSession extends AbstractBruteForceBoxItemGroupSession {
+
+		/** the tree search's tables of the searches on the calling thread, reused over the group orders */
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		private Workers workers; // per work unit
 		private ParallelBoxItemGroupPermutationRotationIteratorList[] parallelIterators; // per container
@@ -1096,6 +1218,19 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
 			if(iterator.countPermutations() > 2L * parallelizationCount) {
+				int[] insertAfterCounts = getInsertAfterCounts(iterator);
+				if(treeSearchStealing && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)
+						&& (treeSearchAnyBest || !canPackAll(iterator, getContainerItem(containerIndex).getContainer().getMaxLoadVolume(), getContainerItem(containerIndex).getContainer().getMaxLoadWeight()))) {
+					BoxItemGroup[] iteratorGroups = iterator.getBoxItemGroups();
+					iterator.reset();
+					return packTreeStealing(workers, containerIndex, getContainerItem(containerIndex), iterator, insertAfterCounts, best, sourceInterrupt,
+							getCompleteBoxCount(iteratorGroups, true), result -> truncateToWholeGroups(result, iteratorGroups));
+				}
+				if(treeSearchAnyBest && isTreeSearchable(getContainerItem(containerIndex), iterator, insertAfterCounts)) {
+					BruteForceWorker worker = workers.get(0);
+					return ParallelBruteForcePackager.this.pack(worker.pointCalculator(), worker.placements(), worker.placementCount, getContainerItem(containerIndex), containerIndex, iterator,
+							sourceInterrupt, pointFilter, best, Integer.MAX_VALUE, tables);
+				}
 				// split the order's permutations between the threads, which share the iterator's rotations
 				ParallelBoxItemGroupPermutationRotationIteratorList units = ParallelBoxItemGroupPermutationRotationIteratorList.of(iterator, parallelizationCount);
 				return packMultithreaded(containerIndex, units, units.getBoxItemGroups(), true, best, false);
@@ -1159,6 +1294,20 @@ public class ParallelBruteForcePackager extends AbstractBruteForcePackager {
 			}
 			
 			if(multithreaded) {
+				boolean filterReverse = reverseSymmetric && abortOnAnyBoxTooBig;
+				int[] insertAfterCounts = getInsertAfterCounts(iterators[i]);
+				if(treeSearchStealing && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)
+						&& !canPackAll(iterators[i], getContainerItem(i).getContainer().getMaxLoadVolume(), getContainerItem(i).getContainer().getMaxLoadWeight())) {
+					iterators[i].reset();
+					return packTreeStealing(workers, i, getContainerItem(i), iterators[i], insertAfterCounts, currentBest, sourceInterrupt, getCompleteBoxCount(iteratorGroups, false),
+							result -> truncateToGroup(result, iteratorGroups));
+				}
+				if(treeSearchAnyBest && !(filterReversePermutations && filterReverse) && isTreeSearchable(getContainerItem(i), iterators[i], insertAfterCounts)) {
+					iterators[i].reset();
+					BruteForceWorker worker = workers.get(0);
+					return truncateToGroup(ParallelBruteForcePackager.this.pack(worker.pointCalculator(), worker.placements(), worker.placementCount, getContainerItem(i), i, iterators[i],
+							sourceInterrupt, pointFilter, currentBest), iteratorGroups);
+				}
 				// a previous attempt left the work units at their last permutations
 				parallelIterators[i].reset();
 				return packMultithreaded(i, parallelIterators[i], iteratorGroups, false, currentBest, reverseSymmetric && abortOnAnyBoxTooBig);

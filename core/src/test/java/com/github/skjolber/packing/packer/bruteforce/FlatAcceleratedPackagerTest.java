@@ -74,8 +74,9 @@ class FlatAcceleratedPackagerTest {
 	 */
 	private static FastBruteForcePackager comparePacking(FlatEngine engine, int fromSeed, int toSeed, int minBoxes, int maxBoxes, UnaryOperator<FastBruteForcePackager.Builder> configure,
 			Function<Instance, List<BoxItem>> boxItems) {
-		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).build();
-		FastBruteForcePackager accelerated = configure.apply(FastBruteForcePackager.newBuilder()).withAccelerator(engine).build();
+		// the accelerator picks the loop's winner, so the packager without it must too: exact tree search, not any arrangement of the best value
+		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager accelerated = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).withAccelerator(engine).build();
 		try {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = FlatTestInstances.random(seed, minBoxes, maxBoxes);
@@ -216,8 +217,8 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void doesNotAccelerateWithObstacles() {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
-		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(engine).build();
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).build();
 		try {
 			for (int seed = 0; seed < 10; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);

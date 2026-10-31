@@ -95,6 +95,8 @@ public class ParallelBruteForcePackagerWorkUnitsTest {
 		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(PARALLELIZATION_COUNT)
+				// the work units of the loop over the permutations
+				.withTreeSearch(false)
 				.build()) {
 			return packager.newResultBuilder()
 					.withContainerItem(container)
@@ -183,6 +185,8 @@ public class ParallelBruteForcePackagerWorkUnitsTest {
 		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(PARALLELIZATION_COUNT)
+				// the work units of the loop over the permutations
+				.withTreeSearch(false)
 				.build()) {
 			return packager.newResultBuilder()
 					.withContainerItem(container)
@@ -296,6 +300,8 @@ public class ParallelBruteForcePackagerWorkUnitsTest {
 		try (ParallelBruteForcePackager packager = ParallelBruteForcePackager.newBuilder()
 				.withExecutorService(executor)
 				.withParallelizationCount(PARALLELIZATION_COUNT)
+				// the work units of the loop over the permutations
+				.withTreeSearch(false)
 				.build()) {
 			PackagerSession session = packager.createSession(new PackagerInput(null, groups, List.of(small, large), 2, Order.NONE), () -> false);
 			IntermediatePackagerResult result = session.attempt(0, null, false);

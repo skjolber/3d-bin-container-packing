@@ -1,0 +1,252 @@
+package com.github.skjolber.packing.packer.bruteforce.tree;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.UnaryOperator;
+
+import org.junit.jupiter.api.Test;
+
+import com.github.skjolber.packing.api.Box;
+import com.github.skjolber.packing.api.BoxItem;
+import com.github.skjolber.packing.api.BoxItemGroup;
+import com.github.skjolber.packing.api.Container;
+import com.github.skjolber.packing.api.ContainerItem;
+import com.github.skjolber.packing.api.PackagerResult;
+import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.tree.TreeTestInstances.Instance;
+
+/**
+ * With the tree search the brute force packager must return exactly the placements of the loop over the permutations, for random problems and for the
+ * features which change the candidates of a box: a point filter, full support, obstacles, load limits and weight limits.
+ */
+class BruteForceTreeSearchTest {
+
+	private static final long INTERRUPT_MILLIS = 60_000L;
+
+	static String describe(PackagerResult result) {
+		StringBuilder builder = new StringBuilder();
+		for (Container container : result.getContainers()) {
+			builder.append(container.getId()).append('[');
+			for (Placement placement : container.getStack().getPlacements()) {
+				builder.append(placement.getBoxItem().getBox().getId()).append('@').append(placement.getAbsoluteX()).append(',').append(placement.getAbsoluteY()).append(',')
+						.append(placement.getAbsoluteZ()).append('+').append(placement.getStackValue().getDx()).append('x').append(placement.getStackValue().getDy()).append('x')
+						.append(placement.getStackValue().getDz()).append(' ');
+			}
+			builder.append("] ");
+		}
+		return builder.toString();
+	}
+
+	private static PackagerResult pack(BruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
+		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(INTERRUPT_MILLIS).build();
+	}
+
+	static List<ContainerItem> containerItems(Instance instance, long seed) {
+		// every box fits a container alone: enough containers for all boxes
+		ContainerItem.Builder builder = ContainerItem.newListBuilder().withContainer(instance.container, 8);
+		if(seed % 2 == 0) {
+			// a smaller second container: the result of the first is a bound for the second
+			Container second = Container.newBuilder().withId("second" + seed)
+					.withEmptyWeight(1)
+					.withSize(Math.max(3, instance.container.getLoadDx() - 1), instance.container.getLoadDy(), Math.max(3, instance.container.getLoadDz() - 1))
+					.withMaxLoadWeight(100_000)
+					.build();
+			builder.withContainer(second, 8);
+		}
+		return builder.build();
+	}
+
+	/** Pack random instances with the loop and with the tree, and compare the placements. */
+	static void compare(int fromSeed, int toSeed, int minBoxes, int maxBoxes, UnaryOperator<BruteForcePackager.Builder> configure) {
+		compare(fromSeed, toSeed, minBoxes, maxBoxes, false, configure);
+	}
+
+	static void compare(int fromSeed, int toSeed, int minBoxes, int maxBoxes, boolean tight, UnaryOperator<BruteForcePackager.Builder> configure) {
+		BruteForcePackager loop = configure.apply(BruteForcePackager.newBuilder()).withTreeSearch(false).build();
+		BruteForcePackager tree = configure.apply(BruteForcePackager.newBuilder()).withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
+		try {
+			for (int seed = fromSeed; seed < toSeed; seed++) {
+				Instance instance = tight ? TreeTestInstances.tight(seed, minBoxes, maxBoxes) : TreeTestInstances.random(seed, minBoxes, maxBoxes);
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String expected = describe(pack(loop, containerItems, instance.copyBoxItems()));
+				assertThat(expected).as("seed " + seed + " packs all boxes").isNotEmpty();
+				assertThat(describe(pack(tree, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
+	}
+
+	@Test
+	void samePlacementsAsTheLoop() {
+		compare(0, 60, 4, 7, b -> b);
+	}
+
+	/**
+	 * @return the first container's load volume, weight and box count: what the result comparator decides. With any arrangement of the best value
+	 *         the first container may hold other boxes of the same value than the loop's, and the containers after it then get other boxes.
+	 */
+	static String describeValues(PackagerResult result) {
+		StringBuilder builder = new StringBuilder();
+		for (Container container : result.getContainers().subList(0, Math.min(1, result.getContainers().size()))) {
+			long volume = 0;
+			long weight = 0;
+			for (Placement placement : container.getStack().getPlacements()) {
+				volume += placement.getStackValue().getBox().getVolume();
+				weight += placement.getStackValue().getBox().getWeight();
+			}
+			builder.append(container.getId()).append('[').append(volume).append('/').append(weight).append('/').append(container.getStack().getPlacements().size()).append("] ");
+		}
+		return builder.toString();
+	}
+
+	@Test
+	void sameValuesWithAnyBest() {
+		// any arrangement of the best value: the containers' load volumes, weights and box counts are the loop's
+		for (boolean fast : new boolean[] { false, true }) {
+			AbstractBruteForcePackager loop = fast ? FastBruteForcePackager.newBuilder().withTreeSearch(false).build() : BruteForcePackager.newBuilder().withTreeSearch(false).build();
+			AbstractBruteForcePackager tree = fast ? FastBruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(true).build()
+					: BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(true).build();
+			try {
+				for (int seed = 0; seed < 100; seed++) {
+					Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(1000 + seed, 7, 8);
+					List<ContainerItem> containerItems = containerItems(instance, seed);
+					String expected = describeValues(loop.newResultBuilder().withContainerItems(containerItems).withBoxItems(instance.copyBoxItems()).withMaxContainerCount(8)
+							.withInterruptDuration(INTERRUPT_MILLIS).build());
+					assertThat(describeValues(tree.newResultBuilder().withContainerItems(containerItems).withBoxItems(instance.copyBoxItems()).withMaxContainerCount(8)
+							.withInterruptDuration(INTERRUPT_MILLIS).build())).as("seed " + seed + (fast ? " fast" : "")).isEqualTo(expected);
+				}
+			} finally {
+				loop.close();
+				tree.close();
+			}
+		}
+	}
+
+	@Test
+	void samePlacementsOnTightProblems() {
+		// many box types which do not all fit: partial arrangements, bounds and the lexicographic tie rule decide
+		compare(1000, 1040, 7, 8, true, b -> b);
+	}
+
+	@Test
+	void samePlacementsOnTightProblemsWithoutSettledOrders() {
+		// too many prefixes to keep the settled orders: the fallback settles the other candidates of a box only when every order through one settled
+		BruteForceTreeSettledOrders.maxPrefixes = 0;
+		try {
+			compare(1000, 1040, 7, 8, true, b -> b);
+		} finally {
+			BruteForceTreeSettledOrders.maxPrefixes = BruteForceTreeSettledOrders.MAX_PREFIXES;
+		}
+	}
+
+	@Test
+	void samePlacementsOnTightProblemsWithFullSupport() {
+		compare(1100, 1130, 6, 7, true, b -> b.withRequireFullSupport(true));
+	}
+
+	@Test
+	void samePlacementsWithFullSupport() {
+		compare(100, 130, 4, 6, b -> b.withRequireFullSupport(true));
+	}
+
+	@Test
+	void samePlacementsWithAPointFilter() {
+		// the first three fitting points only, in reverse order
+		compare(200, 230, 4, 6, b -> b.withPointFilter((calculator, stackValue) -> {
+			List<Integer> indexes = new ArrayList<>();
+			for (int k = calculator.size() - 1; k >= 0 && indexes.size() < 3; k--) {
+				if(calculator.get(k).fits3D(stackValue)) {
+					indexes.add(k);
+				}
+			}
+			return new org.eclipse.collections.api.iterator.IntIterator() {
+				int i = 0;
+
+				@Override
+				public boolean hasNext() {
+					return i < indexes.size();
+				}
+
+				@Override
+				public int next() {
+					return indexes.get(i++);
+				}
+			};
+		}));
+	}
+
+	/** the instance's box items split into consecutive groups */
+	static List<BoxItemGroup> groups(Instance instance, int groupCount) {
+		List<BoxItem> boxItems = instance.copyBoxItems();
+		List<BoxItemGroup> groups = new ArrayList<>();
+		int perGroup = Math.max(1, (boxItems.size() + groupCount - 1) / groupCount);
+		for (int i = 0; i < boxItems.size(); i += perGroup) {
+			groups.add(new BoxItemGroup("g" + groups.size(), new ArrayList<>(boxItems.subList(i, Math.min(boxItems.size(), i + perGroup)))));
+		}
+		return groups;
+	}
+
+	private static PackagerResult packGroups(BruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItemGroup> groups) {
+		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItemGroups(groups).withMaxContainerCount(8).withInterruptDuration(INTERRUPT_MILLIS).build();
+	}
+
+	@Test
+	void samePlacementsWithBoxItemGroups() {
+		// the orders keep the groups in sequence, and the groups are tried in each order
+		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
+		try {
+			for (int seed = 400; seed < 460; seed++) {
+				Instance instance = seed % 2 == 0 ? TreeTestInstances.random(seed, 4, 7) : TreeTestInstances.tight(seed, 6, 8);
+				int groupCount = 2 + seed % 2;
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String expected = describe(packGroups(loop, containerItems, groups(instance, groupCount)));
+				assertThat(describe(packGroups(tree, containerItems, groups(instance, groupCount)))).as("seed " + seed).isEqualTo(expected);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
+	}
+
+	@Test
+	void samePlacementsWithBoxLoadLimits() {
+		BruteForcePackager loop = BruteForcePackager.newBuilder().withTreeSearch(false).build();
+		BruteForcePackager tree = BruteForcePackager.newBuilder().withTreeSearchMinBoxes(1).withTreeSearchAnyBest(false).build();
+		try {
+			for (int seed = 300; seed < 330; seed++) {
+				Instance instance = TreeTestInstances.random(seed, 4, 6);
+				// each box can carry about its own weight
+				List<BoxItem> boxItems = new ArrayList<>();
+				for (BoxItem boxItem : instance.boxItems) {
+					Box box = boxItem.getBox();
+					com.github.skjolber.packing.api.BoxStackValue first = box.getStackValue(0);
+					Box limited = Box.newBuilder().withId(box.getId()).withSize(first.getDx(), first.getDy(), first.getDz()).withWeight(box.getWeight()).withMaxLoadWeight(box.getWeight() + seed % 3)
+							.withRotate3D().build();
+					boxItems.add(new BoxItem(limited, boxItem.getCount()));
+				}
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String expected = describe(pack(loop, containerItems, copy(boxItems)));
+				assertThat(describe(pack(tree, containerItems, copy(boxItems)))).as("seed " + seed).isEqualTo(expected);
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
+	}
+
+	private static List<BoxItem> copy(List<BoxItem> boxItems) {
+		List<BoxItem> result = new ArrayList<>(boxItems.size());
+		for (BoxItem boxItem : boxItems) {
+			result.add(new BoxItem(boxItem.getBox(), boxItem.getCount()));
+		}
+		return result;
+	}
+}

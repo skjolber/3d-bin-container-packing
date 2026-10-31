@@ -203,13 +203,6 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 	}
 
 	/**
-	 * @return true if the boxes have different container priorities, so that they are permuted within their blocks only
-	 */
-	public boolean hasBlocks() {
-		return blockEnds.length != 0;
-	}
-
-	/**
 	 * Move to a permutation, with the first rotation of each box: as if reached by {@link #nextPermutation(int)}.
 	 *
 	 * @param permutation the box item of each position, with the same boxes as the current permutation (within each block, if there are blocks)
@@ -238,6 +231,13 @@ public class DefaultBoxItemPermutationRotationIterator extends AbstractBoxItemPe
 		if(permutations.length > 0) {
 			calculateMinStackableVolume(0);
 		}
+	}
+
+	/**
+	 * @return true if the boxes have different container priorities, so that they are permuted within their blocks only
+	 */
+	public boolean hasBlocks() {
+		return blockEnds.length != 0;
 	}
 
 	public int nextPermutation(int maxIndex) {

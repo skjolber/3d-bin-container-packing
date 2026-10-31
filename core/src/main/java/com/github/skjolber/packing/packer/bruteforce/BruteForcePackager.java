@@ -27,6 +27,8 @@ import com.github.skjolber.packing.iterator.DefaultBoxItemGroupPermutationRotati
 import com.github.skjolber.packing.iterator.DefaultBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.iterator.FilteredReversedBoxItemPermutationRotationIterator;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager.FastBruteForceBoxStackValuePointComparator;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeSearch;
+import com.github.skjolber.packing.packer.bruteforce.tree.BruteForceTreeTables;
 import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
 
 /**
@@ -360,6 +362,45 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		protected IntermediatePackagerResultComparator comparator;
 		protected BruteForcePointIteratorFilter pointFilter;
 		protected boolean filterReversePermutations = false;
+		protected boolean treeSearch = true;
+		protected int treeSearchMinBoxes = DEFAULT_TREE_SEARCH_MIN_BOXES;
+
+		/**
+		 * Search the box orders of a container as one tree where that gives the result of the loop over the permutations: every prefix of boxes is placed
+		 * once and the tree prunes with bounds, see {@link BruteForceTreeSearch}. On by default.
+		 *
+		 * @param treeSearch false to search with the loop only
+		 * @return this builder
+		 */
+		public Builder withTreeSearch(boolean treeSearch) {
+			this.treeSearch = treeSearch;
+			return this;
+		}
+
+		/**
+		 * @param minBoxes the fewest boxes of a container for the tree search (default {@value AbstractBruteForcePackager#DEFAULT_TREE_SEARCH_MIN_BOXES})
+		 * @return this builder
+		 */
+		public Builder withTreeSearchMinBoxes(int minBoxes) {
+			this.treeSearchMinBoxes = minBoxes;
+			return this;
+		}
+
+		protected boolean treeSearchAnyBest = true;
+
+		/**
+		 * Let the tree search return any arrangement of the best value (load volume, then weight, then boxes), not the one the loop over the
+		 * permutations returns among equally good ones: the search ends at the first arrangement which places all boxes, tries the largest boxes first
+		 * even when all boxes fit, and does not expand prefixes which can at most tie the best. On by default; false for the loop's arrangement among
+		 * equally good ones (the first order's, its first rotations and positions).
+		 *
+		 * @param anyBest true for any arrangement of the best value
+		 * @return this builder
+		 */
+		public Builder withTreeSearchAnyBest(boolean anyBest) {
+			this.treeSearchAnyBest = anyBest;
+			return this;
+		}
 		protected ContainerPackingStrategyFactory containerPackingStrategyFactory;
 		
 		public Builder withIntermediatePackagerResultComparator(IntermediatePackagerResultComparator comparator) {
@@ -418,6 +459,9 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
 			BruteForcePackager packager = new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+			packager.setTreeSearch(treeSearch);
+			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
+			packager.setTreeSearchAnyBest(treeSearchAnyBest);
 			if(containerPackingStrategyFactory != null) {
 				packager.setContainerPackingStrategyFactory(containerPackingStrategyFactory);
 			}
@@ -497,6 +541,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 	private class BruteForceGroupSession extends AbstractSingleThreadedBruteForceBoxItemGroupSession {
 
 		protected final PointCalculator3DStack pointCalculator;
+		/** the tree search's tables, reused over the group orders */
+		private final BruteForceTreeTables[] tables = new BruteForceTreeTables[1];
 
 		public BruteForceGroupSession(List<BoxItem> boxItems, List<BoxItemGroup> boxItemGroups, 
 				List<ContainerItem> containers, int containerCount,
@@ -527,7 +573,8 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 		@Override
 		protected BruteForceIntermediatePackagerResult packGroupOrder(int containerIndex, DefaultBoxItemGroupPermutationRotationIterator iterator, int[] groupOrder,
 				IntermediatePackagerResult best) throws PackagerInterruptedException {
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, pointFilter, best);
+			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(containerIndex), containerIndex, iterator, interrupt, pointFilter, best,
+					Integer.MAX_VALUE, tables);
 		}
 
 		@Override

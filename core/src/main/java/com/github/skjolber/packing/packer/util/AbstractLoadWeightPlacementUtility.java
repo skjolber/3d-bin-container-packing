@@ -76,6 +76,13 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 	private int[] visitDepth;
 	private int[] visitStamp;
 	private int stamp;
+	/** the loads saved per level (see {@link #saveLoads}): the placements and their loads, and the start of each level */
+	private Placement[] savedPlacements = new Placement[32];
+	private double[] savedLoads = new double[32];
+	private int savedSize;
+	private int[] savedStarts;
+	/** the deepest level saved and not restored, or -1 */
+	private int savedLevel = -1;
 
 	/*
 	 * Stack positions sorted by bottom and top Z. The stack is mutated in LIFO
@@ -127,6 +134,9 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		visitDepth = new int[capacity];
 		visitStamp = new int[capacity];
 		stamp = 0;
+		savedStarts = new int[capacity + 1];
+		savedSize = 0;
+		savedLevel = -1;
 		pointSupportees.ensureAdditionalCapacity(capacity);
 		pointSupporters.ensureAdditionalCapacity(capacity);
 		placementSupporters.ensureAdditionalCapacity(capacity);
@@ -683,6 +693,62 @@ public abstract class AbstractLoadWeightPlacementUtility implements LoadPlacemen
 		}
 
 		return supportedArea;
+	}
+
+	@Override
+	public void saveLoads(int level) {
+		if(level >= savedStarts.length) {
+			savedStarts = Arrays.copyOf(savedStarts, Math.max(level + 1, savedStarts.length * 2));
+		}
+		if(level <= savedLevel) {
+			// saved again without a restore: the saves of this level and the levels below are void
+			savedSize = savedStarts[level];
+		}
+		// else the levels above are still saved, and this one comes after them
+		savedStarts[level] = savedSize;
+		savedLevel = level;
+		nextStamp();
+		for (int i = 0; i < placementSupporters.size(); i++) {
+			saveLoad(placementSupporters.get(i));
+		}
+		for (int i = 0; i < pointSupportees.size(); i++) {
+			// a placement under them carries part of their weight: the loads of their supporters change
+			List<PlacementLoad> supporters = pointSupportees.get(i).getSupporters();
+			for (int k = 0; k < supporters.size(); k++) {
+				saveLoad(supporters.get(k).getPlacement());
+			}
+		}
+	}
+
+	/** save the load of the placement and, through its supporters, of the ones below it */
+	private void saveLoad(Placement placement) {
+		int index = placement.getIndex();
+		if(visitStamp[index] == stamp) {
+			return;
+		}
+		visitStamp[index] = stamp;
+		if(savedSize == savedPlacements.length) {
+			savedPlacements = Arrays.copyOf(savedPlacements, savedSize * 2);
+			savedLoads = Arrays.copyOf(savedLoads, savedSize * 2);
+		}
+		savedPlacements[savedSize] = placement;
+		savedLoads[savedSize] = placement.getLoadWeight();
+		savedSize++;
+		List<PlacementLoad> supporters = placement.getSupporters();
+		for (int i = 0; i < supporters.size(); i++) {
+			saveLoad(supporters.get(i).getPlacement());
+		}
+	}
+
+	@Override
+	public void restoreLoads(int level) {
+		int start = savedStarts[level];
+		for (int i = start; i < savedSize; i++) {
+			savedPlacements[i].setLoadWeight(savedLoads[i]);
+			savedPlacements[i] = null;
+		}
+		savedSize = start;
+		savedLevel = level - 1;
 	}
 
 	@Override

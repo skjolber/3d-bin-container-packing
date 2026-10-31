@@ -362,6 +362,16 @@ public class Placement {
 	}
 
 	/**
+	 * Set the load, for example to restore it exactly after placements above were removed: removing a placement subtracts its shares from the
+	 * loads below, which leaves floating-point residue.
+	 *
+	 * @param loadWeight the weight resting on this placement
+	 */
+	public void setLoadWeight(double loadWeight) {
+		this.loadWeight = loadWeight;
+	}
+
+	/**
 	 * Returns the load pressure on the top surface of this placement,
 	 * expressed as {@code loadWeight / topArea}, matching the
 	 * convention used by {@link Box#getMinimumPressure()}.

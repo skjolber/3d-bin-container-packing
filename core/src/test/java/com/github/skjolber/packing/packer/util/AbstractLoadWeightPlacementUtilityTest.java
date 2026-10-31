@@ -91,6 +91,42 @@ class AbstractLoadWeightPlacementUtilityTest {
 		StackPlacementAssert.assertThat(floor).supports(top);
 	}
 
+	@Test
+	void restoresTheLoadsOfEveryLevelExactly() {
+		Stack stack = new Stack();
+		Placement floor = placement("floor", 0, 0, 0, 2, 2, 1, 0);
+		floor.setLoadWeight(0.1);
+		stack.add(floor);
+		TestUtility utility = new TestUtility(stack);
+		utility.initialize(8);
+
+		// level 0: a box on the floor
+		Placement first = placement("first", 0, 0, 1, 2, 2, 1, 1);
+		utility.supporters(floor);
+		utility.saveLoads(0);
+		floor.addLoad(first, 4, 0.2);
+		stack.add(first);
+
+		// level 1: a box on that one
+		Placement second = placement("second", 0, 0, 2, 2, 2, 1, 2);
+		utility.supporters(first);
+		utility.saveLoads(1);
+		first.addLoad(second, 4, 0.4);
+		stack.add(second);
+
+		stack.remove(2);
+		first.removeLastSupportee();
+		utility.restoreLoads(1);
+		assertThat(first.getLoadWeight()).isEqualTo(0.0);
+		assertThat(floor.getLoadWeight()).isEqualTo(0.1 + 0.2);
+
+		stack.remove(1);
+		floor.removeLastSupportee();
+		// subtracting the share leaves residue, (0.1 + 0.2) - 0.2 is not 0.1: the level's saved load is restored
+		utility.restoreLoads(0);
+		assertThat(floor.getLoadWeight()).isEqualTo(0.1);
+	}
+
 	private static Point point(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
 		return new DefaultPoint3D(minX, minY, minZ, maxX, maxY, maxZ);
 	}
@@ -120,6 +156,15 @@ class AbstractLoadWeightPlacementUtilityTest {
 
 		List<Placement> pointSupportees() {
 			return copy(pointSupportees);
+		}
+
+		/** the supporters of the position last validated, as {@link #getSupportedAreaAtPoint} leaves them */
+		void supporters(Placement... placements) {
+			placementSupporters.clear();
+			pointSupportees.clear();
+			for (Placement placement : placements) {
+				placementSupporters.add(placement);
+			}
 		}
 
 		private List<Placement> copy(PlacementList placements) {

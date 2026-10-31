@@ -136,6 +136,39 @@ public class DefaultBoxItemGroupPermutationRotationIterator extends AbstractBoxI
 	}
 
 	/**
+	 * Move to a permutation, with the first rotation of each box: as if reached by {@link #nextPermutation(int)}.
+	 *
+	 * @param permutation the box item of each position, with the same boxes as the current permutation within each group's block
+	 * @throws IllegalArgumentException if the permutation does not hold the same boxes
+	 */
+	public void setPermutation(int[] permutation) {
+		if(permutation.length != permutations.length) {
+			throw new IllegalArgumentException("Expected " + permutations.length + " boxes, got " + permutation.length);
+		}
+		int[] expected = permutations.clone();
+		int[] actual = permutation.clone();
+		int start = 0;
+		for (int g = 0; g < groupsMatrix.length; g++) {
+			if(groupsMatrix[g] == null) {
+				continue;
+			}
+			int end = start + groupBoxCounts[g];
+			Arrays.sort(expected, start, end);
+			Arrays.sort(actual, start, end);
+			start = end;
+		}
+		if(!Arrays.equals(expected, actual)) {
+			throw new IllegalArgumentException("Expected a permutation of the current boxes within each group");
+		}
+
+		System.arraycopy(permutation, 0, permutations, 0, permutation.length);
+		resetRotations();
+		if(permutations.length > 0) {
+			calculateMinStackableVolume(0);
+		}
+	}
+
+	/**
 	 * Remove permutations, if present.
 	 */
 	
