@@ -8,6 +8,7 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerAccess;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.ep.points3d.DefaultPointCalculator3D;
 import com.github.skjolber.packing.ep.points3d.SimplePoint3D;
 import com.github.skjolber.packing.packer.bruteforce.AbstractBruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager.BruteForcePointIteratorFilter;
@@ -103,5 +104,10 @@ public final class BruteForceTreePointCandidates extends BruteForceTreeCandidate
 	@Override
 	SimplePoint3D placedPoint(int level) {
 		return pointCalculator.getStackPoint(level + 1);
+	}
+
+	@Override
+	DefaultPointCalculator3D freePoints() {
+		return pointCalculator;
 	}
 }

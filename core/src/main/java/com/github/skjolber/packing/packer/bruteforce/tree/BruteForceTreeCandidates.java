@@ -97,6 +97,27 @@ abstract class BruteForceTreeCandidates {
 	/** @return the point of the placement of the level */
 	abstract SimplePoint3D placedPoint(int level);
 
+	/** the free points of the node being expanded */
+	abstract DefaultPointCalculator3D freePoints();
+
+	/** @return a free point of the node which holds the box in one of its rotations (an empty region, so the box fits the free space), or -1 */
+	int pointHolding(BoxStackValue[] rotations) {
+		DefaultPointCalculator3D points = freePoints();
+		int size = points.size();
+		for (BoxStackValue rotation : rotations) {
+			int dx = rotation.getDx();
+			int dy = rotation.getDy();
+			int dz = rotation.getDz();
+			for (int i = 0; i < size; i++) {
+				SimplePoint3D point = points.get(i);
+				if(point.getDx() >= dx && point.getDy() >= dy && point.getDz() >= dz) {
+					return i;
+				}
+			}
+		}
+		return -1;
+	}
+
 	protected static void clearToSize(DefaultPointCalculator3D pointCalculator, Container holder, ContainerItem containerItem) {
 		pointCalculator.clearToSize(holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz());
 		if(containerItem.getInitialPoints() != null) {

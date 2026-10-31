@@ -78,6 +78,18 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  *   prefix a b:  volume 12   +   bound of the remaining boxes {c, d} within the load limits: 5   =   17,  below the best so far (18): not expanded
  * </pre>
  *
+ * A node is bounded by its free space, too ({@link BruteForceTreeFreeSpace}): the box types which fit none of its maximal empty spaces, in any
+ * rotation, can never be placed below it, as the free space only shrinks, so the prefix plus the remaining boxes of the other types (within the
+ * load left) must beat the best. That bound is by the positions, so a hopeless node is skipped but its prefix is not settled: the orders through it
+ * stay open on other paths. The node is bounded this way only where several more boxes fit the load left ({@link #SPACE_BOXES}): a cut saves the
+ * subtree below the node. A search gives the bound up when it cuts too few of the nodes checked for its cost ({@link #SPACE_CHECKS}), and a search
+ * with box item groups does without it: a box must be insertable after the groups before its own, so a free point which holds it is no sign that
+ * it can be placed, and the bound would be paid for at nodes which are dead ends.
+ *
+ * <pre>
+ *   prefix a b at these positions:  c fits no free space, so only {d} can follow:  12 + 4 = 16,  below the best so far (18): skipped, not settled
+ * </pre>
+ *
  * After an arrangement places all boxes, prefixes after it in the order are not expanded; the types are tried largest first when not all boxes fit,
  * so that a strong arrangement is found early (ties are decided by comparing permutations, so the order of visiting does not change the winner),
  * and once an arrangement places all boxes the search starts again in the lexicographic order, where the first full leaf settles everything after
@@ -98,6 +110,12 @@ import com.github.skjolber.packing.packer.util.LoadPlacementUtility;
  * </pre>
  */
 public final class BruteForceTreeSearch {
+
+	/** a node is bounded by its free space only where this many of the smallest remaining boxes fit the load left: a cut saves the subtree below the node */
+	static final int SPACE_BOXES = 3;
+	/** every so many checks of the bound by the free space, a search gives it up when it has cut fewer than one node in {@link #SPACE_CUT_RATE} */
+	static final int SPACE_CHECKS = 2048;
+	static final int SPACE_CUT_RATE = 16;
 
 	/** the most multisets of the boxes (the product of the counts plus one over the types) for the tree search: the bounds are kept per multiset */
 	static final long MAX_MULTISETS = 1L << 18;
@@ -287,6 +305,15 @@ public final class BruteForceTreeSearch {
 		final int forced = prefix.length;
 		final int[] prefixOrdinals = work.prefixOrdinals;
 
+		// the free space of the nodes of the path, for the bound by the positions (see isHopelessInSpace): made when a node is first bounded
+		BruteForceTreeFreeSpace freeSpace = null;
+		final boolean[] spaceChecked = new boolean[n + 1];
+		// not with box item groups: a box must be insertable after the groups before its own, so a free point which holds it is no sign that it
+		// can be placed, and the bound would be paid for at nodes which are dead ends; the bound is also given up when it cuts too little for its cost
+		boolean spaceOff = insertAfterCounts.length != 0;
+		int spaceChecks = 0;
+		int spaceCuts = 0;
+
 		// the best arrangement
 		boolean haveBest = false;
 		int bestCount = 0;
@@ -381,6 +408,7 @@ public final class BruteForceTreeSearch {
 							}
 							System.arraycopy(counts, 0, remaining, 0, types);
 							remainingKey = multisets.fullKey;
+							freeSpace = null;
 							candidates.start(holder, containerItem, n);
 							candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
 							level = 0;
@@ -414,6 +442,7 @@ public final class BruteForceTreeSearch {
 					fit[level] = false;
 					nodeSolved[level] = true;
 					typeSolved[level] = false;
+					spaceChecked[level] = false;
 					// save the free points, so that each candidate of this level starts from them
 					candidates.enter(level);
 					pushed[level] = true;
@@ -514,7 +543,21 @@ public final class BruteForceTreeSearch {
 				} else if(level < forced && ordinal[level] < prefixOrdinals[level]) {
 					// a stolen part: the candidates before the one placed at this level
 					ordinal[level]++;
+				} else if(!spaceChecked[level] && !spaceOff && level > 0 && (haveBest || minLoadVolume > 0L || shared != null)
+						&& maxLoadVolume - volume[level] >= SPACE_BOXES * bounds.minVolume(remaining, remainingKey) && ++spaceChecks > 0 && isHopelessInSpace(freeSpace == null
+								? freeSpace = freeSpace(sharedTables, n, holder, counts, stackValues, candidates, level, placedType, placedRotation) : freeSpace, candidates, level, remaining, volumeOrder,
+								stackValues, volumes, weights, volume[level], weight[level], maxLoadVolume, maxLoadWeight, minLoadVolume, shared, haveBest, bestVolume, bestWeight, bestCount, anyBest)) {
+					// the node has a child to place, but no completion of the node can beat the best: a bound by the positions, so the prefix is not
+					// settled, and the level ends without its other candidates
+					spaceChecked[level] = true;
+					spaceCuts++;
+					nodeSolved[level] = false;
+					typeAt[level] = -1;
 				} else {
+					if(!spaceChecked[level] && (spaceChecks & (SPACE_CHECKS - 1)) == 0 && spaceCuts * SPACE_CUT_RATE < spaceChecks) {
+						spaceOff = true;
+					}
+					spaceChecked[level] = true;
 					// place the box and continue with the next level
 					int nextLevel = level + 1;
 					remaining[t]--;
@@ -526,6 +569,9 @@ public final class BruteForceTreeSearch {
 					candidates.place(level, pointIndex, placement, last);
 					if(!last) {
 						candidates.setLimits(bounds.minArea(remaining, remainingKey, minAreas), bounds.minVolume(remaining, remainingKey));
+					}
+					if(freeSpace != null) {
+						freeSpace.place(level, candidates.point.getMinX(), candidates.point.getMinY(), candidates.point.getMinZ(), t, candidates.rotation);
 					}
 					fit[level] = true;
 					placedType[level] = t;
@@ -593,6 +639,110 @@ public final class BruteForceTreeSearch {
 		}
 		result.setState(points, AbstractBruteForcePackager.getState(iterator, bestRotations, bestCount), placements, placementCount);
 		return result;
+	}
+
+	/**
+	 * Whether the prefix (its volume, weight and count) plus the remaining boxes of the types which fit the node's free space, within the load
+	 * left, can beat neither the bound nor the best: the types which fit no maximal space can never be placed below the node. The bound is by the
+	 * positions, so it holds for the node only: a hopeless node is skipped, but its prefix is not settled, and the orders through it stay open on
+	 * other paths. With every remaining type fitting it is no tighter than {@link BruteForceTreeBound#isHopeless}, and false.
+	 * <p>
+	 * The types are taken largest first, each by the answer kept from the node above, else by a free point of the node which holds it (an empty
+	 * region, so the box fits); the node is viable, and the rest is not looked at, as soon as the types which fit add up to more than the best. The
+	 * types which fit no free point are looked for in the maximal spaces. So a node where nothing is excluded, the usual one, costs little. The
+	 * check is made when the node's first child is about to be placed: a node without one is a dead end, which the search finds at once, and the
+	 * spaces would cost more there than they save.
+	 */
+	private static boolean isHopelessInSpace(BruteForceTreeFreeSpace freeSpace, BruteForceTreeCandidates candidates, int level, int[] remaining, int[] volumeOrder,
+			BoxStackValue[][] stackValues, long[] volumes, long[] weights, long volume, long weight, long maxLoadVolume, long maxLoadWeight, long boundVolume,
+			BruteForceTreeSharedBest shared, boolean haveBest, long bestVolume, long bestWeight, int bestCount, boolean anyBest) {
+		// the best to beat, by volume: the node is viable once the types which fit add up to more
+		long beat = haveBest ? bestVolume : -1L;
+		long[] sharedBest = shared != null ? shared.get() : null;
+		if(sharedBest != null && (!haveBest || BruteForceTreeBound.compare(sharedBest[0], sharedBest[1], (int)sharedBest[2], bestVolume, bestWeight, bestCount) > 0)) {
+			beat = sharedBest[0];
+		} else {
+			sharedBest = null;
+		}
+		long loadLeft = maxLoadVolume - volume;
+		long v = 0L;
+		long w = 0L;
+		int c = 0;
+		boolean excluded = false;
+		boolean pointless = false;
+		for (int i = 0; i < volumeOrder.length; i++) {
+			int t = volumeOrder[i];
+			if(remaining[t] == 0) {
+				continue;
+			}
+			byte known = freeSpace.known(level, t);
+			if(known == BruteForceTreeFreeSpace.UNKNOWN) {
+				int point = candidates.pointHolding(stackValues[t]);
+				if(point == -1) {
+					pointless = true;
+					continue;
+				}
+				SimplePoint3D free = candidates.freePoints().get(point);
+				freeSpace.fitsAt(level, t, free.getMinX(), free.getMinY(), free.getMinZ(), free.getDx(), free.getDy(), free.getDz());
+			} else if(known == BruteForceTreeFreeSpace.NONE) {
+				excluded = true;
+				continue;
+			}
+			v += remaining[t] * volumes[t];
+			w += remaining[t] * weights[t];
+			c += remaining[t];
+			long partial = volume + Math.min(v, loadLeft);
+			if(partial >= boundVolume && partial > beat) {
+				return false;
+			}
+		}
+		if(pointless) {
+			for (int i = 0; i < volumeOrder.length; i++) {
+				int t = volumeOrder[i];
+				if(remaining[t] == 0 || freeSpace.known(level, t) != BruteForceTreeFreeSpace.UNKNOWN) {
+					continue;
+				}
+				if(!freeSpace.fits(level, t)) {
+					excluded = true;
+					continue;
+				}
+				v += remaining[t] * volumes[t];
+				w += remaining[t] * weights[t];
+				c += remaining[t];
+				long partial = volume + Math.min(v, loadLeft);
+				if(partial >= boundVolume && partial > beat) {
+					return false;
+				}
+			}
+		}
+		if(!excluded) {
+			return false;
+		}
+		v = volume + Math.min(v, loadLeft);
+		w = weight + Math.min(w, maxLoadWeight - weight);
+		c += level;
+		if(v < boundVolume) {
+			return true;
+		}
+		if(sharedBest != null) {
+			return BruteForceTreeBound.compare(v, w, c, sharedBest[0], sharedBest[1], (int)sharedBest[2]) < (anyBest ? 1 : 0);
+		}
+		return haveBest && BruteForceTreeBound.compare(v, w, c, bestVolume, bestWeight, bestCount) < (anyBest ? 1 : 0);
+	}
+
+	/** the free space of the nodes of the path, with the boxes placed so far: the holder's, reset, where it has the levels, else a new one kept in it */
+	private static BruteForceTreeFreeSpace freeSpace(BruteForceTreeTables tables, int n, Container holder, int[] counts, BoxStackValue[][] stackValues,
+			BruteForceTreeCandidates candidates, int level, int[] placedType, int[] placedRotation) {
+		BruteForceTreeFreeSpace freeSpace = tables.freeSpace;
+		if(freeSpace == null || !freeSpace.reset(n, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), counts, stackValues)) {
+			freeSpace = new BruteForceTreeFreeSpace(n, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), counts, stackValues);
+			tables.freeSpace = freeSpace;
+		}
+		for (int l = 0; l < level; l++) {
+			SimplePoint3D point = candidates.placedPoint(l);
+			freeSpace.place(l, point.getMinX(), point.getMinY(), point.getMinZ(), placedType[l], placedRotation[l]);
+		}
+		return freeSpace;
 	}
 
 	/** whether any remaining box fits the load left */

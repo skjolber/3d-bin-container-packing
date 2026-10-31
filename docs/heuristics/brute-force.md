@@ -80,7 +80,19 @@ only while an order through it is open, and compares equal arrangements by their
 the best sub-multiset of the remaining boxes within the load limits cannot beat the best arrangement (computed once
 per remaining multiset). When not all boxes fit the load limits, the largest boxes are tried first, so that a strong
 arrangement is found early; once an arrangement places all boxes the search restarts in the lexicographic order, where
-the first full arrangement ends it, as the loop ends at the first order which places all boxes.
+the first full arrangement ends it, as the loop ends at the first order which places all boxes. A node is also bounded by
+its free space, kept as maximal empty spaces: the box types which fit none of them, in any rotation, can never be placed
+below the node, so the prefix plus the remaining boxes of the other types must beat the best. That bound depends on the
+positions, so it skips the node without settling its orders, which stay open on other paths. The free points cannot tell
+this (a later box can add a point no earlier point covered, as a bar across two boxes), the maximal spaces can: a box fits
+the free space if and only if it fits one of them. The check is made when a node's first child is about to be placed, so a
+dead end never pays for it, and only where three more of the smallest remaining boxes fit the load left, where a cut saves
+a subtree; a search gives the bound up when fewer than one node in sixteen checked is cut, and a search with box item
+groups does without it (a box must be insertable after the groups before its own, so a free point which holds it is no
+sign that it can be placed). A box type is first looked for at the free points (a free point which holds it is an empty region), then by the
+answer kept from the node above with a space which holds it, then in the spaces of the nearest node above whose spaces
+were computed; only then are the node's own spaces computed from its parent's, keeping the pieces which hold some
+remaining box.
 
 ```
 orders:      a b c   a c b   b a c   b c a   c a b   c b a
@@ -94,6 +106,9 @@ settled:     x x x   x x x   x x x   . . .   . . .   . . .   b a is settled, b c
 
 the bound:   prefix a b, volume 12  +  best sub-multiset of the remaining {c, d} within the load limits, volume 5  =  17
              below the best arrangement so far (18): a b is not expanded
+
+free space:  prefix a b at these positions: c fits no maximal empty space, so only d can follow:  12 + 4  =  16
+             below the best arrangement so far (18): this node is skipped, but a b is not settled
 ```
 
 The tree applies to the search which the loop makes: no box item order, no container priorities and the default result

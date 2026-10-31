@@ -11,6 +11,8 @@ public final class BruteForceTreeTables {
 	final BruteForceTreeMultisets multisets;
 	final BruteForceTreeBound bounds;
 	final BruteForceTreeSettledOrders settled;
+	/** the free space of the nodes of the holder's last search, reused by the next (see {@link BruteForceTreeFreeSpace#reset}), or null */
+	BruteForceTreeFreeSpace freeSpace;
 	// the problem the tables are for
 	private final int[] counts;
 	private final int[] groupEnd;
@@ -69,6 +71,9 @@ public final class BruteForceTreeTables {
 		BruteForceTreeTables tables = new BruteForceTreeTables(multisets, new BruteForceTreeBound(counts, volumes, weights, maxLoadVolume, maxLoadWeight, multisets.keys, groupEnd),
 				new BruteForceTreeSettledOrders(counts, n, multisets, groupEnd), counts, groupEnd, n, maxLoadVolume, maxLoadWeight, volumes, weights, minAreas);
 		tables.sharedBest = sharedBest;
+		if(previous != null) {
+			tables.freeSpace = previous.freeSpace;
+		}
 		return tables;
 	}
 }
