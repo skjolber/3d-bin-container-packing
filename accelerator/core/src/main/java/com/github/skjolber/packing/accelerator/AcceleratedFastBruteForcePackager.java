@@ -266,6 +266,9 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 				return null;
 			}
 			result.setState(prefix.toList(), getState(iterator, prefix.getRotations(), prefix.getCount()), stackPlacements, stackPlacementCount);
+			if(result.getLoadWeight() != winner.getLoadWeight()) {
+				return null;
+			}
 			return result;
 		} finally {
 			// the packager searches the permutations from the first (and the other attempts reset the iterator themselves)
