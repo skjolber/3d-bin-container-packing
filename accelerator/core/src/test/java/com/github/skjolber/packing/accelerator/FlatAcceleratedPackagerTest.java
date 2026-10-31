@@ -76,7 +76,7 @@ class FlatAcceleratedPackagerTest {
 	private static AcceleratedFastBruteForcePackager comparePacking(FlatEngine engine, int fromSeed, int toSeed, int minBoxes, int maxBoxes, UnaryOperator<FastBruteForcePackager.Builder> configure,
 			Function<Instance, List<BoxItem>> boxItems) {
 		// the accelerator picks the loop's winner, so the packager without it must too: exact tree search, not any arrangement of the best value
-		FastBruteForcePackager plain = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager unaccelerated = configure.apply(FastBruteForcePackager.newBuilder()).withTreeSearchAnyBest(false).build();
 		AcceleratedFastBruteForcePackager.Builder builder = AcceleratedFastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY);
 		configure.apply(builder);
 		AcceleratedFastBruteForcePackager accelerated = builder.build();
@@ -84,12 +84,12 @@ class FlatAcceleratedPackagerTest {
 			for (int seed = fromSeed; seed < toSeed; seed++) {
 				Instance instance = FlatTestInstances.random(seed, minBoxes, maxBoxes);
 				List<ContainerItem> containerItems = containerItems(instance, seed);
-				String expected = describe(pack(plain, containerItems, boxItems.apply(instance)));
+				String expected = describe(pack(unaccelerated, containerItems, boxItems.apply(instance)));
 				assertThat(expected).as("seed " + seed + " packs all boxes").isNotEmpty();
 				assertThat(describe(pack(accelerated, containerItems, boxItems.apply(instance)))).as("seed " + seed).isEqualTo(expected);
 			}
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 		}
 		return accelerated;
@@ -220,14 +220,14 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void doesNotAccelerateWithObstacles() {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		AcceleratedFastBruteForcePackager accelerated = AcceleratedFastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (int seed = 0; seed < 10; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);
 				Container container = instance.container;
 				String[] results = new String[2];
-				FastBruteForcePackager[] packagers = { plain, accelerated };
+				FastBruteForcePackager[] packagers = { unaccelerated, accelerated };
 				for (int p = 0; p < packagers.length; p++) {
 					PackagerResult result = packagers[p].newResultBuilder().withContainerItem(b -> {
 						b.withContainerItem(new ContainerItem(container, 8));
@@ -240,7 +240,7 @@ class FlatAcceleratedPackagerTest {
 			assertThat(accelerated.getAcceleratedCount()).isZero();
 			assertThat(accelerated.getAcceleratorFallbackCount()).isZero();
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			engine.close();
 		}
@@ -331,19 +331,19 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void cpuOnlyNeverUsesTheAccelerator() {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().build();
 		AcceleratedFastBruteForcePackager accelerated = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.CPU_ONLY).build();
 		try {
 			for (int seed = 0; seed < 20; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 8, 10);
 				List<ContainerItem> containerItems = containerItems(instance, seed);
-				assertThat(describe(pack(accelerated, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(describe(pack(plain, containerItems, instance.copyBoxItems())));
+				assertThat(describe(pack(accelerated, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(describe(pack(unaccelerated, containerItems, instance.copyBoxItems())));
 			}
 			assertThat(accelerated.getAcceleratedCount()).isZero();
 			assertThat(accelerated.getAcceleratorRaceCpuCount()).isZero();
 			assertThat(accelerated.getAcceleratorFallbackCount()).isZero();
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			engine.close();
 		}
@@ -353,7 +353,7 @@ class FlatAcceleratedPackagerTest {
 	@Test
 	void autoRacesTheAcceleratorAndAgrees() {
 		FlatEngine engine = engine(2);
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		// no gate: the accelerator joins at once, so that it wins some containers; a gate of a second: the packager finishes every container first
 		AcceleratedFastBruteForcePackager raced = AcceleratedFastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(0).build();
 		AcceleratedFastBruteForcePackager gated = AcceleratedFastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(1000).build();
@@ -361,7 +361,7 @@ class FlatAcceleratedPackagerTest {
 			for (int seed = 0; seed < 40; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 8, 11);
 				List<ContainerItem> containerItems = containerItems(instance, seed);
-				String expected = describe(pack(plain, containerItems, instance.copyBoxItems()));
+				String expected = describe(pack(unaccelerated, containerItems, instance.copyBoxItems()));
 				assertThat(describe(pack(raced, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
 				assertThat(describe(pack(gated, containerItems, instance.copyBoxItems()))).as("seed " + seed).isEqualTo(expected);
 			}
@@ -372,7 +372,7 @@ class FlatAcceleratedPackagerTest {
 			assertThat(gated.getAcceleratedCount() + gated.getAcceleratorRaceCpuCount()).isGreaterThan(40);
 			assertThat(gated.getAcceleratorRaceCpuCount()).isGreaterThan(gated.getAcceleratedCount());
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			raced.close();
 			gated.close();
 			engine.close();

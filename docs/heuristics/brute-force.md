@@ -124,7 +124,7 @@ weight, then boxes), not necessarily the loop's choice among equally good ones (
 and positions): the search ends at the first arrangement which places all boxes, tries the largest boxes first even when
 all boxes fit, and does not expand prefixes which can at most tie the best. Where all boxes fit and the first order does
 not place them all, this is the difference between finding the lexicographically first complete arrangement and any: on
-the Bouwkamp benchmark (squared squares) the plain packager runs 260 times faster and the fast packager 12 times.
+the Bouwkamp benchmark (squared squares) `BruteForcePackager` runs 260 times faster and `FastBruteForcePackager` 12 times.
 `withTreeSearchAnyBest(false)` gives the loop's arrangement, exactly.
 
 ```

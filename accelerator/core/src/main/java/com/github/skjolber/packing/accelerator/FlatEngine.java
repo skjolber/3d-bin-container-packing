@@ -264,7 +264,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 	@Override
 	public boolean supports(FlatProblem problem) {
 		int n = problem.n();
-		// only the tree search takes all points (the search of the plain packager)
+		// only the tree search takes all points (the search of BruteForcePackager)
 		return n >= minBoxes && n <= maxBoxes && (tree || !problem.isAllPoints());
 	}
 

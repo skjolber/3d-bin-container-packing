@@ -1,7 +1,7 @@
 # Accelerated brute force
 
 `AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the `accelerator-core` artifact, JPMS module `com.github.skjolber.packing.accelerator`) and `AcceleratedBruteForcePackager` (a
-`BruteForcePackager` in the same artifact, see [the plain packager](#the-plain-packager)) can hand the search of all box orders
+`BruteForcePackager` in the same artifact, see [below](#the-brute-force-packager)) can hand the search of all box orders
 (permutations) of a container to a `BruteForceAccelerator`, such as a GPU. The accelerator is
 optional and off by default. Without one, the packagers work as described in [brute-force](brute-force.md), as do `FastBruteForcePackager` and `BruteForcePackager` in `core`, which has no
 accelerator code.
@@ -43,15 +43,15 @@ set, 8 containers each, any best:
 The packager's own tree on 8 threads, with its settled orders and free space bound, finishes first on every container the device joined, so `AUTO`
 costs the gate's thread and the interrupt checks (a few percent, within the noise on the largest set) and gains nothing with this kernel; it pays
 when the device wins some containers, as it does against the CPU engine `FlatEngine` (see [the module README](../../accelerator/tornado/README.md)) and
-for [the plain packager](#the-plain-packager), whose search is much longer.
+for [`BruteForcePackager`](#the-brute-force-packager), whose search is much longer.
 
-## The plain packager
+## The brute-force packager
 
-`AcceleratedBruteForcePackager` is `BruteForcePackager` with the same accelerator options, modes and counters. The plain packager tries a box at every free point where it fits, in the
+`AcceleratedBruteForcePackager` is `BruteForcePackager` with the same accelerator options, modes and counters. `BruteForcePackager` tries a box at every free point where it fits, in the
 order of the points, where the fast packager takes the best point of each rotation; so its search of a container is larger by a factor which grows with the boxes, and it runs on one
 thread. The accelerator searches the same way under `FlatProblem.ALL_POINTS`, which only the tree search takes (`FlatTree`, the kernel's `runTree`): a `FlatEngine` needs `withTree(true)`
 for it, an engine without does not support the problems of this packager, which then searches itself. The accelerator picks the box order, the packager places it with its own point
-calculator and confirms it, so the placements are the plain packager's in exact mode (`withTreeSearchAnyBest(false)`), and of the same value under any best. The accelerator applies
+calculator and confirms it, so the placements are those of `BruteForcePackager` in exact mode (`withTreeSearchAnyBest(false)`), and of the same value under any best. The accelerator applies
 under the conditions [below](#when-it-is-used), plus no point filter (`withPointFilter(..)`) and no reverse permutation skip (`withSkipReversePermutations(..)`).
 
 ```java
@@ -61,20 +61,20 @@ AcceleratedBruteForcePackager packager = AcceleratedBruteForcePackager
     .build();
 ```
 
-Measured with the TornadoVM accelerator on the same device, whole packings of random problems, 8 containers each, any best, the plain packager on its one thread:
+Measured with the TornadoVM accelerator on the same device, whole packings of random problems, 8 containers each, any best, `BruteForcePackager` on its one thread:
 
 | Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|---|
 | 7 to 9 | 30 | 0.90 s | 1.51 s | 0.87 s | 7 / 0 |
 | 10 to 11 | 12 | 200 s | 25 s | 24 s | 10 / 4 |
 
-The plain packager's search is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 23 s, on the next (seed 205) 1.7 s
+The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 23 s, on the next (seed 205) 1.7 s
 against 0.8 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
 search, which is what the gate is for. On the CPU, `ParallelBruteForcePackager` (not accelerated) runs the same search on threads.
 
 ## When it is used
 
-A container is searched by the accelerator when all of these hold (for the plain packager also no point filter and no reverse permutation skip), otherwise the packager does it itself:
+A container is searched by the accelerator when all of these hold (for `AcceleratedBruteForcePackager` also no point filter and no reverse permutation skip), otherwise the packager does it itself:
 
  * no box item order (`Order.NONE`), no box item groups
  * no load limits, no full support (`withRequireFullSupport(true)`), no obstacles or initial points
@@ -176,8 +176,8 @@ On a Radeon RX 7600 against `FlatEngine` with 8 threads (4 cores of a Ryzen 9 99
  * exact (the loop's winner): the CPU loop engine takes 19.1 s and the device tree 33.2 s (269 rounds). The CPU tree engine in exact mode takes 7.8 s.
 
 With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there). Splitting a long item into its children, under
-any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s, and on the plain packager's hardest
-problem of 10 to 11 boxes the device goes from 49 s to 23 s once each child's depth reaches the kernel (before that fix the children searched the parent's whole subtree again). Against the CPU
+any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s, and on the hardest problem of
+`BruteForcePackager` of 10 to 11 boxes the device goes from 49 s to 23 s once each child's depth reaches the kernel (before that fix the children searched the parent's whole subtree again). Against the CPU
 tree engine on larger problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.9 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed
 307: 0.12 s against 0.75 s) and loses the many easy ones, where its floor of 20 to 60 ms per problem and the 0.45 s of compilation decide.
 
@@ -201,6 +201,6 @@ These are in `accelerator/core/src/test/java/com/github/skjolber/packing/acceler
    (`sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo`)
  * `FlatAcceleratedPackagerTest`: placements with and without the accelerator are identical (the packager runs in exact mode for this, because under any best the tree may pick
    another arrangement of the same value), fallbacks, interrupts, and the inputs which are not accelerated
- * `FlatPlainPackagerTest`: the plain packager with the CPU engine as its accelerator against the plain packager without: the same placements in exact mode (`GPU_ONLY` and `AUTO`), the
-   same values under any best, and an engine without the tree search does not apply; `TornadoBruteForceAcceleratorTest.plainPackagerAgreesWithTheDevice` on a device
+ * `FlatBruteForcePackagerTest`: `BruteForcePackager` with the CPU engine as its accelerator against `BruteForcePackager` without: the same placements in exact mode (`GPU_ONLY` and `AUTO`), the
+   same values under any best, and an engine without the tree search does not apply; `TornadoBruteForceAcceleratorTest.bruteForcePackagerAgreesWithTheDevice` on a device
  * `IteratorSetPermutationTest` (in `core`): moving the iterator to a permutation

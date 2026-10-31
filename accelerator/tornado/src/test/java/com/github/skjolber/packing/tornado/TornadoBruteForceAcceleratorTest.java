@@ -62,13 +62,13 @@ class TornadoBruteForceAcceleratorTest {
 	@Test
 	void samePlacementsAsThePackagerWithoutAccelerator() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		AcceleratedFastBruteForcePackager accelerated = AcceleratedFastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			List<ContainerItem> containerItems = ContainerItem.newListBuilder()
 					.withContainer(Container.newBuilder().withId("container").withEmptyWeight(1).withSize(9, 6, 5).withMaxLoadWeight(1000).build(), 2)
 					.build();
-			String expected = describe(pack(plain, containerItems, boxItems()));
+			String expected = describe(pack(unaccelerated, containerItems, boxItems()));
 			assertThat(expected).isNotBlank();
 			assertThat(describe(pack(accelerated, containerItems, boxItems()))).isEqualTo(expected);
 
@@ -78,7 +78,7 @@ class TornadoBruteForceAcceleratorTest {
 				Container second = Container.newBuilder().withId("second" + seed).withEmptyWeight(1)
 						.withSize(Math.max(3, instance.container.getLoadDx() - 1), instance.container.getLoadDy(), Math.max(3, instance.container.getLoadDz() - 1)).withMaxLoadWeight(100_000).build();
 				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).withContainer(second, 8).build();
-				expected = describe(pack(plain, items, copy(instance.boxItems)));
+				expected = describe(pack(unaccelerated, items, copy(instance.boxItems)));
 				assertThat(expected).as("seed " + seed).isNotBlank();
 				assertThat(describe(pack(accelerated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
 			}
@@ -87,7 +87,7 @@ class TornadoBruteForceAcceleratorTest {
 				assertThat(accelerator.getSearches()).isGreaterThan(12);
 			}
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			accelerator.close();
 		}
@@ -97,13 +97,13 @@ class TornadoBruteForceAcceleratorTest {
 	@Test
 	void sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().build();
 		AcceleratedFastBruteForcePackager accelerated = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (long seed = 1; seed <= 12; seed++) {
 				KernelParity.Instance instance = KernelParity.random(seed, 6, 9, 4, 9);
 				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
-				String expected = values(pack(plain, items, copy(instance.boxItems)));
+				String expected = values(pack(unaccelerated, items, copy(instance.boxItems)));
 				assertThat(expected).as("seed " + seed).isNotBlank();
 				assertThat(values(pack(accelerated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
 			}
@@ -113,7 +113,7 @@ class TornadoBruteForceAcceleratorTest {
 				assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
 			}
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			accelerator.close();
 		}
@@ -123,14 +123,14 @@ class TornadoBruteForceAcceleratorTest {
 	@Test
 	void autoRacesTheDeviceAndAgrees() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().build();
 		AcceleratedFastBruteForcePackager raced = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(0).build();
 		AcceleratedFastBruteForcePackager gated = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.AUTO).build();
 		try {
 			for (long seed = 1; seed <= 12; seed++) {
 				KernelParity.Instance instance = KernelParity.random(seed, 8, 11, 4, 9);
 				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
-				String expected = values(pack(plain, items, copy(instance.boxItems)));
+				String expected = values(pack(unaccelerated, items, copy(instance.boxItems)));
 				assertThat(values(pack(raced, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
 				assertThat(values(pack(gated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
 			}
@@ -141,30 +141,30 @@ class TornadoBruteForceAcceleratorTest {
 				assertThat(raced.getAcceleratedCount() + raced.getAcceleratorRaceCpuCount()).isGreaterThan(12);
 			}
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			raced.close();
 			gated.close();
 			accelerator.close();
 		}
 	}
 
-	/** The plain packager (every box at every free point) with the device: the plain packager's placements in exact mode, its values under any best. */
+	/** {@code BruteForcePackager} (every box at every free point) with the device: its placements in exact mode, its values under any best. */
 	@Test
-	void plainPackagerAgreesWithTheDevice() {
+	void bruteForcePackagerAgreesWithTheDevice() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
-		BruteForcePackager plain = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		BruteForcePackager unaccelerated = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withTreeSearchAnyBest(false)
 				.withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
-		BruteForcePackager plainAny = BruteForcePackager.newBuilder().build();
+		BruteForcePackager unacceleratedAny = BruteForcePackager.newBuilder().build();
 		AcceleratedBruteForcePackager acceleratedAny = AcceleratedBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (long seed = 1; seed <= 12; seed++) {
 				KernelParity.Instance instance = KernelParity.random(seed, 5, 8, 4, 9);
 				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
-				String expected = describe(pack(plain, items, copy(instance.boxItems)));
+				String expected = describe(pack(unaccelerated, items, copy(instance.boxItems)));
 				assertThat(expected).as("seed " + seed).isNotBlank();
 				assertThat(describe(pack(accelerated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
-				assertThat(values(pack(acceleratedAny, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(values(pack(plainAny, items, copy(instance.boxItems))));
+				assertThat(values(pack(acceleratedAny, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(values(pack(unacceleratedAny, items, copy(instance.boxItems))));
 			}
 			assertThat(accelerator.getLastFailure()).isNull();
 			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
@@ -173,9 +173,9 @@ class TornadoBruteForceAcceleratorTest {
 				assertThat(accelerated.getAcceleratedCount()).isGreaterThan(12);
 			}
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
-			plainAny.close();
+			unacceleratedAny.close();
 			acceleratedAny.close();
 			accelerator.close();
 		}

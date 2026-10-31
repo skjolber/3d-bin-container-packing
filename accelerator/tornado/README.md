@@ -102,7 +102,7 @@ The environment variables keep the caches of the GPU stack within the build dire
  * `KernelParity`: runs the accelerator on random problems and compares the winner with `FlatEngine`, printing the times. Arguments: `firstSeed seeds minBoxes maxBoxes window
    nodeBudget maxPoints targetItems cpuThreads repeat localWorkSize mode`, for example `KernelParity 1 20 8 10`.
    A thirteenth argument, `nospace`, runs without the free space bound; the splits are printed.
-   The mode is `exact` (default: the loop's winner), `any` (any best, compared by value), `loop` (the old loop kernel), or `plainexact` and `plainany` (the search of the plain packager, all
+   The mode is `exact` (default: the loop's winner), `any` (any best, compared by value), `loop` (the old loop kernel), or `allpointsexact` and `allpointsany` (the search of `BruteForcePackager`, all
    points, against the CPU tree engine). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
@@ -117,10 +117,10 @@ are the other modes). On whole packings of 40 random problems per set with the p
 per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
 is the packager's own time plus the gate's overhead.
 
-The plain packager (`AcceleratedBruteForcePackager`, every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
+`AcceleratedBruteForcePackager` (every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
 boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 25 s and `AUTO` 24 s (the device joined 10 containers and won 4); the hardest problem takes 198 s on the packager alone and 23 s on the device, the
 next 1.7 s against 0.8 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is 0.90 s, 1.51 s and 0.87 s. The kernel searches with all points under
-`FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `plainexact` and `plainany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
+`FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `allpointsexact` and `allpointsany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
 against 1.1 s under any best, no mismatches). The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
 
 Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB, ROCm OpenCL) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X, on 42 random problems of 11 to 12
@@ -180,7 +180,7 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
  * `withSplit(..)`: on. On the device under any best, the 42 problems above have 38 splits and no change in the total (2.8 s against 2.6 s, within the run-to-run noise). On 16 problems of 13 to
    14 boxes there are 1360 splits and the time goes from 4.1 s to 3.2 s, the hardest (seed 208) from 2.13 s to 1.79 s. On 12 problems of 15 to 16 boxes there are 268 splits, and the hardest (seed
    309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds. Each slot's depth is passed to the kernel in the active array (the depth of its item plus one):
-   before that, the children searched the parent's whole subtree again, which the plain packager's hardest problem of 10 to 11 boxes shows (49 s to 23 s on the device with the fix; the sets above
+   before that, the children searched the parent's whole subtree again, which the hardest problem of `AcceleratedBruteForcePackager` of 10 to 11 boxes shows (49 s to 23 s on the device with the fix; the sets above
    are unchanged within the noise).
 
 Larger problems, the device against the CPU tree engine with 8 threads on 4 cores, any best, each in a fresh JVM so that the first problems of the CPU are cold:

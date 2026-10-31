@@ -82,7 +82,7 @@ public class KernelParity {
 		return problem(instance, anyBest, false);
 	}
 
-	/** @param allPoints true for the search of the plain packager, every box at every free point where it fits */
+	/** @param allPoints true for the search of {@code BruteForcePackager}, every box at every free point where it fits */
 	static FlatProblem problem(Instance instance, boolean anyBest, boolean allPoints) {
 		Container container = instance.container;
 		List<BoxItem> copy = new ArrayList<>();
@@ -128,10 +128,10 @@ public class KernelParity {
 		int localWorkSize = args.length > 10 ? Integer.parseInt(args[10]) : TornadoBruteForceAccelerator.DEFAULT_LOCAL_WORK_SIZE;
 		// "exact": the tree kernel against the loop of the CPU engine, the same winner; "any": the tree kernel and the tree of the CPU engine, any best
 		// arrangement, the same value; "loop": the loop kernel against the loop of the CPU engine
-		// "plainexact" and "plainany": the search of the plain packager (every box at every free point), the tree kernel against the CPU tree engine
+		// "allpointsexact" and "allpointsany": the search of BruteForcePackager (every box at every free point), the tree kernel against the CPU tree engine
 		String mode = args.length > 11 ? args[11] : "exact";
-		boolean allPoints = mode.startsWith("plain");
-		boolean anyBest = mode.equals("any") || mode.equals("plainany");
+		boolean allPoints = mode.startsWith("allpoints");
+		boolean anyBest = mode.equals("any") || mode.equals("allpointsany");
 		boolean tree = !mode.equals("loop");
 		boolean freeSpace = !(args.length > 12 && args[12].equals("nospace"));
 

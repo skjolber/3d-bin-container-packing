@@ -16,9 +16,9 @@ import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 
 /**
  * The brute force packager (every box at every free point where it fits) with the CPU engine as its accelerator, searching with all points: the
- * placements of the plain packager in exact mode, its values when any best arrangement will do.
+ * placements of the packager without an accelerator in exact mode, its values when any best arrangement will do.
  */
-class FlatPlainPackagerTest {
+class FlatBruteForcePackagerTest {
 
 	private static final long INTERRUPT_MILLIS = 60_000L;
 
@@ -50,16 +50,16 @@ class FlatPlainPackagerTest {
 	}
 
 	@Test
-	void samePlacementsAsThePlainPackager() {
+	void samePlacementsAsThePackagerWithoutAccelerator() {
 		FlatEngine engine = FlatEngine.newBuilder().withThreads(2).withMinBoxes(1).withTree(true).build();
-		BruteForcePackager plain = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		BruteForcePackager unaccelerated = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		AcceleratedBruteForcePackager raced = AcceleratedBruteForcePackager.newBuilder().withTreeSearchAnyBest(false)
 				.withAccelerator(engine).withAcceleratorMode(AcceleratorMode.AUTO).withAcceleratorGate(0).build();
 		try {
 			for (int seed = 0; seed < 60; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);
-				String expected = describe(pack(plain, instance));
+				String expected = describe(pack(unaccelerated, instance));
 				assertThat(expected).as("seed " + seed).isNotBlank();
 				assertThat(describe(pack(accelerated, instance))).as("seed " + seed).isEqualTo(expected);
 				assertThat(describe(pack(raced, instance))).as("seed " + seed + " raced").isEqualTo(expected);
@@ -68,7 +68,7 @@ class FlatPlainPackagerTest {
 			assertThat(accelerated.getAcceleratedCount()).isGreaterThan(60);
 			assertThat(raced.getAcceleratorMismatchCount()).isZero();
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			raced.close();
 			engine.close();
@@ -78,17 +78,17 @@ class FlatPlainPackagerTest {
 	@Test
 	void sameValuesWhenAnyBestWillDo() {
 		FlatEngine engine = FlatEngine.newBuilder().withThreads(2).withMinBoxes(1).withTree(true).build();
-		BruteForcePackager plain = BruteForcePackager.newBuilder().build();
+		BruteForcePackager unaccelerated = BruteForcePackager.newBuilder().build();
 		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (int seed = 0; seed < 60; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);
-				assertThat(values(pack(accelerated, instance))).as("seed " + seed).isEqualTo(values(pack(plain, instance)));
+				assertThat(values(pack(accelerated, instance))).as("seed " + seed).isEqualTo(values(pack(unaccelerated, instance)));
 			}
 			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
 			assertThat(accelerated.getAcceleratedCount()).isGreaterThan(60);
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			engine.close();
 		}
@@ -98,18 +98,18 @@ class FlatPlainPackagerTest {
 	void anEngineWithoutTheTreeSearchDoesNotApply() {
 		// the loop over the orders takes the best point of each rotation, not all points: the packager searches itself
 		FlatEngine engine = FlatEngine.newBuilder().withThreads(2).withMinBoxes(1).withTree(false).build();
-		BruteForcePackager plain = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		BruteForcePackager unaccelerated = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
 		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
 			for (int seed = 0; seed < 10; seed++) {
 				Instance instance = FlatTestInstances.random(seed, 5, 8);
-				assertThat(describe(pack(accelerated, instance))).as("seed " + seed).isEqualTo(describe(pack(plain, instance)));
+				assertThat(describe(pack(accelerated, instance))).as("seed " + seed).isEqualTo(describe(pack(unaccelerated, instance)));
 			}
 			assertThat(accelerated.getAcceleratedCount()).isZero();
 			assertThat(accelerated.getAcceleratorFallbackCount()).isZero();
 			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
 		} finally {
-			plain.close();
+			unaccelerated.close();
 			accelerated.close();
 			engine.close();
 		}
