@@ -12,7 +12,7 @@ It needs Java 22+, and is only built with the `tornado` profile; the default bui
 
 ```java
 TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().build();
-FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
+AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
 ...
 packager.close();
 accelerator.close(); // releases the device memory and the compiled kernel
@@ -29,8 +29,9 @@ device at a time; searches from other threads wait.
    empty. Exclude a device with `withExcludedName(..)`, or choose by name with `withNameContains(..)`.
  * `SubtreeKernel` and `src/main/resources/.../subtree.cl`: the kernel. One work item runs `FlatTree.runTree(..)` for one slot of a window, with its own scratch, for at most
    `withNodeBudget(..)` search nodes, then pauses; `run(..)`, the port of `FlatSubtree`, is the old search of the orders one at a time (`withTree(false)`). It is a hand-written OpenCL C port of the
-   flat package of the core module (`FlatGeometry`, `FlatPointOrder`, `FlatPoints`, `FlatPermutation`, `FlatSearch`, `FlatSubtree`, `FlatTree`, `FlatBound`), function by function with the same
-   names and statements, run as a TornadoVM *prebuilt* task. See below for why it is not compiled by the TornadoVM JIT. A change to the flat package is made in the kernel too;
+   flat classes of the `accelerator-core` module, package `com.github.skjolber.packing.accelerator` (`FlatGeometry`, `FlatPointOrder`, `FlatPoints`, `FlatPermutation`, `FlatSearch`, `FlatSubtree`,
+   `FlatTree`, `FlatBound`), function by function with the same
+   names and statements, run as a TornadoVM *prebuilt* task. See below for why it is not compiled by the TornadoVM JIT. A change to the flat classes is made in the kernel too;
    `KernelParityTest` checks that the two agree.
  * `TornadoBruteForceAccelerator`: the host loop of `FlatEngine` on the device. The permutations are split in items by their first boxes, a prefix of box types (`withTargetItems(..)`
    items at least). Each item is searched as one tree by default (`withTree(true)`), as the packager's `BruteForceTreeSearch` does on the CPU: each prefix of placements is placed once,
@@ -86,7 +87,7 @@ The tests which need a device (`KernelParityTest`, and the device part of `Torna
 To run a class by hand:
 
 ```sh
-CP=$T/classes:$T/test-classes:core/target/classes:api/target/classes
+CP=$T/classes:$T/test-classes:accelerator/core/target/classes:core/target/classes:api/target/classes
 mkdir -p $T/run $T/home/.cache $T/tmp && cd $T/run   # the module path of the SDK contains '.', so run in a directory without jars
 HOME=$T/home XDG_CACHE_HOME=$T/home/.cache TMPDIR=$T/tmp java @$T/tornado.args -Djava.io.tmpdir=$T/tmp -cp $CP com.github.skjolber.packing.tornado.ListDevices
 ```
@@ -108,7 +109,7 @@ Verified: the 7.3.1 `jdk22plus` OpenCL SDK on JDK 25, with the ROCm 7.1 OpenCL r
 ## Speed
 
 With the packager, the accelerator is by default used in `AcceleratorMode.AUTO`: the packager's own tree search starts at once and the device joins
-after a gate of 25 ms, the first result winning (`FastBruteForcePackager.withAcceleratorMode(..)`, `withAcceleratorGate(..)`; `CPU_ONLY` and `GPU_ONLY`
+after a gate of 25 ms, the first result winning (`AcceleratedFastBruteForcePackager.withAcceleratorMode(..)`, `withAcceleratorGate(..)`; `CPU_ONLY` and `GPU_ONLY`
 are the other modes). On whole packings of 40 random problems per set with the packager on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
 `GPU_ONLY` 1.75 s, `AUTO` 0.70 s; 13 to 14 boxes 2.31 s, 4.73 s, 2.50 s; 15 to 16 boxes 3.97 s, 5.15 s, 3.84 s. The device joined 15 to 20 containers
 per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
@@ -188,7 +189,7 @@ memory accesses of a wavefront (not tried), and problems where the CPU needs sec
 
 ## Why the kernel is written by hand
 
-The flat package was written so that the TornadoVM JIT could compile `FlatSubtree.run(..)` from the Java (a `@Parallel` loop over the slots, see `StageProbe` for what is left of it). With
+The flat classes were written so that the TornadoVM JIT could compile `FlatSubtree.run(..)` from the Java (a `@Parallel` loop over the slots, see `StageProbe` for what is left of it). With
 TornadoVM 7.3.1 (OpenCL) that did not work: the JIT compiles the search (36,000 lines of OpenCL, once its inlining limits are raised with `-Dgraal.MaximumInliningSize=20000
 -Dgraal.MaximumDesiredSize=2000000`), but the kernel does not run correctly. Found by bisecting on the device, each of which turned a wrong result or a hang into a match with the host:
 

@@ -1,10 +1,11 @@
 # Accelerated brute force
 
-`FastBruteForcePackager` can hand the search of all box orders (permutations) of a container to a `BruteForceAccelerator`, such as a GPU. The accelerator is
-optional and off by default. Without one, the packager works as described in [brute-force](brute-force.md).
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the `accelerator-core` artifact, JPMS module `com.github.skjolber.packing.accelerator`) can hand the search of all box orders
+(permutations) of a container to a `BruteForceAccelerator`, such as a GPU. The accelerator is
+optional and off by default. Without one, the packager works as described in [brute-force](brute-force.md), as does `FastBruteForcePackager` in `core`, which has no accelerator code.
 
 ```java
-FastBruteForcePackager packager = FastBruteForcePackager
+AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager
     .newBuilder()
     .withAccelerator(FlatEngine.newBuilder().withThreads(8).build())
     .build();
@@ -55,9 +56,10 @@ A container is searched by the accelerator when all of these hold, otherwise the
 ## The flat search
 
 The search of one permutation (each box in each rotation at its best free point, with the extreme-point bookkeeping) is also available on primitive `int` and
-`long` arrays in package `com.github.skjolber.packing.packer.bruteforce.flat`: `FlatPoints`, `FlatSearch`, `FlatPermutation`, `FlatSubtree`, `FlatTree`, `FlatBound`, `FlatSpace` and `FlatEngine`.
+`long` arrays in package `com.github.skjolber.packing.accelerator` (the `accelerator-core` module): `FlatPoints`, `FlatSearch`, `FlatPermutation`, `FlatSubtree`, `FlatTree`, `FlatBound`, `FlatSpace`
+and `FlatEngine`.
 It is a port of the object-based search, so the arrays are what a device kernel can work on: no allocation, no objects, no recursion, no virtual calls.
-The differential tests in `core` run it against the object-based search permutation by permutation (count, load volume, rotations), and the packager with
+The differential tests in `accelerator-core` run it against the object-based search permutation by permutation (count, load volume, rotations), and the packager with
 an accelerator against the packager without.
 
 `FlatEngine` splits the permutations in items by their first boxes (a prefix of box types), searches the items on threads, and reduces the winners of the items
@@ -121,13 +123,13 @@ the SPI is that this can be measured without changing the packager.
 
 The module [`accelerator/tornado`](../../accelerator/tornado/README.md) (profile `-Ptornado`, Java 22+) is an experimental [TornadoVM](https://www.tornadovm.org/)
 accelerator: `TornadoBruteForceAccelerator` chooses the device (by default the OpenCL GPU with the most compute throughput) and runs the search of the items on it, one work
-item per item, with the host loop of `FlatEngine` around it. The kernel is a hand-written OpenCL C port of the flat package, run as a TornadoVM prebuilt task: the
+item per item, with the host loop of `FlatEngine` around it. The kernel is a hand-written OpenCL C port of the flat classes of `accelerator-core`, run as a TornadoVM prebuilt task: the
 TornadoVM 7.3.1 JIT compiles the search from the Java but miscompiles its control flow (the kernel hangs), see the module README. The winner of the device is checked
 against `FlatEngine` on random problems by `KernelParityTest` (skipped without a device), and the packager with the accelerator against the packager without.
 
 ```java
 TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().build();
-FastBruteForcePackager packager = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
+AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
 ```
 
 It needs the TornadoVM SDK with an OpenCL, CUDA or Metal backend for the device (AMD cards use OpenCL), which is not on Maven Central; without a runtime the accelerator gives up and
@@ -151,9 +153,11 @@ The device is about 4 times slower than the packager's own tree search on the CP
 search too, but that engine is 14 times slower than the tree engine, so the device is no closer. The accelerator is not worth using as it is; the numbers, the tuning and what
 could change the picture (the settled orders in the kernel, a coalesced layout of the scratch, problems where the CPU needs seconds) are in the module README.
 
-To write another kernel, port the flat package as the tornado module does and keep both in step, see [DEVELOPER.md](../../DEVELOPER.md#flat-search-and-accelerators).
+To write another kernel, port the flat classes of `accelerator-core` as the tornado module does and keep both in step, see [DEVELOPER.md](../../DEVELOPER.md#flat-search-and-accelerators).
 
 ## Tests
+
+These are in `accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/` (and `IteratorSetPermutationTest` in `core`).
 
  * `FlatPointsAddTest`, `FlatBestPointTest`, `FlatSearchPermutationTest` and `FlatPermutationTest`: the flat model against the object model
  * `FlatEngineTest`: the engine against a reference loop, with threads, bounds, a tiny point limit, and interrupts
@@ -165,4 +169,4 @@ To write another kernel, port the flat package as the tornado module does and ke
    (`sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo`)
  * `FlatAcceleratedPackagerTest`: placements with and without the accelerator are identical (the packager runs in exact mode for this, because under any best the tree may pick
    another arrangement of the same value), fallbacks, interrupts, and the inputs which are not accelerated
- * `IteratorSetPermutationTest`: moving the iterator to a permutation
+ * `IteratorSetPermutationTest` (in `core`): moving the iterator to a permutation

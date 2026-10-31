@@ -91,6 +91,11 @@
 			</dependency>
 			<dependency>
 				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
+				<artifactId>accelerator-core</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 				<artifactId>validators</artifactId>
 				<version>${project.version}</version>
 			</dependency>
@@ -211,6 +216,7 @@
 		<module>points</module>
 		<module>validators</module>
 		<module>core</module>
+		<module>accelerator/core</module>
 		<module>jmh</module>
 		<module>visualizer/api</module>
 		<module>visualizer/algorithm</module>

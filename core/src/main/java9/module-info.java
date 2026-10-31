@@ -12,7 +12,6 @@ module com.github.skjolber.packing.core {
 
 	exports com.github.skjolber.packing.packer;
 	exports com.github.skjolber.packing.packer.bruteforce;
-	exports com.github.skjolber.packing.packer.bruteforce.flat;
 	exports com.github.skjolber.packing.packer.bruteforce.tree;
 	exports com.github.skjolber.packing.packer.composite;
 	exports com.github.skjolber.packing.packer.laff;

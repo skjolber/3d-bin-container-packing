@@ -46,7 +46,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
-			<artifactId>core</artifactId>
+			<artifactId>accelerator-core</artifactId>
 		</dependency>
 		<dependency>
 			<!-- the API only: the runtime (native drivers) comes with the TornadoVM installation, which is not on Maven Central -->

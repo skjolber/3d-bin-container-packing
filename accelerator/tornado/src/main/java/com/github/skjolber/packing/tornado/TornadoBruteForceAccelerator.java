@@ -6,13 +6,13 @@ import java.util.Optional;
 
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
-import com.github.skjolber.packing.packer.bruteforce.flat.AcceleratorWinner;
-import com.github.skjolber.packing.packer.bruteforce.flat.BruteForceAccelerator;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatItems;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatPermutation;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatProblem;
-import com.github.skjolber.packing.packer.bruteforce.flat.FlatSubtree;
+import com.github.skjolber.packing.accelerator.AcceleratorWinner;
+import com.github.skjolber.packing.accelerator.BruteForceAccelerator;
+import com.github.skjolber.packing.accelerator.FlatItems;
+import com.github.skjolber.packing.accelerator.FlatLayout;
+import com.github.skjolber.packing.accelerator.FlatPermutation;
+import com.github.skjolber.packing.accelerator.FlatProblem;
+import com.github.skjolber.packing.accelerator.FlatSubtree;
 
 import uk.ac.manchester.tornado.api.AccessorParameters;
 import uk.ac.manchester.tornado.api.GridScheduler;
@@ -28,7 +28,7 @@ import uk.ac.manchester.tornado.api.exceptions.TornadoExecutionPlanException;
 /**
  * A {@linkplain BruteForceAccelerator} which searches the permutations of the fast brute force packager on a TornadoVM device. Experimental.
  * <p>
- * The permutations are split in items by their first boxes, as for {@linkplain com.github.skjolber.packing.packer.bruteforce.flat.FlatEngine}. A window of
+ * The permutations are split in items by their first boxes, as for {@linkplain com.github.skjolber.packing.accelerator.FlatEngine}. A window of
  * items at a time runs on the device, one item for each work item, each with its own scratch memory, for a number of search nodes at most (a budget which
  * doubles each round up to the node budget). Each item is searched as one tree by default (as {@code FlatTree}, with a bound table computed once per
  * problem; {@link Builder#withTree(boolean)} false searches the orders one at a time), and the items share their best arrangement through the host. The kernel
