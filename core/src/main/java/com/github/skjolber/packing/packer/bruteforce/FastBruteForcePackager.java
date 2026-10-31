@@ -435,6 +435,21 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 	/** containers where the winner of the accelerator was not confirmed by the replay: the packager searched the permutations; this is a bug */
 	final AtomicLong acceleratorMismatchCount = new AtomicLong();
 
+	/** @return the number of containers searched by the accelerator, with a result which the replay confirmed */
+	public long getAcceleratedCount() {
+		return acceleratedCount.get();
+	}
+
+	/** @return the number of containers where the accelerator gave up, so the packager searched the permutations */
+	public long getAcceleratorFallbackCount() {
+		return acceleratorFallbackCount.get();
+	}
+
+	/** @return the number of containers where the winner of the accelerator was not confirmed by the replay, which is a bug in the accelerator */
+	public long getAcceleratorMismatchCount() {
+		return acceleratorMismatchCount.get();
+	}
+
 	public FastBruteForcePackager(IntermediatePackagerResultComparator comparator, FastBruteForceBoxStackValuePointComparator pointComparator) {
 		super(comparator);
 		this.fastPointComparator = pointComparator;
@@ -653,7 +668,8 @@ public class FastBruteForcePackager extends AbstractBruteForcePackager {
 			return null;
 		}
 
-		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit);
+		// any arrangement of the best value will do when the tree search of this packager would take any: the accelerator may then prune ties
+		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, treeSearchAnyBest);
 		if(!accelerator.supports(problem)) {
 			return null;
 		}

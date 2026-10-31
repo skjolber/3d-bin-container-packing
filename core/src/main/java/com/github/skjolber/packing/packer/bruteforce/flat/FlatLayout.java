@@ -26,7 +26,11 @@ public final class FlatLayout {
 	public static final int C_BEST_COUNT = 7;
 	public static final int C_NODES = 8;
 	public static final int C_MAX_POINTS = 9;
-	public static final int CONTROL_INTS = 12;
+	/** the tree search ({@link FlatTree}): the level of the search, whether it is about to expand the node of the level, and the key of the remaining boxes */
+	public static final int C_TREE_LEVEL = 10;
+	public static final int C_TREE_DESCEND = 11;
+	public static final int C_TREE_KEY = 12;
+	public static final int CONTROL_INTS = 16;
 
 	/** the maximum number of placements (levels) */
 	public final int n;
@@ -67,6 +71,12 @@ public final class FlatLayout {
 	public final int rotation;
 	public final int placedRotation;
 	public final int bestRotation;
+	/** the tree search ({@link FlatTree}), per level: the type being tried, whether a rotation of it was placed, and the type placed */
+	public final int typeAt;
+	public final int fit;
+	public final int placedType;
+	/** the tree search: the number of boxes of each type still to place (one slot per type, at most {@link #n} types) */
+	public final int remaining;
 
 	/** the number of ints in the scratch */
 	public final int size;
@@ -76,6 +86,8 @@ public final class FlatLayout {
 	public final int minVolume;
 	public final int placedVolume;
 	public final int bestVolume;
+	/** the tree search, per level: the weight of the placed boxes */
+	public final int placedWeight;
 	public final int longSize;
 
 	public FlatLayout(int n, int pMax) {
@@ -142,6 +154,14 @@ public final class FlatLayout {
 		offset += n + 1;
 		bestRotation = offset;
 		offset += n + 1;
+		typeAt = offset;
+		offset += n + 1;
+		fit = offset;
+		offset += n + 1;
+		placedType = offset;
+		offset += n + 1;
+		remaining = offset;
+		offset += n + 1;
 		size = offset;
 
 		int longOffset = 0;
@@ -153,6 +173,8 @@ public final class FlatLayout {
 		longOffset += n + 1;
 		bestVolume = longOffset;
 		longOffset += 1;
+		placedWeight = longOffset;
+		longOffset += n + 1;
 		longSize = longOffset;
 	}
 

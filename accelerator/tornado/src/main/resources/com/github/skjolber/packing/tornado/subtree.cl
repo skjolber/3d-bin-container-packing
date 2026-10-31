@@ -1,6 +1,6 @@
-// The search of the permutations of one item (FlatSubtree.run and what it calls) in OpenCL C, as a TornadoVM prebuilt kernel: one work item is one
-// slot of the window. The kernel is a function-by-function port of the flat package of the core module (FlatGeometry, FlatPointOrder, FlatPoints,
-// FlatPermutation, FlatSearch and FlatSubtree): the same names, the same order of statements and the same tie-breaking, so that a change in one
+// The search of the permutations of one item (FlatSubtree.run, or FlatTree.run for a tree item, and what they call) in OpenCL C, as a TornadoVM prebuilt
+// kernel: one work item is one slot of the window. The kernel is a function-by-function port of the flat package of the core module (FlatGeometry,
+// FlatPointOrder, FlatPoints, FlatPermutation, FlatSearch, FlatSubtree and FlatTree): the same names, the same order of statements and the same tie-breaking, so that a change in one
 // can be made in the other. The parity of the two is tested by KernelParityTest.
 //
 // The arrays are TornadoVM device buffers of Java arrays: 16 bytes of header (the length is the int at offset 12), then the elements.
@@ -16,7 +16,10 @@
 #define C_BEST_COUNT 7
 #define C_NODES 8
 #define C_MAX_POINTS 9
-#define CONTROL_INTS 12
+#define C_TREE_LEVEL 10
+#define C_TREE_DESCEND 11
+#define C_TREE_KEY 12
+#define CONTROL_INTS 16
 
 // FlatGeometry
 #define MIN_X 0
@@ -33,9 +36,12 @@
 #define P_CX 2
 #define P_CY 3
 #define P_CZ 4
+#define P_ROTATIONS 5
 #define P_LIMIT 6
 #define P_ALL_FIT 7
-#define P_HEADER 8
+#define P_ANY_BEST 8
+#define P_KEYS 9
+#define P_HEADER 10
 
 // FlatSubtree
 #define NOT_STARTED 0
@@ -57,7 +63,11 @@
 #define P_DEPTH 0
 #define P_BUDGET 1
 #define P_SLOTS 2
+#define P_TREE 3
 #define P_BOUND 0
+#define P_SHARED_VOLUME 1
+#define P_SHARED_WEIGHT 2
+#define P_SHARED_COUNT 3
 
 // the offsets of FlatLayout, in the order of TornadoBruteForceAccelerator.layoutInts(..)
 typedef struct {
@@ -90,15 +100,20 @@ typedef struct {
 	int rotation;
 	int placedRotation;
 	int bestRotation;
+	int typeAt;
+	int fit;
+	int placedType;
+	int remaining;
 	int size;
 	int minArea;
 	int minVolume;
 	int placedVolume;
 	int bestVolume;
+	int placedWeight;
 	int longSize;
 } Layout;
 
-#define LAYOUT_INTS 35
+#define LAYOUT_INTS 40
 
 static Layout readLayout(__global const int *v) {
 	Layout l;
@@ -131,12 +146,17 @@ static Layout readLayout(__global const int *v) {
 	l.rotation = v[26];
 	l.placedRotation = v[27];
 	l.bestRotation = v[28];
-	l.size = v[29];
-	l.minArea = v[30];
-	l.minVolume = v[31];
-	l.placedVolume = v[32];
-	l.bestVolume = v[33];
-	l.longSize = v[34];
+	l.typeAt = v[29];
+	l.fit = v[30];
+	l.placedType = v[31];
+	l.remaining = v[32];
+	l.size = v[33];
+	l.minArea = v[34];
+	l.minVolume = v[35];
+	l.placedVolume = v[36];
+	l.bestVolume = v[37];
+	l.placedWeight = v[38];
+	l.longSize = v[39];
 	return l;
 }
 
@@ -200,6 +220,18 @@ static inline int weightsOffset(int types) {
 
 static inline int maxLoad(int types) {
 	return 3 * types;
+}
+
+static inline int typeOrder(int types, int rotations) {
+	return rotationValues(types) + 3 * rotations;
+}
+
+static inline int radix(int types, int rotations) {
+	return typeOrder(types, rotations) + types;
+}
+
+static inline int bounds(int types) {
+	return maxLoad(types) + 2;
 }
 
 // FlatGeometry
@@ -1422,6 +1454,454 @@ static int run(const Layout *l, __global const int *problem, __global const long
 	return result;
 }
 
+// FlatTree
+// The smallest area and volume of the remaining boxes, for the level: the free points below them can hold none of the remaining boxes.
+static void minimums(__global const long *problemLongs, __global const int *s, __global long *sl, int remainingBase, int minAreaBase, int minVolumeBase, int types, int minAreasIndex, int level) {
+	long minArea = LONG_MAX;
+	long minVolume = LONG_MAX;
+	for (int t = 0; t < types; t++) {
+		if (s[remainingBase + t] > 0) {
+			if (problemLongs[minAreasIndex + t] < minArea) {
+				minArea = problemLongs[minAreasIndex + t];
+			}
+			if (problemLongs[t] < minVolume) {
+				minVolume = problemLongs[t];
+			}
+		}
+	}
+	sl[minAreaBase + level] = minArea;
+	sl[minVolumeBase + level] = minVolume;
+}
+
+// the next type with boxes remaining after the given one in the type order (or the first, for -1), or -1
+static int nextType(__global const int *problem, __global const int *s, int remainingBase, int typeOrderIndex, int types, int after) {
+	int index = 0;
+	if (after != -1) {
+		while (problem[typeOrderIndex + index] != after) {
+			index++;
+		}
+		index++;
+	}
+	int result = -1;
+	while (result == -1 && index < types) {
+		int t = problem[typeOrderIndex + index];
+		if (s[remainingBase + t] > 0) {
+			result = t;
+		}
+		index++;
+	}
+	return result;
+}
+
+// true if some remaining box fits the load left
+static bool canPlaceAny(__global const long *problemLongs, __global const int *s, int remainingBase, int types, int weights, long volumeLeft, long weightLeft) {
+	bool result = false;
+	for (int t = 0; t < types && !result; t++) {
+		if (s[remainingBase + t] > 0 && problemLongs[t] <= volumeLeft && problemLongs[weights + t] <= weightLeft) {
+			result = true;
+		}
+	}
+	return result;
+}
+
+// whether the prefix (count boxes, with the given volume and weight, and the key of the remaining boxes) plus the most the remaining boxes can add can beat neither the bound volume nor the best
+static bool isHopelessTree(__global const long *problemLongs, __global const int *s, int remainingBase, int types, int weights, bool allFit, int keys, int boundsIndex, int key, long volume,
+		long weight, int count, long maxLoadVolume, long maxLoadWeight, long boundVolume, int bestCount, long bestVolume, long bestWeight, bool anyBest) {
+	long v;
+	long w;
+	int c;
+	if (keys > 0 && !allFit) {
+		v = volume + problemLongs[boundsIndex + 3 * key];
+		w = weight + problemLongs[boundsIndex + 3 * key + 1];
+		c = count + (int)problemLongs[boundsIndex + 3 * key + 2];
+	} else {
+		long remainingVolume = 0L;
+		long remainingWeight = 0L;
+		c = count;
+		for (int t = 0; t < types; t++) {
+			int k = s[remainingBase + t];
+			remainingVolume += k * problemLongs[t];
+			remainingWeight += k * problemLongs[weights + t];
+			c += k;
+		}
+		v = volume + (remainingVolume < maxLoadVolume - volume ? remainingVolume : maxLoadVolume - volume);
+		w = weight + (remainingWeight < maxLoadWeight - weight ? remainingWeight : maxLoadWeight - weight);
+	}
+	bool result = v < boundVolume;
+	if (!result && bestCount > 0) {
+		int compare;
+		if (v != bestVolume) {
+			compare = v < bestVolume ? -1 : 1;
+		} else if (w != bestWeight) {
+			compare = w < bestWeight ? -1 : 1;
+		} else if (c != bestCount) {
+			compare = c < bestCount ? -1 : 1;
+		} else {
+			compare = 0;
+		}
+		result = compare < (anyBest ? 1 : 0);
+	}
+	return result;
+}
+
+// 1 if the prefix of the placed types followed by the type is after the first level + 1 boxes of the permutation, -1 if before, 0 if equal
+static int comparePrefix(__global const int *s, __global const int *out, int placedTypeBase, int permutation, int level, int type) {
+	int result = 0;
+	for (int i = 0; i < level && result == 0; i++) {
+		if (s[placedTypeBase + i] != out[permutation + i]) {
+			result = s[placedTypeBase + i] < out[permutation + i] ? -1 : 1;
+		}
+	}
+	if (result == 0 && type != out[permutation + level]) {
+		result = type < out[permutation + level] ? -1 : 1;
+	}
+	return result;
+}
+
+static int compareTypes(int a, int b) {
+	return a == b ? 0 : (a < b ? -1 : 1);
+}
+
+// whether the arrangement of the prefix (count boxes, with the given volume and weight) beats the best: more volume, then weight, then boxes; among equal ones, for the loop's winner,
+// the lexicographically first order. When any best arrangement will do, an equal one is not better.
+static bool isBetter(__global const int *s, __global const int *out, int placedTypeBase, int remainingBase, int bestPermutation, int n, int count, int failingType,
+		long volume, long weight, int bestCount, long bestVolume, long bestWeight, bool anyBest) {
+	bool result;
+	bool equal = false;
+	if (bestCount == 0) {
+		result = true;
+	} else if (volume != bestVolume) {
+		result = volume > bestVolume;
+	} else if (weight != bestWeight) {
+		result = weight > bestWeight;
+	} else if (count != bestCount) {
+		result = count > bestCount;
+	} else {
+		equal = true;
+		result = !anyBest;
+	}
+	if (equal && result) {
+		// the order of the arrangement against the order of the best, lexicographically, without writing it
+		int compare = 0;
+		int index = 0;
+		while (compare == 0 && index < count) {
+			compare = compareTypes(s[placedTypeBase + index], out[bestPermutation + index]);
+			index++;
+		}
+		if (compare == 0 && failingType != -1 && index < n) {
+			compare = compareTypes(failingType, out[bestPermutation + index]);
+			index++;
+		}
+		// the remaining boxes in ascending order: taken of the type so far, of those remaining (less the failing one)
+		int t = 0;
+		int taken = 0;
+		while (compare == 0 && index < n) {
+			while (taken == s[remainingBase + t] - (t == failingType ? 1 : 0)) {
+				t++;
+				taken = 0;
+			}
+			compare = compareTypes(t, out[bestPermutation + index]);
+			taken++;
+			index++;
+		}
+		result = compare < 0;
+	}
+	return result;
+}
+
+// keep the arrangement of the prefix as the best: its order (the prefix, the failing type if any, and the remaining boxes in ascending order), its rotations, count, volume and weight
+static void offerTree(const Layout *l, __global const int *s, __global int *out, __global long *outLongs, int outBase, int outLongBase, int base, int placedTypeBase, int remainingBase, int types,
+		int count, int failingType, long volume, long weight) {
+	const int n = l->n;
+	out[outBase + OUT_COUNT] = count;
+	outLongs[outLongBase + OUT_VOLUME] = volume;
+	outLongs[outLongBase + OUT_WEIGHT] = weight;
+	int from = base + l->placedRotation;
+	int to = outBase + outBestRotations(n);
+	for (int i = 0; i < count; i++) {
+		out[to + i] = s[from + i];
+	}
+	int order = outBase + outBestPermutation(n);
+	int index = 0;
+	for (int i = 0; i < count; i++) {
+		out[order + index] = s[placedTypeBase + i];
+		index++;
+	}
+	if (failingType != -1) {
+		out[order + index] = failingType;
+		index++;
+	}
+	for (int t = 0; t < types; t++) {
+		int k = s[remainingBase + t] - (t == failingType ? 1 : 0);
+		for (int i = 0; i < k; i++) {
+			out[order + index] = t;
+			index++;
+		}
+	}
+}
+
+// FlatTree.run: the status of the item
+static int runTree(const Layout *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s, __global long *sl, int base,
+		int longBase, __global int *out, int outBase, __global long *outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, int budgetNodes) {
+	const int n = problem[P_N];
+	const int types = problem[P_TYPES];
+	const int rotations = problem[P_ROTATIONS];
+	const int limit = problem[P_LIMIT];
+	const bool allFit = problem[P_ALL_FIT] != 0;
+	const bool anyBest = problem[P_ANY_BEST] != 0;
+	const int keys = problem[P_KEYS];
+	const int counts = P_HEADER;
+	const int rotationOffsetsIndex = rotationOffsets(types);
+	const int rotationValuesIndex = rotationValues(types);
+	const int typeOrderIndex = typeOrder(types, rotations);
+	const int radixIndex = radix(types, rotations);
+	const int minAreasIndex = minAreas(types);
+	const int weights = weightsOffset(types);
+	const long maxLoadVolume = problemLongs[maxLoad(types)];
+	const long maxLoadWeight = problemLongs[maxLoad(types) + 1];
+	const int boundsIndex = bounds(types);
+	const int depthLimit = limit < n ? limit : n;
+
+	const int control = base + l->control;
+	const int typeAtBase = base + l->typeAt;
+	const int fitBase = base + l->fit;
+	const int placedTypeBase = base + l->placedType;
+	const int remainingBase = base + l->remaining;
+	const int rotationBase = base + l->rotation;
+	const int placedRotationBase = base + l->placedRotation;
+	const int minAreaBase = longBase + l->minArea;
+	const int minVolumeBase = longBase + l->minVolume;
+	const int placedVolumeBase = longBase + l->placedVolume;
+	const int placedWeightBase = longBase + l->placedWeight;
+	const int bestPermutation = outBase + outBestPermutation(n);
+	const int prefix = item * n;
+
+	int status = out[outBase + OUT_STATUS];
+	int result = status;
+	bool running = status != DONE && status != OVERFLOW;
+	if (running && status == NOT_STARTED) {
+		reset(l, s, base);
+		for (int t = 0; t < types; t++) {
+			s[remainingBase + t] = problem[counts + t];
+		}
+		s[control + C_TREE_LEVEL] = 0;
+		s[control + C_TREE_DESCEND] = 1;
+		s[control + C_TREE_KEY] = keys - 1;
+		sl[placedVolumeBase] = 0L;
+		sl[placedWeightBase] = 0L;
+		out[outBase + OUT_COUNT] = 0;
+		out[outBase + OUT_FULL] = 0;
+		outLongs[outLongBase + OUT_VOLUME] = 0L;
+		outLongs[outLongBase + OUT_WEIGHT] = 0L;
+		clearPoints(l, s, base, problem[P_CX], problem[P_CY], problem[P_CZ]);
+		minimums(problemLongs, s, sl, remainingBase, minAreaBase, minVolumeBase, types, minAreasIndex, 0);
+		if (sl[minAreaBase] != 0L || sl[minVolumeBase] != 0L) {
+			filterMinimums(l, s, base, 0, sl[minAreaBase], sl[minVolumeBase]);
+		}
+	}
+
+	int level = s[control + C_TREE_LEVEL];
+	bool descend = s[control + C_TREE_DESCEND] != 0;
+	int key = s[control + C_TREE_KEY];
+	int bestCount = out[outBase + OUT_COUNT];
+	long bestVolume = outLongs[outLongBase + OUT_VOLUME];
+	long bestWeight = outLongs[outLongBase + OUT_WEIGHT];
+	// the best to beat for the bound: the best of the other items when it is better than this item's own
+	int beatCount = bestCount;
+	long beatVolume = bestVolume;
+	long beatWeight = bestWeight;
+	if (sharedCount > 0 && (bestCount == 0 || sharedVolume > bestVolume || (sharedVolume == bestVolume && (sharedWeight > bestWeight || (sharedWeight == bestWeight && sharedCount > bestCount))))) {
+		beatCount = sharedCount;
+		beatVolume = sharedVolume;
+		beatWeight = sharedWeight;
+	}
+	int nodes = 0;
+	while (running && level >= 0) {
+		if (descend) {
+			// a node: the prefix of the placed boxes of the levels below
+			descend = false;
+			if (nodes >= budgetNodes) {
+				descend = true;
+				result = PAUSED;
+				running = false;
+			} else {
+				nodes++;
+				long nodeVolume = sl[placedVolumeBase + level];
+				long nodeWeight = sl[placedWeightBase + level];
+				bool expand = level < depthLimit && canPlaceAny(problemLongs, s, remainingBase, types, weights, maxLoadVolume - nodeVolume, maxLoadWeight - nodeWeight);
+				if (expand && (beatCount > 0 || boundVolume > 0L)
+						&& isHopelessTree(problemLongs, s, remainingBase, types, weights, allFit, keys, boundsIndex, key, nodeVolume, nodeWeight, level, maxLoadVolume, maxLoadWeight, boundVolume,
+								beatCount, beatVolume, beatWeight, anyBest)) {
+					// no completion of this prefix can beat the best
+					expand = false;
+				} else if (!expand && level > 0) {
+					// every box which may be placed is placed, or none of the remaining ones fits the load left: a leaf
+					if (isBetter(s, out, placedTypeBase, remainingBase, bestPermutation, n, level, -1, nodeVolume, nodeWeight, bestCount, bestVolume, bestWeight, anyBest)) {
+						bestCount = level;
+						bestVolume = nodeVolume;
+						bestWeight = nodeWeight;
+						if (beatCount == 0 || nodeVolume > beatVolume || (nodeVolume == beatVolume && (nodeWeight > beatWeight || (nodeWeight == beatWeight && level > beatCount)))) {
+							beatCount = level;
+							beatVolume = nodeVolume;
+							beatWeight = nodeWeight;
+						}
+						offerTree(l, s, out, outLongs, outBase, outLongBase, base, placedTypeBase, remainingBase, types, level, -1, nodeVolume, nodeWeight);
+						if (level == n) {
+							out[outBase + OUT_FULL] = 1;
+							if (anyBest) {
+								result = DONE;
+								running = false;
+							}
+						}
+					}
+				}
+				if (!expand) {
+					s[typeAtBase + level] = -1;
+				} else {
+					s[typeAtBase + level] = level < depth ? prefixes[prefix + level] : nextType(problem, s, remainingBase, typeOrderIndex, types, -1);
+					s[rotationBase + level] = 0;
+					s[fitBase + level] = 0;
+				}
+			}
+		}
+
+		if (running) {
+			const int t = s[typeAtBase + level];
+			if (t == -1) {
+				// the node is done: back to the level below, where the next rotation of its type follows
+				level--;
+				if (level >= 0) {
+					int placed = s[placedTypeBase + level];
+					s[remainingBase + placed]++;
+					key += problem[radixIndex + placed];
+				}
+			} else {
+				bool skip = false;
+				if (s[rotationBase + level] == 0 && s[fitBase + level] == 0) {
+					// the box is new at this node: a box over the load limits ends the arrangement; after a full arrangement only earlier orders can
+					// win; a hopeless box is not placed
+					long nodeVolume = sl[placedVolumeBase + level];
+					long nodeWeight = sl[placedWeightBase + level];
+					if (problemLongs[t] > maxLoadVolume - nodeVolume || problemLongs[weights + t] > maxLoadWeight - nodeWeight) {
+						if (level > 0 && isBetter(s, out, placedTypeBase, remainingBase, bestPermutation, n, level, t, nodeVolume, nodeWeight, bestCount, bestVolume, bestWeight, anyBest)) {
+							bestCount = level;
+							bestVolume = nodeVolume;
+							bestWeight = nodeWeight;
+							if (beatCount == 0 || nodeVolume > beatVolume || (nodeVolume == beatVolume && (nodeWeight > beatWeight || (nodeWeight == beatWeight && level > beatCount)))) {
+								beatCount = level;
+								beatVolume = nodeVolume;
+								beatWeight = nodeWeight;
+							}
+							offerTree(l, s, out, outLongs, outBase, outLongBase, base, placedTypeBase, remainingBase, types, level, t, nodeVolume, nodeWeight);
+						}
+						skip = true;
+					} else if (bestCount == n && !anyBest && comparePrefix(s, out, placedTypeBase, bestPermutation, level, t) > 0) {
+						skip = true;
+					} else if (beatCount > 0 || boundVolume > 0L) {
+						s[remainingBase + t]--;
+						skip = isHopelessTree(problemLongs, s, remainingBase, types, weights, allFit, keys, boundsIndex, key - problem[radixIndex + t], nodeVolume + problemLongs[t],
+								nodeWeight + problemLongs[weights + t], level + 1, maxLoadVolume, maxLoadWeight, boundVolume, beatCount, beatVolume, beatWeight, anyBest);
+						s[remainingBase + t]++;
+					}
+				}
+				if (skip) {
+					s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrderIndex, types, t);
+					s[rotationBase + level] = 0;
+					s[fitBase + level] = 0;
+				} else {
+					// the next rotation of the box which has a position
+					const int firstRotation = problem[rotationOffsetsIndex + t];
+					const int rotationCount = problem[rotationOffsetsIndex + t + 1] - firstRotation;
+					const int frame = base + frameOffset(l, level);
+					int rotationIndex = s[rotationBase + level];
+					int pointIndex = -1;
+					int dx = 0;
+					int dy = 0;
+					int dz = 0;
+					while (pointIndex == -1 && rotationIndex < rotationCount) {
+						int rotation = rotationValuesIndex + 3 * (firstRotation + rotationIndex);
+						dx = problem[rotation];
+						dy = problem[rotation + 1];
+						dz = problem[rotation + 2];
+						rotationIndex++;
+						pointIndex = bestPoint(s, frame, dx, dy, dz);
+					}
+					s[rotationBase + level] = rotationIndex;
+
+					if (pointIndex != -1) {
+						// place the box and continue with the next level
+						int point = frame + 1 + pointIndex * POINT_INTS;
+						int x = s[point];
+						int y = s[point + 1];
+						int z = s[point + 2];
+						int nextLevel = level + 1;
+						s[remainingBase + t]--;
+						key -= problem[radixIndex + t];
+						sl[placedVolumeBase + nextLevel] = sl[placedVolumeBase + level] + problemLongs[t];
+						sl[placedWeightBase + nextLevel] = sl[placedWeightBase + level] + problemLongs[weights + t];
+						s[placedTypeBase + level] = t;
+						s[placedRotationBase + level] = rotationIndex - 1;
+						s[fitBase + level] = 1;
+						// when no box can follow, the free space after the box is never searched
+						bool last = nextLevel == depthLimit || !canPlaceAny(problemLongs, s, remainingBase, types, weights, maxLoadVolume - sl[placedVolumeBase + nextLevel],
+								maxLoadWeight - sl[placedWeightBase + nextLevel]);
+						if (!last) {
+							setPlacement(l, s, base, level, x, y, z, x + dx - 1, y + dy - 1, z + dz - 1);
+							int count = addPoint(l, s, base, level, pointIndex, level, sl[minAreaBase + level], sl[minVolumeBase + level]);
+							if (count < 0) {
+								result = OVERFLOW;
+								running = false;
+							} else {
+								minimums(problemLongs, s, sl, remainingBase, minAreaBase, minVolumeBase, types, minAreasIndex, nextLevel);
+								if (sl[minAreaBase + nextLevel] != sl[minAreaBase + level] || sl[minVolumeBase + nextLevel] != sl[minVolumeBase + level]) {
+									filterMinimums(l, s, base, nextLevel, sl[minAreaBase + nextLevel], sl[minVolumeBase + nextLevel]);
+								}
+							}
+						}
+						level = nextLevel;
+						descend = true;
+					} else {
+						if (s[fitBase + level] == 0 && level > 0) {
+							// no rotation of the box has a position: the arrangement ends at this box
+							long nodeVolume = sl[placedVolumeBase + level];
+							long nodeWeight = sl[placedWeightBase + level];
+							if (isBetter(s, out, placedTypeBase, remainingBase, bestPermutation, n, level, t, nodeVolume, nodeWeight, bestCount, bestVolume, bestWeight, anyBest)) {
+								bestCount = level;
+								bestVolume = nodeVolume;
+								bestWeight = nodeWeight;
+								if (beatCount == 0 || nodeVolume > beatVolume || (nodeVolume == beatVolume && (nodeWeight > beatWeight || (nodeWeight == beatWeight && level > beatCount)))) {
+									beatCount = level;
+									beatVolume = nodeVolume;
+									beatWeight = nodeWeight;
+								}
+								offerTree(l, s, out, outLongs, outBase, outLongBase, base, placedTypeBase, remainingBase, types, level, t, nodeVolume, nodeWeight);
+							}
+						}
+						s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrderIndex, types, t);
+						s[rotationBase + level] = 0;
+						s[fitBase + level] = 0;
+					}
+				}
+			}
+		}
+	}
+
+	if (running) {
+		// every node of the item is searched
+		result = DONE;
+	}
+	if (result == OVERFLOW) {
+		reset(l, s, base);
+		s[control + C_OVERFLOW] = 1;
+	}
+	s[control + C_TREE_LEVEL] = level;
+	s[control + C_TREE_DESCEND] = descend ? 1 : 0;
+	s[control + C_TREE_KEY] = key;
+	out[outBase + OUT_STATUS] = result;
+	outLongs[outLongBase + OUT_NODES] += nodes;
+	return result;
+}
+
 // The kernel: the parameters after the four of the TornadoVM calling convention are the Java arrays of TornadoBruteForceAccelerator, in its order.
 __kernel void search(__global long *_kernel_context, __constant uchar *_constant_region, __local uchar *_local_region, __global int *_atomics,
 		__global uchar *layoutBuffer, __global uchar *problemBuffer, __global uchar *problemLongsBuffer, __global uchar *activeBuffer, __global uchar *prefixesBuffer,
@@ -1446,6 +1926,12 @@ __kernel void search(__global long *_kernel_context, __constant uchar *_constant
 	int n = problem[P_N];
 	int base = slot * l.size;
 	int longBase = slot * l.longSize;
-	reset(&l, s, base);
-	run(&l, problem, problemLongs, parameters[P_DEPTH], prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
+	if (parameters[P_TREE] != 0) {
+		// a tree item keeps its scratch between the rounds: FlatTree.run resets it when the item has not started
+		runTree(&l, problem, problemLongs, parameters[P_DEPTH], prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
+				longParameters[P_SHARED_VOLUME], longParameters[P_SHARED_WEIGHT], (int)longParameters[P_SHARED_COUNT], parameters[P_BUDGET]);
+	} else {
+		reset(&l, s, base);
+		run(&l, problem, problemLongs, parameters[P_DEPTH], prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
+	}
 }

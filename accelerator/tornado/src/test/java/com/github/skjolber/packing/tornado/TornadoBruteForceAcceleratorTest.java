@@ -58,8 +58,8 @@ class TornadoBruteForceAcceleratorTest {
 	@Test
 	void samePlacementsAsThePackagerWithoutAccelerator() {
 		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
-		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
-		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withTreeSearchAnyBest(false).withAccelerator(accelerator).build();
 		try {
 			List<ContainerItem> containerItems = ContainerItem.newListBuilder()
 					.withContainer(Container.newBuilder().withId("container").withEmptyWeight(1).withSize(9, 6, 5).withMaxLoadWeight(1000).build(), 2)
@@ -87,6 +87,41 @@ class TornadoBruteForceAcceleratorTest {
 			accelerated.close();
 			accelerator.close();
 		}
+	}
+
+	/** The packager which takes any arrangement of the best value (its default) with the accelerator: the same values, and every winner confirmed. */
+	@Test
+	void sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo() {
+		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
+		FastBruteForcePackager plain = FastBruteForcePackager.newBuilder().build();
+		FastBruteForcePackager accelerated = FastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
+		try {
+			for (long seed = 1; seed <= 12; seed++) {
+				KernelParity.Instance instance = KernelParity.random(seed, 6, 9, 4, 9);
+				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
+				String expected = values(pack(plain, items, copy(instance.boxItems)));
+				assertThat(expected).as("seed " + seed).isNotBlank();
+				assertThat(values(pack(accelerated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
+			}
+			assertThat(accelerator.getLastFailure()).isNull();
+			if(accelerator.getDevice().isPresent()) {
+				assertThat(accelerator.getSearches()).isGreaterThan(12);
+				assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
+			}
+		} finally {
+			plain.close();
+			accelerated.close();
+			accelerator.close();
+		}
+	}
+
+	/** @return the load volume, weight and box count of each container */
+	private static String values(PackagerResult result) {
+		StringBuilder builder = new StringBuilder();
+		for (Container container : result.getContainers()) {
+			builder.append(container.getStack().getVolume()).append('/').append(container.getStack().getWeight()).append('/').append(container.getStack().getPlacements().size()).append(' ');
+		}
+		return builder.toString();
 	}
 
 	private static List<BoxItem> copy(List<BoxItem> boxItems) {

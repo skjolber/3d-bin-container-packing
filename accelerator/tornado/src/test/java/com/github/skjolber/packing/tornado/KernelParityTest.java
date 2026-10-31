@@ -127,6 +127,36 @@ class KernelParityTest {
 	}
 
 	@Test
+	void loopKernelWinnerIsTheWinnerOfTheCpuEngine() throws PackagerInterruptedException {
+		// the orders of an item searched one at a time, as before the tree
+		TornadoBruteForceAccelerator device = device().withTree(false).build();
+		compare(device, 1, 12, 8, 10, false);
+	}
+
+	@Test
+	void anyBestHasTheValueOfTheCpuEngine() throws PackagerInterruptedException {
+		TornadoBruteForceAccelerator device = device().build();
+		FlatEngine tree = FlatEngine.newBuilder().withMinBoxes(1).withTree(true).build();
+		try {
+			for (long seed = 71; seed < 91; seed++) {
+				Instance instance = KernelParity.random(seed, 8, 10, 4, 9);
+				FlatProblem problem = KernelParity.problem(instance, true);
+				Optional<AcceleratorWinner> expected = cpu.search(KernelParity.problem(instance, false), 0L, () -> false);
+				Optional<AcceleratorWinner> actual = device.search(problem, 0L, () -> false);
+				assertThat(device.getLastFailure()).as("seed " + seed).isNull();
+				assertThat(actual).as("seed " + seed).isPresent();
+				// any arrangement of the best value: the value of the loop's winner, and of the CPU tree
+				assertThat(KernelParity.sameValue(actual.get(), expected.get())).as("seed " + seed + ": expected " + KernelParity.describe(expected) + ", got " + KernelParity.describe(actual)).isTrue();
+				Optional<AcceleratorWinner> cpuTree = tree.search(problem, 0L, () -> false);
+				assertThat(KernelParity.sameValue(actual.get(), cpuTree.get())).as("seed " + seed).isTrue();
+			}
+		} finally {
+			device.close();
+			tree.close();
+		}
+	}
+
+	@Test
 	void closedAcceleratorGivesUp() throws PackagerInterruptedException {
 		TornadoBruteForceAccelerator device = device().build();
 		FlatProblem problem = KernelParity.problem(KernelParity.random(2, 8, 8, 4, 9));
