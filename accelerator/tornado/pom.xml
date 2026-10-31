@@ -14,7 +14,7 @@
 	<properties>
 		<!-- tornado-api 7.x for JDK 22+ -->
 		<java.version>22</java.version>
-		<tornado.version>7.3.1-jdk22plus</tornado.version>
+		<tornado.version>8.0.0-jdk22plus</tornado.version>
 		<!-- set by jacoco when it runs -->
 		<argLine></argLine>
 	</properties>
@@ -34,7 +34,7 @@
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-plugin</artifactId>
 						<configuration>
-							<!-- surefire enables assertions, and an assertion in the Graal of TornadoVM 7.3.1 (an invocation plugin for a method which JDK 12+ lacks) then stops the OpenCL backend -->
+							<!-- surefire enables assertions, and an assertion in the Graal of TornadoVM 7.3.1 (an invocation plugin for a method which JDK 12+ lacks) then stopped the OpenCL backend; 8.0.0 has no Graal, and the flag is harmless -->
 							<argLine>@{argLine} @${tornado.argfile} -da:tornado...</argLine>
 						</configuration>
 					</plugin>
