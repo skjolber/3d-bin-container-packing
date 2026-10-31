@@ -38,6 +38,8 @@ done: `FlatEngine` owns threads.
    any search takes on a device), the accelerator searches the same container alongside on its own thread; the first result wins and stops the
    other. The easy containers never reach the accelerator; the hard ones take the faster of the two. The accelerator's winner is placed and confirmed
    as in `GPU_ONLY`. `getAcceleratedCount()`, `getAcceleratorRaceCpuCount()` and `getAcceleratorFallbackCount()` count who finished which container.
+   A packager hands its searches to the accelerator on one thread, one after the other: when the packager is used from several threads at once, a
+   search whose race is over before its turn is dropped from the queue, and never reaches the accelerator.
 
 Measured with `FastBruteForcePackager.withThreads(8)` and the TornadoVM accelerator (a Radeon RX 7600) on whole packings of 40 random problems per
 set, 8 containers each, any best:

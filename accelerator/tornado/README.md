@@ -21,7 +21,7 @@ accelerator.close(); // releases the device memory and the compiled kernel
 
 The accelerator is only used if it is passed to the packager. Without a TornadoVM runtime and device it gives up, and the packager searches as it does without one; the same
 when a search needs more free points than `withMaxPoints(..)` (the layout of the scratch is fixed up front), or when the device fails (`getLastFailure()`). One search runs on the
-device at a time; searches from other threads wait.
+device at a time; searches from other threads wait, polling their interrupt (a search which loses its race in `AUTO` while it waits never reaches the device).
 
 ## How it works
 

@@ -3,6 +3,8 @@ package com.github.skjolber.packing.tornado;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptSupplier;
 import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
@@ -249,6 +251,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	private volatile boolean closed;
 
 	/** the compiled kernel and the device memory, made by the first search (and again by a search of more boxes than it holds), or null */
+	/** the device runs one search at a time; held by the search which runs, and while closing */
+	private final ReentrantLock deviceLock = new ReentrantLock();
 	private Session session;
 
 	private long searches;
@@ -325,10 +329,11 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	/**
 	 * {@inheritDoc}
 	 * <p>
-	 * The device runs one search at a time: searches from other threads wait.
+	 * The device runs one search at a time: searches from other threads wait for it, polling their interrupt, so a search which is interrupted while it
+	 * waits (one which lost its race in {@link com.github.skjolber.packing.accelerator.AcceleratorMode#AUTO}) never reaches the device.
 	 */
 	@Override
-	public synchronized Optional<AcceleratorWinner> search(FlatProblem problem, long boundVolume, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	public Optional<AcceleratorWinner> search(FlatProblem problem, long boundVolume, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		if(!supports(problem)) {
 			return Optional.empty();
 		}
@@ -341,25 +346,53 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		if(prefixes == null) {
 			return Optional.empty();
 		}
-		DeviceInfo info = getDevice().get();
+		acquireDevice(interrupt);
 		try {
-			return Optional.ofNullable(run(info, problem, boundVolume, interrupt, depth, prefixes));
-		} catch (PackagerInterruptedException e) {
-			throw e;
-		} catch (Exception | LinkageError e) {
-			// the device or the runtime failed: leave the work to the packager, now and for the next searches
-			lastFailure = e;
-			failed = true;
-			closeSession();
-			return Optional.empty();
+			if(!supports(problem)) {
+				// closed or failed while waiting
+				return Optional.empty();
+			}
+			DeviceInfo info = getDevice().get();
+			try {
+				return Optional.ofNullable(run(info, problem, boundVolume, interrupt, depth, prefixes));
+			} catch (PackagerInterruptedException e) {
+				throw e;
+			} catch (Exception | LinkageError e) {
+				// the device or the runtime failed: leave the work to the packager, now and for the next searches
+				lastFailure = e;
+				failed = true;
+				closeSession();
+				return Optional.empty();
+			}
+		} finally {
+			deviceLock.unlock();
+		}
+	}
+
+	/** Wait for the device, polling the interrupt. */
+	private void acquireDevice(PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+		try {
+			while (!deviceLock.tryLock(1, TimeUnit.MILLISECONDS)) {
+				if(interrupt.getAsBoolean()) {
+					throw new PackagerInterruptedException();
+				}
+			}
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new PackagerInterruptedException();
 		}
 	}
 
 	/** Release the device memory and the compiled kernel. */
 	@Override
-	public synchronized void close() {
-		closed = true;
-		closeSession();
+	public void close() {
+		deviceLock.lock();
+		try {
+			closed = true;
+			closeSession();
+		} finally {
+			deviceLock.unlock();
+		}
 	}
 
 	private void closeSession() {

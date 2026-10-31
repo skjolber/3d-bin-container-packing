@@ -17,6 +17,10 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
  * and the packager confirms, in {@link AcceleratorMode#AUTO} the packager's own search starts at once and the accelerator joins after a gate on its
  * own thread, the first result winning and stopping the other through the interrupt. The packager supplies its own search and the confirmation of
  * a winner; the driver keeps the counters.
+ * <p>
+ * The accelerator's searches of a driver run on one thread, one after the other: a search whose race is over before its turn is cancelled in the
+ * queue and never reaches the accelerator, and a running search which loses its race returns at its next interrupt check. The accelerator runs its
+ * searches one at a time anyway (a device), or on its own threads ({@link FlatEngine}).
  *
  * @param <R> the result of a container's search
  */
@@ -157,7 +161,7 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 
 	private synchronized ExecutorService executor() {
 		if(executor == null) {
-			executor = Executors.newCachedThreadPool(runnable -> {
+			executor = Executors.newSingleThreadExecutor(runnable -> {
 				Thread thread = new Thread(runnable, "packing-accelerator");
 				thread.setDaemon(true);
 				return thread;

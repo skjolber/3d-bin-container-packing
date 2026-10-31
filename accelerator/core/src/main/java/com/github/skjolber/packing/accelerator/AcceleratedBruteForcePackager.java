@@ -256,7 +256,7 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 				}
 			}
 			result.setStateFromReusablePoints(points, getState(iterator, rotations, points.size()), stackPlacements, stackPlacementCount);
-			if(result.getLoadVolume() != winner.getLoadVolume()) {
+			if(result.getLoadVolume() != winner.getLoadVolume() || result.getLoadWeight() != winner.getLoadWeight()) {
 				return null;
 			}
 			return result;
