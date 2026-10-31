@@ -1,6 +1,7 @@
 # tornado-accelerator
 
-Experimental [TornadoVM](https://www.tornadovm.org/) accelerator for `FastBruteForcePackager` (see [accelerated brute force](../../docs/heuristics/accelerated-brute-force.md)):
+Experimental [TornadoVM](https://www.tornadovm.org/) accelerator for `FastBruteForcePackager` and `BruteForcePackager` (see
+[accelerated brute force](../../docs/heuristics/accelerated-brute-force.md)):
 the search of the box orders of a container runs on a GPU (or another OpenCL, CUDA or Metal device of TornadoVM), and the packager places the winning order itself, so
 the placements are the same as without the accelerator.
 
@@ -101,7 +102,8 @@ The environment variables keep the caches of the GPU stack within the build dire
  * `KernelParity`: runs the accelerator on random problems and compares the winner with `FlatEngine`, printing the times. Arguments: `firstSeed seeds minBoxes maxBoxes window
    nodeBudget maxPoints targetItems cpuThreads repeat localWorkSize mode`, for example `KernelParity 1 20 8 10`.
    A thirteenth argument, `nospace`, runs without the free space bound; the splits are printed.
-   The mode is `exact` (default: the loop's winner), `any` (any best, compared by value) or `loop` (the old loop kernel). Give every run a `timeout`: a hung kernel never returns.
+   The mode is `exact` (default: the loop's winner), `any` (any best, compared by value), `loop` (the old loop kernel), or `plainexact` and `plainany` (the search of the plain packager, all
+   points, against the CPU tree engine). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
 Verified: the 8.0.0 `jdk22plus` OpenCL SDK (and the 7.3.1 before it) on JDK 25, with the ROCm 7.1 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU (`gfx1036`) is listed as a second device.
@@ -113,7 +115,13 @@ after a gate of 25 ms, the first result winning (`AcceleratedFastBruteForcePacka
 are the other modes). On whole packings of 40 random problems per set with the packager on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
 `GPU_ONLY` 1.75 s, `AUTO` 0.70 s; 13 to 14 boxes 2.31 s, 4.73 s, 2.50 s; 15 to 16 boxes 3.97 s, 5.15 s, 3.84 s. The device joined 15 to 20 containers
 per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
-is the packager's own time plus the gate's overhead. The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
+is the packager's own time plus the gate's overhead.
+
+The plain packager (`AcceleratedBruteForcePackager`, every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
+boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 51 s and `AUTO` 51 s (the device joined 11 containers and won 4); the hardest problem takes 198 s on the packager alone and 49 s on the device, the
+next 1.7 s against 0.9 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is 0.90 s, 1.51 s and 0.87 s. The kernel searches with all points under
+`FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `plainexact` and `plainany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
+against 1.1 s under any best, no mismatches). The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
 
 Measured with `KernelParity` on a Radeon RX 7600 (16 compute units, 8 GB, ROCm OpenCL) against `FlatEngine` with 8 threads on 4 cores of a Ryzen 9 9950X, on 42 random problems of 11 to 12
 boxes in tight containers (seeds 100 to 141, the first container only), every problem different. The device times include the host loop, the transfers and the one compilation (0.45 s). The CPU

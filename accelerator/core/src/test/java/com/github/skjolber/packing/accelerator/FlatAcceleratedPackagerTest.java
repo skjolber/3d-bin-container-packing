@@ -262,11 +262,12 @@ class FlatAcceleratedPackagerTest {
 				.build();
 	}
 
-	/** the hook of the session, for an iterator */
-	private static Object packWithAccelerator(AcceleratedFastBruteForcePackager packager, Container container, BoxItemPermutationRotationIterator iterator, boolean interrupt) throws PackagerInterruptedException {
+	/** the hook of the session, for an iterator: the search of one container, with the accelerator where it applies */
+	private static Object packContainer(AcceleratedFastBruteForcePackager packager, Container container, BoxItemPermutationRotationIterator iterator, boolean interrupt)
+			throws PackagerInterruptedException {
 		ContainerItem containerItem = ContainerItem.newListBuilder().withContainer(container).build().get(0);
 		int n = iterator.length();
-		return packager.packWithAccelerator(new FastPointCalculator3DStack(n + 1), FlatSearchOracle.placements(n), 0, containerItem, 0, iterator, () -> interrupt, null, n);
+		return packager.packContainer(new FastPointCalculator3DStack(n + 1), FlatSearchOracle.placements(n), 0, containerItem, 0, iterator, () -> interrupt, null, n);
 	}
 
 	private static Container container() {
@@ -278,7 +279,7 @@ class FlatAcceleratedPackagerTest {
 		FlatEngine engine = engine(2);
 		AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
-			assertThat(packWithAccelerator(packager, container(), iterator(container(), 0, 0), false)).isNotNull();
+			assertThat(packContainer(packager, container(), iterator(container(), 0, 0), false)).isNotNull();
 			assertThat(packager.getAcceleratedCount()).isEqualTo(1);
 			assertThat(packager.getAcceleratorMismatchCount()).isZero();
 		} finally {
@@ -292,7 +293,7 @@ class FlatAcceleratedPackagerTest {
 		FlatEngine engine = engine(2);
 		AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
-			assertThat(packWithAccelerator(packager, container(), iterator(container(), 1, 0), false)).isNull();
+			assertThat(packContainer(packager, container(), iterator(container(), 1, 0), false)).isNotNull();
 			assertThat(packager.getAcceleratedCount()).isZero();
 			assertThat(packager.getAcceleratorFallbackCount()).isZero();
 		} finally {
@@ -306,7 +307,7 @@ class FlatAcceleratedPackagerTest {
 		FlatEngine engine = engine(2);
 		AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
-			assertThat(packWithAccelerator(packager, container(), iterator(container(), 0, 1), false)).isNull();
+			assertThat(packContainer(packager, container(), iterator(container(), 0, 1), false)).isNotNull();
 			assertThat(packager.getAcceleratedCount()).isZero();
 			assertThat(packager.getAcceleratorFallbackCount()).isZero();
 		} finally {
@@ -320,7 +321,7 @@ class FlatAcceleratedPackagerTest {
 		FlatEngine engine = engine(2);
 		AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
 		try {
-			assertThatThrownBy(() -> packWithAccelerator(packager, container(), iterator(container(), 0, 0), true)).isInstanceOf(PackagerInterruptedException.class);
+			assertThatThrownBy(() -> packContainer(packager, container(), iterator(container(), 0, 0), true)).isInstanceOf(PackagerInterruptedException.class);
 		} finally {
 			packager.close();
 			engine.close();

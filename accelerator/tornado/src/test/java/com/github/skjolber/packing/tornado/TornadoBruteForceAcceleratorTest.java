@@ -14,7 +14,9 @@ import com.github.skjolber.packing.api.Container;
 import com.github.skjolber.packing.api.ContainerItem;
 import com.github.skjolber.packing.api.PackagerResult;
 import com.github.skjolber.packing.api.Placement;
+import com.github.skjolber.packing.accelerator.AcceleratedBruteForcePackager;
 import com.github.skjolber.packing.accelerator.AcceleratedFastBruteForcePackager;
+import com.github.skjolber.packing.packer.bruteforce.BruteForcePackager;
 import com.github.skjolber.packing.packer.bruteforce.FastBruteForcePackager;
 import com.github.skjolber.packing.accelerator.AcceleratorMode;
 
@@ -144,6 +146,43 @@ class TornadoBruteForceAcceleratorTest {
 			gated.close();
 			accelerator.close();
 		}
+	}
+
+	/** The plain packager (every box at every free point) with the device: the plain packager's placements in exact mode, its values under any best. */
+	@Test
+	void plainPackagerAgreesWithTheDevice() {
+		TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).build();
+		BruteForcePackager plain = BruteForcePackager.newBuilder().withTreeSearchAnyBest(false).build();
+		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withTreeSearchAnyBest(false)
+				.withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
+		BruteForcePackager plainAny = BruteForcePackager.newBuilder().build();
+		AcceleratedBruteForcePackager acceleratedAny = AcceleratedBruteForcePackager.newBuilder().withAccelerator(accelerator).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
+		try {
+			for (long seed = 1; seed <= 12; seed++) {
+				KernelParity.Instance instance = KernelParity.random(seed, 5, 8, 4, 9);
+				List<ContainerItem> items = ContainerItem.newListBuilder().withContainer(instance.container, 8).build();
+				String expected = describe(pack(plain, items, copy(instance.boxItems)));
+				assertThat(expected).as("seed " + seed).isNotBlank();
+				assertThat(describe(pack(accelerated, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(expected);
+				assertThat(values(pack(acceleratedAny, items, copy(instance.boxItems)))).as("seed " + seed).isEqualTo(values(pack(plainAny, items, copy(instance.boxItems))));
+			}
+			assertThat(accelerator.getLastFailure()).isNull();
+			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
+			assertThat(acceleratedAny.getAcceleratorMismatchCount()).isZero();
+			if(accelerator.getDevice().isPresent()) {
+				assertThat(accelerated.getAcceleratedCount()).isGreaterThan(12);
+			}
+		} finally {
+			plain.close();
+			accelerated.close();
+			plainAny.close();
+			acceleratedAny.close();
+			accelerator.close();
+		}
+	}
+
+	private static PackagerResult pack(BruteForcePackager packager, List<ContainerItem> containerItems, List<BoxItem> boxItems) {
+		return packager.newResultBuilder().withContainerItems(containerItems).withBoxItems(boxItems).withMaxContainerCount(8).withInterruptDuration(60_000).build();
 	}
 
 	/** @return the load volume, weight and box count of each container */

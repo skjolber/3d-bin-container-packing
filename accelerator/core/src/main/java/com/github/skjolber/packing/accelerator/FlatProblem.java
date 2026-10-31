@@ -31,7 +31,9 @@ public final class FlatProblem {
 	public static final int ANY_BEST = 8;
 	/** the number of keys of the bound table, or 0 if the table is left out (too many multisets of remaining boxes) */
 	public static final int KEYS = 9;
-	public static final int HEADER = 10;
+	/** 1 if a box is tried at every free point where it fits, as {@code BruteForcePackager} does; 0 at the best point of each rotation, as {@code FastBruteForcePackager} does */
+	public static final int ALL_POINTS = 10;
+	public static final int HEADER = 11;
 	/** the most multisets of remaining boxes for which the bound table is computed */
 	public static final int MAX_KEYS = 1 << 12;
 
@@ -95,6 +97,11 @@ public final class FlatProblem {
 		return ints[N];
 	}
 
+	/** @return true if a box is tried at every free point where it fits (the search of {@code BruteForcePackager}), which only the tree search does */
+	public boolean isAllPoints() {
+		return ints[ALL_POINTS] != 0;
+	}
+
 	public int types() {
 		return ints[TYPES];
 	}
@@ -129,6 +136,14 @@ public final class FlatProblem {
 	 * @param anyBest true if any arrangement of the best value will do, false for the loop's winner (see {@link #ANY_BEST})
 	 */
 	public static FlatProblem of(BoxItemPermutationRotationIterator iterator, int cx, int cy, int cz, long maxLoadVolume, long maxLoadWeight, int limit, boolean anyBest) {
+		return of(iterator, cx, cy, cz, maxLoadVolume, maxLoadWeight, limit, anyBest, false);
+	}
+
+	/**
+	 * @param allPoints true to try a box at every free point where it fits (the search of {@code BruteForcePackager}), false at the best point of each
+	 *        rotation (the search of {@code FastBruteForcePackager}); only the tree search ({@code FlatTree}) takes all points
+	 */
+	public static FlatProblem of(BoxItemPermutationRotationIterator iterator, int cx, int cy, int cz, long maxLoadVolume, long maxLoadWeight, int limit, boolean anyBest, boolean allPoints) {
 		BoxStackValue[][] stackValues = iterator.getBoxItemStackValues();
 		int types = stackValues.length;
 		int n = iterator.length();
@@ -145,6 +160,7 @@ public final class FlatProblem {
 		long[] longs = new long[bounds(types)];
 		ints[N] = n;
 		ints[ANY_BEST] = anyBest ? 1 : 0;
+		ints[ALL_POINTS] = allPoints ? 1 : 0;
 		ints[TYPES] = types;
 		ints[CX] = cx;
 		ints[CY] = cy;

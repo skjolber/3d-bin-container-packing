@@ -58,7 +58,8 @@
 #define P_ALL_FIT 7
 #define P_ANY_BEST 8
 #define P_KEYS 9
-#define P_HEADER 10
+#define P_ALL_POINTS 10
+#define P_HEADER 11
 
 // FlatSubtree
 #define NOT_STARTED 0
@@ -136,9 +137,10 @@ typedef struct {
 	int placedWeight;
 	int longSize;
 	int types;
+	int pointAt;
 } Layout;
 
-#define LAYOUT_INTS 47
+#define LAYOUT_INTS 48
 
 static Layout readLayout(__global const int *v) {
 	Layout l;
@@ -189,6 +191,7 @@ static Layout readLayout(__global const int *v) {
 	l.placedWeight = v[44];
 	l.longSize = v[45];
 	l.types = v[46];
+	l.pointAt = v[47];
 	return l;
 }
 
@@ -2102,6 +2105,7 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 	const int limit = problem[P_LIMIT];
 	const bool allFit = problem[P_ALL_FIT] != 0;
 	const bool anyBest = problem[P_ANY_BEST] != 0;
+	const bool allPoints = problem[P_ALL_POINTS] != 0;
 	const int keys = problem[P_KEYS];
 	const int counts = P_HEADER;
 	const int rotationOffsetsIndex = rotationOffsets(types);
@@ -2121,6 +2125,7 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 	const int placedTypeBase = base + l->placedType;
 	const int remainingBase = base + l->remaining;
 	const int spaceCheckedBase = base + l->spaceChecked;
+	const int pointAtBase = base + l->pointAt;
 	const int rotationBase = base + l->rotation;
 	const int placedRotationBase = base + l->placedRotation;
 	const int minAreaBase = longBase + l->minArea;
@@ -2215,6 +2220,7 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 				} else {
 					s[typeAtBase + level] = level < depth ? prefixes[prefix + level] : nextType(problem, s, remainingBase, typeOrderIndex, types, -1);
 					s[rotationBase + level] = 0;
+					s[pointAtBase + level] = 0;
 					s[fitBase + level] = 0;
 					s[spaceCheckedBase + level] = 0;
 				}
@@ -2263,9 +2269,12 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 				if (skip) {
 					s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrderIndex, types, t);
 					s[rotationBase + level] = 0;
+					s[pointAtBase + level] = 0;
 					s[fitBase + level] = 0;
 				} else {
-					// the next rotation of the box which has a position
+					// the next position of the box: with all points, the next free point of its current rotation where it fits, then the next rotation's
+					// (the rotation of the level is the current one); else the best point of its next rotation which has one (the rotation of the
+					// level is the next to try)
 					const int firstRotation = problem[rotationOffsetsIndex + t];
 					const int rotationCount = problem[rotationOffsetsIndex + t + 1] - firstRotation;
 					const int frame = base + frameOffset(l, level);
@@ -2274,13 +2283,35 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 					int dx = 0;
 					int dy = 0;
 					int dz = 0;
-					while (pointIndex == -1 && rotationIndex < rotationCount) {
-						int rotation = rotationValuesIndex + 3 * (firstRotation + rotationIndex);
-						dx = problem[rotation];
-						dy = problem[rotation + 1];
-						dz = problem[rotation + 2];
-						rotationIndex++;
-						pointIndex = bestPoint(s, frame, dx, dy, dz);
+					if (allPoints) {
+						int next = s[pointAtBase + level];
+						const int size = s[frame];
+						while (pointIndex == -1 && rotationIndex < rotationCount) {
+							int rotation = rotationValuesIndex + 3 * (firstRotation + rotationIndex);
+							dx = problem[rotation];
+							dy = problem[rotation + 1];
+							dz = problem[rotation + 2];
+							while (next < size && !fits3D(s, frame + 1 + next * POINT_INTS, dx, dy, dz)) {
+								next++;
+							}
+							if (next < size) {
+								pointIndex = next;
+								next++;
+							} else {
+								rotationIndex++;
+								next = 0;
+							}
+						}
+						s[pointAtBase + level] = next;
+					} else {
+						while (pointIndex == -1 && rotationIndex < rotationCount) {
+							int rotation = rotationValuesIndex + 3 * (firstRotation + rotationIndex);
+							dx = problem[rotation];
+							dy = problem[rotation + 1];
+							dz = problem[rotation + 2];
+							rotationIndex++;
+							pointIndex = bestPoint(s, frame, dx, dy, dz);
+						}
 					}
 					s[rotationBase + level] = rotationIndex;
 
@@ -2313,7 +2344,7 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 						sl[placedVolumeBase + nextLevel] = sl[placedVolumeBase + level] + problemLongs[t];
 						sl[placedWeightBase + nextLevel] = sl[placedWeightBase + level] + problemLongs[weights + t];
 						s[placedTypeBase + level] = t;
-						s[placedRotationBase + level] = rotationIndex - 1;
+						s[placedRotationBase + level] = allPoints ? rotationIndex : rotationIndex - 1;
 						s[fitBase + level] = 1;
 						// when no box can follow, the free space after the box is never searched
 						bool last = nextLevel == depthLimit || !canPlaceAny(problemLongs, s, remainingBase, types, weights, maxLoadVolume - sl[placedVolumeBase + nextLevel],
@@ -2353,6 +2384,7 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 						}
 						s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrderIndex, types, t);
 						s[rotationBase + level] = 0;
+					s[pointAtBase + level] = 0;
 						s[fitBase + level] = 0;
 					}
 				}

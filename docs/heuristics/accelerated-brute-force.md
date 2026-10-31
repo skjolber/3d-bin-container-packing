@@ -1,8 +1,10 @@
 # Accelerated brute force
 
-`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the `accelerator-core` artifact, JPMS module `com.github.skjolber.packing.accelerator`) can hand the search of all box orders
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager` in the `accelerator-core` artifact, JPMS module `com.github.skjolber.packing.accelerator`) and `AcceleratedBruteForcePackager` (a
+`BruteForcePackager` in the same artifact, see [the plain packager](#the-plain-packager)) can hand the search of all box orders
 (permutations) of a container to a `BruteForceAccelerator`, such as a GPU. The accelerator is
-optional and off by default. Without one, the packager works as described in [brute-force](brute-force.md), as does `FastBruteForcePackager` in `core`, which has no accelerator code.
+optional and off by default. Without one, the packagers work as described in [brute-force](brute-force.md), as do `FastBruteForcePackager` and `BruteForcePackager` in `core`, which has no
+accelerator code.
 
 ```java
 AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager
@@ -40,11 +42,39 @@ set, 8 containers each, any best:
 
 The packager's own tree on 8 threads, with its settled orders and free space bound, finishes first on every container the device joined, so `AUTO`
 costs the gate's thread and the interrupt checks (a few percent, within the noise on the largest set) and gains nothing with this kernel; it pays
-when the device wins some containers, as it does against the CPU engine `FlatEngine` (see [the module README](../../accelerator/tornado/README.md)).
+when the device wins some containers, as it does against the CPU engine `FlatEngine` (see [the module README](../../accelerator/tornado/README.md)) and
+for [the plain packager](#the-plain-packager), whose search is much longer.
+
+## The plain packager
+
+`AcceleratedBruteForcePackager` is `BruteForcePackager` with the same accelerator options, modes and counters. The plain packager tries a box at every free point where it fits, in the
+order of the points, where the fast packager takes the best point of each rotation; so its search of a container is larger by a factor which grows with the boxes, and it runs on one
+thread. The accelerator searches the same way under `FlatProblem.ALL_POINTS`, which only the tree search takes (`FlatTree`, the kernel's `runTree`): a `FlatEngine` needs `withTree(true)`
+for it, an engine without does not support the problems of this packager, which then searches itself. The accelerator picks the box order, the packager places it with its own point
+calculator and confirms it, so the placements are the plain packager's in exact mode (`withTreeSearchAnyBest(false)`), and of the same value under any best. The accelerator applies
+under the conditions [below](#when-it-is-used), plus no point filter (`withPointFilter(..)`) and no reverse permutation skip (`withSkipReversePermutations(..)`).
+
+```java
+AcceleratedBruteForcePackager packager = AcceleratedBruteForcePackager
+    .newBuilder()
+    .withAccelerator(FlatEngine.newBuilder().withThreads(8).withTree(true).build())
+    .build();
+```
+
+Measured with the TornadoVM accelerator on the same device, whole packings of random problems, 8 containers each, any best, the plain packager on its one thread:
+
+| Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
+|---|---|---|---|---|---|
+| 7 to 9 | 30 | 0.90 s | 1.51 s | 0.87 s | 7 / 0 |
+| 10 to 11 | 12 | 200 s | 51 s | 51 s | 11 / 4 |
+
+The plain packager's search is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 49 s, on the next (seed 205) 1.7 s
+against 0.9 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
+search, which is what the gate is for. On the CPU, `ParallelBruteForcePackager` (not accelerated) runs the same search on threads.
 
 ## When it is used
 
-A container is searched by the accelerator when all of these hold, otherwise the packager does it itself:
+A container is searched by the accelerator when all of these hold (for the plain packager also no point filter and no reverse permutation skip), otherwise the packager does it itself:
 
  * no box item order (`Order.NONE`), no box item groups
  * no load limits, no full support (`withRequireFullSupport(true)`), no obstacles or initial points
@@ -170,4 +200,6 @@ These are in `accelerator/core/src/test/java/com/github/skjolber/packing/acceler
    (`sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo`)
  * `FlatAcceleratedPackagerTest`: placements with and without the accelerator are identical (the packager runs in exact mode for this, because under any best the tree may pick
    another arrangement of the same value), fallbacks, interrupts, and the inputs which are not accelerated
+ * `FlatPlainPackagerTest`: the plain packager with the CPU engine as its accelerator against the plain packager without: the same placements in exact mode (`GPU_ONLY` and `AUTO`), the
+   same values under any best, and an engine without the tree search does not apply; `TornadoBruteForceAcceleratorTest.plainPackagerAgreesWithTheDevice` on a device
  * `IteratorSetPermutationTest` (in `core`): moving the iterator to a permutation

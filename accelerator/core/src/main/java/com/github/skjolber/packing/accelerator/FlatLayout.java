@@ -96,6 +96,8 @@ public final class FlatLayout {
 	public final int known;
 	public final int witness;
 	public final int spaceChecked;
+	/** the tree search with all points, per level: the next free point to try for the box in its current rotation */
+	public final int pointAt;
 
 	/** the number of ints in the scratch */
 	public final int size;
@@ -203,6 +205,8 @@ public final class FlatLayout {
 		witness = offset;
 		offset += (n + 1) * this.types * SPACE_INTS;
 		spaceChecked = offset;
+		offset += n + 1;
+		pointAt = offset;
 		offset += n + 1;
 		size = offset;
 

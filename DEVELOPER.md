@@ -734,8 +734,8 @@ the composite chooses between results.
 
 ## Flat search and accelerators
 
-`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager`, in the `accelerator-core` module, `accelerator/core`, JPMS module `com.github.skjolber.packing.accelerator`) can delegate the search
-of all box orders to a `BruteForceAccelerator` (see
+`AcceleratedFastBruteForcePackager` (a `FastBruteForcePackager`, in the `accelerator-core` module, `accelerator/core`, JPMS module `com.github.skjolber.packing.accelerator`) and
+`AcceleratedBruteForcePackager` (a `BruteForcePackager`, same module) can delegate the search of all box orders to a `BruteForceAccelerator` (see
 [accelerated brute force](docs/heuristics/accelerated-brute-force.md)). An accelerator, such as a GPU kernel, gets a
 `FlatProblem` (the boxes of one container on primitive arrays) and returns the best box order as an `AcceleratorWinner`:
 
@@ -757,7 +757,10 @@ The module and its package are `accelerator/core` and `com.github.skjolber.packi
 `accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/`). `core` has no accelerator code: `AcceleratedFastBruteForcePackager.newBuilder()` takes all the builder options of
 `FastBruteForcePackager` plus `withAccelerator(..)`, `withAcceleratorMode(..)` and `withAcceleratorGate(..)`, and counts with `getAcceleratedCount()`, `getAcceleratorFallbackCount()`,
 `getAcceleratorMismatchCount()` and `getAcceleratorRaceCpuCount()`. It extends `FastBruteForcePackager` through two hooks in `core`: `FastBruteForcePackager.Builder.newPackager(..)` and
-`FastBruteForcePackager.packContainer(..)`. The module order is api, core, accelerator-core, tornado-accelerator.
+`FastBruteForcePackager.packContainer(..)`; `AcceleratedBruteForcePackager` extends `BruteForcePackager` through the same two hooks of that class, and both share `AcceleratorDriver` (the modes,
+the gate, the race and the counters). The search of the plain packager tries a box at every free point where it fits, in point order, where the fast packager takes the best point of each
+rotation; the accelerator searches that way under `FlatProblem.ALL_POINTS`, which only the tree search (`FlatTree`, the kernel's `runTree`) takes, so a `FlatEngine` for the plain packager needs
+`withTree(true)` (an engine without does not support its problems, and the packager searches itself). The module order is api, core, accelerator-core, tornado-accelerator.
 
 Code which should run on a device is written in the style of the flat classes of `accelerator-core`, so that it can be compiled to a kernel:
 

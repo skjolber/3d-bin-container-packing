@@ -65,6 +65,7 @@ public final class FlatTree {
 		final int limit = problem[FlatProblem.LIMIT];
 		final boolean allFit = problem[FlatProblem.ALL_FIT] != 0;
 		final boolean anyBest = problem[FlatProblem.ANY_BEST] != 0;
+		final boolean allPoints = problem[FlatProblem.ALL_POINTS] != 0;
 		final int keys = problem[FlatProblem.KEYS];
 		final int counts = FlatProblem.HEADER;
 		final int rotationOffsets = FlatProblem.rotationOffsets(types);
@@ -84,6 +85,7 @@ public final class FlatTree {
 		final int placedTypeBase = base + layout.placedType;
 		final int remainingBase = base + layout.remaining;
 		final int spaceCheckedBase = base + layout.spaceChecked;
+		final int pointAtBase = base + layout.pointAt;
 		final int rotationBase = base + layout.rotation;
 		final int placedRotationBase = base + layout.placedRotation;
 		final int minAreaBase = longBase + layout.minArea;
@@ -180,6 +182,7 @@ public final class FlatTree {
 					} else {
 						s[typeAtBase + level] = level < depth ? prefixes[prefix + level] : nextType(problem, s, remainingBase, typeOrder, types, -1);
 						s[rotationBase + level] = 0;
+						s[pointAtBase + level] = 0;
 						s[fitBase + level] = 0;
 						s[spaceCheckedBase + level] = 0;
 					}
@@ -228,9 +231,12 @@ public final class FlatTree {
 					if(skip) {
 						s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrder, types, t);
 						s[rotationBase + level] = 0;
+						s[pointAtBase + level] = 0;
 						s[fitBase + level] = 0;
 					} else {
-						// the next rotation of the box which has a position
+						// the next position of the box: with all points, the next free point of its current rotation where it fits, then the next rotation's
+						// (the rotation of the level is the current one); else the best point of its next rotation which has one (the rotation of the
+						// level is the next to try)
 						final int firstRotation = problem[rotationOffsets + t];
 						final int rotationCount = problem[rotationOffsets + t + 1] - firstRotation;
 						final int frame = base + layout.frameOffset(level);
@@ -239,13 +245,35 @@ public final class FlatTree {
 						int dx = 0;
 						int dy = 0;
 						int dz = 0;
-						while (pointIndex == -1 && rotationIndex < rotationCount) {
-							int rotation = rotationValues + 3 * (firstRotation + rotationIndex);
-							dx = problem[rotation];
-							dy = problem[rotation + 1];
-							dz = problem[rotation + 2];
-							rotationIndex++;
-							pointIndex = FlatSearch.bestPoint(s, frame, dx, dy, dz);
+						if(allPoints) {
+							int next = s[pointAtBase + level];
+							final int size = s[frame];
+							while (pointIndex == -1 && rotationIndex < rotationCount) {
+								int rotation = rotationValues + 3 * (firstRotation + rotationIndex);
+								dx = problem[rotation];
+								dy = problem[rotation + 1];
+								dz = problem[rotation + 2];
+								while (next < size && !FlatGeometry.fits3D(s, frame + 1 + next * POINT_INTS, dx, dy, dz)) {
+									next++;
+								}
+								if(next < size) {
+									pointIndex = next;
+									next++;
+								} else {
+									rotationIndex++;
+									next = 0;
+								}
+							}
+							s[pointAtBase + level] = next;
+						} else {
+							while (pointIndex == -1 && rotationIndex < rotationCount) {
+								int rotation = rotationValues + 3 * (firstRotation + rotationIndex);
+								dx = problem[rotation];
+								dy = problem[rotation + 1];
+								dz = problem[rotation + 2];
+								rotationIndex++;
+								pointIndex = FlatSearch.bestPoint(s, frame, dx, dy, dz);
+							}
 						}
 						s[rotationBase + level] = rotationIndex;
 
@@ -278,7 +306,7 @@ public final class FlatTree {
 							sl[placedVolumeBase + nextLevel] = sl[placedVolumeBase + level] + problemLongs[t];
 							sl[placedWeightBase + nextLevel] = sl[placedWeightBase + level] + problemLongs[weights + t];
 							s[placedTypeBase + level] = t;
-							s[placedRotationBase + level] = rotationIndex - 1;
+							s[placedRotationBase + level] = allPoints ? rotationIndex : rotationIndex - 1;
 							s[fitBase + level] = 1;
 							// when no box can follow, the free space after the box is never searched
 							boolean last = nextLevel == depthLimit || !canPlaceAny(problem, problemLongs, s, remainingBase, types, weights, maxLoadVolume - sl[placedVolumeBase + nextLevel],
@@ -318,6 +346,7 @@ public final class FlatTree {
 							}
 							s[typeAtBase + level] = level < depth ? -1 : nextType(problem, s, remainingBase, typeOrder, types, t);
 							s[rotationBase + level] = 0;
+						s[pointAtBase + level] = 0;
 							s[fitBase + level] = 0;
 						}
 					}
