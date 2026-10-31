@@ -70,6 +70,37 @@ class FlatTreeTest {
 		}
 	}
 
+	/** The later containers of a packing keep every type of the packing, with no box left of some: a type without boxes, and more types than boxes. */
+	@Test
+	void sameWinnerWithTypesWithoutBoxes() throws Exception {
+		FlatEngine loop = engine(1, false, 20_000);
+		FlatEngine tree = engine(2, true, 100);
+		try {
+			for (int seed = 0; seed < 100; seed++) {
+				Instance instance = FlatTestInstances.random(seed, 4, 8);
+				DefaultBoxItemPermutationRotationIterator iterator = iterator(instance);
+				// the boxes of the first type are placed: the type stays, without boxes
+				int[] permutations = iterator.getPermutations();
+				int placed = 1;
+				while (placed < permutations.length && permutations[placed] == permutations[0]) {
+					placed++;
+				}
+				if(placed == permutations.length) {
+					continue;
+				}
+				iterator.removePermutations(placed);
+				FlatProblem problem = problem(iterator, instance.container, iterator.length(), false);
+				assertThat(problem.ints()[FlatProblem.HEADER + permutations[0]]).isZero();
+				Optional<AcceleratorWinner> expected = loop.search(problem, 0L, () -> false);
+				assertThat(describe(tree.search(problem, 0L, () -> false).get())).as("seed " + seed).isEqualTo(describe(expected.get()));
+				assertThat(value(tree.search(problem(iterator, instance.container, iterator.length(), true), 0L, () -> false).get())).as("seed " + seed).isEqualTo(value(expected.get()));
+			}
+		} finally {
+			loop.close();
+			tree.close();
+		}
+	}
+
 	@Test
 	void sameWinnerWithABoundAndALimit() throws Exception {
 		FlatEngine loop = engine(1, false, 20_000);

@@ -38,9 +38,23 @@ device at a time; searches from other threads wait.
    boxes (`FlatBound`), computed once per problem on the host and left out above 4096 multisets. The items share their best arrangement (volume, weight, count) through the host between
    rounds. Under any best (the packager's default, passed in `FlatProblem.ANY_BEST`) the types are tried largest first, the items with the largest prefixes run first, ties are pruned and the
    first arrangement which places all boxes ends the search; for the exact winner of the loop (`withTreeSearchAnyBest(false)`) the types are tried in their order and only strictly worse
-   prefixes are pruned. The item keeps no table of settled orders and has no free space bound, which the CPU tree has.
-   * One session holds the arrays, sized for a number of boxes (the first problem's, rounded up to 8; a larger problem makes a larger session once), and the compiled kernel; the kernel reads the
-     layout and the sizes from the arrays each run. The kernel is compiled once per accelerator, which takes about 0.45 s.
+   prefixes are pruned. The item keeps no table of settled orders, which the CPU tree has.
+   * The free space bound (`FlatSpace`, the `// FlatSpace` section of the kernel, called from `runTree` as `isHopelessInSpace`) is the packager's one: the free space of the path of the node is
+     kept as maximal empty spaces on the scratch (at most 48 per level, `FlatLayout.MAX_SPACES`; more makes the level unknown, in which every box is taken to fit). The box types which fit none of
+     them in any rotation can never be placed below the node, so the prefix plus the remaining boxes of the other types within the load left must beat the best. It is checked once per node, when
+     its first child is about to be placed, and only where three more of the smallest remaining boxes fit the load left (`SPACE_BOXES`); an item gives it up when fewer than one check in sixteen
+     cuts (`SPACE_CHECKS` 2048, `SPACE_CUT_RATE`). A type is looked for first at the free points of the level (a free point which holds it is an empty region), then by the answer kept from the
+     level above with its witness space, then in the spaces of the nearest level computed above which miss the boxes placed since, and only then are the spaces of the level computed from the
+     parent's. It is on by default for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost (`withFreeSpace(..)`). The
+     scratch per slot grows by the spaces, the answers and the witnesses: about 7 KB of ints at 16 boxes and 48 spaces.
+   * Splitting (`withSplit(..)`, on by default; `getSplits()` counts them): under any best, a tree item which has run for four rounds (`SPLIT_ROUNDS`) while fewer than a quarter of the slots are
+     active is split on the host. Its best so far stays (the item is marked done), and the search below its prefix goes on in new items, one per remaining type (the parent's prefix plus the
+     type), which run side by side in the free slots; a child can be split again, down to one box before the last. The work the parent had done below its prefix is redone, bounded by the best so
+     far. It is the device's form of work stealing. Exact mode never splits: an earlier item wins ties there, and the order of the children would not be the parent's.
+   * One session holds the arrays, sized for a number of boxes and of types (the first problem's, each rounded up to 8; a larger problem makes a larger session once), and the compiled kernel; the
+     kernel reads the layout and the sizes from the arrays each run. The per-type arrays are sized by the types, not the boxes: the later containers of a packing keep every type of the packing,
+     with no box left of some, so types can exceed boxes (`FlatLayout(n, pMax, types)`, read by the kernel as the last layout int; `FlatTreeTest.sameWinnerWithTypesWithoutBoxes`). The kernel is
+     compiled once per accelerator, which takes about 0.45 s.
    * A window of `withWindow(..)` slots runs at a time, each with its own scratch on the device (`withMaxPoints(..)` free points at each level). A tree item keeps its slot (its state is the scratch of
      the slot) until it is done, and the host assigns free slots to the next items each round. The number of slots is capped by the largest allocation of the device.
    * The node budget of a round starts at 32 and doubles each round up to `withNodeBudget(..)`, so that a strong arrangement bounds the others before they search much. When few items are left the
@@ -85,6 +99,7 @@ The environment variables keep the caches of the GPU stack within the build dire
    Run it after an upgrade of TornadoVM, before the kernel.
  * `KernelParity`: runs the accelerator on random problems and compares the winner with `FlatEngine`, printing the times. Arguments: `firstSeed seeds minBoxes maxBoxes window
    nodeBudget maxPoints targetItems cpuThreads repeat localWorkSize mode`, for example `KernelParity 1 20 8 10`.
+   A thirteenth argument, `nospace`, runs without the free space bound; the splits are printed.
    The mode is `exact` (default: the loop's winner), `any` (any best, compared by value) or `loop` (the old loop kernel). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
@@ -136,9 +151,33 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    s at 250, 2.9 s at 1000).
  * `withMaxPoints(64)` (was 128): halves the scratch per slot, so that more slots fit.
 
-What could still change the picture: the free space bound and the settled orders in the kernel (the CPU tree has both, and does less work for it), splitting a long item into its children on the
-host (the device's form of work stealing), and larger problems (14 boxes and more), where a search takes seconds on the CPU. A layout of the scratch which coalesces the memory accesses of a
-wavefront has not been tried.
+ * `withFreeSpace(..)`: on for the loop's winner, off under any best (see "How it works"). A/B on the 42 problems above (8 CPU threads, node budget 250):
+
+   | Search | Without | With |
+   |---|---|---|
+   | CPU tree engine, any best | 0.48 s | 0.67 s |
+   | CPU tree engine, exact | 6.5 s | 4.7 s |
+   | device, any best | 2.6 s | 3.3 s |
+   | device, exact | 33.3 s | 16.6 s |
+
+   Exact halves on the device, and any best takes about a quarter more on the device, which is why it is off there.
+ * `withSplit(..)`: on. On the device under any best, the 42 problems above have 38 splits and no change in the total (2.8 s against 2.6 s, within the run-to-run noise). On 16 problems of 13 to
+   14 boxes there are 1360 splits and the time goes from 4.1 s to 3.2 s, the hardest (seed 208) from 2.13 s to 1.79 s. On 12 problems of 15 to 16 boxes there are 268 splits, and the hardest (seed
+   309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds.
+
+Larger problems, the device against the CPU tree engine with 8 threads on 4 cores, any best, each in a fresh JVM so that the first problems of the CPU are cold:
+
+| Problems | CPU | Device |
+|---|---|---|
+| 16 problems of 13 to 14 boxes | 2.7 s | 3.2 s |
+| 12 problems of 15 to 16 boxes | 1.4 s | 2.0 s |
+
+Per problem the device wins on the hard ones and loses on the many easy ones. Seed 208: 2.37 s on the CPU against 1.79 s on the device. Seed 307: 0.78 s against 0.12 s. Seed 309: 0.50 s against
+0.66 s. Seed 205: 0.16 s against 0.09 s. On the easy ones the CPU is far ahead (seed 209: 1 ms against 65 ms; seed 301: 49 ms against 230 ms), because the device has a floor of about 20 to 60 ms
+per problem (rounds and transfers) and the 0.45 s of compilation on the first search.
+
+What could still change the picture: the settled orders of the CPU tree (they matter for the loop's exact winner only; the item search keeps none), a layout of the scratch which coalesces the
+memory accesses of a wavefront (not tried), and problems where the CPU needs seconds, where the floor per problem is small against the search.
 
 ## Why the kernel is written by hand
 

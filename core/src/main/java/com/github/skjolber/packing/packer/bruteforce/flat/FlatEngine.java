@@ -21,6 +21,7 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
  * permutations are split in items by the first boxes (a prefix of box types), each item is searched as one tree ({@linkplain FlatTree}, with the bound
  * table {@linkplain FlatBound}) or, with {@link Builder#withTree(boolean)} false, one order at a time ({@linkplain FlatSubtree}), the items are searched in parallel (a few nodes at a time, so that the interrupt can be polled
  * between the rounds), and the best arrangements of the items are reduced in the order of the items.
+ * A tree item also bounds its nodes by their free space ({@linkplain FlatSpace}), see {@link Builder#withFreeSpace(boolean)}.
  * <p>
  * It is the reference for devices which run the same flat search (the work of an item is the same), and not a replacement for the packager's own loop
  * on one thread: the flat search is not faster per node, so speed-up comes from the threads only.
@@ -57,6 +58,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		private int minBoxes = DEFAULT_MIN_BOXES;
 		private int maxBoxes = DEFAULT_MAX_BOXES;
 		private boolean tree = false;
+		private Boolean freeSpace = null;
 
 		/**
 		 * @param threads the number of threads; with one, the search runs on the thread which calls it
@@ -151,8 +153,18 @@ public final class FlatEngine implements BruteForceAccelerator {
 			return this;
 		}
 
+		/**
+		 * @param freeSpace whether a tree item bounds its nodes by their free space ({@link FlatSpace}); by default only for the loop's winner (not under
+		 *        {@link FlatProblem#ANY_BEST}), where it cuts the most: with ties pruned the bound table leaves it little to cut for its cost
+		 * @return this builder
+		 */
+		public Builder withFreeSpace(boolean freeSpace) {
+			this.freeSpace = freeSpace;
+			return this;
+		}
+
 		public FlatEngine build() {
-			return new FlatEngine(threads, maxPoints, nodeBudget, itemsPerThread, maxItems, minBoxes, maxBoxes, tree);
+			return new FlatEngine(threads, maxPoints, nodeBudget, itemsPerThread, maxItems, minBoxes, maxBoxes, tree, freeSpace);
 		}
 	}
 
@@ -232,12 +244,14 @@ public final class FlatEngine implements BruteForceAccelerator {
 	private final int minBoxes;
 	private final int maxBoxes;
 	private final boolean tree;
+	private final Boolean freeSpace;
 
 	private ExecutorService executor;
 	private boolean closed;
 
-	private FlatEngine(int threads, int maxPoints, int nodeBudget, int itemsPerThread, int maxItems, int minBoxes, int maxBoxes, boolean tree) {
+	private FlatEngine(int threads, int maxPoints, int nodeBudget, int itemsPerThread, int maxItems, int minBoxes, int maxBoxes, boolean tree, Boolean freeSpace) {
 		this.tree = tree;
+		this.freeSpace = freeSpace;
 		this.threads = threads;
 		this.maxPoints = maxPoints;
 		this.nodeBudget = nodeBudget;
@@ -269,7 +283,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 			return Optional.empty();
 		}
 
-		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints), depth, prefixes, boundVolume);
+		Run run = new Run(n, ints, problem.longs(), new FlatLayout(n, maxPoints, problem.types()), depth, prefixes, boundVolume);
 
 		// the scratch of each thread: one scratch is reused for all the items of the thread
 		int[][] scratch = new int[threads][];
@@ -384,8 +398,9 @@ public final class FlatEngine implements BruteForceAccelerator {
 		if(tree) {
 			// the state of a tree item is its scratch, so the item runs on this scratch until it is done
 			long[] shared = run.shared.get();
+			boolean freeSpace = this.freeSpace != null ? this.freeSpace : !run.anyBest;
 			status = FlatTree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), shared[0], shared[1],
-					(int)shared[2], nodeBudget);
+					(int)shared[2], freeSpace, nodeBudget);
 			while (status == FlatSubtree.PAUSED && !run.abort && !run.overflow && item <= run.fullItem.get()) {
 				if(run.interrupt != null && run.interrupt.getAsBoolean()) {
 					run.abort = true;
@@ -394,7 +409,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 				share(run, base, longBase);
 				shared = run.shared.get();
 				status = FlatTree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), shared[0],
-						shared[1], (int)shared[2], nodeBudget);
+						shared[1], (int)shared[2], freeSpace, nodeBudget);
 			}
 			share(run, base, longBase);
 		} else {

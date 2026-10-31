@@ -30,7 +30,7 @@ A container is searched by the accelerator when all of these hold, otherwise the
 ## The flat search
 
 The search of one permutation (each box in each rotation at its best free point, with the extreme-point bookkeeping) is also available on primitive `int` and
-`long` arrays in package `com.github.skjolber.packing.packer.bruteforce.flat`: `FlatPoints`, `FlatSearch`, `FlatPermutation`, `FlatSubtree`, `FlatTree`, `FlatBound` and `FlatEngine`.
+`long` arrays in package `com.github.skjolber.packing.packer.bruteforce.flat`: `FlatPoints`, `FlatSearch`, `FlatPermutation`, `FlatSubtree`, `FlatTree`, `FlatBound`, `FlatSpace` and `FlatEngine`.
 It is a port of the object-based search, so the arrays are what a device kernel can work on: no allocation, no objects, no recursion, no virtual calls.
 The differential tests in `core` run it against the object-based search permutation by permutation (count, load volume, rotations), and the packager with
 an accelerator against the packager without.
@@ -44,7 +44,13 @@ each prefix of placements is placed once, where `FlatSubtree` places it again fo
 plus the best sub-multiset of the remaining boxes within the load left cannot beat the best. That bound is a table with one entry per multiset of remaining
 boxes (`FlatBound`), computed once per problem on the host and left out above 4096 multisets, where the bound is the whole of the remaining boxes within the load
 left, which is looser. The items share their best arrangement (volume, weight, count) between rounds, so a strong arrangement of one item prunes the others.
-The item keeps no table of settled orders (the CPU tree has one), and no free space bound (the CPU tree has one since PR #1291).
+The item keeps no table of settled orders (the CPU tree has one).
+
+A node is also bounded by its free space, as the CPU tree does (`FlatSpace`, a port of `BruteForceTreeFreeSpace`): the free space of the path of the node is kept as maximal empty spaces on the
+scratch (at most 48 per level, `FlatLayout.MAX_SPACES`; more makes the level unknown, in which every box is taken to fit). The box types which fit none of them in any rotation can never be placed
+below the node, so the prefix plus the remaining boxes of the other types within the load left must beat the best. It is checked once per node, when its first child is about to be placed, and
+only where three more of the smallest remaining boxes fit the load left; an item gives it up when fewer than one check in sixteen cuts. The switch is `FlatEngine.Builder.withFreeSpace(..)`, by
+default on for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost.
 
 What counts as the best depends on `FlatProblem.ANY_BEST`, which the packager sets from `withTreeSearchAnyBest(..)`:
 
@@ -52,6 +58,9 @@ What counts as the best depends on `FlatProblem.ANY_BEST`, which the packager se
    largest prefixes run first, ties are pruned, and the first arrangement which places all boxes ends the search. The arrangement can differ from the one of the
    loop, with the same value.
  * exact (`withTreeSearchAnyBest(false)`): the winner of the loop. The types are tried in their order, and only strictly worse prefixes are pruned.
+
+On a device, a tree item which runs on while most slots are idle can be split into its children (`TornadoBruteForceAccelerator.Builder.withSplit(..)`, on by default, any best only): see the
+module README.
 
 `FlatEngine.Builder.withTree(false)` selects the old search, of the orders one at a time with `FlatSubtree`, which is the reference for the loop's winner.
 
@@ -75,7 +84,8 @@ Measured on the engine's reference inputs (10 to 14 boxes, a Ryzen 9 9950X; `Fla
 
 The tree search of the items is much faster than that on the same inputs. On 42 random problems of 11 to 12 boxes (8 threads on 4 cores), the tree engine takes 1.44 s under
 any best and 7.8 s in exact mode, where the loop engine takes 19.1 s in exact mode. The packager's own tree search (with its free space bound and settled orders) takes 0.61 s
-for the same problems under any best, and 5.5 s on one thread.
+for the same problems under any best, and 5.5 s on one thread. The free space bound takes the exact mode of the tree engine from 6.5 s to 4.7 s on the same set (measured later, 11 to 12 boxes,
+node budget 250), and costs under any best (0.48 s to 0.67 s), so it is off there by default.
 
 On the CPU `ParallelBruteForcePackager` already runs the permutations in parallel, so the engine is not a replacement for it; it is the exact reference for
 a device. A device has to beat all the threads of the CPU, which for this branchy search (a depth-first search with data-dependent control flow, a lot of
@@ -107,9 +117,14 @@ On a Radeon RX 7600 against `FlatEngine` with 8 threads (4 cores of a Ryzen 9 99
    device, the problems where all boxes fit are faster on the device, and the first search pays the 0.45 s of compilation.
  * exact (the loop's winner): the CPU loop engine takes 19.1 s and the device tree 33.2 s (269 rounds). The CPU tree engine in exact mode takes 7.8 s.
 
+With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there). Splitting a long item into its children, under
+any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s. Against the CPU tree engine on larger
+problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.4 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed 307: 0.12 s against 0.78
+s) and loses the many easy ones, where its floor of 20 to 60 ms per problem and the 0.45 s of compilation decide.
+
 The device is about 4 times slower than the packager's own tree search on the CPU (0.61 s for the same problems). It lost by 1.6 times to the loop engine before the tree
 search too, but that engine is 14 times slower than the tree engine, so the device is no closer. The accelerator is not worth using as it is; the numbers, the tuning and what
-could change the picture (the free space bound and the settled orders in the kernel, splitting a long item on the host, larger problems) are in the module README.
+could change the picture (the settled orders in the kernel, a coalesced layout of the scratch, problems where the CPU needs seconds) are in the module README.
 
 To write another kernel, port the flat package as the tornado module does and keep both in step, see [DEVELOPER.md](../../DEVELOPER.md#flat-search-and-accelerators).
 
@@ -118,7 +133,8 @@ To write another kernel, port the flat package as the tornado module does and ke
  * `FlatPointsAddTest`, `FlatBestPointTest`, `FlatSearchPermutationTest` and `FlatPermutationTest`: the flat model against the object model
  * `FlatEngineTest`: the engine against a reference loop, with threads, bounds, a tiny point limit, and interrupts
  * `FlatTreeTest`: the tree item against the loop over the orders: the same winner in exact mode with one and three threads, with a bound and a limit, and with a node
-   budget of one; the same value under any best, with the arrangement confirmed by the packager's search of its order
+   budget of one, and with more types than boxes (`sameWinnerWithTypesWithoutBoxes`: the later containers of a packing keep every type, with no box left of some); the same value under any best,
+   with the arrangement confirmed by the packager's search of its order
  * `KernelParityTest` and `TornadoBruteForceAcceleratorTest` (with a device): the device against the CPU engine (`loopKernelWinnerIsTheWinnerOfTheCpuEngine`,
    `anyBestHasTheValueOfTheCpuEngine`), and the packager with the accelerator against the packager without
    (`sameValuesAsThePackagerWithoutAcceleratorWhenAnyBestWillDo`)

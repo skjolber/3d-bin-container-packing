@@ -9,10 +9,10 @@ import java.util.Arrays;
 public final class FlatItems {
 
 	private final int n;
-	private final int items;
+	private int items;
 	private final int outInts;
-	private final int[] out;
-	private final long[] outLongs;
+	private int[] out;
+	private long[] outLongs;
 
 	/**
 	 * @param n the number of boxes of a permutation
@@ -28,6 +28,27 @@ public final class FlatItems {
 
 	public int items() {
 		return items;
+	}
+
+	/**
+	 * Add items (not started), for the children of an item which is split.
+	 *
+	 * @param count the number of items to add
+	 * @return the index of the first added item
+	 */
+	public int add(int count) {
+		int first = items;
+		items += count;
+		if(items * outInts > out.length) {
+			out = Arrays.copyOf(out, Math.max(items * outInts, 2 * out.length));
+			outLongs = Arrays.copyOf(outLongs, Math.max(items * FlatSubtree.OUT_LONGS, 2 * outLongs.length));
+		}
+		return first;
+	}
+
+	/** Mark an item done (its best so far stays), when the search below it continues in other items. */
+	public void setDone(int item) {
+		out[item * outInts + FlatSubtree.OUT_STATUS] = FlatSubtree.DONE;
 	}
 
 	/**

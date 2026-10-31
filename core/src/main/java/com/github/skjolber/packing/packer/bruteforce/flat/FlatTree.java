@@ -18,12 +18,19 @@ import static com.github.skjolber.packing.packer.bruteforce.flat.FlatLayout.POIN
  * A node is not expanded, and a box is not placed, when the prefix (and the box) plus the best sub-multiset of the remaining boxes within the load
  * left ({@link FlatBound}) cannot beat the best; the bound of another item (or an earlier container) prunes likewise. Unlike the tree search of the
  * packager, the item keeps no table of settled orders: the search below a prefix is a depth first search which visits each prefix of types once.
+ * With the free space bound on ({@link FlatSpace}), a node is also bounded by the box types which fit none of its free spaces.
  * <p>
  * An item pauses after a number of nodes and is run again on the same scratch to continue: its state is the scratch (the frames of free points of
  * the levels, the types and rotations of the levels, the remaining boxes) and the output ({@link FlatSubtree#outInts(int)} ints and
  * {@link FlatSubtree#OUT_LONGS} longs, laid out as for {@link FlatSubtree}, without the cursor).
  */
 public final class FlatTree {
+
+	/** the free space bounds a node only where this many more of the smallest remaining boxes fit the load left: a cut must save a subtree */
+	static final int SPACE_BOXES = 3;
+	/** the number of free space checks after which the bound is given up when fewer than one in {@link #SPACE_CUT_RATE} of them cut */
+	static final int SPACE_CHECKS = 2048;
+	static final int SPACE_CUT_RATE = 16;
 
 	private FlatTree() {
 	}
@@ -46,11 +53,12 @@ public final class FlatTree {
 	 * @param outLongBase the offset of the item in the output longs
 	 * @param boundVolume a load volume which has been reached by an earlier container: a prefix which cannot load more is not searched
 	 * @param sharedVolume the best arrangement of the other items (its volume, weight and count), which bounds this item as its own best does
+	 * @param freeSpace whether to bound the nodes by their free space ({@link FlatSpace})
 	 * @param budgetNodes the number of nodes after which to pause
 	 * @return the status of the item, see {@link FlatSubtree}
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, long[] sl, int base, int longBase,
-			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, int budgetNodes) {
+			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, boolean freeSpace, int budgetNodes) {
 		final int n = problem[FlatProblem.N];
 		final int types = problem[FlatProblem.TYPES];
 		final int rotations = problem[FlatProblem.ROTATIONS];
@@ -75,6 +83,7 @@ public final class FlatTree {
 		final int fitBase = base + layout.fit;
 		final int placedTypeBase = base + layout.placedType;
 		final int remainingBase = base + layout.remaining;
+		final int spaceCheckedBase = base + layout.spaceChecked;
 		final int rotationBase = base + layout.rotation;
 		final int placedRotationBase = base + layout.placedRotation;
 		final int minAreaBase = longBase + layout.minArea;
@@ -104,6 +113,7 @@ public final class FlatTree {
 			outLongs[outLongBase + FlatSubtree.OUT_VOLUME] = 0L;
 			outLongs[outLongBase + FlatSubtree.OUT_WEIGHT] = 0L;
 			FlatPoints.clear(layout, s, base, problem[FlatProblem.CX], problem[FlatProblem.CY], problem[FlatProblem.CZ]);
+			FlatSpace.clear(layout, problem, s, base, problem[FlatProblem.CX], problem[FlatProblem.CY], problem[FlatProblem.CZ]);
 			minimums(problemLongs, s, sl, remainingBase, minAreaBase, minVolumeBase, types, minAreas, 0);
 			if(sl[minAreaBase] != 0L || sl[minVolumeBase] != 0L) {
 				FlatPoints.filterMinimums(layout, s, base, 0, sl[minAreaBase], sl[minVolumeBase]);
@@ -171,6 +181,7 @@ public final class FlatTree {
 						s[typeAtBase + level] = level < depth ? prefixes[prefix + level] : nextType(problem, s, remainingBase, typeOrder, types, -1);
 						s[rotationBase + level] = 0;
 						s[fitBase + level] = 0;
+						s[spaceCheckedBase + level] = 0;
 					}
 				}
 			}
@@ -238,6 +249,23 @@ public final class FlatTree {
 						}
 						s[rotationBase + level] = rotationIndex;
 
+						if(pointIndex != -1 && freeSpace && s[spaceCheckedBase + level] == 0 && s[control + FlatLayout.C_SPACE_OFF] == 0 && level > 0 && (beatCount > 0 || boundVolume > 0L)
+								&& maxLoadVolume - sl[placedVolumeBase + level] >= SPACE_BOXES * sl[minVolumeBase + level]) {
+							// the node has a child to place: bounded by its free space once, when it is not a dead end; the bound is given up when
+							// it cuts too few of the nodes checked for its cost
+							s[spaceCheckedBase + level] = 1;
+							s[control + FlatLayout.C_SPACE_CHECKS]++;
+							if(FlatSpace.isHopeless(layout, problem, problemLongs, s, base, level, remainingBase, sl[placedVolumeBase + level], sl[placedWeightBase + level], maxLoadVolume,
+									maxLoadWeight, boundVolume, beatCount, beatVolume, beatWeight, anyBest)) {
+								// no completion of the node can beat the best: the level ends without its other candidates
+								s[control + FlatLayout.C_SPACE_CUTS]++;
+								pointIndex = -1;
+								s[fitBase + level] = 1;
+								s[typeAtBase + level] = -1;
+							} else if((s[control + FlatLayout.C_SPACE_CHECKS] & (SPACE_CHECKS - 1)) == 0 && s[control + FlatLayout.C_SPACE_CUTS] * SPACE_CUT_RATE < s[control + FlatLayout.C_SPACE_CHECKS]) {
+								s[control + FlatLayout.C_SPACE_OFF] = 1;
+							}
+						}
 						if(pointIndex != -1) {
 							// place the box and continue with the next level
 							int point = frame + 1 + pointIndex * POINT_INTS;
@@ -257,6 +285,7 @@ public final class FlatTree {
 									maxLoadWeight - sl[placedWeightBase + nextLevel]);
 							if(!last) {
 								FlatPoints.setPlacement(layout, s, base, level, x, y, z, x + dx - 1, y + dy - 1, z + dz - 1);
+								FlatSpace.place(layout, s, base, level);
 								int count = FlatPoints.add(layout, s, base, level, pointIndex, level, sl[minAreaBase + level], sl[minVolumeBase + level]);
 								if(count < 0) {
 									result = FlatSubtree.OVERFLOW;
@@ -270,7 +299,7 @@ public final class FlatTree {
 							}
 							level = nextLevel;
 							descend = true;
-						} else {
+						} else if(s[typeAtBase + level] != -1) {
 							if(s[fitBase + level] == 0 && level > 0) {
 								// no rotation of the box has a position: the arrangement ends at this box
 								long volume = sl[placedVolumeBase + level];

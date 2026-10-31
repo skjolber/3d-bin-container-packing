@@ -125,12 +125,13 @@ public class KernelParity {
 		String mode = args.length > 11 ? args[11] : "exact";
 		boolean anyBest = mode.equals("any");
 		boolean tree = !mode.equals("loop");
+		boolean freeSpace = !(args.length > 12 && args[12].equals("nospace"));
 
 		TornadoBruteForceAccelerator device = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).withWindow(window).withNodeBudget(budget).withMaxPoints(maxPoints)
-				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).withTree(tree).build();
+				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).withTree(tree).withFreeSpace(freeSpace).build();
 		System.out.println("Device: " + device.getDevice().orElseThrow(() -> new IllegalStateException("No device found")) + ", window " + window + ", budget " + budget + ", max points "
-				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + ", " + mode + "; cpu threads " + threads);
-		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest).build();
+				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
+		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest).withFreeSpace(freeSpace).build();
 
 		int mismatches = 0;
 		int gaveUp = 0;
@@ -175,7 +176,7 @@ public class KernelParity {
 			}
 		}
 		System.out.println("seeds " + seeds + ", " + mode + ", mismatches " + mismatches + ", device gave up " + gaveUp + ", cpu " + cpuNanos / 1_000_000 + " ms, device " + deviceNanos / 1_000_000 + " ms, rounds "
-				+ device.getRounds() + ", on device " + device.getNanosOnDevice() / 1_000_000 + " ms");
+				+ device.getRounds() + ", splits " + device.getSplits() + ", on device " + device.getNanosOnDevice() / 1_000_000 + " ms");
 		System.exit(mismatches == 0 ? 0 : 1);
 	}
 

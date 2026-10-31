@@ -35,7 +35,9 @@ public final class SubtreeKernel {
 	public static final int P_SLOTS = 2;
 	/** the index in the ints of the parameters: 1 to search the orders of an item as one tree ({@code FlatTree}), 0 one order at a time ({@code FlatSubtree}) */
 	public static final int P_TREE = 3;
-	public static final int PARAMETER_INTS = 4;
+	/** the index in the ints of the parameters: 1 to bound the nodes of a tree item by their free space ({@code FlatSpace}) */
+	public static final int P_SPACE = 4;
+	public static final int PARAMETER_INTS = 5;
 
 	/** the index in the longs of the parameters: the load volume which a permutation must be able to exceed */
 	public static final int P_BOUND = 0;
@@ -58,8 +60,9 @@ public final class SubtreeKernel {
 	public static int[] layoutInts(FlatLayout layout) {
 		return new int[] { layout.n, layout.pMax, layout.frameInts, layout.control, layout.placements, layout.frames, layout.flags, layout.moveX, layout.moveY, layout.moveZ, layout.poolX,
 				layout.poolY, layout.poolZ, layout.nextX, layout.nextY, layout.nextZ, layout.headX, layout.headY, layout.headZ, layout.tailX, layout.tailY, layout.tailZ, layout.copyX,
-				layout.copyY, layout.copyZ, layout.perm, layout.rotation, layout.placedRotation, layout.bestRotation, layout.typeAt, layout.fit, layout.placedType, layout.remaining, layout.size,
-				layout.minArea, layout.minVolume, layout.placedVolume, layout.bestVolume, layout.placedWeight, layout.longSize };
+				layout.copyY, layout.copyZ, layout.perm, layout.rotation, layout.placedRotation, layout.bestRotation, layout.typeAt, layout.fit, layout.placedType, layout.remaining, layout.spaces, layout.spaceSizes,
+				layout.spaceRemaining, layout.known, layout.witness, layout.spaceChecked, layout.size,
+				layout.minArea, layout.minVolume, layout.placedVolume, layout.bestVolume, layout.placedWeight, layout.longSize, layout.types };
 	}
 
 	/**
