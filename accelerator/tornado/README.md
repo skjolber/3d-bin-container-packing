@@ -118,8 +118,8 @@ per set and won none: the packager's tree, with its settled orders and free spac
 is the packager's own time plus the gate's overhead.
 
 The plain packager (`AcceleratedBruteForcePackager`, every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
-boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 51 s and `AUTO` 51 s (the device joined 11 containers and won 4); the hardest problem takes 198 s on the packager alone and 49 s on the device, the
-next 1.7 s against 0.9 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is 0.90 s, 1.51 s and 0.87 s. The kernel searches with all points under
+boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 25 s and `AUTO` 24 s (the device joined 10 containers and won 4); the hardest problem takes 198 s on the packager alone and 23 s on the device, the
+next 1.7 s against 0.8 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is 0.90 s, 1.51 s and 0.87 s. The kernel searches with all points under
 `FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `plainexact` and `plainany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
 against 1.1 s under any best, no mismatches). The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
 
@@ -179,7 +179,9 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    Exact halves on the device, and any best takes about a quarter more on the device, which is why it is off there.
  * `withSplit(..)`: on. On the device under any best, the 42 problems above have 38 splits and no change in the total (2.8 s against 2.6 s, within the run-to-run noise). On 16 problems of 13 to
    14 boxes there are 1360 splits and the time goes from 4.1 s to 3.2 s, the hardest (seed 208) from 2.13 s to 1.79 s. On 12 problems of 15 to 16 boxes there are 268 splits, and the hardest (seed
-   309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds.
+   309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds. Each slot's depth is passed to the kernel in the active array (the depth of its item plus one):
+   before that, the children searched the parent's whole subtree again, which the plain packager's hardest problem of 10 to 11 boxes shows (49 s to 23 s on the device with the fix; the sets above
+   are unchanged within the noise).
 
 Larger problems, the device against the CPU tree engine with 8 threads on 4 cores, any best, each in a fresh JVM so that the first problems of the CPU are cold:
 

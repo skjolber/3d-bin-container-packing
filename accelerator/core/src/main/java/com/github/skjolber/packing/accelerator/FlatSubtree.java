@@ -134,8 +134,9 @@ public final class FlatSubtree {
 
 			int size;
 			if(!allFit && firstVolume < Math.max(boundVolume, outLongs[outLongBase + OUT_VOLUME])) {
-				// no rotation of this permutation can load more than the best arrangement
+				// no rotation of this permutation can load more than the best arrangement: skipped, counted as a node so that an item of skips pauses too
 				size = maxPackableCount;
+				nodes++;
 			} else {
 				for (int i = 0; i < n; i++) {
 					s[permBase + i] = out[cursor + i];

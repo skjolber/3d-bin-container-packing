@@ -213,9 +213,10 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 		if(minLoadVolume > 0L && getMaxLoadVolume(iterator, holder, allItemsFit) < minLoadVolume) {
 			return null;
 		}
-		// any arrangement of the best value will do when the tree search of this packager would take any: the accelerator may then prune ties
-		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, treeSearchAnyBest,
-				true);
+		// any arrangement of the best value will do when the search of this packager would be the any-best tree (below its minimum of boxes, or without
+		// the tree, the loop keeps its first winning order): the accelerator may then prune ties
+		boolean anyBest = treeSearchAnyBest && isTreeSearchable(containerItem, iterator, getInsertAfterCounts(iterator));
+		FlatProblem problem = FlatProblem.of(iterator, holder.getLoadDx(), holder.getLoadDy(), holder.getLoadDz(), holder.getMaxLoadVolume(), holder.getMaxLoadWeight(), limit, anyBest, true);
 		return accelerator.supports(problem) ? problem : null;
 	}
 
@@ -255,6 +256,9 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 				}
 			}
 			result.setStateFromReusablePoints(points, getState(iterator, rotations, points.size()), stackPlacements, stackPlacementCount);
+			if(result.getLoadVolume() != winner.getLoadVolume()) {
+				return null;
+			}
 			return result;
 		} finally {
 			// the packager searches the permutations from the first (and the other attempts reset the iterator themselves)

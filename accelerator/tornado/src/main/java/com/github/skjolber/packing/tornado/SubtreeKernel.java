@@ -19,7 +19,7 @@ import com.github.skjolber.packing.accelerator.FlatLayout;
  * search correctly (it compiles, but the kernel hangs). TornadoVM loads a prebuilt kernel from a file, so the resource is copied to a temporary file once.
  * <p>
  * The parameters of the kernel, after the four of the TornadoVM calling convention, are the layout as ints ({@link #layoutInts(FlatLayout)}), the ints and
- * longs of the problem, the active flags of the slots, the prefixes of the slots, the int and long parameters, the int and long scratch, and the output
+ * longs of the problem, the active array of the slots (0 for an idle slot, else the depth of its item plus one), the prefixes of the slots, the int and long parameters, the int and long scratch, and the output
  * ints and longs, see {@link TornadoBruteForceAccelerator}.
  */
 public final class SubtreeKernel {
@@ -27,7 +27,7 @@ public final class SubtreeKernel {
 	/** the name of the kernel function */
 	public static final String ENTRY_POINT = "search";
 
-	/** the index in the ints of the parameters: the length of the prefixes of the items */
+	/** the index in the ints of the parameters: the length of the prefixes of the items as split by the host (the kernel takes each slot's depth from the active array) */
 	public static final int P_DEPTH = 0;
 	/** the index in the ints of the parameters: the number of nodes after which an item pauses */
 	public static final int P_BUDGET = 1;
