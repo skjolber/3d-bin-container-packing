@@ -208,7 +208,8 @@ per problem (rounds and transfers) and the 0.45 s of compilation on the first se
 ### Profiling the kernel
 
 Where the time of a device search goes, measured with the TornadoVM profiler (`-Dtornado.profiler=True` prints a JSON per execution) and Java Flight Recorder on the 13 to 14 box set, GPU
-only: 92% is the kernel, 2% the transfers (5 MB in and 1.9 MB out per round, 0.4 ms), 4% the compilation of the first search, and the rest the host loop over the slots. The CPU twin of the
+only: 92% is the kernel, 2% the transfers (5 MB in and 1.9 MB out per round, 0.4 ms), 4% the compilation of the first search, and the rest the host loop over the slots. After
+the changes below the kernel takes half the time on the set and is 86% of it; the transfers and the dispatch of a round are 0.9 ms, 7%. The CPU twin of the
 kernel (`FlatTree`, profiled with JFR on seed 208 of `BruteForcePackager`) spends 59% of its time in `FlatPoints.add` (the free points after a placement), 32% in the search loop itself,
 8% in `isEclipsed` and the rest in the sorts and the binary search: the kernel's cost per node is the same code, so these are the places to make the kernel cheaper.
 
