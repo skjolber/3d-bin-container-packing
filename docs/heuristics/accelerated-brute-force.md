@@ -57,6 +57,14 @@ set, 8 containers each, any best:
 | 13 to 14 | 2.31 s | 3.09 s | 2.46 s | 7 / 0 |
 | 15 to 16 | 3.97 s | 3.33 s | 3.61 s | 11 / 0 |
 
+With the packager on one thread (`withThreads(1)`, as when a server packs many jobs side by side), the device is worth several cores:
+
+| Boxes | `CPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
+|---|---|---|---|
+| 11 to 12 | 5.6 s | 1.0 s | 17 / 11 |
+| 13 to 14 | 10.4 s | 2.4 s | 14 / 6 |
+| 15 to 16 | 18.3 s | 3.0 s | 21 / 14 |
+
 The packager's own tree on 8 threads, with its settled orders and free space bound, finishes first on every container the device joined, so `AUTO`
 costs the gate's thread and the interrupt checks (a few percent, within the noise on the largest set) and gains nothing with this kernel; it pays
 when the device wins some containers, as it does against the CPU engine `FlatEngine` (see [the module README](../../accelerator/tornado/README.md)) and

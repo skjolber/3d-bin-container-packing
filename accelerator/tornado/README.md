@@ -117,7 +117,9 @@ are the other modes). The gate of each box count doubles when the device joins a
 your own), so where the device keeps losing it soon joins only the containers which run far longer than the rest. On whole packings of 40 random problems per set with the packager
 on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
 `GPU_ONLY` 1.19 s, `AUTO` 0.64 s; 13 to 14 boxes 2.31 s, 3.09 s, 2.46 s; 15 to 16 boxes 3.97 s, 3.33 s, 3.61 s (after the profiling below; before it `GPU_ONLY` took 4.73 s and
-5.15 s). The device joined 7 to 15 containers per set and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
+5.15 s). With the packager on one thread (`withThreads(1)`) the same sets take 5.6 s, 10.4 s and 18.3 s in `CPU_ONLY` and 1.0 s, 2.4 s and 3.0 s in
+`AUTO`, where the device wins the hardest containers (seed 208 of 13 to 14 boxes: 7.7 s on the thread, 0.87 s in `AUTO`). On 8 threads the device joined 7 to 15 containers per set
+and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
 is the packager's own time plus the gate's overhead.
 
 `AcceleratedBruteForcePackager` (every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
