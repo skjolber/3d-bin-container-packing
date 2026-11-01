@@ -207,9 +207,9 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		}
 
 		/**
-		 * @param freeSpace whether a tree item bounds its nodes by their free space (maximal empty spaces, as {@code FlatSpace}); by default only for the
-		 *        loop's winner (not under {@code FlatProblem.ANY_BEST}), where it cuts the most: with ties pruned the bound table leaves it little to cut
-		 *        for its cost
+		 * @param freeSpace whether a tree item bounds its nodes by their free space (maximal empty spaces, as {@code FlatSpace}); by default for the
+		 *        loop's winner (not under {@code FlatProblem.ANY_BEST}) and for the search of every box at every free point ({@code FlatProblem.ALL_POINTS}),
+		 *        where it cuts the most: at the best point only with ties pruned the bound table leaves it little to cut for its cost
 		 * @return this builder
 		 */
 		public Builder withFreeSpace(boolean freeSpace) {
@@ -535,7 +535,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		session.parameters[SubtreeKernel.P_DEPTH] = depth;
 		session.parameters[SubtreeKernel.P_BUDGET] = nodeBudget;
 		session.parameters[SubtreeKernel.P_TREE] = tree ? 1 : 0;
-		session.parameters[SubtreeKernel.P_SPACE] = (freeSpace != null ? freeSpace : !anyBest) ? 1 : 0;
+		session.parameters[SubtreeKernel.P_SPACE] = (freeSpace != null ? freeSpace : !anyBest || problem.isAllPoints()) ? 1 : 0;
 
 		// the items in the order they are run; a tree item keeps its slot (its state is the scratch of the slot) until it is done, or until it is
 		// split: its children are new items at the end
@@ -682,7 +682,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			int budget = nodeBudget;
 			if(tree) {
 				budget = (int)Math.min((long)nodeBudget * MAX_BUDGET_FACTOR, (long)nodeBudget * slots / count);
-				if(round < 30 && (FIRST_BUDGET << round) < budget) {
+				if(round < 20 && (FIRST_BUDGET << round) < budget) {
 					budget = FIRST_BUDGET << round;
 				}
 			}

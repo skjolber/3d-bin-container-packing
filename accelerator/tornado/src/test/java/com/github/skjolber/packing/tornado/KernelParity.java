@@ -172,7 +172,8 @@ public class KernelParity {
 				device.getLastFailure().printStackTrace(System.out);
 				System.exit(2);
 			}
-			String line = "seed " + seed + " n=" + problem.n() + ": cpu " + cpuTime / 1_000_000 + " ms, device " + deviceTime / 1_000_000 + " ms" + (repeat ? " (again " + repeatTime / 1_000_000 + " ms)" : "");
+			String line = "seed " + seed + " n=" + problem.n() + ": cpu " + cpuTime / 1_000_000 + " ms (" + expected.map(AcceleratorWinner::getNodes).orElse(-1L) + " nodes), device "
+					+ deviceTime / 1_000_000 + " ms" + (repeat ? " (again " + repeatTime / 1_000_000 + " ms)" : "");
 			if(actual.isEmpty()) {
 				gaveUp++;
 				System.out.println(line + ", device gave up");

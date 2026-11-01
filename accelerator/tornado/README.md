@@ -47,8 +47,9 @@ device at a time; searches from other threads wait, polling their interrupt (a s
      its first child is about to be placed, and only where three more of the smallest remaining boxes fit the load left (`SPACE_BOXES`); an item gives it up when fewer than one check in sixteen
      cuts (`SPACE_CHECKS` 2048, `SPACE_CUT_RATE`). A type is looked for first at the free points of the level (a free point which holds it is an empty region), then by the answer kept from the
      level above with its witness space, then in the spaces of the nearest level computed above which miss the boxes placed since, and only then are the spaces of the level computed from the
-     parent's. It is on by default for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost (`withFreeSpace(..)`). The
-     scratch per slot grows by the spaces, the answers and the witnesses: about 7 KB of ints at 16 boxes and 48 spaces.
+     parent's. It is on by default for the loop's winner (exact) and for the search of `BruteForcePackager` (every box at every free point, `FlatProblem.ALL_POINTS`, where it cuts a
+     third), and off under any best at the best point only, because with ties pruned the bound table leaves it little to cut for its cost (`withFreeSpace(..)`). The scratch per slot grows
+     by the spaces, the answers and the witnesses: about 7 KB of ints at 16 boxes and 48 spaces.
    * Splitting (`withSplit(..)`, on by default; `getSplits()` counts them): under any best, a tree item which has run for four rounds (`SPLIT_ROUNDS`) while fewer than a quarter of the slots are
      active is split on the host. Its best so far stays (the item is marked done), and the search below its prefix goes on in new items, one per remaining type (the parent's prefix plus the
      type), which run side by side in the free slots; a child can be split again, down to one box before the last. The work the parent had done below its prefix is redone, bounded by the best so
@@ -169,7 +170,8 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    s at 250, 2.9 s at 1000).
  * `withMaxPoints(64)` (was 128): halves the scratch per slot, so that more slots fit.
 
- * `withFreeSpace(..)`: on for the loop's winner, off under any best (see "How it works"). A/B on the 42 problems above (8 CPU threads, node budget 250):
+ * `withFreeSpace(..)`: on for the loop's winner and for all points, off under any best at the best point only (see "How it works"). A/B on the 42 problems above (8 CPU threads, node
+   budget 250):
 
    | Search | Without | With |
    |---|---|---|
@@ -178,7 +180,9 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    | device, any best | 2.6 s | 3.3 s |
    | device, exact | 33.3 s | 16.6 s |
 
-   Exact halves on the device, and any best takes about a quarter more on the device, which is why it is off there.
+   Exact halves on the device, and any best takes about a quarter more on the device, which is why it is off there. The search of `AcceleratedBruteForcePackager` (every box at every free
+   point) branches far more, and there the bound pays under any best too: its hardest problem of 10 to 11 boxes (seed 208) goes from 23.2 s to 16.0 s on the device, the 12 problems of 10 to 11
+   boxes from 25.0 s to 17.4 s, and 30 problems of 7 to 9 boxes from 1.66 s to 1.44 s; the CPU tree engine takes 29 s instead of 95 s on seed 208 (8 threads).
  * `withSplit(..)`: on. On the device under any best, the 42 problems above have 38 splits and no change in the total (2.8 s against 2.6 s, within the run-to-run noise). On 16 problems of 13 to
    14 boxes there are 1360 splits and the time goes from 4.1 s to 3.2 s, the hardest (seed 208) from 2.13 s to 1.79 s. On 12 problems of 15 to 16 boxes there are 268 splits, and the hardest (seed
    309) goes from 1.07 s to 0.66 s, while a few easy ones got slower by tens of milliseconds. Each slot's depth is passed to the kernel in the active array (the depth of its item plus one):
@@ -195,6 +199,28 @@ Larger problems, the device against the CPU tree engine with 8 threads on 4 core
 Per problem the device wins on the hard ones and loses on the many easy ones. Seed 208: 2.37 s on the CPU against 1.79 s on the device. Seed 307: 0.78 s against 0.12 s. Seed 309: 0.50 s against
 0.66 s. Seed 205: 0.16 s against 0.09 s. On the easy ones the CPU is far ahead (seed 209: 1 ms against 65 ms; seed 301: 49 ms against 230 ms), because the device has a floor of about 20 to 60 ms
 per problem (rounds and transfers) and the 0.45 s of compilation on the first search.
+
+### Profiling the kernel
+
+Where the time of a device search goes, measured with the TornadoVM profiler (`-Dtornado.profiler=True` prints a JSON per execution) and Java Flight Recorder on the 13 to 14 box set, GPU
+only: 92% is the kernel, 2% the transfers (5 MB in and 1.9 MB out per round, 0.4 ms), 4% the compilation of the first search, and the rest the host loop over the slots. The CPU twin of the
+kernel (`FlatTree`, profiled with JFR on seed 208 of `BruteForcePackager`) spends 59% of its time in `FlatPoints.add` (the free points after a placement), 32% in the search loop itself,
+8% in `isEclipsed` and the rest in the sorts and the binary search: the kernel's cost per node is the same code, so these are the places to make the kernel cheaper.
+
+The kernel itself can be compiled offline with the LLVM in Fedora (`clang -x cl -cl-std=CL2.0 -target amdgcn-amd-amdhsa -mcpu=gfx1102 -nogpulib -O2 -S subtree.cl`; `gfx1102` is the
+Radeon RX 7600) and its `.vgpr_count`, `.vgpr_spill_count`, `.sgpr_spill_count` and `.private_segment_fixed_size` read from the assembly. The kernel uses all 256 vector registers, so
+the device runs about 6 waves per SIMD, and with a work group of one each wave is one search; a lone search makes about 26000 nodes per second (38 µs per node, memory latency), the
+device about 8 million per second with every slot busy. What was measured on seed 208 of 14 boxes (any best, 1.7 s) and seed 208 of `BruteForcePackager` (16.0 s):
+
+ * The layout of the scratch (the offsets of `FlatLayout`) was a private struct of 48 ints, read once per work item: it lived in scratch memory (272 bytes per lane), with 195 scalar and 22
+   vector register spills. The kernel now reads the offsets from the layout ints in global memory (`L_*`, uniform across the work items, so they come through the scalar cache): 44 and 2
+   spills, and the two problems take 1.43 s and 13.6 s (14% and 15% less). The Java side is unchanged.
+ * Forcing `addPoint` inline (the compiler keeps it a function, called once per node) made both slower (2.0 s and 18.3 s), as did `noinline` on the cold functions (`offerTree`, `isBetter`,
+   `isHopelessInSpace`: 1.9 s and 18.7 s): calls are costly, but so is a larger hot function.
+ * `restrict` on the buffers changed nothing. A work group of 2, 4, 8, 16, 32 or 64 instead of 1: 4%, 7%, 15%, 35%, 65% and 65% slower. `withMaxPoints(32)` or 24 instead of 64: the same
+   time, so the scratch footprint is not what limits the kernel.
+ * The device searches far more nodes than the CPU tree engine on the easy problems (seed 200: 224000 against 6300; seed 209: 488000 against 9300) and the same on the hard ones (seed 208:
+   7.95 million against 7.84 million): the first round runs every item for 32 nodes before any best bounds them, which is the floor of 20 to 60 ms per problem.
 
 What could still change the picture: the settled orders of the CPU tree (they matter for the loop's exact winner only; the item search keeps none), a layout of the scratch which coalesces the
 memory accesses of a wavefront (not tried), and problems where the CPU needs seconds, where the floor per problem is small against the search.

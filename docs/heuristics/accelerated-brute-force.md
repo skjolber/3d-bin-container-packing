@@ -124,7 +124,8 @@ A node is also bounded by its free space, as the CPU tree does (`FlatSpace`, a p
 scratch (at most 48 per level, `FlatLayout.MAX_SPACES`; more makes the level unknown, in which every box is taken to fit). The box types which fit none of them in any rotation can never be placed
 below the node, so the prefix plus the remaining boxes of the other types within the load left must beat the best. It is checked once per node, when its first child is about to be placed, and
 only where three more of the smallest remaining boxes fit the load left; an item gives it up when fewer than one check in sixteen cuts. The switch is `FlatEngine.Builder.withFreeSpace(..)`, by
-default on for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost.
+default on for the loop's winner (exact) and for the search of `BruteForcePackager` (every box at every free point), and off under any best at the best point only, because with ties pruned the
+bound table leaves it little to cut for its cost.
 
 What counts as the best depends on `FlatProblem.ANY_BEST`, which the packager sets from `withTreeSearchAnyBest(..)`:
 
@@ -192,7 +193,8 @@ On a Radeon RX 7600 against `FlatEngine` with 8 threads (4 cores of a Ryzen 9 99
    device, the problems where all boxes fit are faster on the device, and the first search pays the 0.45 s of compilation.
  * exact (the loop's winner): the CPU loop engine takes 19.1 s and the device tree 33.2 s (269 rounds). The CPU tree engine in exact mode takes 7.8 s.
 
-With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there). Splitting a long item into its children, under
+With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there); the search of `BruteForcePackager` branches far
+more, and there the bound takes its hardest problem of 10 to 11 boxes from 23.2 s to 16.0 s on the device (on by default). Splitting a long item into its children, under
 any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s, and on the hardest problem of
 `BruteForcePackager` of 10 to 11 boxes the device goes from 49 s to 23 s once each child's depth reaches the kernel (before that fix the children searched the parent's whole subtree again). Against the CPU
 tree engine on larger problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.9 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed

@@ -89,114 +89,59 @@
 #define P_SHARED_COUNT 3
 
 // the offsets of FlatLayout, in the order of TornadoBruteForceAccelerator.layoutInts(..)
-typedef struct {
-	int n;
-	int pMax;
-	int frameInts;
-	int control;
-	int placements;
-	int frames;
-	int flags;
-	int moveX;
-	int moveY;
-	int moveZ;
-	int poolX;
-	int poolY;
-	int poolZ;
-	int nextX;
-	int nextY;
-	int nextZ;
-	int headX;
-	int headY;
-	int headZ;
-	int tailX;
-	int tailY;
-	int tailZ;
-	int copyX;
-	int copyY;
-	int copyZ;
-	int perm;
-	int rotation;
-	int placedRotation;
-	int bestRotation;
-	int typeAt;
-	int fit;
-	int placedType;
-	int remaining;
-	int spaces;
-	int spaceSizes;
-	int spaceRemaining;
-	int known;
-	int witness;
-	int spaceChecked;
-	int size;
-	int minArea;
-	int minVolume;
-	int placedVolume;
-	int bestVolume;
-	int placedWeight;
-	int longSize;
-	int types;
-	int pointAt;
-} Layout;
+// the offsets of FlatLayout, in the order of TornadoBruteForceAccelerator.layoutInts(..): read from the layout ints, the same for every work item
+#define L_N 0
+#define L_P_MAX 1
+#define L_FRAME_INTS 2
+#define L_CONTROL 3
+#define L_PLACEMENTS 4
+#define L_FRAMES 5
+#define L_FLAGS 6
+#define L_MOVE_X 7
+#define L_MOVE_Y 8
+#define L_MOVE_Z 9
+#define L_POOL_X 10
+#define L_POOL_Y 11
+#define L_POOL_Z 12
+#define L_NEXT_X 13
+#define L_NEXT_Y 14
+#define L_NEXT_Z 15
+#define L_HEAD_X 16
+#define L_HEAD_Y 17
+#define L_HEAD_Z 18
+#define L_TAIL_X 19
+#define L_TAIL_Y 20
+#define L_TAIL_Z 21
+#define L_COPY_X 22
+#define L_COPY_Y 23
+#define L_COPY_Z 24
+#define L_PERM 25
+#define L_ROTATION 26
+#define L_PLACED_ROTATION 27
+#define L_BEST_ROTATION 28
+#define L_TYPE_AT 29
+#define L_FIT 30
+#define L_PLACED_TYPE 31
+#define L_REMAINING 32
+#define L_SPACES 33
+#define L_SPACE_SIZES 34
+#define L_SPACE_REMAINING 35
+#define L_KNOWN 36
+#define L_WITNESS 37
+#define L_SPACE_CHECKED 38
+#define L_SIZE 39
+#define L_MIN_AREA 40
+#define L_MIN_VOLUME 41
+#define L_PLACED_VOLUME 42
+#define L_BEST_VOLUME 43
+#define L_PLACED_WEIGHT 44
+#define L_LONG_SIZE 45
+#define L_TYPES 46
+#define L_POINT_AT 47
 
-#define LAYOUT_INTS 48
 
-static Layout readLayout(__global const int *v) {
-	Layout l;
-	l.n = v[0];
-	l.pMax = v[1];
-	l.frameInts = v[2];
-	l.control = v[3];
-	l.placements = v[4];
-	l.frames = v[5];
-	l.flags = v[6];
-	l.moveX = v[7];
-	l.moveY = v[8];
-	l.moveZ = v[9];
-	l.poolX = v[10];
-	l.poolY = v[11];
-	l.poolZ = v[12];
-	l.nextX = v[13];
-	l.nextY = v[14];
-	l.nextZ = v[15];
-	l.headX = v[16];
-	l.headY = v[17];
-	l.headZ = v[18];
-	l.tailX = v[19];
-	l.tailY = v[20];
-	l.tailZ = v[21];
-	l.copyX = v[22];
-	l.copyY = v[23];
-	l.copyZ = v[24];
-	l.perm = v[25];
-	l.rotation = v[26];
-	l.placedRotation = v[27];
-	l.bestRotation = v[28];
-	l.typeAt = v[29];
-	l.fit = v[30];
-	l.placedType = v[31];
-	l.remaining = v[32];
-	l.spaces = v[33];
-	l.spaceSizes = v[34];
-	l.spaceRemaining = v[35];
-	l.known = v[36];
-	l.witness = v[37];
-	l.spaceChecked = v[38];
-	l.size = v[39];
-	l.minArea = v[40];
-	l.minVolume = v[41];
-	l.placedVolume = v[42];
-	l.bestVolume = v[43];
-	l.placedWeight = v[44];
-	l.longSize = v[45];
-	l.types = v[46];
-	l.pointAt = v[47];
-	return l;
-}
-
-static inline int frameOffset(const Layout *l, int level) {
-	return l->frames + level * l->frameInts;
+static inline int frameOffset(__global const int *l, int level) {
+	return l[L_FRAMES] + level * l[L_FRAME_INTS];
 }
 
 static inline int planesYz(int planes) {
@@ -216,23 +161,23 @@ static inline int planes(int yz, int xz, int xy) {
 }
 
 // FlatLayout.reset
-static void reset(const Layout *l, __global int *s, int b) {
-	for (int i = 0; i <= l->pMax; i++) {
-		s[b + l->flags + i] = 0;
-		s[b + l->headX + i] = -1;
-		s[b + l->headY + i] = -1;
-		s[b + l->headZ + i] = -1;
-		s[b + l->tailX + i] = -1;
-		s[b + l->tailY + i] = -1;
-		s[b + l->tailZ + i] = -1;
+static void reset(__global const int *l, __global int *s, int b) {
+	for (int i = 0; i <= l[L_P_MAX]; i++) {
+		s[b + l[L_FLAGS] + i] = 0;
+		s[b + l[L_HEAD_X] + i] = -1;
+		s[b + l[L_HEAD_Y] + i] = -1;
+		s[b + l[L_HEAD_Z] + i] = -1;
+		s[b + l[L_TAIL_X] + i] = -1;
+		s[b + l[L_TAIL_Y] + i] = -1;
+		s[b + l[L_TAIL_Z] + i] = -1;
 	}
-	for (int i = 0; i < l->pMax; i++) {
-		s[b + l->copyX + i] = -1;
-		s[b + l->copyY + i] = -1;
-		s[b + l->copyZ + i] = -1;
+	for (int i = 0; i < l[L_P_MAX]; i++) {
+		s[b + l[L_COPY_X] + i] = -1;
+		s[b + l[L_COPY_Y] + i] = -1;
+		s[b + l[L_COPY_Z] + i] = -1;
 	}
 	for (int i = 0; i < CONTROL_INTS; i++) {
-		s[b + l->control + i] = 0;
+		s[b + l[L_CONTROL] + i] = 0;
 	}
 }
 
@@ -488,8 +433,8 @@ static bool isAfterZ(__global const int *s, int placementOffset, int a, int b, i
 }
 
 // FlatPoints
-static inline void setPlacement(const Layout *l, __global int *s, int base, int id, int x, int y, int z, int endX, int endY, int endZ) {
-	int o = base + l->placements + id * PLACEMENT_INTS;
+static inline void setPlacement(__global const int *l, __global int *s, int base, int id, int x, int y, int z, int endX, int endY, int endZ) {
+	int o = base + l[L_PLACEMENTS] + id * PLACEMENT_INTS;
 	s[o] = x;
 	s[o + 1] = y;
 	s[o + 2] = z;
@@ -498,8 +443,8 @@ static inline void setPlacement(const Layout *l, __global int *s, int base, int 
 	s[o + 5] = endZ;
 }
 
-static void clearPoints(const Layout *l, __global int *s, int base, int dx, int dy, int dz) {
-	setPlacement(l, s, base, l->n, 0, 0, 0, dx - 1, dy - 1, dz - 1);
+static void clearPoints(__global const int *l, __global int *s, int base, int dx, int dy, int dz) {
+	setPlacement(l, s, base, l[L_N], 0, 0, 0, dx - 1, dy - 1, dz - 1);
 
 	int frame = base + frameOffset(l, 0);
 	s[frame] = 1;
@@ -510,10 +455,10 @@ static void clearPoints(const Layout *l, __global int *s, int base, int dx, int 
 	s[p + 3] = dx - 1;
 	s[p + 4] = dy - 1;
 	s[p + 5] = dz - 1;
-	s[p + 6] = planes(l->n, l->n, l->n);
+	s[p + 6] = planes(l[L_N], l[L_N], l[L_N]);
 }
 
-static int filterMinimums(const Layout *l, __global int *s, int base, int level, long minArea, long minVolume) {
+static int filterMinimums(__global const int *l, __global int *s, int base, int level, long minArea, long minVolume) {
 	int frame = base + frameOffset(l, level);
 	int size = s[frame];
 	int values = frame + 1;
@@ -703,8 +648,8 @@ static inline void chain(__global int *s, int head, int tail, int next, int targ
 }
 
 // FlatPoints.add: the number of points in the next frame, or -1 if there were more points than the layout holds
-static int addPoint(const Layout *l, __global int *s, int base, int level, int pointIndex, int placementId, long minArea, long minVolume) {
-	const int placements = base + l->placements;
+static int addPoint(__global const int *l, __global int *s, int base, int level, int pointIndex, int placementId, long minArea, long minVolume) {
+	const int placements = base + l[L_PLACEMENTS];
 	const int pl = placements + placementId * PLACEMENT_INTS;
 	const int placementX = s[pl];
 	const int placementY = s[pl + 1];
@@ -718,7 +663,7 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 	const int size = s[inFrame];
 	const int values = inFrame + 1;
 	const int out = outFrame + 1;
-	const int flags = base + l->flags;
+	const int flags = base + l[L_FLAGS];
 
 	const int xx = placementEndX + 1;
 	const int yy = placementEndY + 1;
@@ -744,9 +689,9 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 	}
 
 	// classify
-	const int listX = base + l->moveX;
-	const int listY = base + l->moveY;
-	const int listZ = base + l->moveZ;
+	const int listX = base + l[L_MOVE_X];
+	const int listY = base + l[L_MOVE_Y];
+	const int listZ = base + l[L_MOVE_Z];
 	int moveCountX = 0;
 	int moveCountY = 0;
 	int moveCountZ = 0;
@@ -776,7 +721,7 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 	}
 
 	// move x
-	const int poolX = base + l->poolX;
+	const int poolX = base + l[L_POOL_X];
 	int poolCountX = 0;
 	if (moveCountX > 0) {
 		sortX(s, listX, moveCountX, values, placements, xx);
@@ -818,14 +763,14 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 				while (target < size && isAfterXyz(s, added, values + target * POINT_INTS)) {
 					target++;
 				}
-				chain(s, base + l->headX, base + l->tailX, base + l->nextX, target, poolCountX);
+				chain(s, base + l[L_HEAD_X], base + l[L_TAIL_X], base + l[L_NEXT_X], target, poolCountX);
 				poolCountX++;
 			}
 		}
 	}
 
 	// move y
-	const int poolY = base + l->poolY;
+	const int poolY = base + l[L_POOL_Y];
 	int poolCountY = 0;
 	if (moveCountY > 0) {
 		sortY(s, listY, moveCountY, values, placements, yy);
@@ -867,14 +812,14 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 				while (target < size && isAfterXyz(s, added, values + target * POINT_INTS)) {
 					target++;
 				}
-				chain(s, base + l->headY, base + l->tailY, base + l->nextY, target, poolCountY);
+				chain(s, base + l[L_HEAD_Y], base + l[L_TAIL_Y], base + l[L_NEXT_Y], target, poolCountY);
 				poolCountY++;
 			}
 		}
 	}
 
 	// move z
-	const int poolZ = base + l->poolZ;
+	const int poolZ = base + l[L_POOL_Z];
 	int poolCountZ = 0;
 	if (moveCountZ > 0) {
 		sortZ(s, listZ, moveCountZ, values, placements, zz);
@@ -916,16 +861,16 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 				while (target < size && isAfterXyz(s, added, values + target * POINT_INTS)) {
 					target++;
 				}
-				chain(s, base + l->headZ, base + l->tailZ, base + l->nextZ, target, poolCountZ);
+				chain(s, base + l[L_HEAD_Z], base + l[L_TAIL_Z], base + l[L_NEXT_Z], target, poolCountZ);
 				poolCountZ++;
 			}
 		}
 	}
 
 	// constrain the max values of the points which the placement cuts into
-	const int copyX = base + l->copyX;
-	const int copyY = base + l->copyY;
-	const int copyZ = base + l->copyZ;
+	const int copyX = base + l[L_COPY_X];
+	const int copyY = base + l[L_COPY_Y];
+	const int copyZ = base + l[L_COPY_Z];
 
 	if (supported) {
 		// not necessary
@@ -1001,16 +946,16 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 	}
 
 	// merge, in x order
-	const int headX = base + l->headX;
-	const int headY = base + l->headY;
-	const int headZ = base + l->headZ;
-	const int tailX = base + l->tailX;
-	const int tailY = base + l->tailY;
-	const int tailZ = base + l->tailZ;
-	const int nextX = base + l->nextX;
-	const int nextY = base + l->nextY;
-	const int nextZ = base + l->nextZ;
-	const int pMax = l->pMax;
+	const int headX = base + l[L_HEAD_X];
+	const int headY = base + l[L_HEAD_Y];
+	const int headZ = base + l[L_HEAD_Z];
+	const int tailX = base + l[L_TAIL_X];
+	const int tailY = base + l[L_TAIL_Y];
+	const int tailZ = base + l[L_TAIL_Z];
+	const int nextX = base + l[L_NEXT_X];
+	const int nextY = base + l[L_NEXT_Y];
+	const int nextZ = base + l[L_NEXT_Z];
+	const int pMax = l[L_P_MAX];
 	const int spare = out + pMax * POINT_INTS;
 
 	int count = 0;
@@ -1128,7 +1073,7 @@ static int addPoint(const Layout *l, __global int *s, int base, int level, int p
 
 	s[outFrame] = count;
 	if (overflow) {
-		s[base + l->control + C_OVERFLOW] = 1;
+		s[base + l[L_CONTROL] + C_OVERFLOW] = 1;
 		return -1;
 	}
 	return count;
@@ -1157,10 +1102,10 @@ static int bestPoint(__global const int *s, int frame, int dx, int dy, int dz) {
 	return best;
 }
 
-static int offer(const Layout *l, __global int *s, __global long *sl, int base, int longBase, int count) {
-	sl[longBase + l->bestVolume] = sl[longBase + l->placedVolume + count];
-	int from = base + l->placedRotation;
-	int to = base + l->bestRotation;
+static int offer(__global const int *l, __global int *s, __global long *sl, int base, int longBase, int count) {
+	sl[longBase + l[L_BEST_VOLUME]] = sl[longBase + l[L_PLACED_VOLUME] + count];
+	int from = base + l[L_PLACED_ROTATION];
+	int to = base + l[L_BEST_ROTATION];
 	for (int i = 0; i < count; i++) {
 		s[to + i] = s[from + i];
 	}
@@ -1168,22 +1113,22 @@ static int offer(const Layout *l, __global int *s, __global long *sl, int base, 
 }
 
 // the number of placed boxes, or -1 if there were more free points than the layout holds (the scratch is then reset)
-static int searchPermutation(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, __global long *sl, int base, int longBase, int maxPackableCount) {
+static int searchPermutation(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, __global long *sl, int base, int longBase, int maxPackableCount) {
 	const int types = problem[P_TYPES];
 	const int n = problem[P_N];
 	const int rotationOffsetsIndex = rotationOffsets(types);
 	const int rotationValuesIndex = rotationValues(types);
 
-	const int permBase = base + l->perm;
-	const int rotationBase = base + l->rotation;
-	const int placedRotationBase = base + l->placedRotation;
-	const int control = base + l->control;
-	const int minAreaBase = longBase + l->minArea;
-	const int minVolumeBase = longBase + l->minVolume;
-	const int placedVolumeBase = longBase + l->placedVolume;
+	const int permBase = base + l[L_PERM];
+	const int rotationBase = base + l[L_ROTATION];
+	const int placedRotationBase = base + l[L_PLACED_ROTATION];
+	const int control = base + l[L_CONTROL];
+	const int minAreaBase = longBase + l[L_MIN_AREA];
+	const int minVolumeBase = longBase + l[L_MIN_VOLUME];
+	const int placedVolumeBase = longBase + l[L_PLACED_VOLUME];
 	const int length = maxPackableCount;
 
-	sl[longBase + l->bestVolume] = 0L;
+	sl[longBase + l[L_BEST_VOLUME]] = 0L;
 	s[control + C_BEST_COUNT] = 0;
 	if (length == 0) {
 		return 0;
@@ -1367,7 +1312,7 @@ static inline int outBestRotations(int n) {
 }
 
 // FlatSubtree.run: the status of the item
-static int run(const Layout *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s, __global long *sl, int base,
+static int run(__global const int *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s, __global long *sl, int base,
 		int longBase, __global int *out, int outBase, __global long *outLongs, int outLongBase, long boundVolume, int budgetNodes) {
 	const int n = problem[P_N];
 	const int types = problem[P_TYPES];
@@ -1380,8 +1325,8 @@ static int run(const Layout *l, __global const int *problem, __global const long
 	const int cursor = outBase + OUT_CURSOR;
 	const int bestPermutation = outBase + outBestPermutation(n);
 	const int bestRotations = outBase + outBestRotations(n);
-	const int permBase = base + l->perm;
-	const int control = base + l->control;
+	const int permBase = base + l[L_PERM];
+	const int control = base + l[L_CONTROL];
 
 	int status = out[outBase + OUT_STATUS];
 	int result = status;
@@ -1443,7 +1388,7 @@ static int run(const Layout *l, __global const int *problem, __global const long
 				outLongs[outLongBase + OUT_NODES] += s[control + C_NODES];
 
 				if (size > 0) {
-					long v = sl[longBase + l->bestVolume];
+					long v = sl[longBase + l[L_BEST_VOLUME]];
 					long w = 0L;
 					for (int i = 0; i < size; i++) {
 						w += problemLongs[weights + out[cursor + i]];
@@ -1460,7 +1405,7 @@ static int run(const Layout *l, __global const int *problem, __global const long
 							out[bestPermutation + i] = out[cursor + i];
 						}
 						for (int i = 0; i < size; i++) {
-							out[bestRotations + i] = s[base + l->bestRotation + i];
+							out[bestRotations + i] = s[base + l[L_BEST_ROTATION] + i];
 						}
 					}
 					if (size == n) {
@@ -1646,13 +1591,14 @@ static bool isBetter(__global const int *s, __global const int *out, int placedT
 }
 
 // keep the arrangement of the prefix as the best: its order (the prefix, the failing type if any, and the remaining boxes in ascending order), its rotations, count, volume and weight
-static void offerTree(const Layout *l, __global const int *s, __global int *out, __global long *outLongs, int outBase, int outLongBase, int base, int placedTypeBase, int remainingBase, int types,
+static void offerTree(__global const int *l, __global const int *s, __global int *out, __global long *outLongs, int outBase, int outLongBase, int base, int placedTypeBase,
+		int remainingBase, int types,
 		int count, int failingType, long volume, long weight) {
-	const int n = l->n;
+	const int n = l[L_N];
 	out[outBase + OUT_COUNT] = count;
 	outLongs[outLongBase + OUT_VOLUME] = volume;
 	outLongs[outLongBase + OUT_WEIGHT] = weight;
-	int from = base + l->placedRotation;
+	int from = base + l[L_PLACED_ROTATION];
 	int to = outBase + outBestRotations(n);
 	for (int i = 0; i < count; i++) {
 		out[to + i] = s[from + i];
@@ -1677,26 +1623,26 @@ static void offerTree(const Layout *l, __global const int *s, __global int *out,
 }
 
 // FlatSpace: the free space of the nodes of the path of a tree item, as maximal empty spaces, on the scratch of the work item
-static void clearSpace(const Layout *l, __global const int *problem, __global int *s, int base, int dx, int dy, int dz) {
+static void clearSpace(__global const int *l, __global const int *problem, __global int *s, int base, int dx, int dy, int dz) {
 	const int types = problem[P_TYPES];
-	int space = base + l->spaces;
+	int space = base + l[L_SPACES];
 	s[space] = 0;
 	s[space + 1] = 0;
 	s[space + 2] = 0;
 	s[space + 3] = dx;
 	s[space + 4] = dy;
 	s[space + 5] = dz;
-	s[base + l->spaceSizes] = 1;
+	s[base + l[L_SPACE_SIZES]] = 1;
 	for (int t = 0; t < types; t++) {
-		s[base + l->spaceRemaining + t] = problem[P_HEADER + t];
+		s[base + l[L_SPACE_REMAINING] + t] = problem[P_HEADER + t];
 	}
-	s[base + l->control + C_SPACE_VALID] = 1;
-	s[base + l->control + C_SPACE_KNOWN_VALID] = 0;
+	s[base + l[L_CONTROL] + C_SPACE_VALID] = 1;
+	s[base + l[L_CONTROL] + C_SPACE_KNOWN_VALID] = 0;
 }
 
 // a box placed at the level (in the placement table): the spaces and answers of the levels below are of another path now
-static void placeSpace(const Layout *l, __global int *s, int base, int level) {
-	int control = base + l->control;
+static void placeSpace(__global const int *l, __global int *s, int base, int level) {
+	int control = base + l[L_CONTROL];
 	if (s[control + C_SPACE_VALID] > level + 1) {
 		s[control + C_SPACE_VALID] = level + 1;
 	}
@@ -1706,31 +1652,31 @@ static void placeSpace(const Layout *l, __global int *s, int base, int level) {
 }
 
 // whether the type fits the free space of the level's node, as far as known without looking at its spaces: by the answer above, when the box placed above misses the type's witness
-static int knownSpace(const Layout *l, __global const int *problem, __global int *s, int base, int level, int type) {
+static int knownSpace(__global const int *l, __global const int *problem, __global int *s, int base, int level, int type) {
 	const int types = problem[P_TYPES];
-	const int control = base + l->control;
-	const int knownBase = base + l->known;
+	const int control = base + l[L_CONTROL];
+	const int knownBase = base + l[L_KNOWN];
 	while (s[control + C_SPACE_KNOWN_VALID] <= level) {
-		int row = knownBase + s[control + C_SPACE_KNOWN_VALID] * l->types;
+		int row = knownBase + s[control + C_SPACE_KNOWN_VALID] * l[L_TYPES];
 		for (int t = 0; t < types; t++) {
 			s[row + t] = SPACE_UNKNOWN;
 		}
 		s[control + C_SPACE_KNOWN_VALID]++;
 	}
-	int k = knownBase + level * l->types + type;
+	int k = knownBase + level * l[L_TYPES] + type;
 	int result = s[k];
 	if (result == SPACE_UNKNOWN && level > 0) {
-		int above = knownBase + (level - 1) * l->types + type;
+		int above = knownBase + (level - 1) * l[L_TYPES] + type;
 		if (s[above] == SPACE_NONE) {
 			// the free space only shrinks
 			s[k] = SPACE_NONE;
 			result = SPACE_NONE;
 		} else if (s[above] == SPACE_FITS) {
-			int w = base + l->witness + ((level - 1) * l->types + type) * SPACE_INTS;
-			int b = base + l->placements + (level - 1) * PLACEMENT_INTS;
+			int w = base + l[L_WITNESS] + ((level - 1) * l[L_TYPES] + type) * SPACE_INTS;
+			int b = base + l[L_PLACEMENTS] + (level - 1) * PLACEMENT_INTS;
 			if (s[w + 3] <= s[b] || s[w] > s[b + 3] || s[w + 4] <= s[b + 1] || s[w + 1] > s[b + 4] || s[w + 5] <= s[b + 2] || s[w + 2] > s[b + 5]) {
 				// the box placed above misses the witness, which is still empty
-				int to = base + l->witness + (level * l->types + type) * SPACE_INTS;
+				int to = base + l[L_WITNESS] + (level * l[L_TYPES] + type) * SPACE_INTS;
 				for (int i = 0; i < SPACE_INTS; i++) {
 					s[to + i] = s[w + i];
 				}
@@ -1743,22 +1689,22 @@ static int knownSpace(const Layout *l, __global const int *problem, __global int
 }
 
 // the type fits the level's free space at an empty region found elsewhere (a free point): kept as its witness
-static void fitsAt(const Layout *l, __global int *s, int base, int level, int type, int x, int y, int z, int dx, int dy, int dz) {
-	int w = base + l->witness + (level * l->types + type) * SPACE_INTS;
+static void fitsAt(__global const int *l, __global int *s, int base, int level, int type, int x, int y, int z, int dx, int dy, int dz) {
+	int w = base + l[L_WITNESS] + (level * l[L_TYPES] + type) * SPACE_INTS;
 	s[w] = x;
 	s[w + 1] = y;
 	s[w + 2] = z;
 	s[w + 3] = x + dx;
 	s[w + 4] = y + dy;
 	s[w + 5] = z + dz;
-	s[base + l->known + level * l->types + type] = SPACE_FITS;
+	s[base + l[L_KNOWN] + level * l[L_TYPES] + type] = SPACE_FITS;
 }
 
 // whether the space misses the boxes placed at the levels from one level to another (exclusive); the placements have inclusive ends
-static bool misses(const Layout *l, __global const int *s, int base, int space, int from, int to) {
+static bool misses(__global const int *l, __global const int *s, int base, int space, int from, int to) {
 	bool result = true;
 	for (int level = from; level < to && result; level++) {
-		int b = base + l->placements + level * PLACEMENT_INTS;
+		int b = base + l[L_PLACEMENTS] + level * PLACEMENT_INTS;
 		if (s[space + 3] > s[b] && s[space] <= s[b + 3] && s[space + 4] > s[b + 1] && s[space + 1] <= s[b + 4] && s[space + 5] > s[b + 2] && s[space + 2] <= s[b + 5]) {
 			result = false;
 		}
@@ -1780,34 +1726,34 @@ static bool holds(__global const int *problem, int rotationOffsetsIndex, int rot
 }
 
 // whether the type fits the free space of the level's node in any of its rotations, looking at its spaces when not known
-static bool fitsSpace(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int type);
+static bool fitsSpace(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int type);
 
 // the spaces of the level below the parent: the parent's spaces split by the box placed at the parent, less the ones within others
-static void splitSpace(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int parent);
+static void splitSpace(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int parent);
 
 // add a piece to the level's spaces (at the offset c), unless it holds no remaining box or is within one of them;
 // the pieces within it are removed (a kept space, maximal above, is never within a piece)
 static int addSpace(__global const int *problem, __global int *s, int c, int count, int kept, int remaining, int types, int rotationOffsetsIndex, int rotationValuesIndex, int minX, int minY,
 		int minZ, int maxX, int maxY, int maxZ, int pieceDx, int pieceDy, int pieceDz, long pieceVolume);
 
-static bool fitsSpace(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int type) {
+static bool fitsSpace(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int type) {
 	const int types = problem[P_TYPES];
 	const int rotationOffsetsIndex = rotationOffsets(types);
 	const int rotationValuesIndex = rotationValues(types);
-	const int control = base + l->control;
+	const int control = base + l[L_CONTROL];
 	int answer = knownSpace(l, problem, s, base, level, type);
 	bool result = answer == SPACE_FITS;
 	if (answer == SPACE_UNKNOWN) {
-		const int k = base + l->known + level * l->types + type;
-		const int w = base + l->witness + (level * l->types + type) * SPACE_INTS;
+		const int k = base + l[L_KNOWN] + level * l[L_TYPES] + type;
+		const int w = base + l[L_WITNESS] + (level * l[L_TYPES] + type) * SPACE_INTS;
 		bool found = false;
 		int valid = s[control + C_SPACE_VALID];
-		if (valid <= level && s[base + l->spaceSizes + valid - 1] != -1) {
+		if (valid <= level && s[base + l[L_SPACE_SIZES] + valid - 1] != -1) {
 			// a space of the nearest level computed above which holds the type and misses the boxes placed since is still empty: a witness
 			// without computing the level's spaces
 			int above = valid - 1;
-			int spaces = base + l->spaces + above * MAX_SPACES * SPACE_INTS;
-			int size = s[base + l->spaceSizes + above];
+			int spaces = base + l[L_SPACES] + above * MAX_SPACES * SPACE_INTS;
+			int size = s[base + l[L_SPACE_SIZES] + above];
 			for (int i = 0; i < size * SPACE_INTS && !found; i += SPACE_INTS) {
 				int space = spaces + i;
 				if (holds(problem, rotationOffsetsIndex, rotationValuesIndex, type, s[space + 3] - s[space], s[space + 4] - s[space + 1], s[space + 5] - s[space + 2])
@@ -1824,16 +1770,16 @@ static bool fitsSpace(const Layout *l, __global const int *problem, __global con
 				splitSpace(l, problem, problemLongs, s, base, s[control + C_SPACE_VALID] - 1);
 				s[control + C_SPACE_VALID]++;
 			}
-			int size = s[base + l->spaceSizes + level];
+			int size = s[base + l[L_SPACE_SIZES] + level];
 			if (size == -1) {
 				// unknown: taken to fit, with the whole container as the witness, so that the levels below look again
-				int container = base + l->spaces;
+				int container = base + l[L_SPACES];
 				for (int j = 0; j < SPACE_INTS; j++) {
 					s[w + j] = s[container + j];
 				}
 				found = true;
 			} else {
-				int spaces = base + l->spaces + level * MAX_SPACES * SPACE_INTS;
+				int spaces = base + l[L_SPACES] + level * MAX_SPACES * SPACE_INTS;
 				for (int i = 0; i < size * SPACE_INTS && !found; i += SPACE_INTS) {
 					int space = spaces + i;
 					if (holds(problem, rotationOffsetsIndex, rotationValuesIndex, type, s[space + 3] - s[space], s[space + 4] - s[space + 1], s[space + 5] - s[space + 2])) {
@@ -1865,20 +1811,20 @@ static bool holdsAny(__global const int *problem, __global const int *s, int rem
 	return result;
 }
 
-static void splitSpace(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int parent) {
+static void splitSpace(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int parent) {
 	const int types = problem[P_TYPES];
 	const int rotationOffsetsIndex = rotationOffsets(types);
 	const int rotationValuesIndex = rotationValues(types);
 	const int child = parent + 1;
-	const int left = base + l->spaceRemaining + child * l->types;
-	const int parentLeft = base + l->spaceRemaining + parent * l->types;
+	const int left = base + l[L_SPACE_REMAINING] + child * l[L_TYPES];
+	const int parentLeft = base + l[L_SPACE_REMAINING] + parent * l[L_TYPES];
 	for (int t = 0; t < types; t++) {
 		s[left + t] = s[parentLeft + t];
 	}
-	s[left + s[base + l->placedType + parent]]--;
-	const int parentSize = s[base + l->spaceSizes + parent];
+	s[left + s[base + l[L_PLACED_TYPE] + parent]]--;
+	const int parentSize = s[base + l[L_SPACE_SIZES] + parent];
 	if (parentSize == -1) {
-		s[base + l->spaceSizes + child] = -1;
+		s[base + l[L_SPACE_SIZES] + child] = -1;
 	} else {
 		// the least a piece must hold
 		int pieceDx = INT_MAX;
@@ -1897,9 +1843,9 @@ static void splitSpace(const Layout *l, __global const int *problem, __global co
 				pieceVolume = min(pieceVolume, problemLongs[t]);
 			}
 		}
-		const int p = base + l->spaces + parent * MAX_SPACES * SPACE_INTS;
-		const int c = base + l->spaces + child * MAX_SPACES * SPACE_INTS;
-		const int b = base + l->placements + parent * PLACEMENT_INTS;
+		const int p = base + l[L_SPACES] + parent * MAX_SPACES * SPACE_INTS;
+		const int c = base + l[L_SPACES] + child * MAX_SPACES * SPACE_INTS;
+		const int b = base + l[L_PLACEMENTS] + parent * PLACEMENT_INTS;
 		const int bMinX = s[b];
 		const int bMinY = s[b + 1];
 		const int bMinZ = s[b + 2];
@@ -1946,7 +1892,7 @@ static void splitSpace(const Layout *l, __global const int *problem, __global co
 				}
 			}
 		}
-		s[base + l->spaceSizes + child] = count;
+		s[base + l[L_SPACE_SIZES] + child] = count;
 	}
 }
 
@@ -1995,7 +1941,7 @@ static int addSpace(__global const int *problem, __global int *s, int c, int cou
 
 // whether the prefix (its volume, weight and count at the level) plus the remaining boxes of the types which fit the node's free space, within the load left,
 // can beat neither the bound volume nor the best
-static bool isHopelessInSpace(const Layout *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int remainingBase, long volumeAtLevel,
+static bool isHopelessInSpace(__global const int *l, __global const int *problem, __global const long *problemLongs, __global int *s, int base, int level, int remainingBase, long volumeAtLevel,
 		long weight, long maxLoadVolume, long maxLoadWeight, long boundVolume, int beatCount, long beatVolume, long beatWeight, bool anyBest) {
 	const int types = problem[P_TYPES];
 	const int rotations = problem[P_ROTATIONS];
@@ -2097,7 +2043,8 @@ static bool isHopelessInSpace(const Layout *l, __global const int *problem, __gl
 }
 
 // FlatTree.run: the status of the item
-static int runTree(const Layout *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s, __global long *sl, int base,
+static int runTree(__global const int *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s,
+		__global long *sl, int base,
 		int longBase, __global int *out, int outBase, __global long *outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, bool freeSpace,
 		int budgetNodes) {
 	const int n = problem[P_N];
@@ -2120,19 +2067,19 @@ static int runTree(const Layout *l, __global const int *problem, __global const 
 	const int boundsIndex = bounds(types);
 	const int depthLimit = limit < n ? limit : n;
 
-	const int control = base + l->control;
-	const int typeAtBase = base + l->typeAt;
-	const int fitBase = base + l->fit;
-	const int placedTypeBase = base + l->placedType;
-	const int remainingBase = base + l->remaining;
-	const int spaceCheckedBase = base + l->spaceChecked;
-	const int pointAtBase = base + l->pointAt;
-	const int rotationBase = base + l->rotation;
-	const int placedRotationBase = base + l->placedRotation;
-	const int minAreaBase = longBase + l->minArea;
-	const int minVolumeBase = longBase + l->minVolume;
-	const int placedVolumeBase = longBase + l->placedVolume;
-	const int placedWeightBase = longBase + l->placedWeight;
+	const int control = base + l[L_CONTROL];
+	const int typeAtBase = base + l[L_TYPE_AT];
+	const int fitBase = base + l[L_FIT];
+	const int placedTypeBase = base + l[L_PLACED_TYPE];
+	const int remainingBase = base + l[L_REMAINING];
+	const int spaceCheckedBase = base + l[L_SPACE_CHECKED];
+	const int pointAtBase = base + l[L_POINT_AT];
+	const int rotationBase = base + l[L_ROTATION];
+	const int placedRotationBase = base + l[L_PLACED_ROTATION];
+	const int minAreaBase = longBase + l[L_MIN_AREA];
+	const int minVolumeBase = longBase + l[L_MIN_VOLUME];
+	const int placedVolumeBase = longBase + l[L_PLACED_VOLUME];
+	const int placedWeightBase = longBase + l[L_PLACED_WEIGHT];
 	const int bestPermutation = outBase + outBestPermutation(n);
 	const int prefix = item * n;
 
@@ -2431,16 +2378,15 @@ __kernel void search(__global long *_kernel_context, __constant uchar *_constant
 	}
 	// the depth of the slot's item: the prefixes of the items are P_DEPTH long, the children of a split item longer
 	int depth = active[slot] - 1;
-	Layout l = readLayout(layoutInts);
 	int n = problem[P_N];
-	int base = slot * l.size;
-	int longBase = slot * l.longSize;
+	int base = slot * layoutInts[L_SIZE];
+	int longBase = slot * layoutInts[L_LONG_SIZE];
 	if (parameters[P_TREE] != 0) {
 		// a tree item keeps its scratch between the rounds: FlatTree.run resets it when the item has not started
-		runTree(&l, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
+		runTree(layoutInts, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
 				longParameters[P_SHARED_VOLUME], longParameters[P_SHARED_WEIGHT], (int)longParameters[P_SHARED_COUNT], parameters[P_SPACE] != 0, parameters[P_BUDGET]);
 	} else {
-		reset(&l, s, base);
-		run(&l, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
+		reset(layoutInts, s, base);
+		run(layoutInts, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);
 	}
 }
