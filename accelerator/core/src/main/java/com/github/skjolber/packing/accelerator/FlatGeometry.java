@@ -2,7 +2,9 @@ package com.github.skjolber.packing.accelerator;
 
 /**
  * Geometry of free points which are stored as {@link FlatLayout#POINT_INTS} consecutive ints in an {@code int[]}, addressed by the
- * offset of the first int. All coordinates are inclusive, as for {@link com.github.skjolber.packing.api.point.Point}.
+ * offset of the first int. All coordinates are inclusive, as for {@link com.github.skjolber.packing.api.point.Point}. The predicates
+ * combine their comparisons without short circuits, so that the loads of a point are issued together (on the device the loads are the
+ * cost, and a short circuit serializes them: 6% to 7% of the kernel's time).
  */
 public final class FlatGeometry {
 
@@ -38,7 +40,7 @@ public final class FlatGeometry {
 	}
 
 	public static boolean fits3D(int[] s, int p, int sx, int sy, int sz) {
-		return !(sx > dx(s, p) || sy > dy(s, p) || sz > dz(s, p));
+		return !(sx > dx(s, p) | sy > dy(s, p) | sz > dz(s, p));
 	}
 
 	public static void copyPoint(int[] s, int from, int to) {
@@ -53,33 +55,33 @@ public final class FlatGeometry {
 
 	/** @return true if the point a contains the point p, the same as {@code Point.eclipses} */
 	public static boolean eclipses(int[] s, int a, int p) {
-		return s[a + MIN_X] <= s[p + MIN_X] && s[p + MAX_X] <= s[a + MAX_X] && s[a + MIN_Y] <= s[p + MIN_Y] && s[p + MAX_Y] <= s[a + MAX_Y] && s[a + MIN_Z] <= s[p + MIN_Z]
-				&& s[p + MAX_Z] <= s[a + MAX_Z];
+		return s[a + MIN_X] <= s[p + MIN_X] & s[p + MAX_X] <= s[a + MAX_X] & s[a + MIN_Y] <= s[p + MIN_Y] & s[p + MAX_Y] <= s[a + MAX_Y] & s[a + MIN_Z] <= s[p + MIN_Z]
+				& s[p + MAX_Z] <= s[a + MAX_Z];
 	}
 
 	private static boolean eclipsesX(int[] s, int a, int p) {
-		return s[a + MIN_X] <= s[p + MIN_X] && s[p + MAX_X] <= s[a + MAX_X];
+		return s[a + MIN_X] <= s[p + MIN_X] & s[p + MAX_X] <= s[a + MAX_X];
 	}
 
 	private static boolean eclipsesY(int[] s, int a, int p) {
-		return s[a + MIN_Y] <= s[p + MIN_Y] && s[p + MAX_Y] <= s[a + MAX_Y];
+		return s[a + MIN_Y] <= s[p + MIN_Y] & s[p + MAX_Y] <= s[a + MAX_Y];
 	}
 
 	private static boolean eclipsesZ(int[] s, int a, int p) {
-		return s[a + MIN_Z] <= s[p + MIN_Z] && s[p + MAX_Z] <= s[a + MAX_Z];
+		return s[a + MIN_Z] <= s[p + MIN_Z] & s[p + MAX_Z] <= s[a + MAX_Z];
 	}
 
 	/** @return true if the point a contains the point p moved to x, the same as {@code Point.eclipsesMovedX} */
 	public static boolean eclipsesMovedX(int[] s, int a, int p, int x) {
-		return s[a + MIN_X] <= x && s[p + MAX_X] <= s[a + MAX_X] && eclipsesY(s, a, p) && eclipsesZ(s, a, p);
+		return s[a + MIN_X] <= x & s[p + MAX_X] <= s[a + MAX_X] & eclipsesY(s, a, p) & eclipsesZ(s, a, p);
 	}
 
 	public static boolean eclipsesMovedY(int[] s, int a, int p, int y) {
-		return s[a + MIN_Y] <= y && s[p + MAX_Y] <= s[a + MAX_Y] && eclipsesX(s, a, p) && eclipsesZ(s, a, p);
+		return s[a + MIN_Y] <= y & s[p + MAX_Y] <= s[a + MAX_Y] & eclipsesX(s, a, p) & eclipsesZ(s, a, p);
 	}
 
 	public static boolean eclipsesMovedZ(int[] s, int a, int p, int z) {
-		return s[a + MIN_Z] <= z && s[p + MAX_Z] <= s[a + MAX_Z] && eclipsesX(s, a, p) && eclipsesY(s, a, p);
+		return s[a + MIN_Z] <= z & s[p + MAX_Z] <= s[a + MAX_Z] & eclipsesX(s, a, p) & eclipsesY(s, a, p);
 	}
 
 	public static long areaAtX(int[] s, int p, int xx) {

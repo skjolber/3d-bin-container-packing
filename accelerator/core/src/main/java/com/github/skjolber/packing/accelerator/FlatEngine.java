@@ -154,8 +154,9 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 
 		/**
-		 * @param freeSpace whether a tree item bounds its nodes by their free space ({@link FlatSpace}); by default only for the loop's winner (not under
-		 *        {@link FlatProblem#ANY_BEST}), where it cuts the most: with ties pruned the bound table leaves it little to cut for its cost
+		 * @param freeSpace whether a tree item bounds its nodes by their free space ({@link FlatSpace}); by default for the loop's winner (not under
+		 *        {@link FlatProblem#ANY_BEST}) and for the search of every box at every free point ({@link FlatProblem#ALL_POINTS}), where it cuts the most: at
+		 *        the best point only with ties pruned the bound table leaves it little to cut for its cost
 		 * @return this builder
 		 */
 		public Builder withFreeSpace(boolean freeSpace) {
@@ -190,6 +191,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		/** the items in the order they are run: largest prefix first when any best arrangement will do, else their order */
 		final int[] order;
 		final boolean anyBest;
+		final boolean allPoints;
 		/** the interrupt, polled by a tree item which runs on the calling thread, or null */
 		PackagerInterruptSupplier interrupt;
 		volatile boolean overflow;
@@ -216,6 +218,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 			this.fullItem = new AtomicInteger(items);
 			this.pending = new int[items];
 			this.anyBest = problem[FlatProblem.ANY_BEST] != 0;
+			this.allPoints = problem[FlatProblem.ALL_POINTS] != 0;
 			this.order = FlatItems.order(problemLongs, prefixes, n, depth, anyBest);
 		}
 
@@ -399,7 +402,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		if(tree) {
 			// the state of a tree item is its scratch, so the item runs on this scratch until it is done
 			long[] shared = run.shared.get();
-			boolean freeSpace = this.freeSpace != null ? this.freeSpace : !run.anyBest;
+			boolean freeSpace = this.freeSpace != null ? this.freeSpace : !run.anyBest || run.allPoints;
 			status = FlatTree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), shared[0], shared[1],
 					(int)shared[2], freeSpace, nodeBudget);
 			while (status == FlatSubtree.PAUSED && !run.abort && !run.overflow && item <= run.fullItem.get()) {

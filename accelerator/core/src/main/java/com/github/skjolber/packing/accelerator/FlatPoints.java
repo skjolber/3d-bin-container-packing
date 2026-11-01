@@ -72,7 +72,7 @@ public final class FlatPoints {
 		int target = 0;
 		for (int i = 0; i < size; i++) {
 			int p = values + i * POINT_INTS;
-			if(!(volume(s, p) < minVolume || area(s, p) < minArea)) {
+			if(!(volume(s, p) < minVolume | area(s, p) < minArea)) {
 				if(target != i) {
 					copyPoint(s, p, values + target * POINT_INTS);
 				}
@@ -88,7 +88,7 @@ public final class FlatPoints {
 			return false;
 		}
 		int o = placements + id * PLACEMENT_INTS;
-		return s[o] <= x && x <= s[o + 3] && s[o + 1] <= y && y <= s[o + 4];
+		return s[o] <= x & x <= s[o + 3] & s[o + 1] <= y & y <= s[o + 4];
 	}
 
 	private static boolean supportedXZ(int[] s, int placements, int id, int x, int z) {
@@ -96,7 +96,7 @@ public final class FlatPoints {
 			return false;
 		}
 		int o = placements + id * PLACEMENT_INTS;
-		return s[o] <= x && x <= s[o + 3] && s[o + 2] <= z && z <= s[o + 5];
+		return s[o] <= x & x <= s[o + 3] & s[o + 2] <= z & z <= s[o + 5];
 	}
 
 	private static boolean supportedYZ(int[] s, int placements, int id, int y, int z) {
@@ -104,7 +104,7 @@ public final class FlatPoints {
 			return false;
 		}
 		int o = placements + id * PLACEMENT_INTS;
-		return s[o + 1] <= y && y <= s[o + 4] && s[o + 2] <= z && z <= s[o + 5];
+		return s[o + 1] <= y & y <= s[o + 4] & s[o + 2] <= z & z <= s[o + 5];
 	}
 
 	private static int binarySearchPlusMinX(int[] s, int values, int size, int low, int key) {

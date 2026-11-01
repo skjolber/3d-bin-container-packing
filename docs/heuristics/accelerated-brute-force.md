@@ -53,9 +53,17 @@ set, 8 containers each, any best:
 
 | Boxes | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|
-| 11 to 12 | 0.59 s | 1.75 s | 0.70 s | 15 / 0 |
-| 13 to 14 | 2.31 s | 4.73 s | 2.50 s | 16 / 0 |
-| 15 to 16 | 3.97 s | 5.15 s | 3.84 s | 20 / 0 |
+| 11 to 12 | 0.59 s | 1.19 s | 0.64 s | 5 / 0 |
+| 13 to 14 | 2.31 s | 3.09 s | 2.46 s | 7 / 0 |
+| 15 to 16 | 3.97 s | 3.33 s | 3.61 s | 11 / 0 |
+
+With the packager on one thread (`withThreads(1)`, as when a server packs many jobs side by side), the device is worth several cores:
+
+| Boxes | `CPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
+|---|---|---|---|
+| 11 to 12 | 5.6 s | 1.0 s | 17 / 11 |
+| 13 to 14 | 10.4 s | 2.4 s | 14 / 6 |
+| 15 to 16 | 18.3 s | 3.0 s | 21 / 14 |
 
 The packager's own tree on 8 threads, with its settled orders and free space bound, finishes first on every container the device joined, so `AUTO`
 costs the gate's thread and the interrupt checks (a few percent, within the noise on the largest set) and gains nothing with this kernel; it pays
@@ -82,11 +90,11 @@ Measured with the TornadoVM accelerator on the same device, whole packings of ra
 
 | Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|---|
-| 7 to 9 | 30 | 0.90 s | 1.51 s | 0.87 s | 7 / 0 |
-| 10 to 11 | 12 | 200 s | 25 s | 24 s | 10 / 4 |
+| 7 to 9 | 30 | 0.90 s | 1.40 s | 0.90 s | 2 / 0 |
+| 10 to 11 | 12 | 200 s | 2.75 s | 2.5 s | 8 / 4 |
 
-The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 23 s, on the next (seed 205) 1.7 s
-against 0.8 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
+The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 1.7 s, on the next (seed 205) 1.7 s
+against 0.45 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
 search, which is what the gate is for. On the CPU, `ParallelBruteForcePackager` (not accelerated) runs the same search on threads.
 
 ## When it is used
@@ -124,7 +132,8 @@ A node is also bounded by its free space, as the CPU tree does (`FlatSpace`, a p
 scratch (at most 48 per level, `FlatLayout.MAX_SPACES`; more makes the level unknown, in which every box is taken to fit). The box types which fit none of them in any rotation can never be placed
 below the node, so the prefix plus the remaining boxes of the other types within the load left must beat the best. It is checked once per node, when its first child is about to be placed, and
 only where three more of the smallest remaining boxes fit the load left; an item gives it up when fewer than one check in sixteen cuts. The switch is `FlatEngine.Builder.withFreeSpace(..)`, by
-default on for the loop's winner (exact) and off under any best, because with ties pruned the bound table leaves it little to cut for its cost.
+default on for the loop's winner (exact) and for the search of `BruteForcePackager` (every box at every free point), and off under any best at the best point only, because with ties pruned the
+bound table leaves it little to cut for its cost.
 
 What counts as the best depends on `FlatProblem.ANY_BEST`, which the packager sets from `withTreeSearchAnyBest(..)`:
 
@@ -192,7 +201,8 @@ On a Radeon RX 7600 against `FlatEngine` with 8 threads (4 cores of a Ryzen 9 99
    device, the problems where all boxes fit are faster on the device, and the first search pays the 0.45 s of compilation.
  * exact (the loop's winner): the CPU loop engine takes 19.1 s and the device tree 33.2 s (269 rounds). The CPU tree engine in exact mode takes 7.8 s.
 
-With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there). Splitting a long item into its children, under
+With the free space bound the device takes 16.6 s instead of 33.3 s in exact mode, and 3.3 s instead of 2.6 s under any best (off by default there); the search of `BruteForcePackager` branches far
+more, and there the bound takes its hardest problem of 10 to 11 boxes from 23.2 s to 16.0 s on the device (on by default). Splitting a long item into its children, under
 any best, changes nothing on these problems (38 splits) but helps on larger ones: on 12 problems of 15 to 16 boxes the hardest goes from 1.07 s to 0.66 s, and on the hardest problem of
 `BruteForcePackager` of 10 to 11 boxes the device goes from 49 s to 23 s once each child's depth reaches the kernel (before that fix the children searched the parent's whole subtree again). Against the CPU
 tree engine on larger problems the device takes 3.2 s against 2.7 s (16 problems of 13 to 14 boxes) and 2.0 s against 1.9 s (12 problems of 15 to 16 boxes): it wins single hard problems (seed
