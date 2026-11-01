@@ -55,10 +55,13 @@ public final class FlatTree {
 	 * @param sharedVolume the best arrangement of the other items (its volume, weight and count), which bounds this item as its own best does
 	 * @param freeSpace whether to bound the nodes by their free space ({@link FlatSpace})
 	 * @param budgetNodes the number of nodes after which to pause
+	 * @param fresh true to start the item over, whatever the output holds: the device keeps the state of a slot between the rounds, and starts a slot's new
+	 *        item this way; the engine gives each item its own output, which starts as zeros
 	 * @return the status of the item, see {@link FlatSubtree}
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, long[] sl, int base, int longBase,
-			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, boolean freeSpace, int budgetNodes) {
+			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, boolean freeSpace, int budgetNodes,
+			boolean fresh) {
 		final int n = problem[FlatProblem.N];
 		final int types = problem[FlatProblem.TYPES];
 		final int rotations = problem[FlatProblem.ROTATIONS];
@@ -96,7 +99,10 @@ public final class FlatTree {
 		final int bestRotations = outBase + FlatSubtree.outBestRotations(n);
 		final int prefix = item * n;
 
-		int status = out[outBase + FlatSubtree.OUT_STATUS];
+		int status = fresh ? FlatSubtree.NOT_STARTED : out[outBase + FlatSubtree.OUT_STATUS];
+		if(fresh) {
+			outLongs[outLongBase + FlatSubtree.OUT_NODES] = 0L;
+		}
 		// one exit and no return in a loop: the OpenCL backend does not lower them correctly
 		int result = status;
 		boolean running = status != FlatSubtree.DONE && status != FlatSubtree.OVERFLOW;

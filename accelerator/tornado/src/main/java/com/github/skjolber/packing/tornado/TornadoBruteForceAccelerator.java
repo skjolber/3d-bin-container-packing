@@ -436,7 +436,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final int[] layoutInts;
 		final int[] problem;
 		final long[] longs;
-		/** per slot: 0 when idle, else the depth of its item plus one (the children of a split item have longer prefixes) */
+		/** per slot: 0 when idle, else the depth of its item plus one (the children of a split item have longer prefixes), negative when the item is new to the slot */
 		final int[] active;
 		final int[] prefixes;
 		final int[] parameters;
@@ -445,7 +445,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final long[] outLongs;
 		final TornadoExecutionPlan plan;
 
-		Session(TornadoDevice device, int maxBoxes, int maxTypes, int maxPoints, int window) {
+		Session(TornadoDevice device, int maxBoxes, int maxTypes, int maxPoints, int window, boolean tree) {
 			this.maxBoxes = maxBoxes;
 			this.maxTypes = maxTypes;
 			this.maxPoints = maxPoints;
@@ -484,9 +484,12 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			accessors.set(9, out, Access.READ_WRITE);
 			accessors.set(10, outLongs, Access.READ_WRITE);
 
-			// the scratch stays on the device; the layout, the problem and the window go with each run
+			// the scratch stays on the device; the layout, the problem and the window go with each run. The state of the slots (out) stays on the device too
+			// when a tree item keeps its slot: the kernel starts a slot's new item from the active array, and the host reads the state after each round. The
+			// loop kernel is given its items anew each round, so there the state goes with each run.
 			TaskGraph graph = new TaskGraph("bruteForce").transferToDevice(DataTransferMode.FIRST_EXECUTION, s, sl)
-					.transferToDevice(DataTransferMode.EVERY_EXECUTION, layoutInts, problem, longs, active, prefixes, parameters, longParameters, out, outLongs)
+					.transferToDevice(DataTransferMode.EVERY_EXECUTION, layoutInts, problem, longs, active, prefixes, parameters, longParameters)
+					.transferToDevice(tree ? DataTransferMode.FIRST_EXECUTION : DataTransferMode.EVERY_EXECUTION, out, outLongs)
 					.prebuiltTask("search", SubtreeKernel.ENTRY_POINT, SubtreeKernel.file().toString(), accessors)
 					.transferToHost(DataTransferMode.EVERY_EXECUTION, out, outLongs);
 			ImmutableTaskGraph immutable = graph.snapshot();
@@ -516,7 +519,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			// the types of a packing stay while its boxes are placed, so later containers have more types than boxes
 			int types = (problem.types() + Session.BOXES_STEP - 1) / Session.BOXES_STEP * Session.BOXES_STEP;
 			TornadoDevice tornadoDevice = TornadoExecutionPlan.getDevice(info.backendIndex(), info.deviceIndex());
-			session = new Session(tornadoDevice, boxes, types, maxPoints, window);
+			session = new Session(tornadoDevice, boxes, types, maxPoints, window, tree);
 			this.session = session;
 		}
 		return session;
@@ -674,8 +677,16 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 				int item = slotItem[slot];
 				if(item == -1) {
 					active[slot] = 0;
+				} else if(tree) {
+					// the depth of the slot's item plus one: the children of a split item have longer prefixes than P_DEPTH. A tree item keeps its slot, and its state
+					// stays on the device: the kernel starts the item from its prefix when it is new to the slot (negative)
+					if(slotRounds[slot] == 1) {
+						active[slot] = -(itemDepth[item] + 1);
+						System.arraycopy(prefixes, item * n, session.prefixes, slot * n, n);
+					} else {
+						active[slot] = itemDepth[item] + 1;
+					}
 				} else {
-					// the depth of the slot's item plus one: the children of a split item have longer prefixes than P_DEPTH
 					active[slot] = itemDepth[item] + 1;
 					System.arraycopy(prefixes, item * n, session.prefixes, slot * n, n);
 					System.arraycopy(flat.out(), item * outInts, out, slot * outInts, outInts);
