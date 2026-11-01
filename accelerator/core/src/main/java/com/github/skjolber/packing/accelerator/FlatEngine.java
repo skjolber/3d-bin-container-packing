@@ -404,7 +404,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 			long[] shared = run.shared.get();
 			boolean freeSpace = this.freeSpace != null ? this.freeSpace : !run.anyBest || run.allPoints;
 			status = FlatTree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), shared[0], shared[1],
-					(int)shared[2], freeSpace, nodeBudget);
+					(int)shared[2], freeSpace, nodeBudget, false);
 			while (status == FlatSubtree.PAUSED && !run.abort && !run.overflow && item <= run.fullItem.get()) {
 				if(run.interrupt != null && run.interrupt.getAsBoolean()) {
 					run.abort = true;
@@ -413,7 +413,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 				share(run, base, longBase);
 				shared = run.shared.get();
 				status = FlatTree.run(run.layout, run.problem, run.problemLongs, run.depth, run.prefixes, item, s, sl, 0, 0, run.out, base, run.outLongs, longBase, run.bound.get(), shared[0],
-						shared[1], (int)shared[2], freeSpace, nodeBudget);
+						shared[1], (int)shared[2], freeSpace, nodeBudget, false);
 			}
 			share(run, base, longBase);
 		} else {

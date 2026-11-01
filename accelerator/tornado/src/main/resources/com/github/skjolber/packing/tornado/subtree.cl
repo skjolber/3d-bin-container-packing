@@ -2046,7 +2046,7 @@ static bool isHopelessInSpace(__global const int *l, __global const int *problem
 static int runTree(__global const int *l, __global const int *problem, __global const long *problemLongs, int depth, __global const int *prefixes, int item, __global int *s,
 		__global long *sl, int base,
 		int longBase, __global int *out, int outBase, __global long *outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, bool freeSpace,
-		int budgetNodes) {
+		int budgetNodes, bool fresh) {
 	const int n = problem[P_N];
 	const int types = problem[P_TYPES];
 	const int rotations = problem[P_ROTATIONS];
@@ -2083,7 +2083,11 @@ static int runTree(__global const int *l, __global const int *problem, __global 
 	const int bestPermutation = outBase + outBestPermutation(n);
 	const int prefix = item * n;
 
-	int status = out[outBase + OUT_STATUS];
+	// the state of the slot stays on the device: an item new to its slot starts over
+	int status = fresh ? NOT_STARTED : out[outBase + OUT_STATUS];
+	if (fresh) {
+		outLongs[outLongBase + OUT_NODES] = 0L;
+	}
 	int result = status;
 	bool running = status != DONE && status != OVERFLOW;
 	if (running && status == NOT_STARTED) {
@@ -2377,15 +2381,17 @@ __kernel __attribute__((reqd_work_group_size(1, 1, 1))) void search(__global lon
 	if (slot >= parameters[P_SLOTS] || active[slot] == 0) {
 		return;
 	}
-	// the depth of the slot's item: the prefixes of the items are P_DEPTH long, the children of a split item longer
-	int depth = active[slot] - 1;
+	// the depth of the slot's item: the prefixes of the items are P_DEPTH long, the children of a split item longer; negative when the item is new to the
+	// slot, whose state (out) stays on the device between the rounds
+	int a = active[slot];
+	int depth = (a < 0 ? -a : a) - 1;
 	int n = problem[P_N];
 	int base = slot * layoutInts[L_SIZE];
 	int longBase = slot * layoutInts[L_LONG_SIZE];
 	if (parameters[P_TREE] != 0) {
 		// a tree item keeps its scratch between the rounds: FlatTree.run resets it when the item has not started
 		runTree(layoutInts, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND],
-				longParameters[P_SHARED_VOLUME], longParameters[P_SHARED_WEIGHT], (int)longParameters[P_SHARED_COUNT], parameters[P_SPACE] != 0, parameters[P_BUDGET]);
+				longParameters[P_SHARED_VOLUME], longParameters[P_SHARED_WEIGHT], (int)longParameters[P_SHARED_COUNT], parameters[P_SPACE] != 0, parameters[P_BUDGET], a < 0);
 	} else {
 		reset(layoutInts, s, base);
 		run(layoutInts, problem, problemLongs, depth, prefixes, slot, s, sl, base, longBase, out, slot * outInts(n), outLongs, slot * OUT_LONGS, longParameters[P_BOUND], parameters[P_BUDGET]);

@@ -116,16 +116,16 @@ after a gate of 25 ms, the first result winning (`AcceleratedFastBruteForcePacka
 are the other modes). The gate of each box count doubles when the device joins and loses and halves when it wins (`AdaptiveAcceleratorGate`; `withAcceleratorGate(..)` also takes a gate of
 your own), so where the device keeps losing it soon joins only the containers which run far longer than the rest. On whole packings of 40 random problems per set with the packager
 on 8 threads, any best: 11 to 12 boxes `CPU_ONLY` 0.59 s,
-`GPU_ONLY` 1.19 s, `AUTO` 0.64 s; 13 to 14 boxes 2.31 s, 3.09 s, 2.46 s; 15 to 16 boxes 3.97 s, 3.33 s, 3.61 s (after the profiling below; before it `GPU_ONLY` took 4.73 s and
+`GPU_ONLY` 1.12 s, `AUTO` 0.64 s; 13 to 14 boxes 2.31 s, 2.98 s, 2.46 s; 15 to 16 boxes 3.97 s, 3.33 s, 3.61 s (after the profiling below; before it `GPU_ONLY` took 4.73 s and
 5.15 s). With the packager on one thread (`withThreads(1)`) the same sets take 5.6 s, 10.4 s and 18.3 s in `CPU_ONLY` and 1.0 s, 2.4 s and 3.0 s in
 `AUTO`, where the device wins the hardest containers (seed 208 of 13 to 14 boxes: 7.7 s on the thread, 0.87 s in `AUTO`). On 8 threads the device joined 7 to 15 containers per set
 and won none: the packager's tree, with its settled orders and free space bound, is faster than this kernel on every container, so `AUTO`
 is the packager's own time plus the gate's overhead.
 
 `AcceleratedBruteForcePackager` (every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
-boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 2.75 s and `AUTO` 2.5 s (the device joined 8 containers and won 4; 25 s and 24 s before the profiling below); the hardest
+boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 2.6 s and `AUTO` 2.5 s (the device joined 8 containers and won 4; 25 s and 24 s before the profiling below); the hardest
 problem takes 198 s on the packager alone and 1.7 s on the device, the next 1.7 s against 0.45 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is
-0.90 s, 1.40 s and 0.90 s. The kernel searches with all points under
+0.90 s, 1.15 s and 0.90 s. The kernel searches with all points under
 `FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `allpointsexact` and `allpointsany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
 against 1.1 s under any best, no mismatches). The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
 
@@ -177,6 +177,11 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    many times: its 12 problems of 10 to 11 boxes take 9.3 s with 8192 slots, 6.6 s with 16384, 4.0 s with 24576, 3.3 s with 32768 and 2.75 s with 65536 (55042 after the cap of
    the device's memory, 4.4 GB of scratch), the hardest (seed 208) 8.4 s to 1.7 s; its 30 problems of 7 to 9 boxes go from 0.99 s to 1.40 s in `GPU_ONLY`, and stay 0.9 s in
    `AUTO`, where the packager wins them. The window is chosen by the kind of search of the problem (`FlatProblem.ALL_POINTS`), and the scratch allocated once per kind.
+ * The state of a slot (the `out` arrays: status, best so far, nodes) stays on the device between the rounds of a tree search, since a tree item keeps its slot: the
+   host marks a slot's new item in the active array (its depth plus one, negative), and the kernel starts the item over from its prefix (`fresh` in `runTree`, as in
+   `FlatTree.run`). Before, the host wrote the state of every slot to the device each round (11 MB with 55042 slots): 7 to 9 boxes with all points 1.40 s to 1.15 s,
+   10 to 11 boxes 2.75 s to 2.6 s, 13 to 14 boxes 3.05 s to 2.98 s, 11 to 12 boxes 1.19 s to 1.12 s. Starting the item over in the kernel's entry point instead, before
+   `runTree`, cost 20% on the hardest 14 box problem whatever its form (the compiler lays the hot function out differently); inside `runTree` it costs nothing.
  *  `withNodeBudget(250)` (was 1000): after each round the best found so far bounds the next, so a small budget means fewer nodes in all; with a window of 4096 or more the budget matters little (2.6
    s at 250, 2.9 s at 1000).
  * `withMaxPoints(64)` (was 128): halves the scratch per slot, so that more slots fit.

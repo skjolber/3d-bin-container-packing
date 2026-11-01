@@ -53,8 +53,8 @@ set, 8 containers each, any best:
 
 | Boxes | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|
-| 11 to 12 | 0.59 s | 1.19 s | 0.64 s | 5 / 0 |
-| 13 to 14 | 2.31 s | 3.09 s | 2.46 s | 7 / 0 |
+| 11 to 12 | 0.59 s | 1.12 s | 0.64 s | 5 / 0 |
+| 13 to 14 | 2.31 s | 2.98 s | 2.46 s | 7 / 0 |
 | 15 to 16 | 3.97 s | 3.33 s | 3.61 s | 11 / 0 |
 
 With the packager on one thread (`withThreads(1)`, as when a server packs many jobs side by side), the device is worth several cores:
@@ -90,8 +90,8 @@ Measured with the TornadoVM accelerator on the same device, whole packings of ra
 
 | Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|---|
-| 7 to 9 | 30 | 0.90 s | 1.40 s | 0.90 s | 2 / 0 |
-| 10 to 11 | 12 | 200 s | 2.75 s | 2.5 s | 8 / 4 |
+| 7 to 9 | 30 | 0.90 s | 1.15 s | 0.90 s | 2 / 0 |
+| 10 to 11 | 12 | 200 s | 2.6 s | 2.5 s | 8 / 4 |
 
 The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 1.7 s, on the next (seed 205) 1.7 s
 against 0.45 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
