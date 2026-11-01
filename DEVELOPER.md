@@ -755,8 +755,9 @@ any problem, but must not return a worse or a different winner. Test it as `Flat
 
 The module and its package are `accelerator/core` and `com.github.skjolber.packing.accelerator` (sources in `accelerator/core/src/main/java/com/github/skjolber/packing/accelerator/`, tests in
 `accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/`). `core` has no accelerator code: `AcceleratedFastBruteForcePackager.newBuilder()` takes all the builder options of
-`FastBruteForcePackager` plus `withAccelerator(..)`, `withAcceleratorMode(..)` and `withAcceleratorGate(..)`, and counts with `getAcceleratedCount()`, `getAcceleratorFallbackCount()`,
-`getAcceleratorMismatchCount()` and `getAcceleratorRaceCpuCount()`. It extends `FastBruteForcePackager` through two hooks in `core`: `FastBruteForcePackager.Builder.newPackager(..)` and
+`FastBruteForcePackager` plus `withAccelerator(..)`, `withAcceleratorMode(..)`, `withAcceleratorGate(..)` (a time, or an `AcceleratorGate` of your own) and `withAcceleratorAdaptiveGate(..)`,
+and counts with `getAcceleratedCount()`, `getAcceleratorFallbackCount()`, `getAcceleratorMismatchCount()` and `getAcceleratorRaceCpuCount()`. It extends `FastBruteForcePackager` through two hooks
+in `core`: `FastBruteForcePackager.Builder.newPackager(..)` and
 `FastBruteForcePackager.packContainer(..)`; `AcceleratedBruteForcePackager` extends `BruteForcePackager` through the same two hooks of that class, and both share `AcceleratorDriver` (the modes,
 the gate, the race and the counters). The search of `BruteForcePackager` tries a box at every free point where it fits, in point order, where the fast packager takes the best point of each
 rotation; the accelerator searches that way under `FlatProblem.ALL_POINTS`, which only the tree search (`FlatTree`, the kernel's `runTree`) takes, so a `FlatEngine` for `AcceleratedBruteForcePackager` needs

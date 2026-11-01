@@ -18,6 +18,9 @@ import com.github.skjolber.packing.api.interrupt.PackagerInterruptedException;
  * own thread, the first result winning and stopping the other through the interrupt. The packager supplies its own search and the confirmation of
  * a winner; the driver keeps the counters.
  * <p>
+ * The gate is an {@link AcceleratorGate}, which the driver asks before each race and tells how the race ended: by default the
+ * {@link AdaptiveAcceleratorGate}, which adapts to the two sides per box count.
+ * <p>
  * The accelerator's searches of a driver run on one thread, one after the other: a search whose race is over before its turn is cancelled in the
  * queue and never reaches the accelerator, and a running search which loses its race returns at its next interrupt check. The accelerator runs its
  * searches one at a time anyway (a device), or on its own threads ({@link FlatEngine}).
@@ -38,7 +41,7 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 
 	private final BruteForceAccelerator accelerator;
 	private final AcceleratorMode mode;
-	private final long gateNanos;
+	private final AcceleratorGate gate;
 	private ExecutorService executor;
 
 	/** containers searched by the accelerator, with a result which the replay confirmed */
@@ -50,10 +53,15 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 	/** containers which the packager finished itself while the accelerator searched alongside, or before it joined */
 	final AtomicLong raceCpuCount = new AtomicLong();
 
-	public AcceleratorDriver(BruteForceAccelerator accelerator, AcceleratorMode mode, long gateNanos) {
+	/** @param gate the gate of {@link AcceleratorMode#AUTO}: how long the packager searches a container alone before the accelerator joins */
+	public AcceleratorDriver(BruteForceAccelerator accelerator, AcceleratorMode mode, AcceleratorGate gate) {
 		this.accelerator = accelerator;
 		this.mode = mode;
-		this.gateNanos = gateNanos;
+		this.gate = gate;
+	}
+
+	public AcceleratorGate getGate() {
+		return gate;
 	}
 
 	public BruteForceAccelerator getAccelerator() {
@@ -102,12 +110,16 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 	}
 
 	private R race(FlatProblem problem, long minLoadVolume, PackagerInterruptSupplier interrupt, Search<R> own, Confirm<R> confirm) throws PackagerInterruptedException {
+		final long start = System.nanoTime();
+		final long gateNanos = gate.gateNanos(problem);
 		final AtomicBoolean cpuDone = new AtomicBoolean();
 		final AtomicBoolean acceleratorDone = new AtomicBoolean();
+		// the accelerator passed the gate and searched: the race teaches the gate of the box count
+		final AtomicBoolean joined = new AtomicBoolean();
 		final PackagerInterruptSupplier acceleratorInterrupt = () -> cpuDone.get() || interrupt.getAsBoolean();
 		Future<Optional<AcceleratorWinner>> future = executor().submit(() -> {
 			// the gate: the packager alone, unless it is already done
-			long deadline = System.nanoTime() + gateNanos;
+			long deadline = start + gateNanos;
 			while (System.nanoTime() < deadline) {
 				if(cpuDone.get()) {
 					return Optional.<AcceleratorWinner>empty();
@@ -117,6 +129,7 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 			if(cpuDone.get()) {
 				return Optional.<AcceleratorWinner>empty();
 			}
+			joined.set(true);
 			Optional<AcceleratorWinner> found = accelerator.search(problem, minLoadVolume, acceleratorInterrupt);
 			if(found.isPresent() && !cpuDone.get()) {
 				// a result: the packager's own search stops
@@ -129,6 +142,7 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 			R result = own.run(cpuInterrupt);
 			cpuDone.set(true);
 			raceCpuCount.incrementAndGet();
+			gate.raced(problem, joined.get() ? AcceleratorGate.Outcome.PACKAGER : AcceleratorGate.Outcome.PACKAGER_ALONE, System.nanoTime() - start);
 			return result;
 		} catch (PackagerInterruptedException e) {
 			cpuDone.set(true);
@@ -146,12 +160,14 @@ public final class AcceleratorDriver<R> implements AutoCloseable {
 			if(found.isPresent()) {
 				R result = confirmed(found.get(), confirm);
 				if(result != null) {
+					gate.raced(problem, AcceleratorGate.Outcome.ACCELERATOR, System.nanoTime() - start);
 					return result;
 				}
 			} else {
 				fallbackCount.incrementAndGet();
 			}
 			// not confirmed, or gone: the packager searches alone, from the start
+			gate.raced(problem, AcceleratorGate.Outcome.PACKAGER, System.nanoTime() - start);
 			return own.run(interrupt);
 		} finally {
 			cpuDone.set(true);
