@@ -236,7 +236,7 @@ static inline long volume(__global const int *s, int p) {
 }
 
 static inline bool fits3D(__global const int *s, int p, int sx, int sy, int sz) {
-	return !(sx > dx(s, p) || sy > dy(s, p) || sz > dz(s, p));
+	return !(sx > dx(s, p) | sy > dy(s, p) | sz > dz(s, p));
 }
 
 static inline void copyPoint(__global int *s, int from, int to) {
@@ -250,32 +250,32 @@ static inline void copyPoint(__global int *s, int from, int to) {
 }
 
 static inline bool eclipses(__global const int *s, int a, int p) {
-	return s[a + MIN_X] <= s[p + MIN_X] && s[p + MAX_X] <= s[a + MAX_X] && s[a + MIN_Y] <= s[p + MIN_Y] && s[p + MAX_Y] <= s[a + MAX_Y] && s[a + MIN_Z] <= s[p + MIN_Z]
-			&& s[p + MAX_Z] <= s[a + MAX_Z];
+	return s[a + MIN_X] <= s[p + MIN_X] & s[p + MAX_X] <= s[a + MAX_X] & s[a + MIN_Y] <= s[p + MIN_Y] & s[p + MAX_Y] <= s[a + MAX_Y] & s[a + MIN_Z] <= s[p + MIN_Z]
+			& s[p + MAX_Z] <= s[a + MAX_Z];
 }
 
 static inline bool eclipsesX(__global const int *s, int a, int p) {
-	return s[a + MIN_X] <= s[p + MIN_X] && s[p + MAX_X] <= s[a + MAX_X];
+	return s[a + MIN_X] <= s[p + MIN_X] & s[p + MAX_X] <= s[a + MAX_X];
 }
 
 static inline bool eclipsesY(__global const int *s, int a, int p) {
-	return s[a + MIN_Y] <= s[p + MIN_Y] && s[p + MAX_Y] <= s[a + MAX_Y];
+	return s[a + MIN_Y] <= s[p + MIN_Y] & s[p + MAX_Y] <= s[a + MAX_Y];
 }
 
 static inline bool eclipsesZ(__global const int *s, int a, int p) {
-	return s[a + MIN_Z] <= s[p + MIN_Z] && s[p + MAX_Z] <= s[a + MAX_Z];
+	return s[a + MIN_Z] <= s[p + MIN_Z] & s[p + MAX_Z] <= s[a + MAX_Z];
 }
 
 static inline bool eclipsesMovedX(__global const int *s, int a, int p, int x) {
-	return s[a + MIN_X] <= x && s[p + MAX_X] <= s[a + MAX_X] && eclipsesY(s, a, p) && eclipsesZ(s, a, p);
+	return s[a + MIN_X] <= x & s[p + MAX_X] <= s[a + MAX_X] & eclipsesY(s, a, p) & eclipsesZ(s, a, p);
 }
 
 static inline bool eclipsesMovedY(__global const int *s, int a, int p, int y) {
-	return s[a + MIN_Y] <= y && s[p + MAX_Y] <= s[a + MAX_Y] && eclipsesX(s, a, p) && eclipsesZ(s, a, p);
+	return s[a + MIN_Y] <= y & s[p + MAX_Y] <= s[a + MAX_Y] & eclipsesX(s, a, p) & eclipsesZ(s, a, p);
 }
 
 static inline bool eclipsesMovedZ(__global const int *s, int a, int p, int z) {
-	return s[a + MIN_Z] <= z && s[p + MAX_Z] <= s[a + MAX_Z] && eclipsesX(s, a, p) && eclipsesY(s, a, p);
+	return s[a + MIN_Z] <= z & s[p + MAX_Z] <= s[a + MAX_Z] & eclipsesX(s, a, p) & eclipsesY(s, a, p);
 }
 
 static inline long areaAtX(__global const int *s, int p, int xx) {
@@ -466,7 +466,7 @@ static int filterMinimums(__global const int *l, __global int *s, int base, int 
 	int target = 0;
 	for (int i = 0; i < size; i++) {
 		int p = values + i * POINT_INTS;
-		if (!(volume(s, p) < minVolume || area(s, p) < minArea)) {
+		if (!(volume(s, p) < minVolume | area(s, p) < minArea)) {
 			if (target != i) {
 				copyPoint(s, p, values + target * POINT_INTS);
 			}
@@ -482,7 +482,7 @@ static inline bool supportedXY(__global const int *s, int placements, int id, in
 		return false;
 	}
 	int o = placements + id * PLACEMENT_INTS;
-	return s[o] <= x && x <= s[o + 3] && s[o + 1] <= y && y <= s[o + 4];
+	return s[o] <= x & x <= s[o + 3] & s[o + 1] <= y & y <= s[o + 4];
 }
 
 static inline bool supportedXZ(__global const int *s, int placements, int id, int x, int z) {
@@ -490,7 +490,7 @@ static inline bool supportedXZ(__global const int *s, int placements, int id, in
 		return false;
 	}
 	int o = placements + id * PLACEMENT_INTS;
-	return s[o] <= x && x <= s[o + 3] && s[o + 2] <= z && z <= s[o + 5];
+	return s[o] <= x & x <= s[o + 3] & s[o + 2] <= z & z <= s[o + 5];
 }
 
 static inline bool supportedYZ(__global const int *s, int placements, int id, int y, int z) {
@@ -498,7 +498,7 @@ static inline bool supportedYZ(__global const int *s, int placements, int id, in
 		return false;
 	}
 	int o = placements + id * PLACEMENT_INTS;
-	return s[o + 1] <= y && y <= s[o + 4] && s[o + 2] <= z && z <= s[o + 5];
+	return s[o + 1] <= y & y <= s[o + 4] & s[o + 2] <= z & z <= s[o + 5];
 }
 
 static int binarySearchPlusMinX(__global const int *s, int values, int size, int low, int key) {
@@ -2357,7 +2357,8 @@ static int runTree(__global const int *l, __global const int *problem, __global 
 }
 
 // The kernel: the parameters after the four of the TornadoVM calling convention are the Java arrays of TornadoBruteForceAccelerator, in its order.
-__kernel void search(__global long *_kernel_context, __constant uchar *_constant_region, __local uchar *_local_region, __global int *_atomics,
+// one work item per work group: the compiler then knows that every value derived from the slot is uniform within a wave
+__kernel __attribute__((reqd_work_group_size(1, 1, 1))) void search(__global long *_kernel_context, __constant uchar *_constant_region, __local uchar *_local_region, __global int *_atomics,
 		__global uchar *layoutBuffer, __global uchar *problemBuffer, __global uchar *problemLongsBuffer, __global uchar *activeBuffer, __global uchar *prefixesBuffer,
 		__global uchar *parametersBuffer, __global uchar *longParametersBuffer, __global uchar *sBuffer, __global uchar *slBuffer, __global uchar *outBuffer, __global uchar *outLongsBuffer) {
 	__global const int *layoutInts = (__global const int *)(layoutBuffer + HEADER);

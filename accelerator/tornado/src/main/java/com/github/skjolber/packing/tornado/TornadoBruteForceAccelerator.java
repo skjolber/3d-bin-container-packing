@@ -48,8 +48,6 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	public static final int DEFAULT_MAX_POINTS = 64;
 	public static final int DEFAULT_NODE_BUDGET = 250;
 	public static final int DEFAULT_WINDOW = 8192;
-	/** one work item per work group: the search diverges so much that lanes of the same wavefront only wait for each other */
-	public static final int DEFAULT_LOCAL_WORK_SIZE = 1;
 	public static final int DEFAULT_TARGET_ITEMS = 8192;
 	public static final int DEFAULT_MAX_ITEMS = 1 << 16;
 	public static final int DEFAULT_MIN_BOXES = 8;
@@ -75,7 +73,6 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		private int maxPoints = DEFAULT_MAX_POINTS;
 		private int nodeBudget = DEFAULT_NODE_BUDGET;
 		private int window = DEFAULT_WINDOW;
-		private int localWorkSize = DEFAULT_LOCAL_WORK_SIZE;
 		private int targetItems = DEFAULT_TARGET_ITEMS;
 		private int maxItems = DEFAULT_MAX_ITEMS;
 		private int minBoxes = DEFAULT_MIN_BOXES;
@@ -131,20 +128,6 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 				throw new IllegalArgumentException("Expected at least one item in a window, got " + window);
 			}
 			this.window = window;
-			return this;
-		}
-
-		/**
-		 * @param localWorkSize the number of work items in a work group of the device, or 0 to let the runtime choose. Each work item is a search of its own,
-		 *        with data-dependent branches, so the work items of a wavefront mostly wait for each other: a work group of one measured 2.5 times faster than
-		 *        the choice of the runtime on a Radeon RX 7600.
-		 * @return this builder
-		 */
-		public Builder withLocalWorkSize(int localWorkSize) {
-			if(localWorkSize < 0) {
-				throw new IllegalArgumentException("Expected a local work size of zero or more, got " + localWorkSize);
-			}
-			this.localWorkSize = localWorkSize;
 			return this;
 		}
 
@@ -228,7 +211,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		}
 
 		public TornadoBruteForceAccelerator build() {
-			return new TornadoBruteForceAccelerator(selector, maxPoints, nodeBudget, window, localWorkSize, targetItems, maxItems, minBoxes, maxBoxes, tree, freeSpace, split);
+			return new TornadoBruteForceAccelerator(selector, maxPoints, nodeBudget, window, targetItems, maxItems, minBoxes, maxBoxes, tree, freeSpace, split);
 		}
 	}
 
@@ -236,7 +219,6 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	private final int maxPoints;
 	private final int nodeBudget;
 	private final int window;
-	private final int localWorkSize;
 	private final int targetItems;
 	private final int maxItems;
 	private final int minBoxes;
@@ -260,8 +242,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	private long splits;
 	private long nanosOnDevice;
 
-	private TornadoBruteForceAccelerator(DeviceSelector selector, int maxPoints, int nodeBudget, int window, int localWorkSize, int targetItems, int maxItems, int minBoxes,
-			int maxBoxes, boolean tree, Boolean freeSpace, boolean split) {
+	private TornadoBruteForceAccelerator(DeviceSelector selector, int maxPoints, int nodeBudget, int window, int targetItems, int maxItems, int minBoxes, int maxBoxes,
+			boolean tree, Boolean freeSpace, boolean split) {
 		this.tree = tree;
 		this.freeSpace = freeSpace;
 		this.split = split;
@@ -269,7 +251,6 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		this.maxPoints = maxPoints;
 		this.nodeBudget = nodeBudget;
 		this.window = window;
-		this.localWorkSize = localWorkSize;
 		this.targetItems = targetItems;
 		this.maxItems = maxItems;
 		this.minBoxes = minBoxes;
@@ -436,7 +417,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final long[] outLongs;
 		final TornadoExecutionPlan plan;
 
-		Session(TornadoDevice device, int maxBoxes, int maxTypes, int maxPoints, int window, int localWorkSize) {
+		Session(TornadoDevice device, int maxBoxes, int maxTypes, int maxPoints, int window) {
 			this.maxBoxes = maxBoxes;
 			this.maxTypes = maxTypes;
 			this.maxPoints = maxPoints;
@@ -480,11 +461,10 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 					.prebuiltTask("search", SubtreeKernel.ENTRY_POINT, SubtreeKernel.file().toString(), accessors)
 					.transferToHost(DataTransferMode.EVERY_EXECUTION, out, outLongs);
 			ImmutableTaskGraph immutable = graph.snapshot();
-			// one work item for each slot
+			// one work item for each slot, one work item per work group (the kernel requires it: the search diverges so much that lanes of the same wavefront
+			// only wait for each other, and with a work group of one the compiler knows that the values derived from the slot are uniform within a wave)
 			WorkerGrid1D grid = new WorkerGrid1D(slots);
-			if(localWorkSize > 0) {
-				grid.setLocalWork(localWorkSize, 1, 1);
-			}
+			grid.setLocalWork(1, 1, 1);
 			GridScheduler scheduler = new GridScheduler("bruteForce.search", grid);
 			plan = new TornadoExecutionPlan(immutable);
 			plan.withDevice(device).withGridScheduler(scheduler);
@@ -504,7 +484,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			// the types of a packing stay while its boxes are placed, so later containers have more types than boxes
 			int types = (problem.types() + Session.BOXES_STEP - 1) / Session.BOXES_STEP * Session.BOXES_STEP;
 			TornadoDevice tornadoDevice = TornadoExecutionPlan.getDevice(info.backendIndex(), info.deviceIndex());
-			session = new Session(tornadoDevice, boxes, types, maxPoints, window, localWorkSize);
+			session = new Session(tornadoDevice, boxes, types, maxPoints, window);
 			this.session = session;
 		}
 		return session;

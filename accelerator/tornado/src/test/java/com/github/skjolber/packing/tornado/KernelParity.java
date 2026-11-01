@@ -20,7 +20,7 @@ import com.github.skjolber.packing.accelerator.FlatProblem;
  * windows and budgets. The CPU engine is pinned to the packager's loop by the tests of the core module.
  * <p>
  * Arguments: first seed, number of seeds, fewest boxes, most boxes, window, node budget, max points, target items, CPU threads, {@code true} to search each problem
- * twice on the device (the second search reuses the compiled kernel), and the local work size. Prints the mismatches, and exits with 1 if there is one.
+ * twice on the device (the second search reuses the compiled kernel). Prints the mismatches, and exits with 1 if there is one.
  */
 public class KernelParity {
 
@@ -125,20 +125,19 @@ public class KernelParity {
 		int targetItems = args.length > 7 ? Integer.parseInt(args[7]) : TornadoBruteForceAccelerator.DEFAULT_TARGET_ITEMS;
 		int threads = args.length > 8 ? Integer.parseInt(args[8]) : Runtime.getRuntime().availableProcessors();
 		boolean repeat = args.length > 9 && Boolean.parseBoolean(args[9]);
-		int localWorkSize = args.length > 10 ? Integer.parseInt(args[10]) : TornadoBruteForceAccelerator.DEFAULT_LOCAL_WORK_SIZE;
 		// "exact": the tree kernel against the loop of the CPU engine, the same winner; "any": the tree kernel and the tree of the CPU engine, any best
 		// arrangement, the same value; "loop": the loop kernel against the loop of the CPU engine
 		// "allpointsexact" and "allpointsany": the search of BruteForcePackager (every box at every free point), the tree kernel against the CPU tree engine
-		String mode = args.length > 11 ? args[11] : "exact";
+		String mode = args.length > 10 ? args[10] : "exact";
 		boolean allPoints = mode.startsWith("allpoints");
 		boolean anyBest = mode.equals("any") || mode.equals("allpointsany");
 		boolean tree = !mode.equals("loop");
-		boolean freeSpace = !(args.length > 12 && args[12].equals("nospace"));
+		boolean freeSpace = !(args.length > 11 && args[11].equals("nospace"));
 
 		TornadoBruteForceAccelerator device = TornadoBruteForceAccelerator.newBuilder().withMinBoxes(1).withWindow(window).withNodeBudget(budget).withMaxPoints(maxPoints)
-				.withTargetItems(targetItems).withLocalWorkSize(localWorkSize).withTree(tree).withFreeSpace(freeSpace).build();
+				.withTargetItems(targetItems).withTree(tree).withFreeSpace(freeSpace).build();
 		System.out.println("Device: " + device.getDevice().orElseThrow(() -> new IllegalStateException("No device found")) + ", window " + window + ", budget " + budget + ", max points "
-				+ maxPoints + ", target items " + targetItems + ", local work size " + localWorkSize + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
+				+ maxPoints + ", target items " + targetItems + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
 		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest || allPoints).withFreeSpace(freeSpace).build();
 
 		int mismatches = 0;
