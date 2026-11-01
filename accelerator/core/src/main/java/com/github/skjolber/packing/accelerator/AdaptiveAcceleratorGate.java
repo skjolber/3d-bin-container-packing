@@ -1,5 +1,6 @@
 package com.github.skjolber.packing.accelerator;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -59,8 +60,12 @@ public final class AdaptiveAcceleratorGate implements AcceleratorGate {
 		}
 	}
 
+	/** @return the floor and the gates of the box counts which lost a race, in milliseconds */
 	@Override
 	public String toString() {
-		return "AdaptiveAcceleratorGate[floor " + floorNanos / 1_000_000L + " ms, " + gates + "]";
+		StringBuilder builder = new StringBuilder("AdaptiveAcceleratorGate[floor ").append(floorNanos / 1_000_000L).append(" ms");
+		gates.entrySet().stream().sorted(Map.Entry.comparingByKey())
+				.forEach(entry -> builder.append(", ").append(entry.getKey()).append(" boxes ").append(entry.getValue().get() / 1_000_000L).append(" ms"));
+		return builder.append(']').toString();
 	}
 }
