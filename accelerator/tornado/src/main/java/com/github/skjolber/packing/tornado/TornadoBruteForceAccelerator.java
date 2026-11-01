@@ -48,6 +48,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	public static final int DEFAULT_MAX_POINTS = 64;
 	public static final int DEFAULT_NODE_BUDGET = 250;
 	public static final int DEFAULT_WINDOW = 8192;
+	/** the window of a search with all points ({@code FlatProblem.ALL_POINTS}, the search of {@code BruteForcePackager}), whose items are long: as many as the device holds */
+	public static final int DEFAULT_ALL_POINTS_WINDOW = 65536;
 	public static final int DEFAULT_TARGET_ITEMS = 8192;
 	public static final int DEFAULT_MAX_ITEMS = 1 << 16;
 	public static final int DEFAULT_MIN_BOXES = 8;
@@ -73,6 +75,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		private int maxPoints = DEFAULT_MAX_POINTS;
 		private int nodeBudget = DEFAULT_NODE_BUDGET;
 		private int window = DEFAULT_WINDOW;
+		private int allPointsWindow = DEFAULT_ALL_POINTS_WINDOW;
 		private int targetItems = DEFAULT_TARGET_ITEMS;
 		private int maxItems = DEFAULT_MAX_ITEMS;
 		private int minBoxes = DEFAULT_MIN_BOXES;
@@ -120,7 +123,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		}
 
 		/**
-		 * @param window the most items which run on the device at once; each needs its own scratch memory on the device
+		 * @param window the most items which run on the device at once, for the search at the best point of each rotation (the fast brute force packager);
+		 *        each needs its own scratch memory on the device, and the transfers of a round grow with the window
 		 * @return this builder
 		 */
 		public Builder withWindow(int window) {
@@ -128,6 +132,20 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 				throw new IllegalArgumentException("Expected at least one item in a window, got " + window);
 			}
 			this.window = window;
+			return this;
+		}
+
+		/**
+		 * @param window the most items which run on the device at once for the search of every box at every free point ({@code FlatProblem.ALL_POINTS}, the
+		 *        plain brute force packager), whose items run long: as many as the device holds, by default. The scratch of the window is allocated once
+		 *        for all the searches, and capped by half the largest allocation of the device.
+		 * @return this builder
+		 */
+		public Builder withAllPointsWindow(int window) {
+			if(window < 1) {
+				throw new IllegalArgumentException("Expected at least one item in a window, got " + window);
+			}
+			this.allPointsWindow = window;
 			return this;
 		}
 
@@ -211,7 +229,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		}
 
 		public TornadoBruteForceAccelerator build() {
-			return new TornadoBruteForceAccelerator(selector, maxPoints, nodeBudget, window, targetItems, maxItems, minBoxes, maxBoxes, tree, freeSpace, split);
+			return new TornadoBruteForceAccelerator(selector, maxPoints, nodeBudget, window, allPointsWindow, targetItems, maxItems, minBoxes, maxBoxes, tree, freeSpace, split);
 		}
 	}
 
@@ -219,6 +237,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	private final int maxPoints;
 	private final int nodeBudget;
 	private final int window;
+	private final int allPointsWindow;
 	private final int targetItems;
 	private final int maxItems;
 	private final int minBoxes;
@@ -242,8 +261,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	private long splits;
 	private long nanosOnDevice;
 
-	private TornadoBruteForceAccelerator(DeviceSelector selector, int maxPoints, int nodeBudget, int window, int targetItems, int maxItems, int minBoxes, int maxBoxes,
-			boolean tree, Boolean freeSpace, boolean split) {
+	private TornadoBruteForceAccelerator(DeviceSelector selector, int maxPoints, int nodeBudget, int window, int allPointsWindow, int targetItems, int maxItems, int minBoxes,
+			int maxBoxes, boolean tree, Boolean freeSpace, boolean split) {
 		this.tree = tree;
 		this.freeSpace = freeSpace;
 		this.split = split;
@@ -251,6 +270,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		this.maxPoints = maxPoints;
 		this.nodeBudget = nodeBudget;
 		this.window = window;
+		this.allPointsWindow = allPointsWindow;
 		this.targetItems = targetItems;
 		this.maxItems = maxItems;
 		this.minBoxes = minBoxes;
@@ -280,6 +300,12 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 	/** @return the number of searches which ran on the device */
 	public long getSearches() {
 		return searches;
+	}
+
+	/** @return the number of items which the device runs at once (the window after the cap of the device's memory), or 0 before the first search */
+	public int getSlots() {
+		Session session = this.session;
+		return session == null ? 0 : session.slots;
 	}
 
 	/** @return the number of times the kernel ran */
@@ -403,6 +429,8 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final int maxBoxes;
 		final int maxTypes;
 		final int maxPoints;
+		/** the window asked for; the slots are what the device holds of it */
+		final int window;
 		final int slots;
 
 		final int[] layoutInts;
@@ -421,6 +449,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			this.maxBoxes = maxBoxes;
 			this.maxTypes = maxTypes;
 			this.maxPoints = maxPoints;
+			this.window = window;
 			FlatLayout layout = new FlatLayout(maxBoxes, maxPoints, maxTypes);
 			// each slot has the scratch of the layout; keep the scratch well below the largest allocation of the device
 			long slotBytes = 4L * layout.size + 8L * layout.longSize;
@@ -470,15 +499,18 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			plan.withDevice(device).withGridScheduler(scheduler);
 		}
 
-		/** @return true if the problem fits the arrays */
-		boolean fits(FlatProblem problem) {
-			return problem.n() <= maxBoxes && problem.types() <= maxTypes && problem.ints().length <= this.problem.length && problem.longs().length <= longs.length;
+		/** @return true if the problem fits the arrays, and the window is the one for its kind of search */
+		boolean fits(FlatProblem problem, int window) {
+			return this.window == window && problem.n() <= maxBoxes && problem.types() <= maxTypes && problem.ints().length <= this.problem.length
+					&& problem.longs().length <= longs.length;
 		}
 	}
 
 	private Session session(DeviceInfo info, FlatProblem problem) {
 		Session session = this.session;
-		if(session == null || !session.fits(problem)) {
+		// the search with all points has long items, and takes the large window; a packager makes problems of one kind only
+		int window = problem.isAllPoints() ? allPointsWindow : this.window;
+		if(session == null || !session.fits(problem, window)) {
 			closeSession();
 			int boxes = Math.min(maxBoxes, (problem.n() + Session.BOXES_STEP - 1) / Session.BOXES_STEP * Session.BOXES_STEP);
 			// the types of a packing stay while its boxes are placed, so later containers have more types than boxes
@@ -492,7 +524,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 
 	private AcceleratorWinner run(DeviceInfo info, FlatProblem problem, long boundVolume, PackagerInterruptSupplier interrupt, int depth, int[] prefixes) throws Exception {
 		final Session session = session(info, problem);
-		if(!session.fits(problem)) {
+		if(!session.fits(problem, session.window)) {
 			return null;
 		}
 		final int n = problem.n();

@@ -90,10 +90,10 @@ Measured with the TornadoVM accelerator on the same device, whole packings of ra
 
 | Boxes | Problems | `CPU_ONLY` | `GPU_ONLY` | `AUTO` | containers the device joined / won in `AUTO` |
 |---|---|---|---|---|---|
-| 7 to 9 | 30 | 0.90 s | 0.99 s | 0.88 s | 5 / 0 |
-| 10 to 11 | 12 | 200 s | 9.3 s | 9.3 s | 10 / 4 |
+| 7 to 9 | 30 | 0.90 s | 1.40 s | 0.90 s | 2 / 0 |
+| 10 to 11 | 12 | 200 s | 2.75 s | 2.5 s | 8 / 4 |
 
-The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 8.4 s, on the next (seed 205) 1.7 s
+The search of `BruteForcePackager` is where the device pays: on the hardest problem of the second set (seed 208) the packager takes 198 s alone and the device 1.7 s, on the next (seed 205) 1.7 s
 against 0.45 s, and the easy ones stay the packager's in `AUTO`. The device loses the problems which the packager finishes in less than about 0.3 s, to its floor of tens of milliseconds per
 search, which is what the gate is for. On the CPU, `ParallelBruteForcePackager` (not accelerated) runs the same search on threads.
 

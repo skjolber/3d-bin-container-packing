@@ -123,9 +123,9 @@ and won none: the packager's tree, with its settled orders and free space bound,
 is the packager's own time plus the gate's overhead.
 
 `AcceleratedBruteForcePackager` (every box at every free point where it fits, one thread) searches far longer, and there the device pays: on 12 random problems of 10 to 11
-boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 9.3 s and `AUTO` 9.3 s (the device joined 10 containers and won 4; 25 s and 24 s before the profiling below); the hardest
-problem takes 198 s on the packager alone and 8.4 s on the device, the next 1.7 s against 0.45 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is
-0.90 s, 0.99 s and 0.88 s. The kernel searches with all points under
+boxes `CPU_ONLY` takes 200 s, `GPU_ONLY` 2.75 s and `AUTO` 2.5 s (the device joined 8 containers and won 4; 25 s and 24 s before the profiling below); the hardest
+problem takes 198 s on the packager alone and 1.7 s on the device, the next 1.7 s against 0.45 s. On 30 problems of 7 to 9 boxes, which the packager finishes in under a second, it is
+0.90 s, 1.40 s and 0.90 s. The kernel searches with all points under
 `FlatProblem.ALL_POINTS` in `runTree` (`KernelParity` modes `allpointsexact` and `allpointsany`: 30 problems of 7 to 9 boxes, the device 6.0 s against the CPU tree engine's 3.1 s in exact mode, 2.9 s
 against 1.1 s under any best, no mismatches). The numbers below are the device against the CPU engine `FlatEngine`, the reference for the kernel.
 
@@ -170,7 +170,13 @@ The defaults come from tuning runs (any best, 40 problems of 11 to 12 boxes; win
    65% and 65% slower. Telling the compiler so is worth more than the choice itself: with the size required, every value derived from the slot is uniform within a wave, and the hardest
    14 box problem goes from 1.34 s to 0.97 s, the hardest problem of `AcceleratedBruteForcePackager` from 12.6 s to 8.4 s (28% and 34% less, the same nodes).
  * `withWindow(8192)` (was 2048): smaller windows lose, because fewer items in flight find the best later and the tail runs longer. The memory per slot is the scratch of the layout (about 80 KB of
-   ints for 16 boxes and 64 points), so 8192 slots take about 650 MB; the number of slots is capped by the largest allocation of the device.
+   ints for 16 boxes and 64 points), so 8192 slots take about 650 MB; the number of slots is capped by half the largest allocation of the device (`getSlots()`). Larger windows
+   cost on the easy problems, because the transfers of a round (the prefixes and the state of every slot) grow with the window: 16384 slots are the same on the 13 to 14 box set
+   and 20% slower on 11 to 12 boxes, 32768 slots 15% slower on 13 to 14 boxes.
+ * `withAllPointsWindow(65536)`: the search of `AcceleratedBruteForcePackager` (every box at every free point) has long items, and there a large window pays for the transfers
+   many times: its 12 problems of 10 to 11 boxes take 9.3 s with 8192 slots, 6.6 s with 16384, 4.0 s with 24576, 3.3 s with 32768 and 2.75 s with 65536 (55042 after the cap of
+   the device's memory, 4.4 GB of scratch), the hardest (seed 208) 8.4 s to 1.7 s; its 30 problems of 7 to 9 boxes go from 0.99 s to 1.40 s in `GPU_ONLY`, and stay 0.9 s in
+   `AUTO`, where the packager wins them. The window is chosen by the kind of search of the problem (`FlatProblem.ALL_POINTS`), and the scratch allocated once per kind.
  *  `withNodeBudget(250)` (was 1000): after each round the best found so far bounds the next, so a small budget means fewer nodes in all; with a window of 4096 or more the budget matters little (2.6
    s at 250, 2.9 s at 1000).
  * `withMaxPoints(64)` (was 128): halves the scratch per slot, so that more slots fit.
