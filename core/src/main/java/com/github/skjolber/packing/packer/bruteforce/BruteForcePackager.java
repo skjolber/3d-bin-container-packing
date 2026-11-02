@@ -2,6 +2,7 @@ package com.github.skjolber.packing.packer.bruteforce;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.github.skjolber.packing.api.Placement;
 import java.util.Objects;
 
 import org.eclipse.collections.api.iterator.IntIterator;
@@ -454,11 +455,16 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			return this;
 		}
 
+		/** @return the packager to configure: a subclass's builder makes its own */
+		protected BruteForcePackager newPackager(IntermediatePackagerResultComparator comparator, BruteForcePointIteratorFilter pointFilter, boolean filterReversePermutations) {
+			return new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+		}
+
 		public BruteForcePackager build() {
 			if(comparator == null) {
 				comparator = new BruteForceIntermediatePackagerResultComparator();
 			}
-			BruteForcePackager packager = new BruteForcePackager(comparator, pointFilter, filterReversePermutations);
+			BruteForcePackager packager = newPackager(comparator, pointFilter, filterReversePermutations);
 			packager.setTreeSearch(treeSearch);
 			packager.setTreeSearchMinBoxes(treeSearchMinBoxes);
 			packager.setTreeSearchAnyBest(treeSearchAnyBest);
@@ -533,7 +539,7 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			if(order != Order.NONE) {
 				return packInOrder(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
 			}
-			return BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best, getLimit(containerIterators[i]));
+			return packContainer(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, best, getLimit(containerIterators[i]));
 		}
 		
 	}
@@ -613,6 +619,18 @@ public class BruteForcePackager extends AbstractBruteForcePackager {
 			return truncateToGroup(BruteForcePackager.this.pack(pointCalculator, stackPlacements, stackPlacementCount, packagerContainerItems.getContainerItem(i), i, iterator, interrupt, pointFilter, best), iteratorGroups);
 		}
 
+	}
+
+	/**
+	 * Pack the boxes of the iterator into one container, box order {@link Order#NONE}: {@link #pack} with this packager's point filter. A subclass can
+	 * search the container another way (as an accelerated packager does).
+	 *
+	 * @param best the best result so far, or null
+	 * @param limit see {@link #pack}
+	 */
+	protected BruteForceIntermediatePackagerResult packContainer(PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+			int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit) throws PackagerInterruptedException {
+		return pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, pointFilter, best, limit);
 	}
 
 	public BruteForcePackager(IntermediatePackagerResultComparator comparator, boolean filterReversePermutations) {

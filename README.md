@@ -169,6 +169,9 @@ For a low number of packages (like <= 6) the [brute-force packager](docs/heurist
 
 See also the `ParallelBruteForcePackager` and `FastBruteForcePackager` packagers. 
 
+The optional `accelerator-core` artifact has versions of these packagers which can hand the search of the box orders to an accelerator (threads, or a device such as a GPU),
+see [accelerated brute force](docs/heuristics/accelerated-brute-force.md).
+
 Using a deadline is recommended whenever brute-forcing in a real-time application:
 
 ```java

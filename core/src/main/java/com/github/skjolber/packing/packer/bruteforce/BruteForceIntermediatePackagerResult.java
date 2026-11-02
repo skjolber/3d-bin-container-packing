@@ -205,7 +205,7 @@ public class BruteForceIntermediatePackagerResult implements IntermediatePackage
 		setState(state, placements, placementCount);
 	}
 
-	void setStateFromReusablePoints(List<Point> items, PermutationRotationState state, Placement[] placements, int placementCount) {
+	public void setStateFromReusablePoints(List<Point> items, PermutationRotationState state, Placement[] placements, int placementCount) {
 		int size = items.size();
 		if(pointBuffer == null) {
 			pointBuffer = new ArrayList<>(size);

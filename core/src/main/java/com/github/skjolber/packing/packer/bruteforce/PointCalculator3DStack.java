@@ -195,7 +195,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return list;
 	}
 
-	protected void resetBest() {
+	public void resetBest() {
 		bestStackIndex = 0;
 	}
 
@@ -220,7 +220,7 @@ public class PointCalculator3DStack extends DefaultPointCalculator3D {
 		return searchFrames;
 	}
 
-	protected List<Point> getBestPoints() {
+	public List<Point> getBestPoints() {
 		return bestPointList;
 	}
 
