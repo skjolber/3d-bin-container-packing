@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.skjolber.3d-bin-container-packing</groupId>
 		<artifactId>parent</artifactId>
-		<version>5.1.1-SNAPSHOT</version>
+		<version>5.2.0</version>
 		<relativePath>../../pom.xml</relativePath>
 	</parent>
 	<artifactId>tornado-accelerator</artifactId>
@@ -16,7 +16,7 @@
 		<java.version>22</java.version>
 		<tornado.version>8.0.0-jdk22plus</tornado.version>
 		<!-- set by jacoco when it runs -->
-		<argLine></argLine>
+		<argLine />
 	</properties>
 
 	<profiles>
