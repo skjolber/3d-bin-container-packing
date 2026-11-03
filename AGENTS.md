@@ -15,7 +15,7 @@
 
 Documentation: `README.md` (usage: each section an example and a few sentences, linking to
 `docs/`), `docs/` (detail per topic: insertion order, deliveries, support, packager controls,
-visualizer), `docs/heuristics/` (implementation details of each packager), `FEATURES.md`
+visualizer), `docs/heuristics/` (implementation details of each packager), `CHANGELOG.md` (release history), `FEATURES.md`
 (feature summary), `DEVELOPER.md` (writing controls), `skills/maven/SKILL.md` (detailed
 Maven usage: modules, plugins, JMH, releases). When changing user-visible behaviour or
 defaults, update the matching `README.md`, `docs/` and `FEATURES.md` sections in the same change.

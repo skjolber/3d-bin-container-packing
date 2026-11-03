@@ -10,7 +10,7 @@ surface of 4.2.6-SNAPSHOT (4.2.5 plus two fixes) with 5.0.0-SNAPSHOT. 5.0 is a m
 
 Reading order: [what stays the same](#what-stays-the-same), the [renames](#renamed-and-replaced), what was [removed](#removed),
 [new concepts](#new-concepts-worth-knowing), [behavior](#behavioral-changes), then the compile error [cookbook](#common-compile-errors).
-This guide is the complete list of breaking and behavioral changes against 4.x; the History in [README.md](../README.md#history) keeps the feature summary.
+This guide is the complete list of breaking and behavioral changes against 4.x; the [changelog](../CHANGELOG.md) keeps the feature summary.
 See [FEATURES.md](../FEATURES.md) for the capability overview and [DEVELOPER.md](../DEVELOPER.md) for writing controls and strategies.
 
 ## What stays the same
