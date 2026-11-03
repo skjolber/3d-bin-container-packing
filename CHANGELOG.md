@@ -1,10 +1,10 @@
 # Changelog
 
  * 5.2.0:
-     * Brute force: the box orders are searched as one tree with bounds instead of one at a time (`withTreeSearch(..)`, on by default), see [tree search](docs/heuristics/brute-force.md#tree-search). By default any arrangement of the best value is returned (`withTreeSearchAnyBest(..)`), so ties can resolve differently than in 5.1; `false` gives the 5.1 arrangement exactly.
-     * Brute force: `FastBruteForcePackager.withThreads(..)`; work stealing in `ParallelBruteForcePackager`.
-     * Performance: brute force 2 to 3.5x faster where not all boxes fit, up to 500x on squared squares, see [jmh/PERFORMANCE.md](jmh/PERFORMANCE.md).
-     * New artifacts `accelerator-core` and `tornado-accelerator` (experimental, Java 22+): `AcceleratedFastBruteForcePackager` and `AcceleratedBruteForcePackager` can hand the search of the box orders to CPU threads or a GPU through [TornadoVM](https://www.tornadovm.org/), with the same placements, see [accelerated brute force](docs/heuristics/accelerated-brute-force.md).
+     * Brute force tree search, on by default. Returns any arrangement of the best value; `withTreeSearchAnyBest(false)` keeps the 5.1 result.
+     * New API: `FastBruteForcePackager.withThreads(..)`.
+     * Performance: Brute force packagers 2-3x faster, far more where the first box orders do not place all boxes.
+     * Accelerators (experimental): new `accelerator-core` and `tornado-accelerator` modules run the brute force search on threads or a GPU.
  * 5.1.0:
      * New API: `PointCalculator.addLast(..)` places the final box without updating the free points.
      * Performance: Packagers are up to 6% faster, validation up to 16%, and point calculation up to 17%.
