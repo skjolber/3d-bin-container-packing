@@ -21,12 +21,6 @@ Bugs, feature suggestions and help requests can be filed with the [issue-tracker
 See [FEATURES.md](FEATURES.md) for a capability overview, including which packager supports which
 feature (generated from the conformance tests), known limitations and non-goals.
 
-## Point calculators
-
-Custom packing algorithms can use `PointCalculator.addLast(point, placement)` for their final box to avoid
-calculating unused free space. Clear or restore the calculator before continuing a search;
-see [point calculators](docs/point-calculators.md) for the contract and an example.
-
 ## Obtain
 The project is implemented in Java and built using [Maven]. The project is available on the central Maven repository.
 
@@ -38,7 +32,7 @@ For the previous version, see the [4.x](https://github.com/skjolber/3d-bin-conta
 Add
  
 ```xml
-<3d-bin-container-packing.version>5.0.x</3d-bin-container-packing.version>
+<3d-bin-container-packing.version>5.x.x</3d-bin-container-packing.version>
 ```
 
 and
@@ -72,7 +66,7 @@ For
 
 ```groovy
 ext {
-  containerBinPackingVersion = '5.0.x'
+  containerBinPackingVersion = '5.x.x'
 }
 ```
 
@@ -187,27 +181,7 @@ PackagerResult result = packager
     .build();
 ```
 
-### Virtual-box preprocessing
-[Virtual box packaging](docs/heuristics/virtual-box.md) simplifies packaging when there is more than one of the same box. `VirtualBoxPackager` wraps a packager, packs repeated boxes as filled rectangular assemblies, and expands the result back into the original boxes.
-
-```java
-try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
-     VirtualBoxPackager packager = new VirtualBoxPackager(delegate)) {
-    PackagerResult result = packager.newResultBuilder()
-        .withBoxItems(items)
-        .withContainerItems(containers)
-        .withMaxContainerCount(3)
-        .withMaxLayouts(8)
-        .withMaxRefinements(4)
-        .withMaxDelegateBoxes(20)
-        .withInterruptDuration(1000)
-        .build();
-}
-```
-
-# Packager customizations
-
-## Load constraints
+## Box load constraints
 Boxes can limit what is stacked on top of them:
 
 ```java
@@ -224,7 +198,7 @@ Box box = Box.newBuilder()
 Use `withMaxLoadIdenticalBoxCount(count)` to only allow boxes of the same type on top. The packagers
 detect the constraints and enforce them.
 
-## Insertion order
+## Box insertion order
 The placements of each container are in [insertion order](docs/insertion-order.md): the order in which the boxes can be loaded. 
 
 Also set how boxes get into a container type with `withAccess(..)`:
@@ -326,6 +300,24 @@ CompositePackager packager = CompositePackager.newBuilder()
     .withPackager(PlainPackager.newBuilder().build())                // tried first, for every container
     .withPackager(FastBruteForcePackager.newBuilder().build(), 200)  // only where plain does not fit all boxes, for at most 200 ms
     .build();
+```
+
+### Virtual-box preprocessing
+[Virtual box packaging](docs/heuristics/virtual-box.md) simplifies packaging when there is more than one of the same box. `VirtualBoxPackager` wraps a packager, packs repeated boxes as filled rectangular assemblies, and expands the result back into the original boxes.
+
+```java
+try (BruteForcePackager delegate = BruteForcePackager.newBuilder().build();
+     VirtualBoxPackager packager = new VirtualBoxPackager(delegate)) {
+    PackagerResult result = packager.newResultBuilder()
+        .withBoxItems(items)
+        .withContainerItems(containers)
+        .withMaxContainerCount(3)
+        .withMaxLayouts(8)
+        .withMaxRefinements(4)
+        .withMaxDelegateBoxes(20)
+        .withInterruptDuration(1000)
+        .build();
+}
 ```
 
 # Visualizer
