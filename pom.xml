@@ -42,7 +42,7 @@
 		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 		<jackson.version>2.22.3</jackson.version>
 		<spotless.version>3.10.3</spotless.version>
-		<spotbugs-maven-plugin.version>4.10.4.1</spotbugs-maven-plugin.version>
+		<spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
 	</properties>
 
 	<licenses>
