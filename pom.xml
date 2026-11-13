@@ -27,7 +27,7 @@
 
 		<!-- plugins -->
 		<build-helper-maven-plugin.version>1.9.1</build-helper-maven-plugin.version>
-		<sonatype-plugin.version>0.11.0</sonatype-plugin.version>
+		<sonatype-plugin.version>0.12.0</sonatype-plugin.version>
 		<maven-surefire-plugin.version>3.6.0</maven-surefire-plugin.version>
 		<maven-source-plugin.version>3.4.0</maven-source-plugin.version>
 		<maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
@@ -42,7 +42,7 @@
 		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
 		<jackson.version>2.22.3</jackson.version>
 		<spotless.version>3.10.4</spotless.version>
-		<spotbugs-maven-plugin.version>4.10.4.1</spotbugs-maven-plugin.version>
+		<spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
 	</properties>
 
 	<licenses>
