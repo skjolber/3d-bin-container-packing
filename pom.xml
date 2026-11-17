@@ -40,7 +40,7 @@
 		<assertj.version>3.27.7</assertj.version>
 		<pitest.version>1.30.0</pitest.version>
 		<pitest-junit5-plugin.version>1.2.3</pitest-junit5-plugin.version>
-		<jackson.version>2.22.3</jackson.version>
+		<jackson.version>2.22.4</jackson.version>
 		<spotless.version>3.10.4</spotless.version>
 		<spotbugs-maven-plugin.version>4.10.5.0</spotbugs-maven-plugin.version>
 	</properties>
