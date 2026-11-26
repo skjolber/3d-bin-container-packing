@@ -10,7 +10,7 @@ import java.nio.file.StandardCopyOption;
 import com.github.skjolber.packing.accelerator.FlatLayout;
 
 /**
- * The kernel: a prebuilt OpenCL C kernel ({@code subtree.cl}, next to this class) in which one work item runs the {@linkplain
+ * The kernel: a prebuilt OpenCL C kernel ({@code subtree.cl}, next to this class; the same file is C++ for the HIP backend) in which one work item runs the {@linkplain
  * com.github.skjolber.packing.accelerator.FlatSubtree} of one slot of a window. The state of a slot is in the window arrays, which the host
  * fills with the items to run (and copies back afterwards), so that the memory on the device does not depend on the number of items of the search.
  * <p>
@@ -47,9 +47,15 @@ public final class SubtreeKernel {
 	public static final int P_SHARED_COUNT = 3;
 	public static final int PARAMETER_LONGS = 4;
 
+	/** the type of the OpenCL backend of TornadoVM */
+	public static final String OPENCL = "OPENCL";
+	/** the type of the HIP backend of TornadoVM (AMD ROCm), which compiles the kernel as C++ */
+	public static final String HIP = "HIP";
+
 	private static final String RESOURCE = "subtree.cl";
 
 	private static volatile Path file;
+	private static volatile Path hipFile;
 
 	private SubtreeKernel() {
 	}
@@ -66,7 +72,29 @@ public final class SubtreeKernel {
 	}
 
 	/**
-	 * @return the file with the source of the kernel, which TornadoVM compiles for the device
+	 * @param backend the type of the backend of the device
+	 * @return the file with the source of the kernel, which TornadoVM compiles for the device: the same source for all backends (it reads as OpenCL C and,
+	 *         for HIP, as C++), in a file with the extension of the backend
+	 */
+	public static Path file(String backend) {
+		if(!HIP.equalsIgnoreCase(backend)) {
+			return file();
+		}
+		Path result = hipFile;
+		if(result == null) {
+			synchronized (SubtreeKernel.class) {
+				result = hipFile;
+				if(result == null) {
+					result = extract(".hip");
+					hipFile = result;
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * @return the file with the source of the kernel for the OpenCL backend
 	 */
 	public static Path file() {
 		Path result = file;
@@ -74,7 +102,7 @@ public final class SubtreeKernel {
 			synchronized (SubtreeKernel.class) {
 				result = file;
 				if(result == null) {
-					result = extract();
+					result = extract(".cl");
 					file = result;
 				}
 			}
@@ -82,12 +110,12 @@ public final class SubtreeKernel {
 		return result;
 	}
 
-	private static Path extract() {
+	private static Path extract(String extension) {
 		try (InputStream in = SubtreeKernel.class.getResourceAsStream(RESOURCE)) {
 			if(in == null) {
 				throw new IllegalStateException("Kernel resource not found: " + RESOURCE);
 			}
-			Path path = Files.createTempFile("packing-subtree", ".cl");
+			Path path = Files.createTempFile("packing-subtree", extension);
 			path.toFile().deleteOnExit();
 			Files.copy(in, path, StandardCopyOption.REPLACE_EXISTING);
 			return path;

@@ -12,9 +12,9 @@
 	<description>TornadoVM accelerator for the fast brute force packager (experimental)</description>
 
 	<properties>
-		<!-- tornado-api 7.x for JDK 22+ -->
+		<!-- tornado-api for JDK 22+ -->
 		<java.version>22</java.version>
-		<tornado.version>8.0.0-jdk22plus</tornado.version>
+		<tornado.version>8.2.0-jdk22plus</tornado.version>
 		<!-- set by jacoco when it runs -->
 		<argLine />
 	</properties>

@@ -7,6 +7,30 @@
 
 #define HEADER 16
 
+// The same source is the kernel of the HIP backend (AMD ROCm), which compiles it as C++: there the address spaces of OpenCL are nothing, every function
+// is a device function, and the index of the work item is that of the thread in the grid.
+#ifdef __OPENCL_VERSION__
+#define KERNEL __kernel __attribute__((reqd_work_group_size(1, 1, 1)))
+#define KERNEL_CONTEXT long
+#define WORK_ITEM get_global_id(0)
+#else
+#define KERNEL extern "C" __global__
+#define KERNEL_CONTEXT long long
+#define WORK_ITEM ((int)(blockIdx.x * blockDim.x + threadIdx.x))
+#undef __global
+#undef __constant
+#undef __local
+#define __global
+#define __constant
+#define __local
+#define INT_MAX 2147483647
+#define LONG_MAX 9223372036854775807L
+#define static __device__ static
+typedef unsigned char uchar;
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+#endif
+
 // FlatLayout
 #define POINT_INTS 7
 #define PLANE_NONE 1023
@@ -2362,7 +2386,7 @@ static int runTree(__global const int *l, __global const int *problem, __global 
 
 // The kernel: the parameters after the four of the TornadoVM calling convention are the Java arrays of TornadoBruteForceAccelerator, in its order.
 // one work item per work group: the compiler then knows that every value derived from the slot is uniform within a wave
-__kernel __attribute__((reqd_work_group_size(1, 1, 1))) void search(__global long *_kernel_context, __constant uchar *_constant_region, __local uchar *_local_region, __global int *_atomics,
+KERNEL void search(__global KERNEL_CONTEXT *_kernel_context, __constant uchar *_constant_region, __local uchar *_local_region, __global int *_atomics,
 		__global uchar *layoutBuffer, __global uchar *problemBuffer, __global uchar *problemLongsBuffer, __global uchar *activeBuffer, __global uchar *prefixesBuffer,
 		__global uchar *parametersBuffer, __global uchar *longParametersBuffer, __global uchar *sBuffer, __global uchar *slBuffer, __global uchar *outBuffer, __global uchar *outLongsBuffer) {
 	__global const int *layoutInts = (__global const int *)(layoutBuffer + HEADER);
@@ -2377,7 +2401,7 @@ __kernel __attribute__((reqd_work_group_size(1, 1, 1))) void search(__global lon
 	__global int *out = (__global int *)(outBuffer + HEADER);
 	__global long *outLongs = (__global long *)(outLongsBuffer + HEADER);
 
-	int slot = get_global_id(0);
+	int slot = WORK_ITEM;
 	if (slot >= parameters[P_SLOTS] || active[slot] == 0) {
 		return;
 	}

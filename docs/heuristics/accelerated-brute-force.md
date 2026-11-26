@@ -189,7 +189,7 @@ TornadoBruteForceAccelerator accelerator = TornadoBruteForceAccelerator.newBuild
 AcceleratedFastBruteForcePackager packager = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(accelerator).build();
 ```
 
-It needs the TornadoVM SDK with an OpenCL, CUDA or Metal backend for the device (AMD cards use OpenCL), which is not on Maven Central; without a runtime the accelerator gives up and
+It needs the TornadoVM SDK with the OpenCL backend for the device, or for an AMD card the HIP backend of TornadoVM 8.2 (slower than OpenCL where measured), which is not on Maven Central; without a runtime the accelerator gives up and
 the packager searches itself. The module README shows how to run with the SDK.
 
 Each item is searched as one tree on the device too (`FlatTree`, the kernel function `runTree`, a port of it), the kernel is compiled once per accelerator (about 0.45 s),

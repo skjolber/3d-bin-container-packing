@@ -6,11 +6,14 @@ import java.util.Locale;
 import java.util.Optional;
 
 /**
- * Chooses the device to run on: by default the OpenCL GPU with the most compute throughput (compute units times clock frequency), then the most global
+ * Chooses the device to run on: by default the OpenCL or HIP GPU with the most compute throughput (compute units times clock frequency), then the most global
  * memory. That is the discrete card on a machine which also has an integrated GPU; the memory of the latter is shared with the system, so it can be the larger. A
  * device can also be chosen by a part of its name, or excluded by one.
  */
 public final class DeviceSelector {
+
+	/** the default: a backend which the kernel is written for, {@link SubtreeKernel#OPENCL} or {@link SubtreeKernel#HIP} */
+	private static final String KERNEL_BACKENDS = "OPENCL or HIP";
 
 	public static Builder newBuilder() {
 		return new Builder();
@@ -18,14 +21,15 @@ public final class DeviceSelector {
 
 	public static class Builder {
 
-		private String backend = "OPENCL";
+		private String backend = KERNEL_BACKENDS;
 		private String type = "GPU";
 		private String nameContains;
 		private final List<String> excluded = new ArrayList<>();
 		private long minGlobalMemory;
 
 		/**
-		 * @param backend the type of the backend (OPENCL, CUDA, ...), or null for any; the default is OPENCL
+		 * @param backend the type of the backend (OPENCL, HIP, CUDA, ...), or null for any; the default is OPENCL or HIP, the backends which the kernel
+		 *                is written for
 		 * @return this builder
 		 */
 		public Builder withBackend(String backend) {
@@ -119,7 +123,11 @@ public final class DeviceSelector {
 	}
 
 	private boolean matches(DeviceInfo device) {
-		if(backend != null && !backend.equalsIgnoreCase(device.backend())) {
+		if(KERNEL_BACKENDS.equals(backend)) {
+			if(!SubtreeKernel.OPENCL.equalsIgnoreCase(device.backend()) && !SubtreeKernel.HIP.equalsIgnoreCase(device.backend())) {
+				return false;
+			}
+		} else if(backend != null && !backend.equalsIgnoreCase(device.backend())) {
 			return false;
 		}
 		if(type != null && !type.equalsIgnoreCase(device.type())) {

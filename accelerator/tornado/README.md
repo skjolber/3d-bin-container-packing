@@ -2,7 +2,7 @@
 
 Experimental [TornadoVM](https://www.tornadovm.org/) accelerator for `FastBruteForcePackager` and `BruteForcePackager` (see
 [accelerated brute force](../../docs/heuristics/accelerated-brute-force.md)):
-the search of the box orders of a container runs on a GPU (or another OpenCL, CUDA or Metal device of TornadoVM), and the packager places the winning order itself, so
+the search of the box orders of a container runs on a GPU (an OpenCL device of TornadoVM, or with its HIP backend an AMD card through ROCm), and the packager places the winning order itself, so
 the placements are the same as without the accelerator.
 
 It needs Java 22+ and is part of the default build. To build and test it alone:
@@ -25,7 +25,7 @@ device at a time; searches from other threads wait, polling their interrupt (a s
 
 ## How it works
 
- * `DeviceSelector`, `DeviceInfo` and `TornadoDevices`: find the devices of the TornadoVM runtime and choose one, by default the OpenCL GPU with the most compute throughput
+ * `DeviceSelector`, `DeviceInfo` and `TornadoDevices`: find the devices of the TornadoVM runtime and choose one, by default the OpenCL or HIP GPU with the most compute throughput
    (compute units times clock, then the most memory: an integrated GPU shares the memory of the system, so it can report more than the discrete card). Without a runtime the list is
    empty. Exclude a device with `withExcludedName(..)`, or choose by name with `withNameContains(..)`.
  * `SubtreeKernel` and `src/main/resources/.../subtree.cl`: the kernel. One work item runs `FlatTree.runTree(..)` for one slot of a window, with its own scratch, for at most
@@ -33,7 +33,7 @@ device at a time; searches from other threads wait, polling their interrupt (a s
    flat classes of the `accelerator-core` module, package `com.github.skjolber.packing.accelerator` (`FlatGeometry`, `FlatPointOrder`, `FlatPoints`, `FlatPermutation`, `FlatSearch`, `FlatSubtree`,
    `FlatTree`, `FlatBound`), function by function with the same
    names and statements, run as a TornadoVM *prebuilt* task. See below for why it is not compiled by the TornadoVM JIT. A change to the flat classes is made in the kernel too;
-   `KernelParityTest` checks that the two agree.
+   `KernelParityTest` checks that the two agree. The same file is the kernel of the HIP backend, see below.
  * `TornadoBruteForceAccelerator`: the host loop of `FlatEngine` on the device. The permutations are split in items by their first boxes, a prefix of box types (`withTargetItems(..)`
    items at least). Each item is searched as one tree by default (`withTree(true)`), as the packager's `BruteForceTreeSearch` does on the CPU: each prefix of placements is placed once,
    and a node or a box is pruned when the prefix plus the best sub-multiset of the remaining boxes within the load left cannot beat the best. The bound is a table per multiset of remaining
@@ -69,13 +69,13 @@ The dependency on `tornado-api` is `provided`: the API jar has no native drivers
 
 ## Running against a device
 
-Download the SDK for your backend and JDK from the [TornadoVM releases](https://github.com/beehive-lab/TornadoVM/releases), for example `tornadovm-8.0.0-jdk22plus-opencl-linux-amd64.tar.gz`, and unpack it
+Download the SDK for your backend and JDK from the [TornadoVM releases](https://github.com/beehive-lab/TornadoVM/releases), for example `tornadovm-8.2.0-jdk22plus-opencl-linux-amd64.tar.gz`, and unpack it
 (for example into `accelerator/tornado/target/tornadovm-sdk`, which `mvn clean` removes). The OpenCL backend has no native library of its own: it calls the system OpenCL loader
 (`libOpenCL.so`) and so the OpenCL driver of the GPU (on AMD, the ROCm OpenCL runtime). The SDK contains `tornado-argfile.template`, the JVM options (JVMCI, module path, ...) in which `${TORNADOVM_HOME}`
 is the unpacked directory:
 
 ```sh
-SDK=$PWD/accelerator/tornado/target/tornadovm-sdk/tornadovm-8.0.0-opencl
+SDK=$PWD/accelerator/tornado/target/tornadovm-sdk/tornadovm-8.2.0-opencl
 T=$PWD/accelerator/tornado/target
 sed "s|\${TORNADOVM_HOME}|$SDK|g" $SDK/tornado-argfile.template > $T/tornado.args
 ```
@@ -107,7 +107,35 @@ The environment variables keep the caches of the GPU stack within the build dire
    points, against the CPU tree engine). Give every run a `timeout`: a hung kernel never returns.
  * `StageProbe` and `ArrayProbe`: probes of the TornadoVM JIT path (below), kept for retrying it with a newer TornadoVM.
 
-Verified: the 8.0.0 `jdk22plus` OpenCL SDK (and the 7.3.1 before it) on JDK 25, with the ROCm 7.1 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU (`gfx1036`) is listed as a second device.
+Verified: the 8.2.0 `jdk22plus` OpenCL SDK (and 8.0.0 and 7.3.1 before it) on JDK 25, with the ROCm 7.2 OpenCL runtime on a Radeon RX 7600 (`gfx1102`, OpenCL 2.0 device); the integrated GPU
+(`gfx1036`) is listed as a second device.
+
+### The HIP backend (AMD ROCm)
+
+TornadoVM 8.2.0 has a backend for AMD cards which does not go through OpenCL: HIP, the CUDA-like interface of ROCm (experimental in TornadoVM; its SDK is
+`tornadovm-8.2.0-jdk22plus-hip-linux-amd64.tar.gz`, set up as above, and it needs the HIP runtime of ROCm, `libamdhip64` and `libhiprtc`). The accelerator runs on it as it is:
+
+ * the devices of the HIP backend are chosen like those of OpenCL (`DeviceSelector` takes a GPU of either by default; `withBackend("HIP")` or `withBackend("OPENCL")` asks for one of them
+   when the runtime has both);
+ * the kernel is the same file. HIP compiles a prebuilt kernel as C++ for the card (with `hipRTC`), so the head of `subtree.cl` says what the OpenCL words are there: no address spaces,
+   every function a device function, the entry point `extern "C" __global__`, and the index of the work item from the block and the thread. The rest of the kernel reads the same in both, and
+   the buffers of the Java arrays have the same 16 bytes of header. The file is given to TornadoVM with the extension `.hip`.
+
+Verified: the 8.2.0 `jdk22plus` HIP SDK on JDK 25 with ROCm 7.2 (TornadoVM itself was tested with ROCm 10.1 only) on the same card, which is `hip-0-0` there: all tests of the module
+(`-Dtornado.argfile=<the HIP options>`), and `KernelParity` without a mismatch and with the node counts of OpenCL.
+
+It is not faster. `KernelParity` on the 42 problems of 11 to 12 boxes below (seeds 100 to 141, `FlatEngine` with 8 threads), the time of the device with the host loop, one run each:
+
+| Search | 8.0.0 OpenCL | 8.2.0 OpenCL | 8.2.0 HIP |
+|---|---|---|---|
+| any best | 1.93 s | 1.96 s | 2.30 s (2.10 s in a second run) |
+| exact (the loop's winner) | 10.95 s | 10.95 s | 14.03 s |
+
+So 8.2.0 is as fast as 8.0.0 with OpenCL, and HIP is 7 to 28 % slower than OpenCL with the same kernel, the same rounds and the same nodes; the difference is in the code which the
+two compilers of ROCm make for the kernel, or in how the runtime starts it, and was not looked into further. One thread per block is the fastest for HIP too, as one work item per work
+group is for OpenCL (blocks of 16, 64 and 256 threads take 3.0 s, 3.6 s and 3.6 s under any best). The rows with all points were not measured: they did not finish in 400 s with either
+version with the arguments tried. The TornadoVM JIT (TC) still refuses the search itself in 8.2.0, on both backends (`StageProbe`: `TC-E1009 recursion: inlining FlatLayout.xz does not
+terminate`), so the prebuilt kernel stays.
 
 ## Speed
 

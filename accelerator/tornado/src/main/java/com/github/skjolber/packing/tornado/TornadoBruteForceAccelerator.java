@@ -445,7 +445,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 		final long[] outLongs;
 		final TornadoExecutionPlan plan;
 
-		Session(TornadoDevice device, int maxBoxes, int maxTypes, int maxPoints, int window, boolean tree) {
+		Session(TornadoDevice device, String backend, int maxBoxes, int maxTypes, int maxPoints, int window, boolean tree) {
 			this.maxBoxes = maxBoxes;
 			this.maxTypes = maxTypes;
 			this.maxPoints = maxPoints;
@@ -490,7 +490,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			TaskGraph graph = new TaskGraph("bruteForce").transferToDevice(DataTransferMode.FIRST_EXECUTION, s, sl)
 					.transferToDevice(DataTransferMode.EVERY_EXECUTION, layoutInts, problem, longs, active, prefixes, parameters, longParameters)
 					.transferToDevice(tree ? DataTransferMode.FIRST_EXECUTION : DataTransferMode.EVERY_EXECUTION, out, outLongs)
-					.prebuiltTask("search", SubtreeKernel.ENTRY_POINT, SubtreeKernel.file().toString(), accessors)
+					.prebuiltTask("search", SubtreeKernel.ENTRY_POINT, SubtreeKernel.file(backend).toString(), accessors)
 					.transferToHost(DataTransferMode.EVERY_EXECUTION, out, outLongs);
 			ImmutableTaskGraph immutable = graph.snapshot();
 			// one work item for each slot, one work item per work group (the kernel requires it: the search diverges so much that lanes of the same wavefront
@@ -519,7 +519,7 @@ public final class TornadoBruteForceAccelerator implements BruteForceAccelerator
 			// the types of a packing stay while its boxes are placed, so later containers have more types than boxes
 			int types = (problem.types() + Session.BOXES_STEP - 1) / Session.BOXES_STEP * Session.BOXES_STEP;
 			TornadoDevice tornadoDevice = TornadoExecutionPlan.getDevice(info.backendIndex(), info.deviceIndex());
-			session = new Session(tornadoDevice, boxes, types, maxPoints, window, tree);
+			session = new Session(tornadoDevice, info.backend(), boxes, types, maxPoints, window, tree);
 			this.session = session;
 		}
 		return session;

@@ -28,6 +28,17 @@ class DeviceSelectorTest {
 	}
 
 	@Test
+	void choosesAHipGpuToo() {
+		// the kernel is written for OpenCL and for HIP (AMD ROCm), and for no other backend
+		DeviceInfo hip = device(0, 0, "HIP", "hip-0-0", "GPU", 8 * GIB, 16, 2356);
+		DeviceInfo hipIntegrated = device(0, 1, "HIP", "hip-0-1", "GPU", 46 * GIB, 1, 2200);
+		assertThat(DeviceSelector.newBuilder().build().select(List.of(hipIntegrated, hip, cuda))).contains(hip);
+		assertThat(DeviceSelector.newBuilder().build().select(List.of(cuda))).isEmpty();
+		assertThat(DeviceSelector.newBuilder().withBackend("HIP").build().select(List.of(discrete, hip))).contains(hip);
+		assertThat(DeviceSelector.newBuilder().withBackend("OPENCL").build().select(List.of(hip, discrete))).contains(discrete);
+	}
+
+	@Test
 	void theMemoryDecidesBetweenEqualThroughput() {
 		DeviceInfo small = device(0, 0, "OPENCL", "a", "GPU", 4 * GIB, 8, 2000);
 		DeviceInfo large = device(0, 1, "OPENCL", "b", "GPU", 8 * GIB, 8, 2000);
