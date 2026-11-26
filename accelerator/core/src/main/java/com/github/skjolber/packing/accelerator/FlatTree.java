@@ -157,10 +157,26 @@ public final class FlatTree {
 					long volume = sl[placedVolumeBase + level];
 					long weight = sl[placedWeightBase + level];
 					boolean expand = level < depthLimit && canPlaceAny(problem, problemLongs, s, remainingBase, types, weights, maxLoadVolume - volume, maxLoadWeight - weight);
-					if(expand && (beatCount > 0 || boundVolume > 0L)
+					// experiment (FlatPruning): a node with the state of a searched node is not searched again
+					boolean searched = false;
+					if(FlatPruning.cache) {
+						FlatPruning.LEVEL_STATE[level] = 0L;
+						if(expand && level >= depth && level > 0 && depthLimit - level >= FlatPruning.cacheMinRemaining) {
+							long state = FlatPruning.state(layout, s, base, level, remainingBase, types);
+							FlatPruning.LEVEL_STATE[level] = state;
+							searched = FlatPruning.contains(state);
+						}
+					}
+					if(searched) {
+						expand = false;
+					} else if(expand && (beatCount > 0 || boundVolume > 0L)
 							&& isHopeless(problem, problemLongs, s, remainingBase, types, weights, allFit, keys, bounds, key, volume, weight, level, maxLoadVolume, maxLoadWeight, boundVolume,
 									beatCount, beatVolume, beatWeight, anyBest)) {
 						// no completion of this prefix can beat the best
+						expand = false;
+					} else if(expand && FlatPruning.union && level > 0 && (beatCount > 0 || boundVolume > 0L) && isHopelessWithinPoints(layout, problem, problemLongs, s, base, remainingBase,
+							types, weights, allFit, keys, bounds, key, volume, weight, level, maxLoadVolume, maxLoadWeight, boundVolume, beatCount, beatVolume, beatWeight, anyBest)) {
+						// experiment (FlatPruning): the boxes below add at most the volume of the union of the free points
 						expand = false;
 					} else if(!expand && level > 0) {
 						// every box which may be placed is placed, or none of the remaining ones fits the load left: a leaf
@@ -199,6 +215,10 @@ public final class FlatTree {
 				final int t = s[typeAtBase + level];
 				if(t == -1) {
 					// the node is done: back to the level below, where the next rotation of its type follows
+					if(FlatPruning.cache && FlatPruning.LEVEL_STATE[level] != 0L) {
+						FlatPruning.add(FlatPruning.LEVEL_STATE[level]);
+						FlatPruning.LEVEL_STATE[level] = 0L;
+					}
 					level--;
 					if(level >= 0) {
 						int placed = s[placedTypeBase + level];
@@ -421,6 +441,37 @@ public final class FlatTree {
 			if(s[remainingBase + t] > 0 && problemLongs[t] <= volumeLeft && problemLongs[weights + t] <= weightLeft) {
 				result = true;
 			}
+		}
+		return result;
+	}
+
+	/** Experiment ({@link FlatPruning}): as {@link #isHopeless}, where the remaining boxes add at most the volume of the union of the free points of the node. */
+	private static boolean isHopelessWithinPoints(FlatLayout layout, int[] problem, long[] problemLongs, int[] s, int base, int remainingBase, int types, int weights, boolean allFit, int keys,
+			int bounds, int key, long volume, long weight, int count, long maxLoadVolume, long maxLoadWeight, long boundVolume, int bestCount, long bestVolume, long bestWeight, boolean anyBest) {
+		long extra;
+		if(keys > 0 && !allFit) {
+			extra = problemLongs[bounds + 3 * key];
+		} else {
+			long remainingVolume = 0L;
+			for (int t = 0; t < types; t++) {
+				remainingVolume += s[remainingBase + t] * problemLongs[t];
+			}
+			extra = remainingVolume < maxLoadVolume - volume ? remainingVolume : maxLoadVolume - volume;
+		}
+		FlatPruning.unionChecks++;
+		long within = FlatPruning.unionVolume(layout, s, base, count, extra);
+		if(within >= extra) {
+			return false;
+		}
+		long v = volume + within;
+		boolean result = v < boundVolume;
+		if(!result && bestCount > 0) {
+			// with less volume than the best the node is hopeless; with the same volume it is searched: the weight and the count of the table
+			// are those of its best set of boxes, and not bounds for a set of less volume
+			result = v < bestVolume;
+		}
+		if(result) {
+			FlatPruning.unionCuts++;
 		}
 		return result;
 	}
