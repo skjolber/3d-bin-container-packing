@@ -31,8 +31,8 @@ jobs:
         step: restore
     - name: Build with Maven
       run: ./mvnw -B -ntp -Dtest.forkCount=1.5C verify
-    - name: Restore cache
+    - name: Save cache
       uses: skjolber/maven-cache-github-action@v3.1.2
       with:
-        step: restore
+        step: save
 
