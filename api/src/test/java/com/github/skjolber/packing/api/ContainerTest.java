@@ -7,6 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import org.junit.jupiter.api.Test;
 
 class ContainerTest {
@@ -79,5 +83,13 @@ class ContainerTest {
 
 		assertSame(motion, container.getMotion());
 		assertSame(motion, container.copy().getMotion());
+	}
+
+	@Test
+	void sizeAndLoadSizeMustBeAtLeastOneInEachDirection() {
+		assertThrows(IllegalStateException.class, () -> Container.newBuilder().withSize(0, 4, 4).withMaxLoadWeight(1).build());
+		assertThrows(IllegalStateException.class, () -> Container.newBuilder().withSize(4, 4, -2).withMaxLoadWeight(1).build());
+		assertThrows(IllegalStateException.class, () -> Container.newBuilder().withSize(4, 4, 4).withLoadSize(4, 0, 4).withMaxLoadWeight(1).build());
+		assertNotNull(Container.newBuilder().withSize(1, 1, 1).withMaxLoadWeight(1).build());
 	}
 }

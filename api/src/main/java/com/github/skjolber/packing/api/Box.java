@@ -118,6 +118,12 @@ public class Box {
 				throw new IllegalStateException("Expected at least one stack value");
 			}
 			
+			for (BoxStackValue stackValue : stackValues) {
+				if (stackValue.getDx() < 1 || stackValue.getDy() < 1 || stackValue.getDz() < 1) {
+					throw new IllegalStateException("Expected a size of at least one in each direction, got " + stackValue.getDx() + "x" + stackValue.getDy() + "x" + stackValue.getDz());
+				}
+			}
+
 			long volume = stackValues.get(0).getVolume();
 			for(int i = 1; i < stackValues.size(); i++) {
 				if(stackValues.get(i).getVolume() != volume) {
@@ -499,6 +505,9 @@ public class Box {
 		public Box build() {
 			if (dx == -1 || dy == -1 || dz == -1) {
 				throw new IllegalStateException("No size");
+			}
+			if (dx < 1 || dy < 1 || dz < 1) {
+				throw new IllegalStateException("Expected a size of at least one in each direction, got " + dx + "x" + dy + "x" + dz);
 			}
 			if (weight == null) {
 				throw new IllegalStateException("No weight");

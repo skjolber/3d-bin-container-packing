@@ -1,5 +1,8 @@
 # Changelog
 
+ * 5.2.1:
+     * `Box` and `Container` builders reject a size (or load size) below one in any direction with an `IllegalStateException`; before, such a box was packed.
+     * `FlatProblem.of(..)` rejects a negative limit.
  * 5.2.0:
      * Brute force tree search, on by default. Returns any arrangement of the best value; `withTreeSearchAnyBest(false)` keeps the 5.1 result.
      * New API: `FastBruteForcePackager.withThreads(..)`.
