@@ -15,12 +15,14 @@ import static com.github.skjolber.packing.accelerator.FlatLayout.POINT_INTS;
  * the cache is for a search where any best arrangement will do ({@link FlatProblem#ANY_BEST}), and the engine does not use it otherwise. Under any
  * best the rotations of the winner are those of the node which found it, which need not be those which a search of its order alone picks first.
  * <p>
- * A state is a hash of 128 bits, and two states with the same hash are taken as the same: the cache is exact up to that. The table has a fixed number
- * of entries, and a state which finds no room in the few slots it may take replaces the first of them, so the cache forgets rather than grows.
+ * A state is a hash of 128 bits, and two states with the same hash are taken as the same: the cache is exact up to that. The table starts small and
+ * doubles when it holds as many states as it has entries, up to the entries which the engine allows, so a search which is soon over does not pay for
+ * a large table and one which is not gets one. The states stay where they are when the table doubles, so half of them are found again. A state
+ * which finds none of the few slots it may take free replaces the first of them: the cache forgets rather than grows without end.
  * <p>
- * The cache of a thread is one array, so that the ports to native code keep it the same way, value for value: counters, then the state of the node of
- * each level which is being searched (two longs, zero for none), then the table (two longs for each entry, the first of them zero for none). It is
- * for one search: the state has neither the sizes of the boxes nor the container.
+ * The cache of a thread is two arrays, so that the ports to native code keep it the same way, value for value. The first has counters, and the state
+ * of the node of each level which is being searched (two longs, zero for none). The second is the table: two longs for each entry, the first of them
+ * zero for none. It is for one search: the state has neither the sizes of the boxes nor the container.
  */
 public final class FlatStateCache {
 
@@ -28,7 +30,7 @@ public final class FlatStateCache {
 	public static final int LOOKUPS = 0;
 	/** the number of those which were found, and so not searched */
 	public static final int HITS = 1;
-	/** the number of entries less one; the number of entries is a power of two */
+	/** the number of entries of the table less one; the number of entries is a power of two */
 	public static final int MASK = 2;
 	/**
 	 * not zero to check the cache instead of using it: a node which is found is searched all the same, and counted if its search finds what the cache
@@ -37,8 +39,17 @@ public final class FlatStateCache {
 	public static final int VERIFY = 3;
 	/** the number of nodes which were found and whose search found an arrangement better than the best to beat when they were entered */
 	public static final int VIOLATIONS = 4;
+	/** the number of entries which the table may grow to, less one */
+	public static final int MAX_MASK = 5;
+	/** the number of states in the table */
+	public static final int COUNT = 6;
 	/** the offset of the states of the levels */
-	public static final int LEVELS = 6;
+	public static final int LEVELS = 8;
+
+	/** the entries which a table starts with */
+	public static final int FIRST_ENTRIES = 256;
+	/** the entries which the table of a thread may grow to unless the engine is told otherwise: one megabyte */
+	public static final int DEFAULT_ENTRIES = 1 << 16;
 
 	/** the fewest and the most entries of a table */
 	public static final int MIN_ENTRIES = 16;
@@ -69,21 +80,22 @@ public final class FlatStateCache {
 		return entries >= MIN_ENTRIES && entries <= MAX_ENTRIES && Integer.bitCount(entries) == 1;
 	}
 
-	/** @return the offset of the table in the cache of a problem of n boxes */
-	public static int table(int n) {
+	/** @return the number of longs of the first array of a cache for a problem of n boxes */
+	public static int size(int n) {
 		return LEVELS + 2 * (n + 1);
 	}
 
-	/** @return the number of longs of a cache */
-	public static int size(int n, int entries) {
-		return table(n) + 2 * entries;
-	}
-
-	/** @return an empty cache for a search of a problem of n boxes */
-	public static long[] newCache(int n, int entries) {
-		long[] cache = new long[size(n, entries)];
-		cache[MASK] = entries - 1;
-		return cache;
+	/**
+	 * @param n the number of boxes of the problem
+	 * @param entries the most entries of the table
+	 * @return an empty cache for a search: the counters and the states of the levels, and the table
+	 */
+	public static long[][] newCache(int n, int entries) {
+		int first = Math.min(entries, FIRST_ENTRIES);
+		long[] cache = new long[size(n)];
+		cache[MASK] = first - 1;
+		cache[MAX_MASK] = entries - 1;
+		return new long[][] { cache, new long[2 * first] };
 	}
 
 	/** the caches of the engines check themselves ({@link #VERIFY}) and add what they count here: for the tests, see {@code FlatStateCacheTest} */
@@ -91,17 +103,17 @@ public final class FlatStateCache {
 	static final java.util.concurrent.atomic.AtomicLong VERIFIED = new java.util.concurrent.atomic.AtomicLong();
 	static final java.util.concurrent.atomic.AtomicLong VIOLATED = new java.util.concurrent.atomic.AtomicLong();
 
-	/** @return a cache which checks itself: after the table, for each level whether its node was found, and the best to beat when it was entered */
-	static long[] newVerifyingCache(int n, int entries) {
-		long[] cache = new long[size(n, entries) + 4 * (n + 1)];
-		cache[MASK] = entries - 1;
-		cache[VERIFY] = 1L;
+	/** @return a cache which checks itself: after the states of the levels, for each level whether its node was found, and the best to beat when it was entered */
+	static long[][] newVerifyingCache(int n, int entries) {
+		long[][] cache = newCache(n, entries);
+		cache[0] = java.util.Arrays.copyOf(cache[0], size(n) + 4 * (n + 1));
+		cache[0][VERIFY] = 1L;
 		return cache;
 	}
 
 	/** The node of the level was found: remember the best to beat, as it is searched all the same. */
 	static void found(int n, int level, long[] cache, int beatCount, long beatVolume, long beatWeight) {
-		int o = table(n) + 2 * ((int)cache[MASK] + 1) + 4 * level;
+		int o = size(n) + 4 * level;
 		cache[o] = 1L;
 		cache[o + 1] = beatCount;
 		cache[o + 2] = beatVolume;
@@ -110,7 +122,7 @@ public final class FlatStateCache {
 
 	/** The node of the level is done: if it was found, its search must not have found an arrangement better than the best to beat when it was entered. */
 	static void check(int n, int level, long[] cache, int bestCount, long bestVolume, long bestWeight) {
-		int o = table(n) + 2 * ((int)cache[MASK] + 1) + 4 * level;
+		int o = size(n) + 4 * level;
 		if(cache[o] != 0L) {
 			cache[o] = 0L;
 			long count = cache[o + 1];
@@ -223,18 +235,21 @@ public final class FlatStateCache {
 		cache[LEVELS + 2 * level] = 0L;
 	}
 
-	/** @return whether the state of the level is in the table */
-	public static boolean contains(int n, int level, long[] cache) {
+	/**
+	 * @param cache the counters and the states of the levels
+	 * @param table the table
+	 * @return whether the state of the level is in the table
+	 */
+	public static boolean contains(int level, long[] cache, long[] table) {
 		final long first = cache[LEVELS + 2 * level];
 		final long second = cache[LEVELS + 2 * level + 1];
-		final int table = table(n);
 		final int mask = (int)cache[MASK];
 		final int index = (int)first & mask;
 		cache[LOOKUPS]++;
 		boolean found = false;
 		for (int probe = 0; probe < PROBES && !found; probe++) {
-			int slot = table + 2 * ((index + probe) & mask);
-			found = cache[slot] == first && cache[slot + 1] == second;
+			int slot = 2 * ((index + probe) & mask);
+			found = table[slot] == first && table[slot + 1] == second;
 		}
 		if(found) {
 			cache[HITS]++;
@@ -242,27 +257,42 @@ public final class FlatStateCache {
 		return found;
 	}
 
-	/** Add the state of the level to the table, if the level has one, and forget it: its node is searched. */
-	public static void add(int n, int level, long[] cache) {
-		final long first = cache[LEVELS + 2 * level];
+	/**
+	 * Add the state of the level to the table, if the level has one, and forget it: its node is searched. The table doubles when it then holds as
+	 * many states as it has entries.
+	 *
+	 * @param cache the cache: the counters and the states of the levels, and the table, which may be replaced by a larger one
+	 */
+	public static void add(int level, long[][] cache) {
+		final long[] levels = cache[0];
+		final long first = levels[LEVELS + 2 * level];
 		if(first != 0L) {
-			final long second = cache[LEVELS + 2 * level + 1];
-			cache[LEVELS + 2 * level] = 0L;
-			final int table = table(n);
-			final int mask = (int)cache[MASK];
+			final long second = levels[LEVELS + 2 * level + 1];
+			levels[LEVELS + 2 * level] = 0L;
+			long[] table = cache[1];
+			final int mask = (int)levels[MASK];
 			final int index = (int)first & mask;
 			// the first slot which is free or has the state, else the first slot
-			int target = table + 2 * index;
+			int target = 2 * index;
 			boolean placed = false;
 			for (int probe = 0; probe < PROBES && !placed; probe++) {
-				int slot = table + 2 * ((index + probe) & mask);
-				if(cache[slot] == 0L || (cache[slot] == first && cache[slot + 1] == second)) {
+				int slot = 2 * ((index + probe) & mask);
+				if(table[slot] == 0L || (table[slot] == first && table[slot + 1] == second)) {
 					target = slot;
 					placed = true;
 				}
 			}
-			cache[target] = first;
-			cache[target + 1] = second;
+			if(table[target] == 0L) {
+				// one more state
+				levels[COUNT]++;
+				if(levels[COUNT] > mask && mask < levels[MAX_MASK]) {
+					levels[MASK] = 2L * mask + 1L;
+					table = java.util.Arrays.copyOf(table, 2 * table.length);
+					cache[1] = table;
+				}
+			}
+			table[target] = first;
+			table[target + 1] = second;
 		}
 	}
 }

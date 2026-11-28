@@ -138,7 +138,7 @@ public class KernelParity {
 				.withTargetItems(targetItems).withTree(tree).withFreeSpace(freeSpace).build();
 		System.out.println("Device: " + device.getDevice().orElseThrow(() -> new IllegalStateException("No device found")) + ", window " + window + ", budget " + budget + ", max points "
 				+ maxPoints + ", target items " + targetItems + ", " + mode + (freeSpace ? "" : ", no free space") + "; cpu threads " + threads);
-		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withThreads(threads).withTree(anyBest || allPoints).withFreeSpace(freeSpace).build();
+		FlatEngine cpu = FlatEngine.newBuilder().withMinBoxes(1).withStateCache(0).withThreads(threads).withTree(anyBest || allPoints).withFreeSpace(freeSpace).build();
 
 		int mismatches = 0;
 		int gaveUp = 0;

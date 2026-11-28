@@ -56,7 +56,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		private int itemsPerThread = DEFAULT_ITEMS_PER_THREAD;
 		private int maxItems = DEFAULT_MAX_ITEMS;
 		private int minBoxes = DEFAULT_MIN_BOXES;
-		private int stateCache = 0;
+		private int stateCache = FlatStateCache.DEFAULT_ENTRIES;
 		private int maxBoxes = DEFAULT_MAX_BOXES;
 		private boolean tree = false;
 		private Boolean freeSpace = null;
@@ -166,10 +166,11 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 
 		/**
-		 * @param entries the number of states which each thread of the tree search remembers during a search, so that it does not search a state twice
-		 *        ({@link FlatStateCache}): a power of two from {@value FlatStateCache#MIN_ENTRIES} to {@value FlatStateCache#MAX_ENTRIES}, each 16 bytes, or zero for none
-		 *        (the default). Only for a search where any best arrangement will do ({@link FlatProblem#ANY_BEST}): the value of the winner is the same, the
-		 *        arrangement may be another one of that value. Two states are taken as the same when their hash of 128 bits is
+		 * @param entries the most states which each thread of the tree search remembers during a search, so that it does not search a state twice
+		 *        ({@link FlatStateCache}): a power of two from {@value FlatStateCache#MIN_ENTRIES} to {@value FlatStateCache#MAX_ENTRIES}, each 16 bytes, or zero for none.
+		 *        By default {@value FlatStateCache#DEFAULT_ENTRIES}; the table starts small and only grows to this for a search which needs it. Only for a
+		 *        search where any best arrangement will do ({@link FlatProblem#ANY_BEST}): the value of the winner is the same, the arrangement may be another
+		 *        one of that value. Two states are taken as the same when their hash of 128 bits is
 		 * @return this builder
 		 */
 		public Builder withStateCache(int entries) {
@@ -311,7 +312,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		int[][] scratch = new int[threads][];
 		long[][] scratchLongs = new long[threads][];
 		// the states which each thread has searched, for this search
-		long[][] caches = new long[threads][];
+		long[][][] caches = new long[threads][][];
 		for (int t = 0; t < threads; t++) {
 			scratch[t] = run.layout.newScratch();
 			scratchLongs[t] = new long[run.layout.longSize];
@@ -356,10 +357,10 @@ public final class FlatEngine implements BruteForceAccelerator {
 			}
 		}
 		if(FlatStateCache.verify) {
-			for (long[] cache : caches) {
+			for (long[][] cache : caches) {
 				if(cache != null) {
-					FlatStateCache.VERIFIED.addAndGet(cache[FlatStateCache.HITS]);
-					FlatStateCache.VIOLATED.addAndGet(cache[FlatStateCache.VIOLATIONS]);
+					FlatStateCache.VERIFIED.addAndGet(cache[0][FlatStateCache.HITS]);
+					FlatStateCache.VIOLATED.addAndGet(cache[0][FlatStateCache.VIOLATIONS]);
 				}
 			}
 		}
@@ -370,13 +371,13 @@ public final class FlatEngine implements BruteForceAccelerator {
 		return Optional.of(run.flat.reduce());
 	}
 
-	private void runThreads(Run run, int[][] scratch, long[][] scratchLongs, long[][] caches, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
+	private void runThreads(Run run, int[][] scratch, long[][] scratchLongs, long[][][] caches, PackagerInterruptSupplier interrupt) throws PackagerInterruptedException {
 		ExecutorService executor = getExecutor();
 		List<Future<?>> futures = new ArrayList<>(threads);
 		for (int t = 0; t < threads; t++) {
 			int[] s = scratch[t];
 			long[] sl = scratchLongs[t];
-			long[] cache = caches[t];
+			long[][] cache = caches[t];
 			futures.add(executor.submit(() -> work(run, s, sl, cache)));
 		}
 
@@ -414,7 +415,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 	}
 
-	private void work(Run run, int[] s, long[] sl, long[] cache) {
+	private void work(Run run, int[] s, long[] sl, long[][] cache) {
 		while (!run.abort && !run.overflow) {
 			int index = run.next.getAndIncrement();
 			if(index >= run.pendingCount) {
@@ -424,7 +425,7 @@ public final class FlatEngine implements BruteForceAccelerator {
 		}
 	}
 
-	private void runItem(Run run, int item, int[] s, long[] sl, long[] cache) {
+	private void runItem(Run run, int item, int[] s, long[] sl, long[][] cache) {
 		if(item > run.fullItem.get()) {
 			// an earlier item places all boxes
 			return;
