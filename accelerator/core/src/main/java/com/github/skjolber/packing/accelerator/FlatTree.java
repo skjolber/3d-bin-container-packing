@@ -57,11 +57,13 @@ public final class FlatTree {
 	 * @param budgetNodes the number of nodes after which to pause
 	 * @param fresh true to start the item over, whatever the output holds: the device keeps the state of a slot between the rounds, and starts a slot's new
 	 *        item this way; the engine gives each item its own output, which starts as zeros
+	 * @param cache the states which were searched on this scratch during the search, which are not searched again ({@link FlatStateCache}), or null to search
+	 *        every node
 	 * @return the status of the item, see {@link FlatSubtree}
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, long[] sl, int base, int longBase,
 			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, boolean freeSpace, int budgetNodes,
-			boolean fresh) {
+			boolean fresh, long[] cache) {
 		final int n = problem[FlatProblem.N];
 		final int types = problem[FlatProblem.TYPES];
 		final int rotations = problem[FlatProblem.ROTATIONS];
@@ -157,7 +159,25 @@ public final class FlatTree {
 					long volume = sl[placedVolumeBase + level];
 					long weight = sl[placedWeightBase + level];
 					boolean expand = level < depthLimit && canPlaceAny(problem, problemLongs, s, remainingBase, types, weights, maxLoadVolume - volume, maxLoadWeight - weight);
-					if(expand && (beatCount > 0 || boundVolume > 0L)
+					// a node past the prefix of the item with the state of a node which was searched is not searched again
+					boolean searched = false;
+					if(cache != null) {
+						if(expand && level >= depth && level > 0 && depthLimit - level >= FlatStateCache.MIN_REMAINING) {
+							FlatStateCache.state(layout, s, base, level, remainingBase, types, cache);
+							searched = FlatStateCache.contains(n, level, cache);
+						} else {
+							FlatStateCache.none(level, cache);
+						}
+					}
+					if(searched && cache[FlatStateCache.VERIFY] != 0L) {
+						// the tests: search it all the same, and see that nothing better than the best to beat comes of it
+						FlatStateCache.found(n, level, cache, beatCount, beatVolume, beatWeight);
+						searched = false;
+					}
+					if(searched) {
+						FlatStateCache.none(level, cache);
+						expand = false;
+					} else if(expand && (beatCount > 0 || boundVolume > 0L)
 							&& isHopeless(problem, problemLongs, s, remainingBase, types, weights, allFit, keys, bounds, key, volume, weight, level, maxLoadVolume, maxLoadWeight, boundVolume,
 									beatCount, beatVolume, beatWeight, anyBest)) {
 						// no completion of this prefix can beat the best
@@ -199,6 +219,12 @@ public final class FlatTree {
 				final int t = s[typeAtBase + level];
 				if(t == -1) {
 					// the node is done: back to the level below, where the next rotation of its type follows
+					if(cache != null) {
+						if(cache[FlatStateCache.VERIFY] != 0L) {
+							FlatStateCache.check(n, level, cache, bestCount, bestVolume, bestWeight);
+						}
+						FlatStateCache.add(n, level, cache);
+					}
 					level--;
 					if(level >= 0) {
 						int placed = s[placedTypeBase + level];

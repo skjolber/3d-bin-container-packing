@@ -118,4 +118,24 @@ public abstract class AbstractFlatBruteForcePackagerTest {
 			engine.close();
 		}
 	}
+
+	/** With an accelerator which does not search a state twice ({@link FlatStateCache}): the same values, and every winner confirmed by the packager. */
+	@Test
+	void sameValuesWithTheStateCache() {
+		BruteForceAccelerator engine = engine(new FlatEngineOptions().withThreads(2).withMinBoxes(1).withTree(true).withStateCache(1024));
+		BruteForcePackager unaccelerated = BruteForcePackager.newBuilder().build();
+		AcceleratedBruteForcePackager accelerated = AcceleratedBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
+		try {
+			for (int seed = 0; seed < 60; seed++) {
+				Instance instance = FlatTestInstances.random(seed, 5, 8);
+				assertThat(values(pack(accelerated, instance))).as("seed " + seed).isEqualTo(values(pack(unaccelerated, instance)));
+			}
+			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
+			assertThat(accelerated.getAcceleratedCount()).isGreaterThan(60);
+		} finally {
+			unaccelerated.close();
+			accelerated.close();
+			engine.close();
+		}
+	}
 }

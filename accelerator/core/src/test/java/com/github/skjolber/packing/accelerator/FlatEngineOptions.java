@@ -11,6 +11,8 @@ public class FlatEngineOptions {
 	public int minBoxes = FlatEngine.DEFAULT_MIN_BOXES;
 	public int maxBoxes = FlatEngine.DEFAULT_MAX_BOXES;
 	public boolean tree = false;
+	/** the states which a thread of the tree search remembers ({@link FlatStateCache}), zero for none */
+	public int stateCache = 0;
 
 	public FlatEngineOptions withThreads(int threads) {
 		this.threads = threads;
@@ -47,6 +49,11 @@ public class FlatEngineOptions {
 		return this;
 	}
 
+	public FlatEngineOptions withStateCache(int stateCache) {
+		this.stateCache = stateCache;
+		return this;
+	}
+
 	public FlatEngineOptions withTree(boolean tree) {
 		this.tree = tree;
 		return this;
@@ -62,6 +69,7 @@ public class FlatEngineOptions {
 				.withMinBoxes(minBoxes)
 				.withMaxBoxes(maxBoxes)
 				.withTree(tree)
+				.withStateCache(stateCache)
 				.build();
 	}
 }

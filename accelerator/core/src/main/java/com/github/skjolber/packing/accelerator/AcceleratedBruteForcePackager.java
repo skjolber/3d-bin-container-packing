@@ -215,7 +215,7 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 			if(problem != null) {
 				BruteForceIntermediatePackagerResult result = driver.search(problem, getMinLoadVolume(best), interrupt,
 						own -> pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, own, pointFilter, best, limit),
-						winner -> confirmAccelerated(winner, pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, limit));
+						winner -> confirmAccelerated(winner, pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, limit, problem.isAnyBest()));
 				if(result != null) {
 					return result;
 				}
@@ -263,7 +263,7 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 	 * @return the result, or null if the claim was not confirmed (a bug in the accelerator): then pack the container with {@link #pack}
 	 */
 	private BruteForceIntermediatePackagerResult confirmAccelerated(AcceleratorWinner winner, PointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount,
-			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, int limit) throws PackagerInterruptedException {
+			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, int limit, boolean anyBest) throws PackagerInterruptedException {
 		int length = iterator.length();
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
 		if(winner.getCount() == 0) {
@@ -286,8 +286,10 @@ public class AcceleratedBruteForcePackager extends BruteForcePackager {
 			if(points.size() != winner.getCount()) {
 				return null;
 			}
+			// for the loop's winner the same arrangement; when any best will do, the count here and the volume and weight below (see
+			// AcceleratedFastBruteForcePackager.isConfirmed)
 			int[] claimed = winner.getRotations();
-			for (int i = 0; i < points.size(); i++) {
+			for (int i = 0; !anyBest && i < points.size(); i++) {
 				if(rotations[i] != claimed[i]) {
 					return null;
 				}
