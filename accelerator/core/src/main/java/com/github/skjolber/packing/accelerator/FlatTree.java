@@ -57,13 +57,14 @@ public final class FlatTree {
 	 * @param budgetNodes the number of nodes after which to pause
 	 * @param fresh true to start the item over, whatever the output holds: the device keeps the state of a slot between the rounds, and starts a slot's new
 	 *        item this way; the engine gives each item its own output, which starts as zeros
-	 * @param cache the states which were searched on this scratch during the search, which are not searched again ({@link FlatStateCache}), or null to search
-	 *        every node
+	 * @param stateCache the states which were searched on this scratch during the search, which are not searched again ({@link FlatStateCache}: its counters
+	 *        and the states of the levels, and its table, which the search replaces as it grows), or null to search every node
 	 * @return the status of the item, see {@link FlatSubtree}
 	 */
 	public static int run(FlatLayout layout, int[] problem, long[] problemLongs, int depth, int[] prefixes, int item, int[] s, long[] sl, int base, int longBase,
 			int[] out, int outBase, long[] outLongs, int outLongBase, long boundVolume, long sharedVolume, long sharedWeight, int sharedCount, boolean freeSpace, int budgetNodes,
-			boolean fresh, long[] cache) {
+			boolean fresh, long[][] stateCache) {
+		final long[] cache = stateCache != null ? stateCache[0] : null;
 		final int n = problem[FlatProblem.N];
 		final int types = problem[FlatProblem.TYPES];
 		final int rotations = problem[FlatProblem.ROTATIONS];
@@ -164,7 +165,7 @@ public final class FlatTree {
 					if(cache != null) {
 						if(expand && level >= depth && level > 0 && depthLimit - level >= FlatStateCache.MIN_REMAINING) {
 							FlatStateCache.state(layout, s, base, level, remainingBase, types, cache);
-							searched = FlatStateCache.contains(n, level, cache);
+							searched = FlatStateCache.contains(level, cache, stateCache[1]);
 						} else {
 							FlatStateCache.none(level, cache);
 						}
@@ -223,7 +224,7 @@ public final class FlatTree {
 						if(cache[FlatStateCache.VERIFY] != 0L) {
 							FlatStateCache.check(n, level, cache, bestCount, bestVolume, bestWeight);
 						}
-						FlatStateCache.add(n, level, cache);
+						FlatStateCache.add(level, stateCache);
 					}
 					level--;
 					if(level >= 0) {

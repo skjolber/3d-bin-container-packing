@@ -2,7 +2,7 @@
 
  * 5.2.1:
      * Accelerators (experimental): new artifact `accelerator-test-suite` with the tests of the flat search, for ports of it; `accelerator-core` no longer has a jar of its tests.
-     * Accelerators (experimental): `FlatEngine.withStateCache(..)` does not search a state twice when any best arrangement will do (off by default), see [accelerated brute force](docs/heuristics/accelerated-brute-force.md#not-searching-a-state-twice). The packagers confirm such a winner by its count, volume and weight.
+     * Accelerators (experimental): the tree search of `FlatEngine` does not search a state twice when any best arrangement will do (`withStateCache(0)` switches it off), see [accelerated brute force](docs/heuristics/accelerated-brute-force.md#not-searching-a-state-twice). The packagers confirm such a winner by its count, volume and weight.
      * `Box` and `Container` builders reject a size (or load size) below one in any direction with an `IllegalStateException`; before, such a box was packed.
      * `FlatProblem.of(..)` rejects a negative limit.
  * 5.2.0:

@@ -159,19 +159,22 @@ Limits:
 
 Different orders of the same boxes often lead to the same state: the same free points, with the placements which support them, and the same boxes
 remaining. What can be placed from there on is the same, so the second search of a state finds nothing which the first did not. `FlatStateCache`
-remembers the states which a thread has searched, and the tree search (`FlatTree`) skips a node whose state it finds there. It is off by default:
-`FlatEngine.newBuilder().withStateCache(65_536)` gives each thread a table of that many states (a power of two, 16 bytes each) for the time of a search.
+remembers the states which a thread has searched, and the tree search (`FlatTree`) skips a node whose state it finds there. It is on by default.
+`FlatEngine.newBuilder().withStateCache(0)` switches it off, and `withStateCache(entries)` sets the most states which a thread remembers (a power of two,
+16 bytes each; 65 536 by default).
 
  * **Only when any best arrangement will do** (`FlatProblem.ANY_BEST`, which the packagers set from `withTreeSearchAnyBest(..)`, the default). The cache
    keeps the value of the winner (volume, weight, count), not which arrangement of that value wins: the node which is skipped may hold the winner of the
    loop over the orders. For the loop's winner the engine does not use the cache.
  * **The rotations of the winner** are those of the node which found it, which need not be those which a search of its order alone picks first. So when any
    best will do, the packagers confirm a winner by what their own search of its order places (count, volume, weight), and place that.
- * **A state is a hash of 128 bits**, and two states with the same hash are taken as the same. The table has a fixed size and forgets when it is full
-   (a state which finds none of its four slots free replaces the first), so memory is bounded and a small table only finds less.
- * **What it is worth**: on small problems (9 to 12 boxes) 0.72 times the nodes; on hard ones (the squares of the Bouwkamp codes of order 11 and 12, in a
-   container one unit too narrow, so that the search runs to its end) 0.2 to 0.35 times the nodes and 0.3 to 0.5 times the time, on one thread and on
-   eight. A table of 65 536 states was the best there; a million was slower.
+ * **A state is a hash of 128 bits**, and two states with the same hash are taken as the same.
+ * **The table manages itself.** It starts with 256 states and doubles when it is full, up to the most it may have, so a search which is soon over pays
+   nothing for it and one which is not gets a large table. (With all of the table from the start, a megabyte for each thread and search, problems of 6
+   to 9 boxes on 8 threads took up to twice the time.) At its full size it forgets: a state which finds none of its four slots free replaces the first.
+ * **What it is worth**, in the assembly port, which has the same cache: within 3 % of the time without it on problems of 5 to 9 boxes, 0.67 times the
+   time at 10 to 11 boxes on one thread, and 0.33 to 0.48 times on hard problems (the squares of the Bouwkamp codes of order 11 and 12, in a container one
+   unit too narrow, so that the search runs to its end), on one thread and on eight. The nodes go down to 0.23 to 0.9 times.
 
 `FlatStateCacheTest` checks what the cache rests on, node by node: a node which is found is searched all the same, and must not find an arrangement
 better than the best to beat when it was entered (some 25 million nodes). The value of the winner alone does not tell: so many arrangements have the best

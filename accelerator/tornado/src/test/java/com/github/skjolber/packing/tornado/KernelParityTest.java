@@ -30,7 +30,7 @@ class KernelParityTest {
 			TornadoDevices.getLastFailure().printStackTrace(System.out);
 		}
 		Assumptions.assumeTrue(accelerator.getDevice().isPresent(), () -> "no TornadoVM device: " + TornadoDevices.getLastFailure());
-		cpu = FlatEngine.newBuilder().withMinBoxes(1).build();
+		cpu = FlatEngine.newBuilder().withMinBoxes(1).withStateCache(0).build();
 	}
 
 	@AfterAll
@@ -136,7 +136,7 @@ class KernelParityTest {
 	@Test
 	void anyBestHasTheValueOfTheCpuEngine() throws PackagerInterruptedException {
 		TornadoBruteForceAccelerator device = device().build();
-		FlatEngine tree = FlatEngine.newBuilder().withMinBoxes(1).withTree(true).build();
+		FlatEngine tree = FlatEngine.newBuilder().withMinBoxes(1).withStateCache(0).withTree(true).build();
 		try {
 			for (long seed = 71; seed < 91; seed++) {
 				Instance instance = KernelParity.random(seed, 8, 10, 4, 9);
