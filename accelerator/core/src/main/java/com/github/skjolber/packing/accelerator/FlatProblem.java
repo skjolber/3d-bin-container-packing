@@ -97,6 +97,11 @@ public final class FlatProblem {
 		return ints[N];
 	}
 
+	/** @return true if any arrangement of the best value will do, false for the winner of the loop over the orders */
+	public boolean isAnyBest() {
+		return ints[ANY_BEST] != 0;
+	}
+
 	/** @return true if a box is tried at every free point where it fits (the search of {@code BruteForcePackager}), which only the tree search does */
 	public boolean isAllPoints() {
 		return ints[ALL_POINTS] != 0;

@@ -382,4 +382,38 @@ public abstract class AbstractFlatAcceleratedPackagerTest {
 			engine.close();
 		}
 	}
+
+	/**
+	 * When any best arrangement will do, with an accelerator which does not search a state twice ({@link FlatStateCache}): each container has the
+	 * volume, the weight and the number of boxes of the packager without an accelerator, and every winner is confirmed by the packager.
+	 */
+	@Test
+	void sameValuesWithTheStateCacheWhenAnyBestWillDo() {
+		BruteForceAccelerator engine = engine(new FlatEngineOptions().withThreads(2).withMinBoxes(1).withTree(true).withStateCache(1024));
+		FastBruteForcePackager unaccelerated = FastBruteForcePackager.newBuilder().build();
+		AcceleratedFastBruteForcePackager accelerated = AcceleratedFastBruteForcePackager.newBuilder().withAccelerator(engine).withAcceleratorMode(AcceleratorMode.GPU_ONLY).build();
+		try {
+			for (int seed = 0; seed < 80; seed++) {
+				Instance instance = FlatTestInstances.random(seed, 5, 9);
+				List<ContainerItem> containerItems = containerItems(instance, seed);
+				String[] values = new String[2];
+				FastBruteForcePackager[] packagers = { unaccelerated, accelerated };
+				for (int p = 0; p < 2; p++) {
+					StringBuilder builder = new StringBuilder();
+					for (Container container : pack(packagers[p], containerItems, instance.copyBoxItems()).getContainers()) {
+						builder.append(container.getStack().getVolume()).append('/').append(container.getStack().getWeight()).append('/').append(container.getStack().getPlacements().size()).append(' ');
+					}
+					values[p] = builder.toString();
+				}
+				assertThat(values[1]).as("seed " + seed).isEqualTo(values[0]);
+			}
+			assertThat(accelerated.getAcceleratorMismatchCount()).isZero();
+			assertThat(accelerated.getAcceleratorFallbackCount()).isZero();
+			assertThat(accelerated.getAcceleratedCount()).isGreaterThan(80);
+		} finally {
+			unaccelerated.close();
+			accelerated.close();
+			engine.close();
+		}
+	}
 }

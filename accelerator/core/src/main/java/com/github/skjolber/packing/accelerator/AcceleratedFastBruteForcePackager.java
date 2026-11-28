@@ -234,7 +234,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 			if(problem != null) {
 				BruteForceIntermediatePackagerResult result = driver.search(problem, getMinLoadVolume(best), interrupt,
 						own -> pack(pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, own, fastPointComparator, best, limit),
-						winner -> confirmAccelerated(winner, pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, limit));
+						winner -> confirmAccelerated(winner, pointCalculator, stackPlacements, stackPlacementCount, containerItem, containerIndex, iterator, interrupt, limit, problem.isAnyBest()));
 				if(result != null) {
 					return result;
 				}
@@ -282,7 +282,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 	 * @return the result, or null if the claim was not confirmed (a bug in the accelerator): then pack the container with {@link #pack}
 	 */
 	private BruteForceIntermediatePackagerResult confirmAccelerated(AcceleratorWinner winner, FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount,
-			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, int limit) throws PackagerInterruptedException {
+			ContainerItem containerItem, int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, int limit, boolean anyBest) throws PackagerInterruptedException {
 		int length = iterator.length();
 		BruteForceIntermediatePackagerResult result = new BruteForceIntermediatePackagerResult(containerItem, new Stack(length), containerIndex, iterator, false);
 		if(winner.getCount() == 0) {
@@ -299,7 +299,7 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 			PrefixBest prefix = new PrefixBest(length);
 			searchOrder(pointCalculator, stackPlacements, iterator, stack, holder, interrupt, null, fastPointComparator, false, getInsertAfterCounts(iterator), maxPackableCount,
 					null, Integer.MAX_VALUE, null, prefix);
-			if(!isConfirmed(winner, prefix)) {
+			if(!isConfirmed(winner, prefix, anyBest)) {
 				return null;
 			}
 			result.setState(prefix.toList(), getState(iterator, prefix.getRotations(), prefix.getCount()), stackPlacements, stackPlacementCount);
@@ -313,10 +313,18 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 		}
 	}
 
-	private static boolean isConfirmed(AcceleratorWinner winner, PrefixBest prefix) {
+	/**
+	 * The search of the winner's order must place what the accelerator claims: for the loop's winner the same arrangement, and when any best will do
+	 * as many boxes with the same volume. An accelerator which does not search a state twice finds the value under one order and may report it for
+	 * another order which reaches the same state, with the rotations of its own path; the packager places what its own search of the order finds.
+	 */
+	private static boolean isConfirmed(AcceleratorWinner winner, PrefixBest prefix, boolean anyBest) {
 		int count = prefix.getCount();
 		if(count != winner.getCount() || prefix.getLoadVolume() != winner.getLoadVolume()) {
 			return false;
+		}
+		if(anyBest) {
+			return true;
 		}
 		int[] rotations = winner.getRotations();
 		int[] prefixRotations = prefix.getRotations();

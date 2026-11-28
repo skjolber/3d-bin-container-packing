@@ -155,6 +155,28 @@ Limits:
    of a round or of one order, which can be many milliseconds for hard inputs.
  * With one thread the engine runs on the calling thread.
 
+## Not searching a state twice
+
+Different orders of the same boxes often lead to the same state: the same free points, with the placements which support them, and the same boxes
+remaining. What can be placed from there on is the same, so the second search of a state finds nothing which the first did not. `FlatStateCache`
+remembers the states which a thread has searched, and the tree search (`FlatTree`) skips a node whose state it finds there. It is off by default:
+`FlatEngine.newBuilder().withStateCache(65_536)` gives each thread a table of that many states (a power of two, 16 bytes each) for the time of a search.
+
+ * **Only when any best arrangement will do** (`FlatProblem.ANY_BEST`, which the packagers set from `withTreeSearchAnyBest(..)`, the default). The cache
+   keeps the value of the winner (volume, weight, count), not which arrangement of that value wins: the node which is skipped may hold the winner of the
+   loop over the orders. For the loop's winner the engine does not use the cache.
+ * **The rotations of the winner** are those of the node which found it, which need not be those which a search of its order alone picks first. So when any
+   best will do, the packagers confirm a winner by what their own search of its order places (count, volume, weight), and place that.
+ * **A state is a hash of 128 bits**, and two states with the same hash are taken as the same. The table has a fixed size and forgets when it is full
+   (a state which finds none of its four slots free replaces the first), so memory is bounded and a small table only finds less.
+ * **What it is worth**: on small problems (9 to 12 boxes) 0.72 times the nodes; on hard ones (the squares of the Bouwkamp codes of order 11 and 12, in a
+   container one unit too narrow, so that the search runs to its end) 0.2 to 0.35 times the nodes and 0.3 to 0.5 times the time, on one thread and on
+   eight. A table of 65 536 states was the best there; a million was slower.
+
+`FlatStateCacheTest` checks what the cache rests on, node by node: a node which is found is searched all the same, and must not find an arrangement
+better than the best to beat when it was entered (some 25 million nodes). The value of the winner alone does not tell: so many arrangements have the best
+value that a search which skips nodes at random finds it too.
+
 ## Speed
 
 The flat search does the same work per node as the object search: on a single thread it is about as fast (0.98 to 1.09 times), because the extreme-point
