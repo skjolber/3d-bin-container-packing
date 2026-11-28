@@ -218,6 +218,11 @@ To write another kernel, port the flat classes of `accelerator-core` as the torn
 
 These are in `accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/` (and `IteratorSetPermutationTest` in `core`).
 
+The tests of the flat search are written once, for any implementation of it. Each class below is an `Abstract..Test` with the tests and a small class of the
+name below which runs them for the Java code, the reference. A port of the search to native code runs the same tests, one for one, with a class of its own: the
+tests which call the functions of the search one at a time take them from a `FlatKernel` (`JavaFlatKernel` for the Java code), and the tests of an engine build
+it from `FlatEngineOptions`. For this the module also builds a jar of its tests (`accelerator-core-..-tests.jar`).
+
  * `FlatPointsAddTest`, `FlatBestPointTest`, `FlatSearchPermutationTest` and `FlatPermutationTest`: the flat model against the object model
  * `FlatEngineTest`: the engine against a reference loop, with threads, bounds, a tiny point limit, and interrupts
  * `FlatTreeTest`: the tree item against the loop over the orders: the same winner in exact mode with one and three threads, with a bound and a limit, and with a node
