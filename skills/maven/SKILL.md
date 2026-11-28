@@ -16,6 +16,7 @@ This project is a Maven multi-module build. The root `pom.xml` is the parent; al
 | `validators` | Result and load validators |
 | `core` | Packager algorithm implementations |
 | `accelerator/core` | Flat search classes, `FlatEngine`, `BruteForceAccelerator` and `AcceleratedFastBruteForcePackager` (depends on `core`; in the default build) |
+| `accelerator/test-suite` | `accelerator-test-suite`: the tests of the flat search as sources, for any implementation of it; they run here for the Java code, so this module is where the tests of `accelerator/core` are |
 | `test` | Shared test utilities |
 | `jmh` | JMH benchmark suite |
 | `accelerator/tornado` | TornadoVM accelerator (experimental, Java 22+); the tests which need a device are skipped without `-Dtornado.argfile` (see its README) |

@@ -225,8 +225,9 @@ public class AcceleratedFastBruteForcePackager extends FastBruteForcePackager {
 		super(comparator, pointComparator);
 	}
 
+	/** The search of one container, with the accelerator where it applies. Public for the tests of the accelerators, which are in a module of their own. */
 	@Override
-	protected BruteForceIntermediatePackagerResult packContainer(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
+	public BruteForceIntermediatePackagerResult packContainer(FastPointCalculator3DStack pointCalculator, Placement[] stackPlacements, int stackPlacementCount, ContainerItem containerItem,
 			int containerIndex, BoxItemPermutationRotationIterator iterator, PackagerInterruptSupplier interrupt, IntermediatePackagerResult best, int limit) throws PackagerInterruptedException {
 		AcceleratorDriver<BruteForceIntermediatePackagerResult> driver = this.driver;
 		if(driver != null && driver.isActive()) {
