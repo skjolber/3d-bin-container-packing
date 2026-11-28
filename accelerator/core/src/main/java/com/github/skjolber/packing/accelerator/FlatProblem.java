@@ -142,8 +142,13 @@ public final class FlatProblem {
 	/**
 	 * @param allPoints true to try a box at every free point where it fits (the search of {@code BruteForcePackager}), false at the best point of each
 	 *        rotation (the search of {@code FastBruteForcePackager}); only the tree search ({@code FlatTree}) takes all points
+	 * @throws IllegalArgumentException for a negative limit
 	 */
 	public static FlatProblem of(BoxItemPermutationRotationIterator iterator, int cx, int cy, int cz, long maxLoadVolume, long maxLoadWeight, int limit, boolean anyBest, boolean allPoints) {
+		if(limit < 0) {
+			// a search places the leading boxes up to the limit, and an accelerator in native code counts down from it
+			throw new IllegalArgumentException("Expected a limit of zero or more boxes, got " + limit);
+		}
 		BoxStackValue[][] stackValues = iterator.getBoxItemStackValues();
 		int types = stackValues.length;
 		int n = iterator.length();

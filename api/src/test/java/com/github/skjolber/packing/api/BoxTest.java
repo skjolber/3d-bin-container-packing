@@ -214,4 +214,12 @@ public class BoxTest {
 			assertSame(box, box.getStackValues()[i].getBox());
 		}
 	}
+
+	@Test
+	void sizeMustBeAtLeastOneInEachDirection() {
+		assertThrows(IllegalStateException.class, () -> Box.newBuilder().withSize(0, 2, 2).withWeight(1).build());
+		assertThrows(IllegalStateException.class, () -> Box.newBuilder().withSize(2, -3, 2).withWeight(1).build());
+		assertThrows(IllegalStateException.class, () -> Box.newBuilder().withSize(2, 2, 0).withWeight(1).build());
+		assertNotNull(Box.newBuilder().withSize(1, 1, 1).withWeight(1).build());
+	}
 }

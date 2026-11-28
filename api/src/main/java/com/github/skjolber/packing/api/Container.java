@@ -102,6 +102,9 @@ public class Container {
 			if (dz == -1) {
 				throw new IllegalStateException("Expected size");
 			}
+			if (dx < 1 || dy < 1 || dz < 1) {
+				throw new IllegalStateException("Expected a size of at least one in each direction, got " + dx + "x" + dy + "x" + dz);
+			}
 			if (maxLoadWeight == -1) {
 				throw new IllegalStateException("Expected max weight");
 			}
@@ -113,6 +116,10 @@ public class Container {
 			}
 			if (loadDz == -1) {
 				loadDz = dz;
+			}
+
+			if (loadDx < 1 || loadDy < 1 || loadDz < 1) {
+				throw new IllegalStateException("Expected a load size of at least one in each direction, got " + loadDx + "x" + loadDy + "x" + loadDz);
 			}
 
 			if (emptyWeight == -1) {
