@@ -7,6 +7,7 @@
 | `validators` | Result and load validators |
 | `core` | Packagers (`packer.plain`, `packer.laff`, `packer.bruteforce`, `packer.composite`), permutation iterators (`iterator`), container packing strategy implementations (`packer.strategy`), virtual-box preprocessing (`virtualbox`) |
 | `accelerator/core` | `accelerator-core`: the flat search classes (`Flat*`), the CPU engine `FlatEngine`, the SPI `BruteForceAccelerator` and `AcceleratedFastBruteForcePackager`, in package `com.github.skjolber.packing.accelerator`; depends on `core` |
+| `accelerator/test-suite` | `accelerator-test-suite`: the tests of the flat search, as sources (`Abstract..Test` in package `com.github.skjolber.packing.accelerator.test`) for any implementation of it, and run here for the Java code; the tests of `accelerator-core` are in this module, as it needs them and they need it |
 | `test` | Shared test utilities (assertj extensions, generators, Bouwkamp data, api-only extension examples) |
 | `legacy/v4` | `shadowed-v4`: version 4 (api, points, core) with its packages moved to `com.github.skjolber.packing.v4`, for tests which compare with 4.x in the same JVM; not published (see its README) |
 | `jmh` | JMH benchmarks; datasets in `jmh/src/main/resources` |

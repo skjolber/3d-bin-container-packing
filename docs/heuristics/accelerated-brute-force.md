@@ -238,12 +238,14 @@ To write another kernel, port the flat classes of `accelerator-core` as the torn
 
 ## Tests
 
-These are in `accelerator/core/src/test/java/com/github/skjolber/packing/accelerator/` (and `IteratorSetPermutationTest` in `core`).
+These are in the module `accelerator/test-suite` (and `IteratorSetPermutationTest` in `core`), not in `accelerator/core`: the tests of the flat search are
+the published artifact `accelerator-test-suite`, written once for any implementation of the search.
 
-The tests of the flat search are written once, for any implementation of it. Each class below is an `Abstract..Test` with the tests and a small class of the
-name below which runs them for the Java code, the reference. A port of the search to native code runs the same tests, one for one, with a class of its own: the
-tests which call the functions of the search one at a time take them from a `FlatKernel` (`JavaFlatKernel` for the Java code), and the tests of an engine build
-it from `FlatEngineOptions`. For this the module also builds a jar of its tests (`accelerator-core-..-tests.jar`).
+Each class below is an `Abstract..Test` with the tests, in the sources of the module (package `com.github.skjolber.packing.accelerator.test`), and a small
+class of the name below in its tests which runs them for the Java code, the reference. A port of the search to native code depends on the artifact and runs
+the same tests, one for one, with a class of its own in that package: the tests which call the functions of the search one at a time take them from a
+`FlatKernel` (`JavaFlatKernel` for the Java code), and the tests of an engine build it from `FlatEngineOptions`. The tests which only make sense for the Java
+code (`FlatStateCacheTest`, `FlatProblemTest`, `AcceleratorDriverTest`) are in the tests of the module too, as they share its instances.
 
  * `FlatPointsAddTest`, `FlatBestPointTest`, `FlatSearchPermutationTest` and `FlatPermutationTest`: the flat model against the object model
  * `FlatEngineTest`: the engine against a reference loop, with threads, bounds, a tiny point limit, and interrupts
